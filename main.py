@@ -28,7 +28,7 @@ def serve_wsgi_app(s, app):
         c, _ = s.accept()
 
         req = c.recv(1024)
-        print(req.decode())
+#        print(req.decode())
 
         req_lines = req.split(b'\r\n')
         method, path, version = req_lines[0].decode().split()
@@ -73,7 +73,7 @@ def serve_wsgi_app(s, app):
         for data in result:
             resp += data
 
-        print(resp.decode())
+#        print(resp.decode())
 
         c.sendall(resp)
         c.close()

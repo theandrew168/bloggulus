@@ -18,7 +18,6 @@ build:
 	mkdir -p build/
 	cp main.py build/__main__.py
 	cp -r bloggulus/ build/
-	python3 -m pip install -U wheel --target build
 	python3 -m pip install -U -r requirements.txt --target build
 	python3 -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build
 

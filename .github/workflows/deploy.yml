@@ -13,6 +13,7 @@ jobs:
       with:
         python-version: 3.8
     - uses: actions/checkout@v2
+    - run: python3 -m pip install wheel
 #    - run: make check
     - run: make dist
     - uses: appleboy/scp-action@master

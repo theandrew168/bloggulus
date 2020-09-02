@@ -1,27 +1,25 @@
 .POSIX:
 .SUFFIXES:
 
-.PHONY: venv
-venv:
-	python3 -m venv venv
-	. ./venv/bin/activate
-
 .PHONY: deps
-deps: venv
-	pip install -U wheel
+deps:
+	python3 -m venv venv  &&  \
+	. ./venv/bin/activate &&  \
+	pip install -U wheel  &&  \
 	pip install -U -r requirements.txt
 
 .PHONY: run
 run: deps
-	python server.py
+	. ./venv/bin/activate &&  \
+	python main.py
 
 .PHONY: build
-build: deps
+build:
 	mkdir -p build/
 	cp main.py build/__main__.py
 	cp -r bloggulus/ build/
-	python -m pip install -U -r requirements.txt --target build
-	python -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build
+	python3 -m pip install -U -r requirements.txt --target build
+	python3 -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build
 
 .PHONY: dist
 dist: build

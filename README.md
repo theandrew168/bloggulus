@@ -1,2 +1,2 @@
 # bloggulus
-RSS aggregator powered by Python, Flask, and SQLite
+RSS aggregator powered by Python, Pyramid, and SQLite

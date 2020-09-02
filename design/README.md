@@ -24,5 +24,7 @@ RPS stands for "Requests per Second" and latency is measured in seconds.
 | forking2.py | 81.83 | 0.54 | 0.87 | 7.60 | 12.17 |
 | threading1.py | 78.71 | 0.52 | 0.87 | 7.52 | 11.71 |
 | threading2.py | 79.06 | 0.51 | 0.88 | 7.73 | 11.76 |
-| nonblock.py | 79.33 | 0.53 | 0.63 | 5.23 | 11.80 |
+| processpool.py | ??? | ??? | ??? | ??? | ??? |
+| threadpool.py | ??? | ??? | ??? | ??? | ??? |
+| nonblocking.py | 79.33 | 0.53 | 0.63 | 5.23 | 11.80 |
 | async.py | 82.97 | 0.53 | 0.84 | 7.35 | 12.34 |

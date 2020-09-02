@@ -1,6 +1,7 @@
 import socket
 
-ADDR = ('0.0.0.0', 8888)
+HOST, PORT = '0.0.0.0', 8888
+ADDR = (HOST, PORT)
 
 
 def runserver(s):
@@ -23,6 +24,6 @@ def runserver(s):
 
 if __name__ == '__main__':
     s = socket.create_server(ADDR, backlog=128, reuse_port=True)
-    print('Serving HTTP on:', ADDR)
 
+    print('Serving HTTP on:', ADDR)
     runserver(s)

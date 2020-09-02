@@ -1,7 +1,8 @@
 import multiprocessing as mp
 import socket
 
-ADDR = ('0.0.0.0', 8888)
+HOST, PORT = '0.0.0.0', 8888
+ADDR = (HOST, PORT)
 
 
 def handle_client(c):
@@ -33,6 +34,6 @@ if __name__ == '__main__':
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(ADDR)
     s.listen(128)
-    print('Serving HTTP on:', ADDR)
 
+    print('Serving HTTP on:', ADDR)
     runserver(s)

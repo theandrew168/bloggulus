@@ -1,6 +1,7 @@
 import socketserver
 
-ADDR = ('0.0.0.0', 8888)
+HOST, PORT = '0.0.0.0', 8888
+ADDR = (HOST, PORT)
 
 
 class ForkingTCPServer(socketserver.ForkingMixIn, socketserver.TCPServer):
@@ -26,6 +27,6 @@ class HTTPHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
+    print('Serving HTTP on:', ADDR)
     with ForkingTCPServer(ADDR, HTTPHandler) as server:
-        print('Serving HTTP on:', ADDR)
         server.serve_forever()

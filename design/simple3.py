@@ -1,6 +1,7 @@
 import socketserver
 
-ADDR = ('0.0.0.0', 8888)
+HOST, PORT = '0.0.0.0', 8888
+ADDR = (HOST, PORT)
 
 
 class HTTPHandler(socketserver.BaseRequestHandler):
@@ -23,6 +24,6 @@ class HTTPHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
+    print('Serving HTTP on:', ADDR)
     with socketserver.TCPServer(ADDR, HTTPHandler) as server:
-        print('Serving HTTP on:', ADDR)
         server.serve_forever()

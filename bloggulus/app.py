@@ -8,7 +8,7 @@ app.config.from_object(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello, World!"
+    return "Hello world from a Flask WSGI app!"
 
 if __name__ == '__main__':
     app.run()

@@ -18,7 +18,8 @@ run: deps
 .PHONY: build
 build: deps
 	mkdir -p build/
-	cp server.py build/__main__.py
+	cp main.py build/__main__.py
+	cp -r bloggulus/ build/
 	python -m pip install -U -r requirements.txt --target build
 	python -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build
 

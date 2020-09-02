@@ -17,6 +17,9 @@ RPS stands for "Requests per Second" and latency is measured in seconds.
 | Server | RPS | Mean Latency | Mode Latency | Worst Latency | % NGINX (RPS) |
 | --- | --- | --- | --- | --- | --- |
 | NGINX | 672.36 | 0.07 | 0.11 | 0.64 | 100.00 |
+| Waitress | 449.07 | 0.10 | 0.09 | 0.42 | 66.79 |
+| Gunicorn[sync] | 46.31 | 0.99 | 0.95 | 8.23 | 6.89 |
+| Gunicorn[gevent] | 338.36 | 0.14 | 0.09 | 0.43 | 50.32 |
 | simple1.py | 54.23 | 0.84 | 0.92 | 8.10 | 8.07 |
 | simple2.py | 52.77 | 0.84 | 0.91 | 7.85 | 7.85 |
 | simple3.py | 45.71 | 0.78 | 1.64 | 15.88 | 6.80 |

@@ -7,7 +7,13 @@ import socket
 import sys
 import traceback
 
-from .app import app
+#from .app import app
+
+def app(environ, start_response):
+    status = '200 OK'
+    response_headers = [('Content-Type', 'text/plain')]
+    start_response(status, response_headers)
+    return [b'Hello world from simple WSGI app\n']
 
 # References:
 # https://www.python.org/dev/peps/pep-3333/
@@ -79,7 +85,8 @@ def handle_client(mux, sock, mask):
         resp_status = status
         resp_headers.extend(response_headers)
 
-    result = app.wsgi_app(env, start_response)
+#    result = app.wsgi_app(env, start_response)
+    result = app(env, start_response)
 
     resp_lines = []
     resp_lines.append('HTTP/1.1 {}'.format(resp_status).encode())
@@ -93,7 +100,8 @@ def handle_client(mux, sock, mask):
 
 #    print(resp.decode())
 
-    sock.sendall(resp)
+    # TODO: utilize mux and EVENT_WRITE to send everyting?
+    sock.send(resp)
     mux.unregister(sock)
     sock.close()
 

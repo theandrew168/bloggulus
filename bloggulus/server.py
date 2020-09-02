@@ -21,7 +21,8 @@ from .app import app
 # SYSTEMD_SOCKET_FD_PORT_443 = 4
 
 # Benchmarks (hey http://bloggulus.com):
-# one process, serial - 4.66 RPS
+# 1 process, serial - 4.66 RPS
+# pre-forked (1 process), serial - 4.70 RPS
 
 
 def handle_client(c, server_name, server_port):
@@ -77,8 +78,6 @@ def handle_client(c, server_name, server_port):
 
 
 def wsgi_worker(s):
-    print('starting worker {}...'.format(os.getpid()))
-
     host, port = s.getsockname()[:2]
     server_name = socket.getfqdn(host)
     server_port = str(port)
@@ -96,18 +95,19 @@ def wsgi_worker(s):
         finally:
             c.close()
 
-    print('stopping worker {}...'.format(os.getpid()))
-
 
 def runserver(s):
     workers = []
     for _ in range(os.cpu_count()):
         worker = mp.Process(target=wsgi_worker, args=(s,))
         worker.start()
+        print('started worker {}'.format(worker.pid))
+
         workers.append(worker)
 
     for worker in workers:
         try:
             worker.join()
+            print('stopped worker {}'.format(worker.pid))
         except KeyboardInterrupt:
             pass

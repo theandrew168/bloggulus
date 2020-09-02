@@ -22,14 +22,15 @@ from .app import app
 # SYSTEMD_SOCKET_FD_PORT_80 = 3
 # SYSTEMD_SOCKET_FD_PORT_443 = 4
 
-# Benchmarks (hey http://bloggulus.com):
+# Benchmarks (hey -n 2000 -c 50 http://bloggulus.com):
+# nginx baseline - 634.25 RPS (0.131s latency)
 # single process, serial - 4.66 RPS
-# pre-forked (1 process), serial - 4.70 RPS
-# pre-forked (2 process), serial -
-# pre-forked (4 process), serial -
-# pre-forked (1 process), async -
-# pre-forked (2 process), async -
-# pre-forked (4 process), async -
+# pre-forked (1 workers), serial - 4.70 RPS
+# pre-forked (2 workers), serial - ???
+# pre-forked (4 workers), serial - ???
+# pre-forked (1 workers), async - 86.62 RPS (1s latency)
+# pre-forked (2 workers), async - 83.75 RPS (1s latency)
+# pre-forked (4 workers), async - 90.00 RPS (1s latency)
 
 
 def handle_client(mux, sock, mask):

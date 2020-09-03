@@ -1,7 +1,11 @@
 import os
 import socket
 
+from pyramid.config import Configurator
 from waitress import serve
+
+from bloggulus.handlers import hello_world
+
 
 # os.environ['LISTEN_FDS'] will hold number of FDs
 #
@@ -13,21 +17,19 @@ from waitress import serve
 # SYSTEMD_SOCKET_FD_PORT_443 = 4
 
 
-def app(environ, start_response):
-    status = '200 OK'
-    response_headers = [('Content-Type', 'text/plain')]
-    start_response(status, response_headers)
-    return [b'Hello world from Waitress WSGI app\n']
-
-
 if __name__ == '__main__':
+    with Configurator() as config:
+        config.add_route('hello', '/')
+        config.add_view(hello_world, route_name='hello')
+        app = config.make_wsgi_app()
+
     if os.getenv('LISTEN_FDS'):
         s = socket.fromfd(3, socket.AF_INET, socket.SOCK_STREAM)
         s.setblocking(False)
 
         # TODO: get TLS files from Let's Encrypt and ssl.wrap_socket()
 
-        serve(app, sockets=[s])
+        serve(app, sockets=[s], threads=os.cpu_count() * 4)
     else:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -35,4 +37,4 @@ if __name__ == '__main__':
         s.listen(128)
         s.setblocking(False)
 
-        serve(app, sockets=[s])
+        serve(app, sockets=[s], threads=os.cpu_count() * 4)

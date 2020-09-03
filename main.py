@@ -18,10 +18,10 @@ from bloggulus.views import hello_world
 
 
 if __name__ == '__main__':
-    with Configurator() as config:
-        config.add_route('hello', '/')
-        config.add_view(hello_world, route_name='hello')
-        app = config.make_wsgi_app()
+    config = Configurator()
+    config.add_route('hello', '/')
+    config.add_view(hello_world, route_name='hello')
+    app = config.make_wsgi_app()
 
     if os.getenv('LISTEN_FDS'):
         s = socket.fromfd(3, socket.AF_INET, socket.SOCK_STREAM)

@@ -2,4 +2,4 @@ from pyramid.response import Response
 
 
 def hello_world(request):
-    return Response('Hello World! From Pyramid!')
+    return Response('<body><h1>Hello World!</h1></body>')

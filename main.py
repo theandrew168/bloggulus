@@ -4,7 +4,7 @@ import socket
 from pyramid.config import Configurator
 from waitress import serve
 
-from bloggulus.handlers import hello_world
+from bloggulus.views import hello_world
 
 
 # os.environ['LISTEN_FDS'] will hold number of FDs

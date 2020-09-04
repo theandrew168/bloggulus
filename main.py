@@ -48,6 +48,7 @@ class FileServer:
         self.thread.join()
 
 
+# TODO: this guy is rough
 def require_https(sock):
     while True:
         try:
@@ -57,14 +58,17 @@ def require_https(sock):
                 client.close()
                 continue
 
-            req_linnes = req.split(b'\r\n')
+            req_lines = req.split(b'\r\n')
             method, path, version = req_lines[0].decode().split()
-            print(method, path, version)
 
-            resp = b'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\n'
-            resp = resp.format(path)
-            c.send(resp)
-            c.close()
+            resp = '\r\n'.join([
+                'HTTP/1.1 301 Moved Permanently',
+                'Location: https://bloggulus.com{}'.format(path),
+            ])
+            resp += '\r\n\r\n'
+
+            client.sendall(resp.encode())
+            client.close()
         except:
             pass
 
@@ -103,9 +107,9 @@ if __name__ == '__main__':
             rc = subprocess.run(certbot_cmd)
             print(rc)
 
-#        # start HTTP to HTTPS redirect server
-#        thread = threading.Thread(target=require_https, args=(s80,), daemon=True)
-#        thread.start()
+        # start HTTP to HTTPS redirect server
+        thread = threading.Thread(target=require_https, args=(s80,), daemon=True)
+        thread.start()
 
         # call ssl.wrap_socket() on s443
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -122,6 +126,9 @@ if __name__ == '__main__':
         s.bind(('0.0.0.0', 8080))
         s.listen(128)
         s.setblocking(False)
+
+        thread = threading.Thread(target=require_https, args=(s,), daemon=True)
+        thread.start()
 
         app = Application('./web')
         serve(app, sockets=[s], threads=threads, expose_tracebacks=True)

@@ -3,7 +3,7 @@ import socket
 
 from waitress import serve
 
-from bloggulus.wsgiapp import app
+from bloggulus.wsgiapp import Application
 
 # os.environ['LISTEN_FDS'] will hold number of FDs
 #
@@ -22,8 +22,13 @@ if __name__ == '__main__':
         s = socket.fromfd(3, socket.AF_INET, socket.SOCK_STREAM)
         s.setblocking(False)
 
+        # TODO: kick off 80 -> 443 redirect thread
         # TODO: get TLS files from Let's Encrypt and ssl.wrap_socket()
 
+        web_root = os.environ['BLOGGULUS_WEB_ROOT']
+        templates_root = os.environ['BLOGGULUS_TEMPLATES_ROOT']
+
+        app = Application(web_root, templates_root)
         serve(app, sockets=[s], threads=threads)
     else:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,4 +37,5 @@ if __name__ == '__main__':
         s.listen(128)
         s.setblocking(False)
 
+        app = Application('./web', './templates')
         serve(app, sockets=[s], threads=threads, expose_tracebacks=True)

@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
         web_root = os.environ['BLOGGULUS_WEB_ROOT']
 
-        app = Application(web_root, templates_root)
+        app = Application(web_root)
         serve(app, sockets=[s], threads=threads)
     else:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

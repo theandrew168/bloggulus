@@ -26,7 +26,6 @@ if __name__ == '__main__':
         # TODO: get TLS files from Let's Encrypt and ssl.wrap_socket()
 
         web_root = os.environ['BLOGGULUS_WEB_ROOT']
-        templates_root = os.environ['BLOGGULUS_TEMPLATES_ROOT']
 
         app = Application(web_root, templates_root)
         serve(app, sockets=[s], threads=threads)
@@ -37,5 +36,5 @@ if __name__ == '__main__':
         s.listen(128)
         s.setblocking(False)
 
-        app = Application('./web', './templates')
+        app = Application('./web')
         serve(app, sockets=[s], threads=threads, expose_tracebacks=True)

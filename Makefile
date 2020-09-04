@@ -27,7 +27,6 @@ dist: build
 	mkdir -p dist/
 	mv bloggulus.pyz dist/bloggulus
 	cp -r web/ dist/
-	cp -r templates/ dist/
 
 .PHONY: clean
 clean:

@@ -8,7 +8,7 @@ import threading
 
 from waitress import serve
 
-from bloggulus.wsgiapp import Application
+from bloggulus.app import Application
 
 # os.environ['LISTEN_FDS'] will hold number of FDs
 #

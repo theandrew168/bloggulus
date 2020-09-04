@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from pprint import pformat
+from pprint import pprint
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -17,11 +17,17 @@ class Application:
             loader=PackageLoader('bloggulus', 'templates'),
             autoescape=select_autoescape(['html', 'jinja2']))
 
+    # satisfies the WSGI protocol (PEP 3333)
     def __call__(self, environ, start_response):
         headers = []
         resp = []
 
-        # TODO: redirect http to https (80 to 443)
+        # redirect http to https (80 to 443)
+        if environ['wsgi.url_scheme'] == 'http':
+            target = 'https://' + environ['HTTP_HOST'] + environ['SCRIPT_NAME'] + environ['PATH_INFO']
+            headers.append(('Location', target))
+            start_response(status_string(HTTPStatus.MovedPermanently), headers)
+            return resp
 
         # TODO: can make this a dict-based class with a master regex pat
         # that'd even work for args! /feed/[0-9]+

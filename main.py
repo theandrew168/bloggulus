@@ -48,6 +48,27 @@ class FileServer:
         self.thread.join()
 
 
+def require_https(sock):
+    while True:
+        try:
+            client, _ = sock.accept()
+            req = client.recv(1024)
+            if not req:
+                client.close()
+                continue
+
+            req_linnes = req.split(b'\r\n')
+            method, path, version = req_lines[0].decode().split()
+            print(method, path, version)
+
+            resp = b'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\nHello, World!'
+            resp = resp.format(path)
+            c.send(resp)
+            c.close()
+        except:
+            pass
+
+
 if __name__ == '__main__':
     threads = os.cpu_count() * 4
 
@@ -82,6 +103,10 @@ if __name__ == '__main__':
             rc = subprocess.run(certbot_cmd)
             print(rc)
 
+        # start HTTP to HTTPS redirect server
+        thread = threading.Thread(target=require_https, args=(s80,), daemon=True)
+        thread.start()
+
         # call ssl.wrap_socket() on s443
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(
@@ -90,7 +115,7 @@ if __name__ == '__main__':
         s443 = context.wrap_socket(s443, server_side=True)
 
         app = Application(web_root)
-        serve(app, sockets=[s80, s443], threads=threads)
+        serve(app, sockets=[s80, s443], threads=threads, url_scheme='https')
     else:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -98,5 +123,5 @@ if __name__ == '__main__':
         s.listen(128)
         s.setblocking(False)
 
-        app = Application('./web', redirect_http=False)
+        app = Application('./web')
         serve(app, sockets=[s], threads=threads, expose_tracebacks=True)

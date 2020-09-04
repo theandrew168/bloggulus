@@ -61,7 +61,7 @@ def require_https(sock):
             method, path, version = req_lines[0].decode().split()
             print(method, path, version)
 
-            resp = b'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\nHello, World!'
+            resp = b'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\n'
             resp = resp.format(path)
             c.send(resp)
             c.close()
@@ -103,9 +103,9 @@ if __name__ == '__main__':
             rc = subprocess.run(certbot_cmd)
             print(rc)
 
-        # start HTTP to HTTPS redirect server
-        thread = threading.Thread(target=require_https, args=(s80,), daemon=True)
-        thread.start()
+#        # start HTTP to HTTPS redirect server
+#        thread = threading.Thread(target=require_https, args=(s80,), daemon=True)
+#        thread.start()
 
         # call ssl.wrap_socket() on s443
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

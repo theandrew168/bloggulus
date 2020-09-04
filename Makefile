@@ -11,6 +11,7 @@ deps:
 .PHONY: run
 run: deps
 	. ./venv/bin/activate &&  \
+	PYRAMID_RELOAD_ASSETS=1   \
 	python main.py
 
 .PHONY: build
@@ -24,7 +25,7 @@ build:
 .PHONY: dist
 dist: build
 	mkdir -p dist/
-	cp -r bloggulus.pyz dist/bloggulus
+	mv bloggulus.pyz dist/bloggulus
 	mkdir -p dist/web/
 	cp -r static/* dist/web/
 

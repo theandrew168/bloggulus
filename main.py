@@ -98,5 +98,5 @@ if __name__ == '__main__':
         s.listen(128)
         s.setblocking(False)
 
-        app = Application('./web')
+        app = Application('./web', redirect_http=False)
         serve(app, sockets=[s], threads=threads, expose_tracebacks=True)

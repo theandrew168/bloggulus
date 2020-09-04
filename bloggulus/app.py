@@ -10,8 +10,9 @@ def status_string(status):
 
 class Application:
 
-    def __init__(self, web_root):
+    def __init__(self, web_root, redirect_http=True):
         self.web_root = web_root
+        self.redirect_http = redirect_http
 
         self.templates = Environment(
             loader=PackageLoader('bloggulus', 'templates'),
@@ -23,10 +24,10 @@ class Application:
         resp = []
 
         # redirect http to https (80 to 443)
-        if environ['wsgi.url_scheme'] == 'http':
+        if self.redirect_http and environ['wsgi.url_scheme'] == 'http':
             target = 'https://' + environ['HTTP_HOST'] + environ['SCRIPT_NAME'] + environ['PATH_INFO']
             headers.append(('Location', target))
-            start_response(status_string(HTTPStatus.MovedPermanently), headers)
+            start_response(status_string(HTTPStatus.MOVED_PERMANENTLY), headers)
             return resp
 
         # TODO: can make this a dict-based class with a master regex pat

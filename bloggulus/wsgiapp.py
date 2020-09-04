@@ -30,7 +30,7 @@ class Application:
         # TODO: check static files and serve (adjust content-type)
         # TODO: else 404
 
-        env = pformat(environ)
-        resp.append(env.encode())
+#        env = pformat(environ)
+#        resp.append(env.encode())
 
         return resp

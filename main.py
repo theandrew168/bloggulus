@@ -115,7 +115,7 @@ if __name__ == '__main__':
         s443 = context.wrap_socket(s443, server_side=True)
 
         app = Application(web_root)
-        serve(app, sockets=[s80, s443], threads=threads, url_scheme='https')
+        serve(app, sockets=[s443], threads=threads, url_scheme='https')
     else:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

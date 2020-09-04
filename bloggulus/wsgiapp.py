@@ -21,6 +21,8 @@ class Application:
         headers = []
         resp = []
 
+        # TODO: redirect http to https (80 to 443)
+
         # TODO: can make this a dict-based class with a master regex pat
         # that'd even work for args! /feed/[0-9]+
         if environ['PATH_INFO'] == '/':

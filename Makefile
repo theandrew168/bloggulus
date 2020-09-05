@@ -11,13 +11,12 @@ deps:
 .PHONY: run
 run: deps
 	. ./venv/bin/activate &&  \
-	PYRAMID_RELOAD_ASSETS=1   \
-	python dev.py
+	python main.py
 
 .PHONY: build
 build:
 	mkdir -p build/
-	cp prod.py build/__main__.py
+	cp main.py build/__main__.py
 	cp -r bloggulus/ build/
 	python3 -m pip install -U -r requirements.txt --target build
 	python3 -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build

@@ -1,3 +1,7 @@
+acme
+cryptography
 jinja2
+josepy
 peewee
+pyopenssl
 waitress

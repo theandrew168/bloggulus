@@ -84,7 +84,7 @@ if __name__ == '__main__':
         s443.setblocking(False)
 
         home = os.environ['HOME']
-        ssl_dir = os.path.join(home, 'live', 'www.bloggulus.com')
+        ssl_dir = os.path.join(home, 'live', 'bloggulus.com')
         web_root = os.environ['BLOGGULUS_WEB_ROOT']
 
         # TODO handle renewals either here (thread) or elsewhere
@@ -99,7 +99,6 @@ if __name__ == '__main__':
                 '--config-dir', home,
                 '--work-dir', home,
                 '--logs-dir', home,
-                '-d', 'www.bloggulus.com',
                 '-d', 'bloggulus.com',
                 '--webroot',
                 '-w', web_root,

@@ -11,13 +11,15 @@ deps:
 .PHONY: run
 run: deps
 	. ./venv/bin/activate &&  \
-	python main.py
+	FLASK_APP=bloggulus.app   \
+	FLASK_ENV=development     \
+	flask run
 
 .PHONY: build
 build:
 	mkdir -p build/
-	cp main.py build/__main__.py
 	cp -r bloggulus/ build/
+	cp bloggulus/__main__.py build/
 	python3 -m pip install -U -r requirements.txt --target build
 	python3 -m zipapp -c -p "/usr/bin/env python3" -o "bloggulus.pyz" build
 
@@ -25,7 +27,7 @@ build:
 dist: build
 	mkdir -p dist/
 	mv bloggulus.pyz dist/bloggulus
-	cp -r web/ dist/
+	cp -r bloggulus/static/ dist/
 
 .PHONY: clean
 clean:

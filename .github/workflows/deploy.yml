@@ -29,6 +29,8 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
-          unzip bloggulus.zip -oq -d bloggulus/
+          rm -fr bloggulus/
+          unzip -oq bloggulus.zip
+          mv dist/ bloggulus/
           sudo systemctl start gunicorn
           sudo systemctl reload gunicorn

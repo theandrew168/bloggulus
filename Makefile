@@ -20,8 +20,8 @@ dist:
 	mkdir -p dist/
 	cp -r bloggulus/ dist/
 	python3 -m pip install -Uq -r requirements.txt --target dist/
-	zip -rq bloggulus.zip dist/
+	zip -rq dist.zip dist/
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus.zip dist/ __pycache__/ bloggulus/__pycache__/
+	rm -fr dist.zip dist/ __pycache__/ bloggulus/__pycache__/

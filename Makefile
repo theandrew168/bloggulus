@@ -21,7 +21,6 @@ build: deps
 	cp manage.py build/
 	./venv/bin/shiv            \
 	--compressed               \
-	--preamble clean.py        \
 	--site-packages build/     \
 	-p '/usr/bin/env python3'  \
 	-e manage.main             \

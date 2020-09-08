@@ -1,0 +1,2 @@
+recursive-include bloggulus/templates *
+recursive-include bloggulus/static *

@@ -21,15 +21,12 @@ jobs:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-        source: dist.zip
-        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
+        source: bloggulus.pyz
+        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/bloggulus
     - uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
-          rm -fr dist/
-          unzip -oq dist.zip
-          sudo systemctl start gunicorn
-          sudo systemctl reload gunicorn
+          sudo systemctl reload bloggulus

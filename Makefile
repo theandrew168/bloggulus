@@ -3,25 +3,23 @@
 
 .PHONY: deps
 deps:
-	python3 -m venv venv  &&  \
-	. ./venv/bin/activate &&  \
-	pip install -Uq wheel  &&  \
-	pip install -Uq -r requirements.txt
+	./venv/bin/pip install -Uq wheel
+	./venv/bin/pip install -Uq shiv
+	./venv/bin/pip install -Uq -r requirements.txt
 
-.PHONY: run
-run: deps
-	. ./venv/bin/activate &&  \
-	FLASK_APP=bloggulus.app   \
-	FLASK_ENV=development     \
-	flask run
+.PHONY: static
+static: deps
+	./venv/bin/python manage.py collectstatic --no-input
 
 .PHONY: dist
-dist:
-	mkdir -p dist/
-	cp -r bloggulus/ dist/
-	python3 -m pip install -Uq -r requirements.txt --target dist/
-	zip -rq dist.zip dist/
+dist: deps static
+	./venv/bin/shiv            \
+	--compressed               \
+	-p '/usr/bin/env python3'  \
+	-o bloggulus.pyz           \
+	-e bloggulus.main:main     \
+	. -r requirements.txt
 
 .PHONY: clean
 clean:
-	rm -fr dist.zip dist/ __pycache__/ bloggulus/__pycache__/
+	rm -fr bloggulus.pyz bloggulus/static/

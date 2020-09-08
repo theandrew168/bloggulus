@@ -22,7 +22,7 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         source: bloggulus.pyz
-        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/bloggulus
+        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
     - uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}

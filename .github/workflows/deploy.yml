@@ -29,5 +29,4 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
-          sudo systemctl start bloggulus
-          sudo systemctl reload bloggulus
+          sudo systemctl restart bloggulus

@@ -8,19 +8,36 @@ deps:
 	./venv/bin/pip install -Uq shiv
 	./venv/bin/pip install -Uq -r requirements.txt
 
+.PHONY: check
+check: deps
+	./venv/bin/python manage.py test
+
+.PHONY: build
+build: deps
+	rm -fr build/
+	mkdir build/
+	./venv/bin/pip install -r requirements.txt --target build/
+	cp -r bloggulus/ build/
+	cp manage.py build/
+	./venv/bin/shiv            \
+	--compressed               \
+	--preamble clean.py        \
+	--site-packages build/     \
+	-p '/usr/bin/env python3'  \
+	-e manage.main             \
+	-o bloggulus.pyz
+
 .PHONY: static
 static: deps
 	./venv/bin/python manage.py collectstatic --no-input
 
 .PHONY: dist
-dist: deps static
-	./venv/bin/shiv            \
-	--compressed               \
-	-p '/usr/bin/env python3'  \
-	-o bloggulus.pyz           \
-	-e bloggulus.main:main     \
-	. -r requirements.txt
+dist: build static
+	rm -fr dist/
+	mkdir dist/
+	cp bloggulus.pyz dist/
+	cp -r static/ dist/
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus.pyz bloggulus/static/
+	rm -fr bloggulus.pyz build/ dist/ static/

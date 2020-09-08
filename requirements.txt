@@ -1,3 +1,2 @@
 django
-gunicorn
-whitenoise
+django-webserver[gunicorn]

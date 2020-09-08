@@ -3,6 +3,7 @@
 
 .PHONY: deps
 deps:
+	python3 -m venv venv/
 	./venv/bin/pip install -Uq wheel
 	./venv/bin/pip install -Uq shiv
 	./venv/bin/pip install -Uq -r requirements.txt

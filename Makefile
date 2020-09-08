@@ -24,6 +24,7 @@ build: deps
 	mkdir build/
 	./venv/bin/pip install -r requirements.txt --target build/
 	cp -r bloggulus/ build/
+	cp -r polls/ build/
 	cp manage.py build/
 	./venv/bin/shiv            \
 	--compressed               \

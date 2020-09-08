@@ -1,6 +1,12 @@
 .POSIX:
 .SUFFIXES:
 
+# References:
+# https://shiv.readthedocs.io/en/latest/django.html
+# https://lincolnloop.com/blog/single-file-python-django-deployments/
+# https://www.youtube.com/watch?v=Jzf8gTLN1To
+# https://www.youtube.com/watch?v=n2q1SxL4-mY
+
 .PHONY: deps
 deps:
 	python3 -m venv venv/

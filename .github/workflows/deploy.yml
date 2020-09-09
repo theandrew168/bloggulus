@@ -29,5 +29,4 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
-          /home/${{ secrets.BLOGGULUS_SSH_USER }}/bloggulus.pyz migrate
           sudo systemctl restart bloggulus

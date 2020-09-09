@@ -1,2 +1,3 @@
 django
+django-debug-toolbar
 django-webserver[gunicorn]

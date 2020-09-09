@@ -49,6 +49,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ['127.0.0.1']
+
 ROOT_URLCONF = 'bloggulus.urls'
 
 TEMPLATES = [
@@ -75,8 +80,12 @@ WSGI_APPLICATION = 'bloggulus.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('BLOGGULUS_DB_ENGINE') or 'django.db.backends.sqlite3',
+        'NAME': os.getenv('BLOGGULUS_DB_NAME') or BASE_DIR / 'db.sqlite3',
+        'USER': os.getenv('BLOGGULUS_DB_USERNAME') or '',
+        'PASSWORD': os.getenv('BLOGGULUS_DB_PASSWORD') or '',
+        'HOST': os.getenv('BLOGGULUS_DB_HOST') or '',
+        'PORT': os.getenv('BLOGGULUS_DB_PORT') or '',
     }
 }
 

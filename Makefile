@@ -33,7 +33,7 @@ build: deps
 
 .PHONY: static
 static: deps
-	./venv/bin/python manage.py collectstatic --no-input
+	./venv/bin/python manage.py collectstatic --noinput
 
 .PHONY: dist
 dist: build static

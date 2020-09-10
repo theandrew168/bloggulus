@@ -9,16 +9,16 @@
 
 <body>
 <main>
-{% if latest_entries %}
+{% if latest_posts %}
 	<ul>
-	{% for entry in lastest_entries %}
-		<li><a href="{{ entry.url }}">{{ entry.title }}</a></li>
+	{% for post in lastest_posts %}
+		<li><a href="{{ post.url }}">{{ post.title }}</a></li>
 	{% endfor %}
 	</ul>
 {% else %}
 	<section>
 		<blockquote>
-			"No recent entries."
+			"No recent posts."
 			<footer><i>- PostgreSQL</i></footer>
 		</blockquote>
 	</section>

@@ -10,7 +10,7 @@ class Feed(models.Model):
     updated = models.DateTimeField()
 
 
-class Entry(models.Model):
+class Post(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     url = models.URLField()

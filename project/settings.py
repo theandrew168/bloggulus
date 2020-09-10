@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_webserver',
-    'bloggulus.polls',
+    'bloggulus.polls.apps.PollsConfig',
 ]
 
 MIDDLEWARE = [

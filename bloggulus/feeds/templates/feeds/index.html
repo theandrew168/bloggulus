@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'feeds/minireset.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'feeds/mvp.css' %}" />
+</head>
+
+<body>
+<main>
+{% if latest_entries %}
+	<ul>
+	{% for entry in lastest_entries %}
+		<li><a href="{{ entry.url }}">{{ entry.title }}</a></li>
+	{% endfor %}
+	</ul>
+{% else %}
+	<section>
+		<blockquote>
+			"No recent entries."
+			<footer><i>- PostgreSQL</i></footer>
+		</blockquote>
+	</section>
+{% endif %}
+</main>
+</body>
+
+</html>

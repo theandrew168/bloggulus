@@ -3,3 +3,5 @@ include README.md
 graft docs
 graft bloggulus/polls/static
 graft bloggulus/polls/templates
+graft bloggulus/feeds/static
+graft bloggulus/feeds/templates

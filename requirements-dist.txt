@@ -1,0 +1,3 @@
+django
+django-webserver[gunicorn]
+psycopg2-binary

@@ -22,9 +22,9 @@ check: deps
 build: deps
 	rm -fr build/
 	mkdir build/
-	./venv/bin/pip install -r requirements.txt --target build/
-	cp -r bloggulus/ build/
-	cp -r polls/ build/
+	./venv/bin/pip install -r requirements-dist.txt --target build/
+	cp -r bloggulus build/
+	cp -r polls build/
 	cp manage.py build/
 	./venv/bin/shiv            \
 	--compressed               \
@@ -41,8 +41,8 @@ static: deps
 dist: build static
 	rm -fr dist/
 	mkdir dist/
-	cp bloggulus.pyz dist/
-	cp -r static/ dist/
+	mv bloggulus.pyz dist/
+	mv static dist/
 
 .PHONY: clean
 clean:

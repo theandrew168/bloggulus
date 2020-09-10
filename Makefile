@@ -22,7 +22,7 @@ check: deps
 build: deps
 	rm -fr build/
 	mkdir build/
-	./venv/bin/pip install -r requirements-dist.txt --target build/
+	./venv/bin/pip install -r requirements.txt --target build/
 	cp -r bloggulus build/
 	cp -r polls build/
 	cp manage.py build/

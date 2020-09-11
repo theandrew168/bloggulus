@@ -11,7 +11,7 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_posts'
 
     def get_queryset(self):
-        return Post.objects.order_by('-updated')[:10]
+        return Post.objects.order_by('-updated')[:20]
 
 
 class AddView(generic.TemplateView):
@@ -19,7 +19,7 @@ class AddView(generic.TemplateView):
 
 
 def process(request):
-    url = request.POST['feed_url']
+    url = request.POST['feed_url'].strip()
 
     d = feedparser.parse(url)
     feed = d['feed']

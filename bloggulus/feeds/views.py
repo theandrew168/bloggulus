@@ -19,7 +19,7 @@ class AddView(generic.TemplateView):
 
 
 def process(request):
-    url = request.POST['feed_url'].strip()
+    url = request.POST['feed'].strip()
 
     d = feedparser.parse(url)
     feed = d['feed']

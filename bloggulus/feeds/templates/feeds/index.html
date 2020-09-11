@@ -2,11 +2,12 @@
 
 {% block main %}
 	{% if latest_posts %}
-		<section>
+		<section class="container mx-auto">
 		{% for post in latest_posts %}
-			<aside>
-				<p><a href="{{ post.url }}">{{ post.title }}</a></p>
-			</aside>
+			<div class="bg-white rounded shodow border p-6 my-4">
+				<a class="text=3xl font-bold mb-4 mt-0" href="{{ post.url }}">{{ post.title }}</a>
+				<p class="text-gray-700 text-sm">{{ post.feed }}</p>
+			</div>
 		{% endfor %}
 		</section>
 	{% else %}

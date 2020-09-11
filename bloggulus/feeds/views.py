@@ -26,7 +26,6 @@ def process(request):
     posts = d['entries']
 
     title = feed['title']
-    author = feed['author']
     updated = feed['updated']
 
     try:
@@ -37,7 +36,7 @@ def process(request):
         print('skipping existing feed!')
         return HttpResponseRedirect(reverse('feeds:index'))
 
-    f = Feed(title=title, url=url, author=author, updated=updated)
+    f = Feed(title=title, url=url, updated=updated)
     f.save()
 
     for post in posts:

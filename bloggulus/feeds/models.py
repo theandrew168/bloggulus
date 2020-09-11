@@ -6,7 +6,6 @@ class Feed(models.Model):
     users = models.ManyToManyField(User, related_name='feeds')
     title = models.CharField(max_length=200)
     url = models.URLField()
-    author = models.CharField(max_length=200)
     updated = models.DateTimeField()
 
     def __str__(self):

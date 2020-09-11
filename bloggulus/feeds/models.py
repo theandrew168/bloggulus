@@ -9,9 +9,15 @@ class Feed(models.Model):
     author = models.CharField(max_length=200)
     updated = models.DateTimeField()
 
+    def __str__(self):
+        return self.title
+
 
 class Post(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     url = models.URLField()
     updated = models.DateTimeField()
+
+    def __str__(self):
+        return self.title

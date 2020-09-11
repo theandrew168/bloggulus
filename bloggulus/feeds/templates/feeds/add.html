@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'feeds/minireset.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'feeds/mvp.css' %}" />
+</head>
+
+<body>
+<main>
+	<section>
+		<form action="{% url 'feeds:process' %}" method="post">
+			{% csrf_token %}
+			<header>
+				<h2>Add Feed</h2>
+			</header>
+			<label for="feed_url">Feed URL:</label>
+			<input type="text" id="feed_url" name="feed_url" placeholder="Link to RSS feed" />
+			<button type="submit">Submit</button>
+		</form>
+	</section>
+</main>
+</body>
+
+</html>

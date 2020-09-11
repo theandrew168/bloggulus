@@ -10,11 +10,13 @@
 <body>
 <main>
 {% if latest_posts %}
-	<ul>
-	{% for post in lastest_posts %}
-		<li><a href="{{ post.url }}">{{ post.title }}</a></li>
+	<section>
+	{% for post in latest_posts %}
+		<aside>
+			<p><a href="{{ post.url }}">{{ post.title }}</a></p>
+		</aside>
 	{% endfor %}
-	</ul>
+	</section>
 {% else %}
 	<section>
 		<blockquote>

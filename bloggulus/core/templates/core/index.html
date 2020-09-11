@@ -1,0 +1,12 @@
+{% extends "core/base.html" %}
+
+{% block main %}
+	<h1>Welcome to Bloggulus!</h1>
+	<h2>It's better than Reddit</h2>
+
+	<ul>
+		<li><a href="{% url 'accounts:login' %}">Login</a></li>
+		<li><a href="{% url 'feeds:index' %}">Feeds</a></li>
+		<li><a href="{% url 'feeds:add' %}">Add Feed</a></li>
+	</ul>
+{% endblock %}

@@ -1,7 +1,9 @@
 include LICENSE
 include README.md
 graft docs
-graft bloggulus/polls/static
-graft bloggulus/polls/templates
+graft bloggulus/accounts/static
+graft bloggulus/accounts/templates
+graft bloggulus/core/static
+graft bloggulus/core/templates
 graft bloggulus/feeds/static
 graft bloggulus/feeds/templates

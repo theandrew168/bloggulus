@@ -1,11 +1,11 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('', include('bloggulus.feeds.urls')),
-    path('polls/', include('bloggulus.polls.urls')),
+    path('', include('bloggulus.core.urls')),
+    path('feeds/', include('bloggulus.feeds.urls')),
+    path('accounts/', include('bloggulus.accounts.urls')),
     path('admin/', admin.site.urls),
 ]
 

@@ -1,31 +1,20 @@
-<!DOCTYPE html>
-<html>
+{% extends "core/base.html" %}
 
-<head>
-	{% load static %}
-	<link rel="stylesheet" type="text/css" href="{% static 'feeds/minireset.css' %}" />
-	<link rel="stylesheet" type="text/css" href="{% static 'feeds/mvp.css' %}" />
-</head>
-
-<body>
-<main>
-{% if latest_posts %}
-	<section>
-	{% for post in latest_posts %}
-		<aside>
-			<p><a href="{{ post.url }}">{{ post.title }}</a></p>
-		</aside>
-	{% endfor %}
-	</section>
-{% else %}
-	<section>
-		<blockquote>
-			"No recent posts."
-			<footer><i>- PostgreSQL</i></footer>
-		</blockquote>
-	</section>
-{% endif %}
-</main>
-</body>
-
-</html>
+{% block main %}
+	{% if latest_posts %}
+		<section>
+		{% for post in latest_posts %}
+			<aside>
+				<p><a href="{{ post.url }}">{{ post.title }}</a></p>
+			</aside>
+		{% endfor %}
+		</section>
+	{% else %}
+		<section>
+			<blockquote>
+				"No recent posts."
+				<footer><i>- PostgreSQL</i></footer>
+			</blockquote>
+		</section>
+	{% endif %}
+{% endblock %}

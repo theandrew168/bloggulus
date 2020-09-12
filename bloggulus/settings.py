@@ -37,11 +37,12 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
+    ALLOWED_HOSTS.append('127.0.0.1')
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
     INTERNAL_IPS = ['127.0.0.1']
 
-ROOT_URLCONF = 'project.urls'
+ROOT_URLCONF = 'bloggulus.urls'
 
 TEMPLATES = [
     {
@@ -59,7 +60,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'project.wsgi.application'
+WSGI_APPLICATION = 'bloggulus.wsgi.application'
 
 
 # Database

@@ -22,7 +22,7 @@ check: deps
 build: deps
 	rm -fr build/ && mkdir build/
 	./venv/bin/pip install -q -r requirements.txt --target build/
-	./venv/bin/pip install -q . --target build/
+	cp -r bloggulus build/
 	cp manage.py build/
 	./venv/bin/shiv            \
 	--compressed               \

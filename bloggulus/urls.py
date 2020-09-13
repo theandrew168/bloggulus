@@ -4,8 +4,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('', include('bloggulus.core.urls')),
-    path('feeds/', include('bloggulus.feeds.urls')),
-    path('accounts/', include('bloggulus.accounts.urls')),
     path('admin/', admin.site.urls),
 ]
 

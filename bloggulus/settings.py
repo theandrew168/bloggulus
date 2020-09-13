@@ -22,8 +22,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_webserver',
     'bloggulus.core',
-    'bloggulus.feeds',
-    'bloggulus.accounts',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +94,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = 'feeds:index'
+LOGIN_REDIRECT_URL = 'core:index'
 
 
 # Internationalization

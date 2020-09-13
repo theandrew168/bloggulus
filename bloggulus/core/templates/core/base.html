@@ -20,7 +20,10 @@
 	<header class="flex justify-between items-center border-b-4 border-black py-4 px-6">
 		<a href="{% url 'core:index' %}" class="font-bold text-3xl">Bloggulus</a>
 		{% if user.is_authenticated %}
-			<a class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" href="{% url 'core:profile' %}">Profile</a>
+			<form method="post" action="{% url 'core:logout' %}">
+				{% csrf_token %}
+				<button type="submit" class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200">Logout</button>
+			</form>
 		{% else %}
 			<a class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" href="{% url 'core:login' %}">Login</a>
 		{% endif %}

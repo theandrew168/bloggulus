@@ -6,7 +6,7 @@ from .models import Feed, Post
 
 class IndexView(generic.ListView):
     template_name = 'core/index.html'
-    context_object_name = 'recent_posts'
+    context_object_name = 'posts'
 
     # TODO: different posts if user is logged in
     # grab only posts from the feeds they follow
@@ -16,6 +16,10 @@ class IndexView(generic.ListView):
 
 class LoginView(auth_views.LoginView):
     template_name = 'core/login.html'
+
+
+class LogoutView(auth_views.LogoutView):
+    pass
 
 
 class ProfileView(generic.TemplateView):

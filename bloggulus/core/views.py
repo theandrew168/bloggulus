@@ -83,7 +83,7 @@ class ProfileView(LoginRequiredMixin, generic.FormView):
         for post in posts:
             title = post.get('title')
             url = post.get('link')
-            published = datetime.fromtimestamp(mktime(post.get('published_parsed')))
+            updated = datetime.fromtimestamp(mktime(post.get('updated_parsed')))
 
             if not all([title, url, updated]):
                 continue

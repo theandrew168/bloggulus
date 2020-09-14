@@ -4,7 +4,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('', include('bloggulus.core.urls')),
-    path('admin/', admin.site.urls),
+    path('manage/', admin.site.urls),
 ]
 
 if settings.DEBUG:

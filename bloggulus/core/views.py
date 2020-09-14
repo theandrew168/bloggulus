@@ -1,6 +1,9 @@
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.views import generic
 
+from .forms import RSSFeedForm
 from .models import Feed, Post
 
 
@@ -22,8 +25,14 @@ class LogoutView(auth_views.LogoutView):
     pass
 
 
-class ProfileView(generic.TemplateView):
+class ProfileView(LoginRequiredMixin, generic.FormView):
     template_name = 'core/profile.html'
+    form_class = RSSFeedForm
+    success_url = reverse_lazy('core:index')
+
+    def form_valid(self, form):
+        form.add_feed()
+        return super().form_valid(form)
 
 
 class AboutView(generic.TemplateView):
@@ -36,34 +45,3 @@ class TermsView(generic.TemplateView):
 
 class PrivacyView(generic.TemplateView):
     template_name = 'core/privacy.html'
-
-
-# def process(request):
-#     url = request.POST['feed'].strip()
-# 
-#     d = feedparser.parse(url)
-#     feed = d['feed']
-#     posts = d['entries']
-# 
-#     title = feed['title']
-#     updated = feed['updated']
-# 
-#     try:
-#         existing = Feed.objects.get(url=url)
-#     except Feed.DoesNotExist:
-#         pass
-#     else:
-#         print('skipping existing feed!')
-#         return HttpResponseRedirect(reverse('feeds:index'))
-# 
-#     f = Feed(title=title, url=url, updated=updated)
-#     f.save()
-# 
-#     for post in posts:
-#         title = post['title']
-#         url = post['link']
-#         updated = post['updated']
-#         p = Post(feed=f, title=title, url=url, updated=updated)
-#         p.save()
-# 
-#     return HttpResponseRedirect(reverse('feeds:index'))

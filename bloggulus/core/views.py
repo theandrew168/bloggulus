@@ -1,7 +1,13 @@
+from datetime import datetime
+from time import mktime
+
+from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views import generic
+import feedparser
 
 from .forms import RSSFeedForm
 from .models import Feed, Post
@@ -34,13 +40,57 @@ class LogoutView(auth_views.LogoutView):
     pass
 
 
+class RegisterView(generic.FormView):
+    template_name = 'core/register.html'
+    form_class = UserCreationForm
+    success_url = reverse_lazy('core:posts')
+
+    def form_valid(self, form):
+        form.save()
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password1']
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+        return super().form_valid(form)
+
+
+# TODO: would a CreateView or UpdateView be better here?
 class ProfileView(LoginRequiredMixin, generic.FormView):
     template_name = 'core/profile.html'
     form_class = RSSFeedForm
     success_url = reverse_lazy('core:posts')
 
     def form_valid(self, form):
-        form.add_feed()
+        url = form.cleaned_data['url']
+
+        d = feedparser.parse(url)
+        feed = d['feed']
+        posts = d['entries']
+
+        title = feed['title']
+        updated = datetime.fromtimestamp(mktime(feed['updated_parsed']))
+
+        # TODO: better to user .get() and catch DNE here?
+        f = Feed.objects.filter(url=url)
+        if f.exists():
+            f[0].users.add(self.request.user)
+            return super().form_valid(form)
+ 
+        f = Feed(title=title, url=url, updated=updated)
+        f.save()
+        f.users.add(self.request.user)
+
+        for post in posts:
+            title = post.get('title')
+            url = post.get('link')
+            published = datetime.fromtimestamp(mktime(post.get('published_parsed')))
+
+            if not all([title, url, updated]):
+                continue
+ 
+            p = Post(feed=f, title=title, url=url, updated=updated)
+            p.save()
+
         return super().form_valid(form)
 
 

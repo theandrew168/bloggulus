@@ -24,7 +24,7 @@
 				{% endfor %}
 				<div class="mb-6 pt-3 rounded border-2 bg-gray-200 {% if form.url.errors %} border-red-700 {% else %} border-black {% endif %}">
 					<label class="block text-gray-700 text-sm font-bold mb-2 ml-3" for="{{ form.url.id_for_label }}">{{ form.url.label }}</label>
-					<input type="text" id="{{ form.url.id_for_label }}" name="{{ form.url.html_name }}" class="bg-gray-200 rounded w-full text-gray-700 focus:outline-none border-b-4 border-gray-300 focus:border-orange-400 transition duration-500 px-3 pb-3">
+					<input type="text" id="{{ form.url.id_for_label }}" name="{{ form.url.html_name }}" value="{{ form.url.value | default:'' }}" class="bg-gray-200 rounded w-full text-gray-700 focus:outline-none border-b-4 border-gray-300 focus:border-orange-400 transition duration-500 px-3 pb-3">
 				</div>
 
 				<button class="bg-orange-300 hover:bg-orange-400 font-bold py-2 rounded border-black border-2 transition duration-200" type="submit">Add Feed</button>

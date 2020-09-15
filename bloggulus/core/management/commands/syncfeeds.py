@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 updated = pytz.UTC.localize(updated)
     
                 # skip if required info isn't present
-                if not all([title, url, updated]):
+                if None in [title, url, updated]:
                     continue
 
                 # check if post exists (by URL) and create if not

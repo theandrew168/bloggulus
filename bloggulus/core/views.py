@@ -4,7 +4,9 @@ from time import mktime
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import redirect, render
+from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 import feedparser
 import pytz
@@ -16,7 +18,7 @@ from .models import Feed, Post
 @require_http_methods(['GET', 'HEAD'])
 def index(request):
     posts = Post.objects.order_by('-updated')[:20]
-    return render(request, 'core/posts.html', {'posts': posts})
+    return TemplateResponse(request, 'core/posts.html', {'posts': posts})
 
 
 @login_required
@@ -24,7 +26,7 @@ def index(request):
 def posts(request):
     feeds = Feed.objects.filter(users=request.user)
     posts = Post.objects.filter(feed__in=feeds).order_by('-updated')[:20]
-    return render(request, 'core/posts.html', {'posts': posts})
+    return TemplateResponse(request, 'core/posts.html', {'posts': posts})
 
 
 @require_http_methods(['GET', 'HEAD', 'POST'])
@@ -41,11 +43,11 @@ def register(request):
             user = authenticate(username=username, password=password)
             login(request, user)
 
-            return redirect('core:posts')
+            return HttpResponseRedirect(reverse('core:posts'))
     else:
         form = UserCreationForm()
 
-    return render(request, 'core/register.html', {'form': form})
+    return TemplateResponse(request, 'core/register.html', {'form': form})
 
 
 @login_required
@@ -68,7 +70,7 @@ def profile(request):
             f = Feed.objects.filter(url=url)
             if f.exists():
                 f[0].users.add(request.user)
-                return redirect('core:posts')
+                return HttpResponseRedirect(reverse('core:posts'))
  
             f = Feed(title=title, url=url, updated=updated)
             f.save()
@@ -87,23 +89,23 @@ def profile(request):
                 p = Post(feed=f, title=title, url=url, updated=updated)
                 p.save()
 
-        return redirect('core:posts')
+        return HttpResponseRedirect(reverse('core:posts'))
     else:
         form = RSSFeedForm()
 
-    return render(request, 'core/profile.html', {'form': form})
+    return TemplateResponse(request, 'core/profile.html', {'form': form})
             
 
 @require_http_methods(['GET', 'HEAD'])
 def about(request):
-    return render(request, 'core/about.html')
+    return TemplateResponse(request, 'core/about.html')
 
 
 @require_http_methods(['GET', 'HEAD'])
 def terms(request):
-    return render(request, 'core/terms.html')
+    return TemplateResponse(request, 'core/terms.html')
 
 
 @require_http_methods(['GET', 'HEAD'])
 def privacy(request):
-    return render(request, 'core/privacy.html')
+    return TemplateResponse(request, 'core/privacy.html')

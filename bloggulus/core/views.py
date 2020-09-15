@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views import generic
 import feedparser
+import pytz
 
 from .forms import RSSFeedForm
 from .models import Feed, Post
@@ -69,6 +70,7 @@ class ProfileView(LoginRequiredMixin, generic.FormView):
 
         title = feed['title']
         updated = datetime.fromtimestamp(mktime(feed['updated_parsed']))
+        updated = pytz.UTC.localize(updated)
 
         # TODO: better to user .get() and catch DNE here?
         f = Feed.objects.filter(url=url)
@@ -84,6 +86,7 @@ class ProfileView(LoginRequiredMixin, generic.FormView):
             title = post.get('title')
             url = post.get('link')
             updated = datetime.fromtimestamp(mktime(post.get('updated_parsed')))
+            updated = pytz.UTC.localize(updated)
 
             if not all([title, url, updated]):
                 continue

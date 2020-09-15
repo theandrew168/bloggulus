@@ -3,3 +3,4 @@ django-debug-toolbar
 django-webserver[gunicorn]
 feedparser
 psycopg2-binary
+pytz

@@ -85,7 +85,7 @@ def sync_feeds():
 
 @app.route('/')
 def index():
-    posts = Post.select().order_by(Post.updated.desc())
+    posts = Post.select().order_by(Post.updated.desc())[:20]
     return render_template('index.html', posts=posts)
 
 

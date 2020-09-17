@@ -9,7 +9,7 @@ import time
 import bleach
 import feedparser
 from flask import Flask, render_template
-from peewee import Model, SqliteDatabase
+from peewee import Model
 from peewee import CharField, DateTimeField, ForeignKeyField, TextField
 from playhouse.sqlite_ext import FTSModel, SqliteExtDatabase
 from playhouse.sqlite_ext import SearchField
@@ -28,7 +28,7 @@ pragmas = {
     'cache_size': -64 * 1024,  # 64MB cache
     'foreign_keys': 1,  # enforce foreign-key constraints
     'ignore_check_constraints': 0,  # enforce CHECK constraints
-    'synchronous': 0,  # let OS handle file syncing (!!! use with caution !!!)
+#    'synchronous': 0,  # let OS handle file syncing (!!! use with caution !!!)
 }
 database = SqliteExtDatabase(DATABASE, autoconnect=False, pragmas=pragmas)
 

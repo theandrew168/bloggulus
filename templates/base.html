@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700">
+	<style>
+		.font {
+			font-family: 'Source Sans Pro', sans-serif;
+		}
+	</style>
+	<title>Bloggulus</title>
+</head>
+
+<body class="min-h-screen bg-orange-100 flex flex-col container mx-auto leading-normal tracking-normal font">
+
+	<!-- nav bar -->
+	<header class="flex justify-between items-center border-b-4 border-black py-4 px-6">
+			<a href="{{ url_for('index') }}" class="font-bold text-3xl">Bloggulus</a>
+			<a class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" href="{{ url_for('index') }}">Search</a>
+	</header>
+
+	<!-- main content -->
+	<main class="flex-grow p-8">
+		{% block main %}{% endblock %}
+	</main>
+
+	<!-- footer -->
+	<footer class="text-gray-600 text-md text-center p-4">
+		<span class="mx-2">&copy; 2020 Shallow Brook Software</span>
+	</footer>
+
+	<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

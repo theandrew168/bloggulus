@@ -1,5 +1,5 @@
 # bloggulus
-RSS aggregator powered by [Django](https://www.djangoproject.com/)
+RSS aggregator powered by Python, Flask, and SQLite
 
 ## Building
 Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html):
@@ -15,5 +15,5 @@ pip install -r requirements.txt
 
 Run the development server:
 ```
-python manage.py runserver
+FLASK_ENV=development flask run
 ```

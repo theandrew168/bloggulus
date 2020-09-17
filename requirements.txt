@@ -1,6 +1,4 @@
-django
-django-debug-toolbar
-django-webserver[gunicorn]
 feedparser
-psycopg2-binary
-pytz
+flask
+gunicorn
+peewee

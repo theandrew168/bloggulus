@@ -1,5 +1,4 @@
-{% extends "core/base.html" %}
-{% load static %}
+{% extends "base.html" %}
 
 {% block main %}
 
@@ -8,12 +7,11 @@
 	{% for post in posts %}
 		<div class="border-2 border-black rounded p-4 my-2">
 			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{ post.url }}">{{ post.title }}</a>
-			<p class="text-sm text-gray-700">{{ post.feed.title }} - {{ post.updated | date:"M j, Y" }}</p>
+			<p class="text-sm text-gray-700">{{ post.feed.title }} - {{ post.updated }}</p>
 		</div>
 	{% endfor %}
 	</div>
 {% else %}
 	<p class="text-center text-xl">No recent posts.</p>
-	<p class="text-center text-lg text-gray-600">Trying adding some feeds to your <a class="underline hover:text-gray-800" href="{% url 'core:profile' %}">profile</a>!</p>
 {% endif %}
 {% endblock %}

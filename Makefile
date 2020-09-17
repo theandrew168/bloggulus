@@ -1,46 +1,42 @@
 .POSIX:
 .SUFFIXES:
 
-# References:
-# https://shiv.readthedocs.io/en/latest/django.html
-# https://lincolnloop.com/blog/single-file-python-django-deployments/
-# https://www.youtube.com/watch?v=Jzf8gTLN1To
-# https://www.youtube.com/watch?v=n2q1SxL4-mY
+.PHONY: default
+default: run
 
 .PHONY: deps
 deps:
 	python3 -m venv venv/
 	./venv/bin/pip install -Uq wheel
-	./venv/bin/pip install -Uq shiv
 	./venv/bin/pip install -Uq -r requirements.txt
+
+.PHONY: run
+run: deps
+	FLASK_ENV=development ./venv/bin/flask run
 
 .PHONY: check
 check: deps
-	./venv/bin/python manage.py test
+	true
 
 .PHONY: build
 build: deps
 	rm -fr build/ && mkdir build/
 	./venv/bin/pip install -q -r requirements.txt --target build/
-	cp -r bloggulus build/
-	cp manage.py build/
-	./venv/bin/shiv            \
-	--compressed               \
-	--site-packages build/     \
-	-p '/usr/bin/env python3'  \
-	-e manage.main             \
-	-o bloggulus.pyz
-
-.PHONY: static
-static: deps
-	./venv/bin/python manage.py collectstatic --noinput
+	cp app.py build/
+	python3 -m zipapp                  \
+	  --compress                       \
+	  --main "app:main"                \
+	  --output "bloggulus.pyz"         \
+	  --python "/usr/bin/env python3"  \
+	  build/
 
 .PHONY: dist
-dist: build static
+dist: build
 	rm -fr dist/ && mkdir dist/
-	mv bloggulus.pyz dist/
-	mv static dist/
+	cp bloggulus.pyz dist/
+	cp -r static dist/
+	cp -r templates dist/
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus.pyz build/ dist/ static/
+	rm -fr bloggulus.pyz build/ dist/

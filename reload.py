@@ -29,7 +29,7 @@ feeds = [
     'https://hookrace.net/blog/feed/',
     'http://peter.michaux.ca/feed/atom.xml',
     'http://jakob.space/feed.xml',
-    'https://fasterthanli.me/index.xml',
+#    'https://fasterthanli.me/index.xml',  # borked
     'https://blog.regehr.org/feed',
 #    'http://www.wilfred.me.uk/rss.xml',  # manual fetches AND no dates :(
     'https://maryrosecook.com/blog/feed.xml',
@@ -38,8 +38,8 @@ feeds = [
     'https://euandre.org/feed.blog.en.atom',
 ]
 
-for feed in feeds:
-    print('FEED', feed)
-    app.add_feed(feed)
+#for feed in feeds:
+#    print('FEED', feed)
+#    app.add_feed(feed)
 
 app.sync_feeds()

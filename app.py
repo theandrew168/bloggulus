@@ -125,10 +125,18 @@ def sync_feeds():
 
                 updated = post.get('updated_parsed')
                 if updated is None:
-                    updated = datetime.utcnow()
-                else:
-                    updated = datetime.fromtimestamp(time.mktime(updated))
+                    print(' no updated date, skipping...')
+                    continue
 
+                updated = datetime.fromtimestamp(time.mktime(updated))
+
+                # continue early if post already exists
+                p = Post.get_or_none(feed=feed, url=url)
+                if p is not None and updated <= p.updated:
+                    print('  exists')
+                    continue
+
+                # grab contend from feed, fallback to manual fetch
                 content = post.get('content')
                 if content is None:
                     print(' no content, fetching manually...')
@@ -144,16 +152,14 @@ def sync_feeds():
                 # strip any HTML from the content
                 content = strip_tags(content)
 
-                p = Post.get_or_none(feed=feed, url=url)
                 if p is None:
                     p = Post.create(feed=feed, url=url, title=title, updated=updated, content=content)
                     print('  create')
-                elif updated > p.updated:
+                else:
                     p.update(title=title, updated=updated, content=content)
                     print('  update')
-                else:
-                    print('  exists')
 
+        # refresh the FTS indexes
         PostContent.rebuild()
         PostContent.optimize()
 

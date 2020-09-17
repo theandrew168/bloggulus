@@ -5,6 +5,7 @@ from io import StringIO
 import os
 import sys
 import time
+from urllib.request import urlopen
 
 import feedparser
 from flask import Flask, render_template, request
@@ -12,7 +13,6 @@ from peewee import Model
 from peewee import CharField, DateTimeField, ForeignKeyField, TextField
 from playhouse.sqlite_ext import FTSModel, SqliteExtDatabase
 from playhouse.sqlite_ext import SearchField
-import pytz
 
 
 DATABASE = os.getenv('BLOGGULUS_DATABASE') or 'bloggulus.sqlite3'
@@ -96,17 +96,21 @@ def add_feed(url):
         feed = d['feed']
 
         title = feed['title']
-        updated = feed['updated_parsed']
-        updated = datetime.fromtimestamp(time.mktime(updated))
-        updated = pytz.utc.localize(updated)
+        updated = feed.get('updated_parsed')
+        if updated is None:
+            updated = datetime.utcnow()
+        else:
+            updated = datetime.fromtimestamp(time.mktime(updated))
 
         print(url, title, updated)
         f = Feed.get_or_none(url=url)
         if f is None:
             f = Feed.create(url=url, title=title, updated=updated)
-            print('  created')
-        else:
+            print('  create')
+        elif updated > f.updated:
             f.update(title=title, updated=updated).execute()
+            print('  update')
+        else:
             print('  exists')
 
 def sync_feeds():
@@ -117,20 +121,37 @@ def sync_feeds():
             for post in posts:
                 url = post['link']
                 title = post['title']
-                updated = post['updated_parsed']
-                updated = datetime.fromtimestamp(time.mktime(updated))
-                updated = pytz.utc.localize(updated)
-                content = post['content']
-                content = content[0]['value']
+                print(feed.title, '-', title)
+
+                updated = post.get('updated_parsed')
+                if updated is None:
+                    updated = datetime.utcnow()
+                else:
+                    updated = datetime.fromtimestamp(time.mktime(updated))
+
+                content = post.get('content')
+                if content is None:
+                    print(' no content, fetching manually...')
+                    try:
+                        with urlopen(url) as resp:
+                            content = resp.read().decode()
+                    except:
+                        print('  manual fetch failed, too... RIP')
+                        continue
+                else:
+                    content = content[0]['value']
+
+                # strip any HTML from the content
                 content = strip_tags(content)
 
-                print(url, title, updated)
                 p = Post.get_or_none(feed=feed, url=url)
                 if p is None:
                     p = Post.create(feed=feed, url=url, title=title, updated=updated, content=content)
-                    print('  created')
-                else:
+                    print('  create')
+                elif updated > p.updated:
                     p.update(title=title, updated=updated, content=content)
+                    print('  update')
+                else:
                     print('  exists')
 
         PostContent.rebuild()
@@ -156,9 +177,9 @@ def search_posts(text):
 def index():
     search_text = request.args.get('q')
     if search_text:
-        posts = search_posts(search_text)
+        posts = search_posts(search_text)[:25]
     else:
-        posts = Post.select().order_by(Post.updated.desc())[:20]
+        posts = Post.select().order_by(Post.updated.desc())[:25]
 
     return render_template('index.html', posts=posts)
 

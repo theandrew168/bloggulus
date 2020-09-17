@@ -1,11 +1,14 @@
+from datetime import datetime
 from functools import wraps
 import os
 import sys
+import time
 
 import feedparser
 from flask import Flask, render_template
 from peewee import Model, SqliteDatabase
 from peewee import CharField, DateTimeField, ForeignKeyField
+import pytz
 
 
 DATABASE = os.getenv('BLOGGULUS_DATABASE') or 'bloggulus.sqlite3'
@@ -40,15 +43,44 @@ class BaseModel(Model):
         database = database
 
 class Feed(BaseModel):
-    title = CharField()
     url = CharField(unique=True)
+    title = CharField()
     updated = DateTimeField()
 
 class Post(BaseModel):
     feed = ForeignKeyField(Feed, backref='posts')
-    title = CharField()
     url = CharField(unique=True)
+    title = CharField()
     updated = DateTimeField()
+
+
+def add_feed(url):
+    with database:
+        d = feedparser.parse(url)
+        feed = d['feed']
+
+        title = feed['title']
+        updated = feed['updated_parsed']
+        updated = datetime.fromtimestamp(time.mktime(updated))
+        updated = pytz.utc.localize(updated)
+
+        print(url, title, updated)
+        Feed.get_or_create(url=url, defaults={'title': title, 'updated': updated})
+
+def sync_feeds():
+    with database:
+        for feed in Feed.select():
+            d = feedparser.parse(feed.url)
+            posts = d['entries']
+            for post in posts:
+                url = post['link']
+                title = post['title']
+                updated = post['updated_parsed']
+                updated = datetime.fromtimestamp(time.mktime(updated))
+                updated = pytz.utc.localize(updated)
+
+                print(url, title, updated)
+                Post.get_or_create(feed=feed, url=url, defaults={'title': title, 'updated': updated})
 
 
 @app.route('/')
@@ -63,7 +95,7 @@ with database:
 
 def main():
     # CLI usage and help
-    usage = 'usage: {} {{gunicorn,syncfeeds}} [extra_args]'.format(sys.argv[0])
+    usage = 'usage: {} {{gunicorn,addfeed,syncfeeds}} [extra_args]'.format(sys.argv[0])
     if '-h' in sys.argv or '--help' in sys.argv:
         raise SystemExit(usage)
 
@@ -76,9 +108,11 @@ def main():
         from gunicorn.app import wsgiapp
         sys.argv[1] = 'app:app'  # swap 'gunicorn' in argv for the WSGI app name
         wsgiapp.run()
+    elif sys.argv[1] == 'addfeed':
+        url = sys.argv[2]
+        add_feed(url)
     elif sys.argv[1] == 'syncfeeds':
-        import feedparser
-        print('sync feeds with feedparser')
+        sync_feeds()
     else:
         raise SystemExit(usage)
 

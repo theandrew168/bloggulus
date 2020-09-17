@@ -2,3 +2,4 @@ feedparser
 flask
 gunicorn
 peewee
+pytz

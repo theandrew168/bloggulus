@@ -1,3 +1,4 @@
+*.sqlite3
 *.pyz
 build/
 dist/

@@ -6,7 +6,6 @@ import os
 import sys
 import time
 
-import bleach
 import feedparser
 from flask import Flask, render_template, request
 from peewee import Model

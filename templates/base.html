@@ -19,7 +19,10 @@
 	<!-- nav bar -->
 	<header class="flex justify-between items-center border-b-4 border-black py-4 px-6">
 			<a href="{{ url_for('index') }}" class="font-bold text-3xl">Bloggulus</a>
-			<a class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" href="{{ url_for('index') }}">Search</a>
+			<form action="{{ url_for('index') }}" method="GET">
+				<input type="text" name="q" />
+				<button class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" type="submit">Search</button>
+			</form>
 	</header>
 
 	<!-- main content -->

@@ -8,7 +8,7 @@ import time
 
 import bleach
 import feedparser
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from peewee import Model
 from peewee import CharField, DateTimeField, ForeignKeyField, TextField
 from playhouse.sqlite_ext import FTSModel, SqliteExtDatabase
@@ -155,7 +155,12 @@ def search_posts(text):
 
 @app.route('/')
 def index():
-    posts = Post.select().order_by(Post.updated.desc())[:20]
+    search_text = request.args.get('q')
+    if search_text:
+        posts = search_posts(search_text)
+    else:
+        posts = Post.select().order_by(Post.updated.desc())[:20]
+
     return render_template('index.html', posts=posts)
 
 

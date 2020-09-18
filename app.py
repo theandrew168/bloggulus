@@ -187,7 +187,8 @@ def index():
     else:
         posts = Post.select().order_by(Post.updated.desc())[:25]
 
-    return render_template('index.html', posts=posts)
+    search = search_text or ''
+    return render_template('index.html', posts=posts, search=search)
 
 
 # ensure the database and its tables exist

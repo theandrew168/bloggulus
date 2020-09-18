@@ -17,12 +17,12 @@
 <body class="min-h-screen bg-orange-100 flex flex-col container mx-auto leading-normal tracking-normal font">
 
 	<!-- nav bar -->
-	<header class="flex justify-between items-center border-b-4 border-black py-4 px-6">
-			<a href="{{ url_for('index') }}" class="font-bold text-3xl">Bloggulus</a>
-			<form action="{{ url_for('index') }}" method="GET">
-				<input type="text" name="q" />
-				<button class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" type="submit">Search</button>
-			</form>
+	<header class="flex flex-col md:flex-row md:justify-between items-center border-b-4 border-black py-4 px-6">
+		<a href="{{ url_for('index') }}" class="font-bold text-3xl mb-4 md:mb-0">Bloggulus</a>
+		<form action="{{ url_for('index') }}" method="GET">
+			<input class="bg-gray-200 text-gray-700 py-2 pl-3 border-black border-2 rounded focus:outline-none" type="text" name="q" value="{{ search }}" />
+			<button class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-4 transition duration-200" type="submit">Search</button>
+		</form>
 	</header>
 
 	<!-- main content -->

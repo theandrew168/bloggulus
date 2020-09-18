@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from html.parser import HTMLParser
 from io import StringIO
@@ -125,14 +125,13 @@ def sync_feeds():
 
                 updated = post.get('updated_parsed')
                 if updated is None:
-                    print(' no updated date, skipping...')
-                    continue
-
-                updated = datetime.fromtimestamp(time.mktime(updated))
+                    updated = datetime.utcnow() - timedelta(days=30)
+                else:
+                    updated = datetime.fromtimestamp(time.mktime(updated))
 
                 # continue early if post already exists
                 p = Post.get_or_none(feed=feed, url=url)
-                if p is not None and updated <= p.updated:
+                if p is not None:
                     print('  exists')
                     continue
 

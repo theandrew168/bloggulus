@@ -5,8 +5,10 @@ from io import StringIO
 import os
 import sys
 import time
+from urllib.parse import quote_plus
 from urllib.request import urlopen
 
+import bleach
 import feedparser
 from flask import Flask, render_template, request
 from peewee import Model
@@ -72,24 +74,6 @@ class PostContent(FTSModel):
         options = {'content': Post.content}
 
 
-# https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
-class MLStripper(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.reset()
-        self.strict = False
-        self.convert_charrefs = True
-        self.text = StringIO()
-    def handle_data(self, d):
-        self.text.write(d)
-    def get_data(self):
-        return self.text.getvalue()
-
-def strip_tags(html):
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
-
 def add_feed(url):
     with database:
         d = feedparser.parse(url)
@@ -149,7 +133,7 @@ def sync_feeds():
                     content = content[0]['value']
 
                 # strip any HTML from the content
-                content = strip_tags(content)
+                content = bleach.clean(content, strip=True, attributes={}, styles=[], tags=[])
 
                 if p is None:
                     p = Post.create(feed=feed, url=url, title=title, updated=updated, content=content)
@@ -175,19 +159,36 @@ def search_posts(text):
             .select()
             .join(PostContent, on=(Post.id == PostContent.docid))
             .where(PostContent.match(search))
-            .order_by(PostContent.rank()))  # could use bm25, bm25f, or lucene
+            .order_by(PostContent.bm25()))  # could use rank, bm25, bm25f, or lucene
 
 
 @app.route('/')
 def index():
     search_text = request.args.get('q')
-    if search_text:
-        posts = search_posts(search_text)[:25]
-    else:
-        posts = Post.select().order_by(Post.updated.desc())[:25]
-
     search = search_text or ''
-    return render_template('index.html', posts=posts, search=search)
+
+    search_param = quote_plus(search)
+
+    page = request.args.get('p', 1)
+    try:
+        page = int(page)
+    except:
+        pass
+
+    if search_text:
+        posts = search_posts(search_text)
+    else:
+        posts = Post.select().order_by(Post.updated.desc())
+
+    pages = posts.count() // 20 + 1
+    posts = posts.paginate(page, 20)
+
+    return render_template('index.html',
+        posts=posts,
+        search=search,
+        search_param=search_param,
+        page=page,
+        pages=pages)
 
 
 # ensure the database and its tables exist

@@ -14,4 +14,14 @@
 {% else %}
 	<p class="text-center text-xl">No posts found!</p>
 {% endif %}
+
+<div class="text-center my-8">
+{% if page > 1 %}
+	<a href="?q={{ search_param }}&p={{ page - 1 }}" class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-8 transition duration-200" type="submit">Prev</a>
+{% endif %}
+{% if page < pages %}
+	<a href="?q={{ search_param }}&p={{ page + 1 }}" class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-8 transition duration-200" type="submit">Next</a>
+{% endif %}
+</div>
+
 {% endblock %}

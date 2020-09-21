@@ -38,8 +38,8 @@ feeds = [
     'https://euandre.org/feed.blog.en.atom',
 ]
 
-#for feed in feeds:
-#    print('FEED', feed)
-#    app.add_feed(feed)
+for feed in feeds:
+    print('FEED', feed)
+    app.add_feed(feed)
 
 app.sync_feeds()

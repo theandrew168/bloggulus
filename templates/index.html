@@ -7,7 +7,7 @@
 	{% for post in posts %}
 		<div class="border-2 border-black rounded p-4 my-2">
 			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{ post.url }}">{{ post.title }}</a>
-			<p class="text-sm text-gray-700">{{ post.feed.title }} - {{ post.updated }}</p>
+			<p class="text-sm text-gray-700">{{ post.feed.title }} - {{ post.updated | pretty_date }}</p>
 		</div>
 	{% endfor %}
 	</div>

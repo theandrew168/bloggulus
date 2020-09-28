@@ -11,7 +11,7 @@
 			font-family: 'Source Sans Pro', sans-serif;
 		}
 	</style>
-	<title>Bloggulus</title>
+	<title>{% block title %}{% endblock %}Bloggulus</title>
 </head>
 
 <body class="min-h-screen bg-orange-100 flex flex-col container mx-auto leading-normal tracking-normal font">
@@ -33,6 +33,8 @@
 	<!-- footer -->
 	<footer class="text-gray-600 text-md text-center p-4">
 		<span class="mx-2">&copy; 2020 Shallow Brook Software</span>
+		&bull;
+		<a class="mx-2 hover:text-gray-800" href="{{ url_for('about') }}">About</a>
 	</footer>
 
 	<script src="{{ url_for('static', filename='main.js') }}"></script>

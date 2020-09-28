@@ -43,6 +43,10 @@ def teardown_request(exc):
     if not database.is_closed():
         database.close()
 
+@app.template_filter('pretty_date')
+def pretty_date(date):
+    return date.strftime('%B %d, %Y')
+
 
 class BaseModel(Model):
     class Meta:
@@ -50,8 +54,8 @@ class BaseModel(Model):
 
 class Feed(BaseModel):
     url = CharField(unique=True)
+    site_url = CharField()
     title = CharField()
-    updated = DateTimeField()
 
     def __str__(self):
         return self.title
@@ -61,45 +65,42 @@ class Post(BaseModel):
     url = CharField(unique=True)
     title = CharField()
     updated = DateTimeField()
-    content = TextField()
 
     def __str__(self):
         return self.title
 
-class PostContent(FTSModel):
+class PostIndex(FTSModel):
+    feed = SearchField()
+    title = SearchField()
     content = SearchField()
 
     class Meta:
         database = database
-        options = {'content': Post.content}
 
 
-def add_feed(url):
+def add_feed(url, site_url):
     with database:
         d = feedparser.parse(url)
         feed = d['feed']
-
         title = feed['title']
-        updated = feed.get('updated_parsed')
-        if updated is None:
-            updated = datetime.utcnow()
-        else:
-            updated = datetime.fromtimestamp(time.mktime(updated))
 
-        print(url, title, updated)
+        print(url, title)
+
+        # exit early if feed already exists
         f = Feed.get_or_none(url=url)
-        if f is None:
-            f = Feed.create(url=url, title=title, updated=updated)
-            print('  create')
-        elif updated > f.updated:
-            f.update(title=title, updated=updated).execute()
-            print('  update')
-        else:
+        if f is not None:
             print('  exists')
+            return
+
+        Feed.create(url=url, site_url=site_url, title=title)
+        print('  create')
 
 def sync_feeds():
     with database:
-        for feed in Feed.select():
+        feeds = list(Feed.select())
+
+    for feed in feeds:
+        with database:
             d = feedparser.parse(feed.url)
             posts = d['entries']
             for post in posts:
@@ -109,6 +110,7 @@ def sync_feeds():
 
                 updated = post.get('updated_parsed')
                 if updated is None:
+                    # if no updated date, just set to 30 days ago
                     updated = datetime.utcnow() - timedelta(days=30)
                 else:
                     updated = datetime.fromtimestamp(time.mktime(updated))
@@ -135,16 +137,9 @@ def sync_feeds():
                 # strip any HTML from the content
                 content = bleach.clean(content, strip=True, attributes={}, styles=[], tags=[])
 
-                if p is None:
-                    p = Post.create(feed=feed, url=url, title=title, updated=updated, content=content)
-                    print('  create')
-                else:
-                    p.update(title=title, updated=updated, content=content)
-                    print('  update')
-
-        # refresh the FTS indexes
-        PostContent.rebuild()
-        PostContent.optimize()
+                p = Post.create(feed=feed, url=url, title=title, updated=updated)
+                PostIndex.create(docid=p.id, feed=feed.title, title=p.title, content=content)
+                print('  create')
 
 # http://charlesleifer.com/blog/saturday-morning-hacks-adding-full-text-search-to-the-flask-note-taking-app/
 def search_posts(text):
@@ -157,9 +152,9 @@ def search_posts(text):
 
     return (Post
             .select()
-            .join(PostContent, on=(Post.id == PostContent.docid))
-            .where(PostContent.match(search))
-            .order_by(PostContent.bm25()))  # could use rank, bm25, bm25f, or lucene
+            .join(PostIndex, on=(Post.id == PostIndex.docid))
+            .where(PostIndex.match(search))
+            .order_by(PostIndex.bm25()))  # could use rank, bm25, bm25f, or lucene
 
 
 @app.route('/')
@@ -190,10 +185,19 @@ def index():
         page=page,
         pages=pages)
 
+@app.route('/about')
+def about():
+    feeds = Feed.select().order_by(Feed.title)
+    return render_template('about.html', feeds=feeds)
+
+@app.route('/docs')
+def docs():
+    return render_template('docs.html')
+
 
 # ensure the database and its tables exist
 with database:
-    database.create_tables([Feed, Post, PostContent])
+    database.create_tables([Feed, Post, PostIndex])
 
 def main():
     # CLI usage and help
@@ -211,8 +215,11 @@ def main():
         sys.argv[1] = 'app:app'  # swap 'gunicorn' in argv for the WSGI app name
         wsgiapp.run()
     elif sys.argv[1] == 'addfeed':
+        if len(sys.argv) < 3:
+            raise SystemExit('addfeed: <url> <site_url>')
         url = sys.argv[2]
-        add_feed(url)
+        site_url = sys.argv[3]
+        add_feed(url, site_url)
     elif sys.argv[1] == 'syncfeeds':
         sync_feeds()
     else:

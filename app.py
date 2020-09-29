@@ -188,6 +188,7 @@ def index():
 @app.route('/about')
 def about():
     feeds = Feed.select().order_by(Feed.title)
+    feeds = sorted(feeds, key=lambda feed: feed.title.lower())
     return render_template('about.html', feeds=feeds)
 
 @app.route('/docs')

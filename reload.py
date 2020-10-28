@@ -32,8 +32,9 @@ feeds = [
     Feed('https://maryrosecook.com/blog/feed.xml', 'https://maryrosecook.com'),
     Feed('https://www.more-magic.net/feed.atom', 'https://www.more-magic.net'),
     Feed('https://jacobian.org/posts/index.xml', 'https://jacobian.org'),
-    Feed('https://euandre.org/feed.blog.en.atom', 'https://euandre.org'),
+#    Feed('https://euandre.org/feed.blog.en.atom', 'https://euandre.org'),
     Feed('http://www.aaronsw.com/2002/feeds/pgessays.rss', 'http://www.paulgraham.com'),
+    Feed('https://caseymuratori.com/blog_atom.rss', 'https://caseymuratori.com/'),
     Feed('https://shallowbrooksoftware.com/posts/index.xml', 'https://shallowbrooksoftware.com'),
 ]
 

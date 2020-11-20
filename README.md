@@ -1,6 +1,10 @@
 # bloggulus
 RSS aggregator powered by Python, Flask, and SQLite
 
+## Hosting
+Bloggulus is hosted on Digital Ocean:  
+https://bloggulus.com
+
 ## Building
 Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html):
 ```

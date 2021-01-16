@@ -35,6 +35,7 @@ feeds = [
     Feed('http://www.aaronsw.com/2002/feeds/pgessays.rss', 'http://www.paulgraham.com'),
     Feed('https://caseymuratori.com/blog_atom.rss', 'https://caseymuratori.com/'),
     Feed('https://shallowbrooksoftware.com/posts/index.xml', 'https://shallowbrooksoftware.com'),
+    Feed('https://www.bruceeckel.com/index.xml', 'https://www.bruceeckel.com'),
 ]
 
 for feed in feeds:

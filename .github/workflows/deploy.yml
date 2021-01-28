@@ -16,11 +16,14 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v2
     - name: Build project
-      run: go build -o bloggulus prod.go
+      run: |
+        export CGO_ENABLED=1
+        go build -o bloggulus --tags fts5 prod.go
     - name: Bundle project
       run: |
         mkdir dist/
         cp bloggulus dist/
+        cp -r migrations dist/
         cp -r templates dist/
 #    - uses: appleboy/scp-action@master
 #      with:

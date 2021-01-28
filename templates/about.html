@@ -1,9 +1,8 @@
-{% extends "base.html" %}
+{{template "base" .}}
 
-{% block title %}About - {% endblock %}
+{{define "title"}}About - {{end}}
 
-{% block main %}
-
+{{define "main"}}
 <h1 class="text-4xl">About</h1>
 <div class="m-4 text-lg">
 	<p>
@@ -47,17 +46,16 @@
 
 <h1 class="text-4xl">Followed Feeds</h1>
 <div class="m-4">
-	{% if feeds %}
+	{{if .Feeds}}
 		<ul>
-		{% for feed in feeds %}
+		{{range .Feeds}}
 			<li>
-				<a class="text-lg text-orange-600 hover:text-orange-800" href="{{ feed.site_url }}">{{ feed.title }}</a>
+				<a class="text-lg text-orange-600 hover:text-orange-800" href="{{.SiteURL }}">{{.Title}}</a>
 			</li>
-		{% endfor %}
+		{{end}}
 		</ul>
-	{% else %}
+	{{else}}
 		<p class="text-lg">No current feeds!</p>
-	{% endif %}
+	{{end}}
 </div>
-
-{% endblock %}
+{{end}}

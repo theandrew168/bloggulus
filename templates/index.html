@@ -1,27 +1,18 @@
-{% extends "base.html" %}
+{{template "base" .}}
 
-{% block main %}
+{{define "main"}}
 
-{% if posts %}
+{{if .Posts}}
 	<div class="flex flex-col">
-	{% for post in posts %}
+	{{range .Posts}}
 		<div class="border-2 border-black rounded p-4 my-2">
-			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{ post.url }}">{{ post.title }}</a>
-			<p class="text-sm text-gray-700">{{ post.feed.title }} - {{ post.updated | pretty_date }}</p>
+			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{.Url}}">{{.Title}}</a>
+			<p class="text-sm text-gray-700">{{.Feed.Title}} - {{.Updated}}</p>
 		</div>
-	{% endfor %}
+	{{end}}
 	</div>
-{% else %}
+{{else}}
 	<p class="text-center text-xl">No posts found!</p>
-{% endif %}
+{{end}}
 
-<div class="text-center my-8">
-{% if page > 1 %}
-	<a href="?q={{ search_param }}&p={{ page - 1 }}" class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-8 transition duration-200" type="submit">Prev</a>
-{% endif %}
-{% if page < pages %}
-	<a href="?q={{ search_param }}&p={{ page + 1 }}" class="bg-orange-300 hover:bg-orange-400 font-semibold border-black border-2 rounded py-2 px-8 transition duration-200" type="submit">Next</a>
-{% endif %}
-</div>
-
-{% endblock %}
+{{end}}

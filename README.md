@@ -5,5 +5,6 @@ Hosted at https://bloggulus.com.
 ## Usage
 Bloggulus can be ran locally via:
 ```
-go run main.go
+export CGO_ENABLED=1
+go run --tags fts5 main.go
 ```

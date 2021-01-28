@@ -1,0 +1,6 @@
+CREATE TABLE feed (
+    feed_id INTEGER PRIMARY KEY NOT NULL,
+    url TEXT UNIQUE NOT NULL,
+    site_url TEXT NOT NULL,
+    title TEXT NOT NULL
+)

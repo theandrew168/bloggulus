@@ -1,23 +1,9 @@
 # bloggulus
-RSS aggregator powered by Python, Flask, and SQLite
+Custom RSS aggregator and index powered by [Go](https://golang.org/), [SQLite](https://www.sqlite.org/index.html), and [FTS](https://www.sqlite.org/fts3.html).
+Hosted at https://bloggulus.com on [Digital Ocean](https://www.digitalocean.com/).
 
-## Hosting
-Bloggulus is hosted on Digital Ocean:  
-https://bloggulus.com
-
-## Building
-Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html):
+## Usage
+Bloggulus can be ran locally via:
 ```
-python3 -m venv venv/
-. ./venv/bin/activate
-```
-
-Download project depedencies:
-```
-pip install -r requirements.txt
-```
-
-Run the development server:
-```
-FLASK_ENV=development flask run
+go run main.go
 ```

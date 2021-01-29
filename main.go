@@ -2,15 +2,19 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/bmizerany/pat"
+	"github.com/mmcdole/gofeed"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -26,6 +30,29 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func (app *Application) AddFeed(url, siteUrl string) error {
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(url)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("  found feed: %s\n", feed.Title)
+
+	stmt := "INSERT INTO feed (url, site_url, title) VALUES (?, ?, ?)"
+	_, err = app.db.Exec(stmt, url, siteUrl, feed.Title)
+	if err != nil {
+		// move along if the feed is already here
+		if strings.Contains(err.Error(), "UNIQUE") {
+			fmt.Println("  feed already exists")
+			return nil
+		}
+		// else the error is something worth looking at
+		return err
+	}
+	return nil
 }
 
 func migrate(db *sql.DB, migrationsGlob string) error {
@@ -96,19 +123,21 @@ func migrate(db *sql.DB, migrationsGlob string) error {
 }
 
 func main() {
+	addr := flag.String("addr", "localhost:8080", "listen address")
+	addfeed := flag.Bool("addfeed", false, "-addfeed <url> <site_url>")
+	flag.Parse()
+
 	db, err := sql.Open("sqlite3", "bloggulus.sqlite3")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
+	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
-	err = migrate(db, "migrations/*.sql")
-	if err != nil {
+	if err = migrate(db, "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -121,11 +150,19 @@ func main() {
 		about: about,
 	}
 
+	if *addfeed {
+		fmt.Printf("adding feed: %s\n", os.Args[2])
+		err = app.AddFeed(os.Args[2], os.Args[3])
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	mux := pat.New()
 	mux.Get("/", http.HandlerFunc(app.HandleIndex))
 	mux.Get("/about", http.HandlerFunc(app.HandleAbout))
 
-	addr := "localhost:8080"
-	fmt.Printf("Listening on %s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	fmt.Printf("Listening on %s\n", *addr)
+	log.Fatal(http.ListenAndServe(*addr, mux))
 }

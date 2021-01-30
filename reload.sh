@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-go build -o bloggulus --tags "fts5" main.go
+go build -o bloggulus main.go
 ./bloggulus -addfeed http://lucumr.pocoo.org/feed.atom https://lucumr.pocoo.org
 ./bloggulus -addfeed https://eli.thegreenplace.net/feeds/all.atom.xml https://eli.thegreenplace.net
 ./bloggulus -addfeed https://eliasdaler.github.io/feed.xml https://eliasdaler.github.io

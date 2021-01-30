@@ -19,6 +19,27 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+type Blog struct {
+	BlogID  int
+	FeedURL string
+	SiteURL string
+	Title   string
+}
+
+type BlogStorage interface {
+	Create(feedURL, siteURL, title string) (*Blog, error)
+	Read(id int) (*Blog, error)
+	ReadAll() ([]*Blog, error)
+}
+
+type Post struct {
+	PostID  int
+	BlogID  int
+	URL     string
+	Title   string
+	Updated time.Time
+}
+
 type Application struct {
 	ctx   context.Context
 	db    *pgxpool.Pool
@@ -27,24 +48,116 @@ type Application struct {
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
+	query := `
+		SELECT
+			post.url,
+			post.title,
+			post.updated,
+			blog.title
+		FROM post
+		JOIN blog ON blog.blog_id = post.blog_id
+		ORDER BY post.updated DESC
+		LIMIT 20`
+	rows, err := app.db.Query(app.ctx, query)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
 
+	type tmplPost struct {
+		URL     string
+		Title   string
+		Updated time.Time
+		Blog    string
+	}
+
+	var posts []*tmplPost
+	for rows.Next() {
+		var post tmplPost
+		err = rows.Scan(&post.URL, &post.Title, &post.Updated, &post.Blog)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		posts = append(posts, &post)
+	}
+
+	data := struct{
+		Posts  []*tmplPost
+		Search string
+	}{
+		Posts:  posts,
+		Search: "lol foobar",
+	}
+
+	ts, err := template.ParseFiles("templates/index.html", "templates/base.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
+	query := "SELECT * FROM blog ORDER BY title ASC"
+	rows, err := app.db.Query(app.ctx, query)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
 
+	var blogs []*Blog
+	for rows.Next() {
+		var blog Blog
+		err = rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		blogs = append(blogs, &blog)
+	}
+
+	data := struct {
+		Blogs []*Blog
+		Search string
+	}{
+		Blogs:  blogs,
+		Search: "lol foobar",
+	}
+
+	ts, err := template.ParseFiles("templates/about.html", "templates/base.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
-func (app *Application) AddFeed(url string, siteUrl string) error {
+func (app *Application) AddBlog(feedURL string, siteURL string) error {
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
+	blog, err := fp.ParseURL(feedURL)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("  found feed: %s\n", feed.Title)
+	fmt.Printf("  found blog: %s\n", blog.Title)
 
-	stmt := "INSERT INTO feed (url, site_url, title) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING"
-	_, err = app.db.Exec(app.ctx, stmt, url, siteUrl, feed.Title)
+	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING"
+	_, err = app.db.Exec(app.ctx, stmt, feedURL, siteURL, blog.Title)
 	if err != nil {
 		return err
 	}
@@ -52,7 +165,7 @@ func (app *Application) AddFeed(url string, siteUrl string) error {
 	return nil
 }
 
-func (app *Application) syncPost(wg *sync.WaitGroup, feedId int, post *gofeed.Item) {
+func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.Item) {
 	defer wg.Done()
 
 	// use an old date if the post doesn't have one
@@ -63,59 +176,59 @@ func (app *Application) syncPost(wg *sync.WaitGroup, feedId int, post *gofeed.It
 		updated = time.Now().AddDate(0, -1, 0)
 	}
 
-	stmt := "INSERT INTO post (feed_id, url, title, updated) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
-	_, err := app.db.Exec(app.ctx, stmt, feedId, post.Link, post.Title, updated)
+	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
+	_, err := app.db.Exec(app.ctx, stmt, blogID, post.Link, post.Title, updated)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 }
 
-func (app *Application) syncFeed(wg *sync.WaitGroup, feedId int, url string) {
+func (app *Application) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
 	defer wg.Done()
 
-	fmt.Printf("checking feed: %s\n", url)
+	fmt.Printf("checking blog: %s\n", url)
 
-	// check if feed has been updated
+	// check if blog has been updated
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
+	blog, err := fp.ParseURL(url)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	// sync each post in parallel
-	for _, post := range feed.Items {
+	for _, post := range blog.Items {
 		fmt.Printf("updating post: %s\n", post.Title)
 		wg.Add(1)
-		go app.syncPost(wg, feedId, post)
+		go app.syncPost(wg, blogID, post)
 	}
 }
 
-func (app *Application) SyncFeeds() error {
-	// grab the current list of feeds
-	query := "SELECT feed_id, url FROM feed"
+func (app *Application) SyncBlogs() error {
+	// grab the current list of blogs
+	query := "SELECT blog_id, feed_url FROM blog"
 	rows, err := app.db.Query(app.ctx, query)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
-	// sync each feed in parallel
+	// sync each blog in parallel
 	var wg sync.WaitGroup
 	for rows.Next() {
-		var feedId int
+		var blogID int
 		var url string
-		err = rows.Scan(&feedId, &url)
+		err = rows.Scan(&blogID, &url)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		fmt.Printf("syncing feed: %s\n", url)
+		fmt.Printf("syncing blog: %s\n", url)
 
 		wg.Add(1)
-		go app.syncFeed(&wg, feedId, url)
+		go app.syncBlog(&wg, blogID, url)
 	}
 
 	wg.Wait()
@@ -191,8 +304,8 @@ func (app *Application) Migrate(migrationsGlob string) error {
 
 func main() {
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
-	addfeed := flag.Bool("addfeed", false, "-addfeed <url> <site_url>")
-	syncfeeds := flag.Bool("syncfeeds", false, "sync feeds with the database")
+	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
+	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
 	flag.Parse()
 
 	// ensure conn string env var exists
@@ -214,8 +327,8 @@ func main() {
 //	}
 
 	// load the necessary templates
-	index := template.Must(template.ParseFiles("templates/base.html", "templates/index.html"))
-	about := template.Must(template.ParseFiles("templates/base.html", "templates/about.html"))
+	index := template.Must(template.ParseFiles("templates/index.html", "templates/base.html"))
+	about := template.Must(template.ParseFiles("templates/about.html", "templates/base.html"))
 
 	app := &Application{
 		ctx:   ctx,
@@ -229,18 +342,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if *addfeed {
-		fmt.Printf("adding feed: %s\n", os.Args[2])
-		err = app.AddFeed(os.Args[2], os.Args[3])
+	if *addblog {
+		fmt.Printf("adding blog: %s\n", os.Args[2])
+		err = app.AddBlog(os.Args[2], os.Args[3])
 		if err != nil {
 			log.Fatal(err)
 		}
 		return
 	}
 
-	if *syncfeeds {
-		fmt.Printf("syncing feeds\n")
-		err = app.SyncFeeds()
+	if *syncblogs {
+		fmt.Printf("syncing blogs\n")
+		err = app.SyncBlogs()
 		if err != nil {
 			log.Fatal(err)
 		}

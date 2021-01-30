@@ -1,18 +1,18 @@
 {{template "base" .}}
 
-{{define "main"}}
+{{define "title"}}{{end}}
 
+{{define "main"}}
 {{if .Posts}}
 	<div class="flex flex-col">
 	{{range .Posts}}
 		<div class="border-2 border-black rounded p-4 my-2">
-			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{.Url}}">{{.Title}}</a>
-			<p class="text-sm text-gray-700">{{.Feed.Title}} - {{.Updated}}</p>
+			<a class="text-lg text-orange-600 hover:text-orange-800" href="{{.URL}}">{{.Title}}</a>
+			<p class="text-sm text-gray-700">{{.Blog}} - {{.Updated}}</p>
 		</div>
 	{{end}}
 	</div>
 {{else}}
 	<p class="text-center text-xl">No posts found!</p>
 {{end}}
-
 {{end}}

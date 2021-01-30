@@ -44,18 +44,18 @@
 	</p>
 </div>
 
-<h1 class="text-4xl">Followed Feeds</h1>
+<h1 class="text-4xl">Followed Blogs</h1>
 <div class="m-4">
-	{{if .Feeds}}
+	{{if .Blogs}}
 		<ul>
-		{{range .Feeds}}
+		{{range .Blogs}}
 			<li>
 				<a class="text-lg text-orange-600 hover:text-orange-800" href="{{.SiteURL }}">{{.Title}}</a>
 			</li>
 		{{end}}
 		</ul>
 	{{else}}
-		<p class="text-lg">No current feeds!</p>
+		<p class="text-lg">No current blogs!</p>
 	{{end}}
 </div>
 {{end}}

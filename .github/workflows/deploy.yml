@@ -17,8 +17,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Build project
       run: |
-        export CGO_ENABLED=1
-        go build -o bloggulus --tags fts5 main.go
+        go build -o bloggulus main.go
     - name: Bundle project
       run: |
         mkdir dist/

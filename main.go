@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"flag"
 	"fmt"
 	"html/template"
@@ -15,11 +15,12 @@ import (
 
 	"github.com/bmizerany/pat"
 	"github.com/mmcdole/gofeed"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Application struct {
-	db    *sql.DB
+	ctx   context.Context
+	db    *pgxpool.Pool
 	index *template.Template
 	about *template.Template
 }
@@ -41,8 +42,8 @@ func (app *Application) AddFeed(url, siteUrl string) error {
 
 	fmt.Printf("  found feed: %s\n", feed.Title)
 
-	stmt := "INSERT INTO feed (url, site_url, title) VALUES (?, ?, ?)"
-	_, err = app.db.Exec(stmt, url, siteUrl, feed.Title)
+	stmt := "INSERT INTO feed (url, site_url, title) VALUES ($1, $2, $3)"
+	_, err = app.db.Exec(app.ctx, stmt, url, siteUrl, feed.Title)
 	if err != nil {
 		// move along if the feed is already here
 		if strings.Contains(err.Error(), "UNIQUE") {
@@ -55,11 +56,11 @@ func (app *Application) AddFeed(url, siteUrl string) error {
 	return nil
 }
 
-func migrate(db *sql.DB, migrationsGlob string) error {
+func (app *Application) Migrate(migrationsGlob string) error {
 	// create migration table if it doesn't exist
-	_, err := db.Exec(`
+	_, err := app.db.Exec(app.ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
-			migration_id INTEGER PRIMARY KEY NOT NULL,
+			migration_id SERIAL PRIMARY KEY,
 			name TEXT UNIQUE NOT NULL
 		)`)
 	if err != nil {
@@ -67,7 +68,7 @@ func migrate(db *sql.DB, migrationsGlob string) error {
 	}
 
 	// get migrations that are already applied
-	rows, err := db.Query("SELECT name FROM migration")
+	rows, err := app.db.Query(app.ctx, "SELECT name FROM migration")
 	if err != nil {
 		return err
 	}
@@ -107,13 +108,13 @@ func migrate(db *sql.DB, migrationsGlob string) error {
 		if err != nil {
 			return err
 		}
-		_, err = db.Exec(string(sql))
+		_, err = app.db.Exec(app.ctx, string(sql))
 		if err != nil {
 			return err
 		}
 
 		// update migrations table
-		_, err = db.Exec("INSERT INTO migration (name) VALUES (?)", file)
+		_, err = app.db.Exec(app.ctx, "INSERT INTO migration (name) VALUES ($1)", file)
 		if err != nil {
 			return err
 		}
@@ -123,31 +124,42 @@ func migrate(db *sql.DB, migrationsGlob string) error {
 }
 
 func main() {
-	addr := flag.String("addr", "localhost:8080", "listen address")
+	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
 	addfeed := flag.Bool("addfeed", false, "-addfeed <url> <site_url>")
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", "bloggulus.sqlite3")
+	// ensure conn string env var exists
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("Missing required env var: DATABASE_URL")
+	}
+
+	// test a Connect and Ping now to verify DB connectivity
+	ctx := context.Background()
+	db, err := pgxpool.Connect(ctx, databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	if err = db.Ping(); err != nil {
-		log.Fatal(err)
-	}
+//	if err = db.Ping(ctx); err != nil {
+//		log.Fatal(err)
+//	}
 
-	if err = migrate(db, "migrations/*.sql"); err != nil {
-		log.Fatal(err)
-	}
-
+	// load the necessary templates
 	index := template.Must(template.ParseFiles("templates/base.html", "templates/index.html"))
 	about := template.Must(template.ParseFiles("templates/base.html", "templates/about.html"))
 
 	app := &Application{
+		ctx:   ctx,
 		db:    db,
 		index: index,
 		about: about,
+	}
+
+	// apply database migrations
+	if err = app.Migrate("migrations/*.sql"); err != nil {
+		log.Fatal(err)
 	}
 
 	if *addfeed {

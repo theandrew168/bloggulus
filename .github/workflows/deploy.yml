@@ -18,7 +18,7 @@ jobs:
     - name: Build project
       run: |
         export CGO_ENABLED=1
-        go build -o bloggulus --tags fts5 prod.go
+        go build -o bloggulus --tags fts5 main.go
     - name: Bundle project
       run: |
         mkdir dist/

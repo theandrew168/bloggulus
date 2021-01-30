@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -35,7 +34,7 @@ func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *Application) AddFeed(url, siteUrl string) error {
+func (app *Application) AddFeed(url string, siteUrl string) error {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {
@@ -44,17 +43,12 @@ func (app *Application) AddFeed(url, siteUrl string) error {
 
 	fmt.Printf("  found feed: %s\n", feed.Title)
 
-	stmt := "INSERT INTO feed (url, site_url, title) VALUES ($1, $2, $3)"
+	stmt := "INSERT INTO feed (url, site_url, title) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING"
 	_, err = app.db.Exec(app.ctx, stmt, url, siteUrl, feed.Title)
 	if err != nil {
-		// move along if the feed is already here
-		if strings.Contains(err.Error(), "UNIQUE") {
-			fmt.Println("  feed already exists")
-			return nil
-		}
-		// else the error is something worth looking at
 		return err
 	}
+
 	return nil
 }
 
@@ -62,18 +56,27 @@ func (app *Application) syncPost(wg *sync.WaitGroup, feedId int, post *gofeed.It
 	defer wg.Done()
 
 	// use an old date if the post doesn't have one
-	updated := post.UpdatedParsed
-	if updated == nil {
-		lastMonth := time.Now().AddDate(0, -1, 0)
-		updated = &lastMonth
+	var updated time.Time
+	if post.UpdatedParsed != nil {
+		updated = *post.UpdatedParsed
+	} else {
+		updated = time.Now().AddDate(0, -1, 0)
 	}
 
-	fmt.Println(post.Title)
+	stmt := "INSERT INTO post (feed_id, url, title, updated) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
+	_, err := app.db.Exec(app.ctx, stmt, feedId, post.Link, post.Title, updated)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 func (app *Application) syncFeed(wg *sync.WaitGroup, feedId int, url string) {
 	defer wg.Done()
 
+	fmt.Printf("checking feed: %s\n", url)
+
+	// check if feed has been updated
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {
@@ -83,6 +86,7 @@ func (app *Application) syncFeed(wg *sync.WaitGroup, feedId int, url string) {
 
 	// sync each post in parallel
 	for _, post := range feed.Items {
+		fmt.Printf("updating post: %s\n", post.Title)
 		wg.Add(1)
 		go app.syncPost(wg, feedId, post)
 	}
@@ -109,6 +113,7 @@ func (app *Application) SyncFeeds() error {
 		}
 
 		fmt.Printf("syncing feed: %s\n", url)
+
 		wg.Add(1)
 		go app.syncFeed(&wg, feedId, url)
 	}
@@ -116,7 +121,6 @@ func (app *Application) SyncFeeds() error {
 	wg.Wait()
 	return nil
 }
-
 
 func (app *Application) Migrate(migrationsGlob string) error {
 	// create migration table if it doesn't exist

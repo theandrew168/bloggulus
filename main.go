@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/bmizerany/pat"
 	"github.com/mmcdole/gofeed"
@@ -55,6 +57,66 @@ func (app *Application) AddFeed(url, siteUrl string) error {
 	}
 	return nil
 }
+
+func (app *Application) syncPost(wg *sync.WaitGroup, feedId int, post *gofeed.Item) {
+	defer wg.Done()
+
+	// use an old date if the post doesn't have one
+	updated := post.UpdatedParsed
+	if updated == nil {
+		lastMonth := time.Now().AddDate(0, -1, 0)
+		updated = &lastMonth
+	}
+
+	fmt.Println(post.Title)
+}
+
+func (app *Application) syncFeed(wg *sync.WaitGroup, feedId int, url string) {
+	defer wg.Done()
+
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(url)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// sync each post in parallel
+	for _, post := range feed.Items {
+		wg.Add(1)
+		go app.syncPost(wg, feedId, post)
+	}
+}
+
+func (app *Application) SyncFeeds() error {
+	// grab the current list of feeds
+	query := "SELECT feed_id, url FROM feed"
+	rows, err := app.db.Query(app.ctx, query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// sync each feed in parallel
+	var wg sync.WaitGroup
+	for rows.Next() {
+		var feedId int
+		var url string
+		err = rows.Scan(&feedId, &url)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		fmt.Printf("syncing feed: %s\n", url)
+		wg.Add(1)
+		go app.syncFeed(&wg, feedId, url)
+	}
+
+	wg.Wait()
+	return nil
+}
+
 
 func (app *Application) Migrate(migrationsGlob string) error {
 	// create migration table if it doesn't exist
@@ -126,6 +188,7 @@ func (app *Application) Migrate(migrationsGlob string) error {
 func main() {
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
 	addfeed := flag.Bool("addfeed", false, "-addfeed <url> <site_url>")
+	syncfeeds := flag.Bool("syncfeeds", false, "sync feeds with the database")
 	flag.Parse()
 
 	// ensure conn string env var exists
@@ -165,6 +228,15 @@ func main() {
 	if *addfeed {
 		fmt.Printf("adding feed: %s\n", os.Args[2])
 		err = app.AddFeed(os.Args[2], os.Args[3])
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
+	if *syncfeeds {
+		fmt.Printf("syncing feeds\n")
+		err = app.SyncFeeds()
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -238,6 +238,18 @@ func (app *Application) SyncBlogs() error {
 	return nil
 }
 
+func (app *Application) HourlySync() {
+	c := time.Tick(1 * time.Hour)
+	for {
+		<-c
+
+		err := app.SyncBlogs()
+		if err != nil {
+			log.Println(err)
+		}
+	}
+}
+
 func (app *Application) Migrate(migrationsGlob string) error {
 	// create migration table if it doesn't exist
 	_, err := app.db.Exec(app.ctx, `
@@ -410,6 +422,9 @@ func main() {
 			m.Cache = autocert.DirCache(dir)
 		}
 
+		// kick off hourly sync task
+		go app.HourlySync()
+
 		s := &http.Server{
 			Handler:      mux,
 			TLSConfig:    m.TLSConfig(),
@@ -421,6 +436,7 @@ func main() {
 		fmt.Println("Listening on 0.0.0.0:80 and 0.0.0.0:443")
 		s.ServeTLS(httpsListener, "", "")
 	} else {
+		// local development setup
 		fmt.Printf("Listening on %s\n", *addr)
 		log.Fatal(http.ListenAndServe(*addr, mux))
 	}

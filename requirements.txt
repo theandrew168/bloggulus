@@ -1,5 +1,0 @@
-bleach
-feedparser
-flask
-gunicorn
-peewee

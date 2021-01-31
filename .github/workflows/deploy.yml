@@ -24,18 +24,18 @@ jobs:
         cp bloggulus dist/
         cp -r migrations dist/
         cp -r templates dist/
-#    - uses: appleboy/scp-action@master
-#      with:
-#        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
-#        username: ${{ secrets.BLOGGULUS_SSH_USER }}
-#        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-#        source: dist/*
-#        strip_components: 1
-#        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
-#    - uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
-#        username: ${{ secrets.BLOGGULUS_SSH_USER }}
-#        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-#        script: |
-#          sudo systemctl restart bloggulus
+    - uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
+        username: ${{ secrets.BLOGGULUS_SSH_USER }}
+        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
+        source: dist/*
+        strip_components: 1
+        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
+    - uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
+        username: ${{ secrets.BLOGGULUS_SSH_USER }}
+        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
+        script: |
+          sudo systemctl restart bloggulus

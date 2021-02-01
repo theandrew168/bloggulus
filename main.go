@@ -60,7 +60,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		FROM post
 		JOIN blog ON blog.blog_id = post.blog_id
 		ORDER BY post.updated DESC
-		LIMIT 20`
+		LIMIT 30`
 	rows, err := app.db.Query(app.ctx, query)
 	if err != nil {
 		http.Error(w, err.Error(), 500)

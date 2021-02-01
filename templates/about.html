@@ -9,38 +9,9 @@
 		Bloggulus is a "meta blog" that aggregates numerous other blogs into a single location.
 		I built this primarily for my own use.
 		Previously, I had been using a Firefox extension (called Feeder) to track my blogs but I wanted something more personalized.
-		I also wanted an excuse to build something with Flask, SQLite, and Peewee.
-		This project started out based on the Django framework but I found that to be overkill.
-		Flask was able to provide exactly what I needed in terms of flexbility and minimalism.
-	</p>
-	<br />
-	<p>
-		Bloggulus is hosted on a small DigitalOcean droplet (the $5/month one).
-		The domain is registered through Google Domains and the TLS cert comes from Let's Encrypt.
 		Once an hour, an automated process checks each blog's RSS feed for new content.
-		All blog posts are stored and indexed in an FTS (full-text search) table for quick and easy searching.
-	</p>
-	<br />
-	<p>
 		By default, the Bloggulus home page shows all recent posts with the newest being located at the top.
 		All of the followed blogs feed into a single stream of posts.
-		The pagination links at the bottom of the page can be used to navigate forward and backward through long lists of results.
-	</p>
-</div>
-
-<h1 class="text-4xl">Searching</h1>
-<div class="m-4 text-lg">
-	<p>
-		The searching capabilities are powered by SQLite's FTS (full-text search) feature.
-		Additional information about the searching semantics can be found <a class="text-orange-600 hover:text-orange-800" href="https://www.sqlite.org/fts3.html#full_text_index_queries">here</a>.
-		Basic searches work as expected: searching for "python" will return posts with "python" in the title or content.
-		Searching for "python sqlite" will return posts that include information about both "python" and "sqlite".
-	</p>
-	<br />
-	<p>
-		If desired, you can be explicit about searching for terms in a post's title, content, or source feed name.
-		For example, the search "feed:graham startup" would return blogs written by Paul Graham that mention startups.
-		As another example, the search "feed:rachelbythebay snackwatch" would return posts that "Rachel by the Bay" wrote about her Snackwatch concept.
 	</p>
 </div>
 

@@ -25,6 +25,7 @@ jobs:
         cp -r migrations dist/
         cp -r static dist/
         cp -r templates dist/
+        tree dist/
 #    - uses: appleboy/scp-action@master
 #      with:
 #        host: ${{ secrets.BLOGGULUS_HOSTNAME }}

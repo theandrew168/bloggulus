@@ -16,7 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bmizerany/pat"
 	"github.com/mmcdole/gofeed"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/crypto/acme/autocert"
@@ -29,12 +28,6 @@ type Blog struct {
 	Title   string
 }
 
-type BlogStorage interface {
-	Create(feedURL, siteURL, title string) (*Blog, error)
-	Read(id int) (*Blog, error)
-	ReadAll() ([]*Blog, error)
-}
-
 type Post struct {
 	PostID  int
 	BlogID  int
@@ -43,107 +36,44 @@ type Post struct {
 	Updated time.Time
 }
 
+type BlogStorage interface {
+	CreateBlog(feedURL, siteURL, title string) (*Blog, error)
+	ReadBlog(blogID int) (*Blog, error)
+	ReadAllBlogs() ([]*Blog, error)
+	DeleteBlog(blogID int) error
+}
+
+type PostStorage interface {
+	CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error)
+	ReadPost(postID int) (*Post, error)
+	ReadAllPosts() ([]*Post, error)
+	ReadRecentPosts(n int) ([]*Post, error)
+	DeletePost(postID int) error
+}
+
+type BloggulusStorage interface {
+	BlogStorage
+	PostStorage
+}
+
+type postgresqlStorage struct {
+	ctx   context.Context
+	db    *pgxpool.Pool
+}
+
 type Application struct {
 	ctx   context.Context
 	db    *pgxpool.Pool
-	index *template.Template
-	about *template.Template
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	query := `
-		SELECT
-			post.url,
-			post.title,
-			post.updated,
-			blog.title
-		FROM post
-		JOIN blog ON blog.blog_id = post.blog_id
-		ORDER BY post.updated DESC
-		LIMIT 30`
-	rows, err := app.db.Query(app.ctx, query)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	defer rows.Close()
-
-	type tmplPost struct {
-		URL     string
-		Title   string
-		Updated time.Time
-		Blog    string
-	}
-
-	var posts []*tmplPost
-	for rows.Next() {
-		var post tmplPost
-		err = rows.Scan(&post.URL, &post.Title, &post.Updated, &post.Blog)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		posts = append(posts, &post)
-	}
-
-	data := struct{
-		Posts  []*tmplPost
-		Search string
-	}{
-		Posts:  posts,
-		Search: "lol foobar",
-	}
-
-	ts, err := template.ParseFiles("templates/index.html", "templates/base.html")
+	ts, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	err = ts.Execute(w, data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
-	query := "SELECT * FROM blog ORDER BY title ASC"
-	rows, err := app.db.Query(app.ctx, query)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	defer rows.Close()
-
-	var blogs []*Blog
-	for rows.Next() {
-		var blog Blog
-		err = rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		blogs = append(blogs, &blog)
-	}
-
-	data := struct {
-		Blogs []*Blog
-		Search string
-	}{
-		Blogs:  blogs,
-		Search: "lol foobar",
-	}
-
-	ts, err := template.ParseFiles("templates/about.html", "templates/base.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	err = ts.Execute(w, data)
+	err = ts.Execute(w, nil)
 	if err != nil {
 		log.Println(err)
 		return
@@ -341,15 +271,9 @@ func main() {
 //		log.Fatal(err)
 //	}
 
-	// load the necessary templates
-	index := template.Must(template.ParseFiles("templates/index.html", "templates/base.html"))
-	about := template.Must(template.ParseFiles("templates/about.html", "templates/base.html"))
-
 	app := &Application{
 		ctx:   ctx,
 		db:    db,
-		index: index,
-		about: about,
 	}
 
 	// apply database migrations
@@ -375,9 +299,9 @@ func main() {
 		return
 	}
 
-	mux := pat.New()
-	mux.Get("/", http.HandlerFunc(app.HandleIndex))
-	mux.Get("/about", http.HandlerFunc(app.HandleAbout))
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// check if running via systemd
 	if os.Getenv("LISTEN_PID") == strconv.Itoa(os.Getpid()) {

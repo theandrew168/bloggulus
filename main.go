@@ -36,29 +36,109 @@ type Post struct {
 	Updated time.Time
 }
 
-type BlogStorage interface {
-	CreateBlog(feedURL, siteURL, title string) (*Blog, error)
-	ReadBlog(blogID int) (*Blog, error)
-	ReadAllBlogs() ([]*Blog, error)
-	DeleteBlog(blogID int) error
-}
-
-type PostStorage interface {
-	CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error)
-	ReadPost(postID int) (*Post, error)
-	ReadAllPosts() ([]*Post, error)
-	ReadRecentPosts(n int) ([]*Post, error)
-	DeletePost(postID int) error
-}
-
 type BloggulusStorage interface {
-	BlogStorage
-	PostStorage
+	CreateBlog(feedURL, siteURL, title string) (*Blog, error)
+	ReadAllBlogs() ([]*Blog, error)
+
+	CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error)
+	ReadRecentPosts(n int) ([]*Post, error)
 }
 
-type postgresqlStorage struct {
+type postgresStorage struct {
 	ctx   context.Context
 	db    *pgxpool.Pool
+}
+
+func NewPostgresStorage(ctx context.Context, db *pgxpool.Pool) BloggulusStorage {
+	return &postgresStorage{
+		ctx: ctx,
+		db:  db,
+	}
+}
+
+func (s *postgresStorage) CreateBlog(feedURL, siteURL, title string) (*Blog, error) {
+	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
+	row := s.db.QueryRow(s.ctx, stmt, feedURL, siteURL, title)
+
+	var blogID int
+	err := row.Scan(&blogID)
+	if err != nil {
+		return nil, err
+	}
+
+	blog := &Blog{
+		BlogID:  blogID,
+		FeedURL: feedURL,
+		SiteURL: siteURL,
+		Title:   title,
+	}
+
+	return blog, nil
+}
+
+func (s *postgresStorage) ReadAllBlogs() ([]*Blog, error) {
+	query := "SELECT * FROM blog"
+	rows, err := s.db.Query(s.ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var blogs []*Blog
+	for rows.Next() {
+		var blog Blog
+		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
+		if err != nil {
+			return nil, err
+		}
+
+		blogs = append(blogs, &blog)
+	}
+
+	return blogs, nil
+}
+
+func (s *postgresStorage) CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error) {
+	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
+	row := s.db.QueryRow(s.ctx, stmt, blogID, URL, title, updated)
+
+	var postID int
+	err := row.Scan(&postID)
+	if err != nil {
+		return nil, err
+	}
+
+	post := &Post{
+		PostID:  postID,
+		BlogID:  blogID,
+		URL:     URL,
+		Title:   title,
+		Updated: updated,
+	}
+
+	return post, nil
+}
+
+func (s *postgresStorage) ReadRecentPosts(n int) ([]*Post, error) {
+	query := "SELECT * FROM post ORDER BY updated DESC LIMIT $1"
+	rows, err := s.db.Query(s.ctx, query, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*Post
+	for rows.Next() {
+		var post Post
+		err := rows.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
 }
 
 type Application struct {
@@ -267,6 +347,7 @@ func main() {
 	}
 	defer db.Close()
 
+//	https://github.com/jackc/pgx/commit/aa8604b5c22989167e7158ecb1f6e7b8ddfebf04
 //	if err = db.Ping(ctx); err != nil {
 //		log.Fatal(err)
 //	}

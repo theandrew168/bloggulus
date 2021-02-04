@@ -27,7 +27,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Run tests
       run: |
-        go test .
+        go test -v
       env:
         DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
     - name: Build project

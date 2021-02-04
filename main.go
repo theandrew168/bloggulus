@@ -21,6 +21,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+// models
 type Blog struct {
 	BlogID  int
 	FeedURL string
@@ -36,6 +37,7 @@ type Post struct {
 	Updated time.Time
 }
 
+// storage
 type BloggulusStorage interface {
 	CreateBlog(feedURL, siteURL, title string) (*Blog, error)
 	ReadAllBlogs() ([]*Blog, error)
@@ -44,6 +46,7 @@ type BloggulusStorage interface {
 	ReadRecentPosts(n int) ([]*Post, error)
 }
 
+// storage - postgres
 type postgresStorage struct {
 	ctx   context.Context
 	db    *pgxpool.Pool
@@ -56,6 +59,7 @@ func NewPostgresStorage(ctx context.Context, db *pgxpool.Pool) BloggulusStorage 
 	}
 }
 
+// storage - postgres - blog
 func (s *postgresStorage) CreateBlog(feedURL, siteURL, title string) (*Blog, error) {
 	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
 	row := s.db.QueryRow(s.ctx, stmt, feedURL, siteURL, title)
@@ -98,6 +102,7 @@ func (s *postgresStorage) ReadAllBlogs() ([]*Blog, error) {
 	return blogs, nil
 }
 
+// storage - postgres - post
 func (s *postgresStorage) CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error) {
 	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
 	row := s.db.QueryRow(s.ctx, stmt, blogID, URL, title, updated)
@@ -141,9 +146,9 @@ func (s *postgresStorage) ReadRecentPosts(n int) ([]*Post, error) {
 	return posts, nil
 }
 
+// app stuff
 type Application struct {
-	ctx   context.Context
-	db    *pgxpool.Pool
+	store BloggulusStorage
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -160,24 +165,6 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) AddBlog(feedURL string, siteURL string) error {
-	fp := gofeed.NewParser()
-	blog, err := fp.ParseURL(feedURL)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("  found blog: %s\n", blog.Title)
-
-	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING"
-	_, err = app.db.Exec(app.ctx, stmt, feedURL, siteURL, blog.Title)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.Item) {
 	defer wg.Done()
 
@@ -189,8 +176,7 @@ func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.It
 		updated = time.Now().AddDate(0, -1, 0)
 	}
 
-	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING"
-	_, err := app.db.Exec(app.ctx, stmt, blogID, post.Link, post.Title, updated)
+	_, err := app.store.CreatePost(blogID, post.Link, post.Title, updated)
 	if err != nil {
 		log.Println(err)
 		return
@@ -219,29 +205,18 @@ func (app *Application) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
 }
 
 func (app *Application) SyncBlogs() error {
-	// grab the current list of blogs
-	query := "SELECT blog_id, feed_url FROM blog"
-	rows, err := app.db.Query(app.ctx, query)
+	blogs, err := app.store.ReadAllBlogs()
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
 
 	// sync each blog in parallel
 	var wg sync.WaitGroup
-	for rows.Next() {
-		var blogID int
-		var url string
-		err = rows.Scan(&blogID, &url)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		fmt.Printf("syncing blog: %s\n", url)
+	for _, blog := range blogs {
+		fmt.Printf("syncing blog: %s\n", blog.FeedURL)
 
 		wg.Add(1)
-		go app.syncBlog(&wg, blogID, url)
+		go app.syncBlog(&wg, blog.BlogID, blog.FeedURL)
 	}
 
 	wg.Wait()
@@ -260,9 +235,9 @@ func (app *Application) HourlySync() {
 	}
 }
 
-func (app *Application) Migrate(migrationsGlob string) error {
+func migrate(ctx context.Context, db *pgxpool.Pool, migrationsGlob string) error {
 	// create migration table if it doesn't exist
-	_, err := app.db.Exec(app.ctx, `
+	_, err := db.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
 			migration_id SERIAL PRIMARY KEY,
 			name TEXT UNIQUE NOT NULL
@@ -272,7 +247,7 @@ func (app *Application) Migrate(migrationsGlob string) error {
 	}
 
 	// get migrations that are already applied
-	rows, err := app.db.Query(app.ctx, "SELECT name FROM migration")
+	rows, err := db.Query(ctx, "SELECT name FROM migration")
 	if err != nil {
 		return err
 	}
@@ -312,13 +287,13 @@ func (app *Application) Migrate(migrationsGlob string) error {
 		if err != nil {
 			return err
 		}
-		_, err = app.db.Exec(app.ctx, string(sql))
+		_, err = db.Exec(ctx, string(sql))
 		if err != nil {
 			return err
 		}
 
 		// update migrations table
-		_, err = app.db.Exec(app.ctx, "INSERT INTO migration (name) VALUES ($1)", file)
+		_, err = db.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", file)
 		if err != nil {
 			return err
 		}
@@ -352,19 +327,29 @@ func main() {
 //		log.Fatal(err)
 //	}
 
-	app := &Application{
-		ctx:   ctx,
-		db:    db,
-	}
-
 	// apply database migrations
-	if err = app.Migrate("migrations/*.sql"); err != nil {
+	if err = migrate(ctx, db, "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
+	store := NewPostgresStorage(ctx, db)
+	app := &Application{
+		store: store,
+	}
+
 	if *addblog {
-		fmt.Printf("adding blog: %s\n", os.Args[2])
-		err = app.AddBlog(os.Args[2], os.Args[3])
+		feedURL := os.Args[2]
+		siteURL := os.Args[3]
+		fmt.Printf("adding blog: %s\n", feedURL)
+
+		fp := gofeed.NewParser()
+		blog, err := fp.ParseURL(feedURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("  found: %s\n", blog.Title)
+
+		_, err = app.store.CreateBlog(feedURL, siteURL, blog.Title)
 		if err != nil {
 			log.Fatal(err)
 		}

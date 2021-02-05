@@ -26,17 +26,20 @@
 		</nav>
 	</header>
 	<main>
-		<header>
-			<h3>Recent Posts</h3>
-		</header>
-		<article>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-		</article>
+		<section>
+			<form method="POST" action="/register">
+				<header>
+					<h2>Register</h2>
+				</header>
+				<label for="username">Username:</label>
+				<input type="text" id="username" name="username">
+				<label for="password1">Password:</label>
+				<input type="password" id="password1" name="password1">
+				<label for="password2">Password (again):</label>
+				<input type="password" id="password2" name="password2">
+				<button type="submit">Register</button>
+			</form>
+		</section>
 	</main>
 	<footer>
 		<hr>

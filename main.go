@@ -165,6 +165,70 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
+	ts, err := template.ParseFiles("templates/about.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		log.Printf("attempted login from user: %s\n", r.PostFormValue("username"))
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	ts, err := template.ParseFiles("templates/login.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		log.Printf("attempted register from user: %s\n", r.PostFormValue("username"))
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	ts, err := template.ParseFiles("templates/register.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
 func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.Item) {
 	defer wg.Done()
 
@@ -367,6 +431,9 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
+	mux.Handle("/about", http.HandlerFunc(app.HandleAbout))
+	mux.Handle("/login", http.HandlerFunc(app.HandleLogin))
+	mux.Handle("/register", http.HandlerFunc(app.HandleRegister))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// check if running via systemd

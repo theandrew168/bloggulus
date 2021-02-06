@@ -16,6 +16,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alexedwards/scs/pgxstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/mmcdole/gofeed"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/crypto/acme/autocert"
@@ -148,7 +150,8 @@ func (s *postgresStorage) ReadRecentPosts(n int) ([]*Post, error) {
 
 // app stuff
 type Application struct {
-	store BloggulusStorage
+	session *scs.SessionManager
+	store   BloggulusStorage
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -396,9 +399,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// use postgres for session data
+	session := scs.New()
+	session.Store = pgxstore.New(db)
+
 	store := NewPostgresStorage(ctx, db)
 	app := &Application{
-		store: store,
+		session: session,
+		store:   store,
 	}
 
 	if *addblog {

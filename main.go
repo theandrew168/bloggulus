@@ -16,17 +16,18 @@ import (
 
 	"github.com/theandrew168/bloggulus/models"
 
-	"github.com/alexedwards/scs/pgxstore"
-	"github.com/alexedwards/scs/v2"
 	"github.com/mmcdole/gofeed"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"golang.org/x/crypto/acme/autocert"
 )
 
 type Application struct {
-	session *scs.SessionManager
 	blogs   *models.BlogStorage
 	posts   *models.PostStorage
+}
+
+type IndexData struct {
+	Posts []*models.Post
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +37,17 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.Execute(w, nil)
+	posts, err := app.posts.ReadRecent(r.Context(), 20)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	data := &IndexData{
+		Posts: posts,
+	}
+
+	err = ts.Execute(w, data)
 	if err != nil {
 		log.Println(err)
 		return
@@ -206,12 +217,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// use postgres for session data
-	session := scs.New()
-	session.Store = pgxstore.New(db)
-
 	app := &Application{
-		session: session,
 		blogs:   models.NewBlogStorage(db),
 		posts:   models.NewPostStorage(db),
 	}

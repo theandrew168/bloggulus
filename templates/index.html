@@ -17,7 +17,7 @@
 <body>
 	<header>
 		<nav>
-			<a href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus.png" height="100"></a>
+			<a href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus.png" height="150"></a>
 			<ul>
 				<li><a href="/">Home</a></li>
 				<li><a href="/about">About</a></li>
@@ -29,14 +29,14 @@
 		<header>
 			<h3>Recent Posts</h3>
 		</header>
-		<article>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-			<a href="/">Be Humble</a>
-			<p><small>Armin Ronacher's Thoughts and Writings</small></p>
-		</article>
+		{{range .Posts}}
+		<section>
+			<aside>
+				<h3><a href="{{.URL}}">{{.Title}}</a></h3>
+				<p><small>{{.BlogID}}</small></p>
+			</aside>
+		</section>
+		{{end}}
 	</main>
 	<footer>
 		<hr>

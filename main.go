@@ -5,16 +5,16 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/theandrew168/bloggulus/models"
 
 	"github.com/alexedwards/scs/pgxstore"
 	"github.com/alexedwards/scs/v2"
@@ -23,135 +23,10 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-// models
-type Blog struct {
-	BlogID  int
-	FeedURL string
-	SiteURL string
-	Title   string
-}
-
-type Post struct {
-	PostID  int
-	BlogID  int
-	URL     string
-	Title   string
-	Updated time.Time
-}
-
-// storage
-type BloggulusStorage interface {
-	CreateBlog(feedURL, siteURL, title string) (*Blog, error)
-	ReadAllBlogs() ([]*Blog, error)
-
-	CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error)
-	ReadRecentPosts(n int) ([]*Post, error)
-}
-
-// storage - postgres
-type postgresStorage struct {
-	ctx   context.Context
-	db    *pgxpool.Pool
-}
-
-func NewPostgresStorage(ctx context.Context, db *pgxpool.Pool) BloggulusStorage {
-	return &postgresStorage{
-		ctx: ctx,
-		db:  db,
-	}
-}
-
-// storage - postgres - blog
-func (s *postgresStorage) CreateBlog(feedURL, siteURL, title string) (*Blog, error) {
-	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
-	row := s.db.QueryRow(s.ctx, stmt, feedURL, siteURL, title)
-
-	var blogID int
-	err := row.Scan(&blogID)
-	if err != nil {
-		return nil, err
-	}
-
-	blog := &Blog{
-		BlogID:  blogID,
-		FeedURL: feedURL,
-		SiteURL: siteURL,
-		Title:   title,
-	}
-
-	return blog, nil
-}
-
-func (s *postgresStorage) ReadAllBlogs() ([]*Blog, error) {
-	query := "SELECT * FROM blog"
-	rows, err := s.db.Query(s.ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var blogs []*Blog
-	for rows.Next() {
-		var blog Blog
-		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
-		if err != nil {
-			return nil, err
-		}
-
-		blogs = append(blogs, &blog)
-	}
-
-	return blogs, nil
-}
-
-// storage - postgres - post
-func (s *postgresStorage) CreatePost(blogID int, URL, title string, updated time.Time) (*Post, error) {
-	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
-	row := s.db.QueryRow(s.ctx, stmt, blogID, URL, title, updated)
-
-	var postID int
-	err := row.Scan(&postID)
-	if err != nil {
-		return nil, err
-	}
-
-	post := &Post{
-		PostID:  postID,
-		BlogID:  blogID,
-		URL:     URL,
-		Title:   title,
-		Updated: updated,
-	}
-
-	return post, nil
-}
-
-func (s *postgresStorage) ReadRecentPosts(n int) ([]*Post, error) {
-	query := "SELECT * FROM post ORDER BY updated DESC LIMIT $1"
-	rows, err := s.db.Query(s.ctx, query, n)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var posts []*Post
-	for rows.Next() {
-		var post Post
-		err := rows.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, &post)
-	}
-
-	return posts, nil
-}
-
-// app stuff
 type Application struct {
 	session *scs.SessionManager
-	store   BloggulusStorage
+	blogs   *models.BlogStorage
+	posts   *models.PostStorage
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -243,7 +118,7 @@ func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.It
 		updated = time.Now().AddDate(0, -1, 0)
 	}
 
-	_, err := app.store.CreatePost(blogID, post.Link, post.Title, updated)
+	_, err := app.posts.Create(context.Background(), blogID, post.Link, post.Title, updated)
 	if err != nil {
 		log.Println(err)
 		return
@@ -272,7 +147,7 @@ func (app *Application) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
 }
 
 func (app *Application) SyncBlogs() error {
-	blogs, err := app.store.ReadAllBlogs()
+	blogs, err := app.blogs.ReadAll(context.Background())
 	if err != nil {
 		return err
 	}
@@ -302,73 +177,6 @@ func (app *Application) HourlySync() {
 	}
 }
 
-func migrate(ctx context.Context, db *pgxpool.Pool, migrationsGlob string) error {
-	// create migration table if it doesn't exist
-	_, err := db.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS migration (
-			migration_id SERIAL PRIMARY KEY,
-			name TEXT UNIQUE NOT NULL
-		)`)
-	if err != nil {
-		return err
-	}
-
-	// get migrations that are already applied
-	rows, err := db.Query(ctx, "SELECT name FROM migration")
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	applied := make(map[string]bool)
-	for rows.Next() {
-		var name string
-		err = rows.Scan(&name)
-		if err != nil {
-			return err
-		}
-		applied[name] = true
-	}
-
-	// get migrations that should be applied (from migrations/ dir)
-	migrations, err := filepath.Glob(migrationsGlob)
-	if err != nil {
-		return err
-	}
-
-	// determine missing migrations
-	var missing []string
-	for _, migration := range migrations {
-		if _, ok := applied[migration]; !ok {
-			missing = append(missing, migration)
-		}
-	}
-
-	// sort missing migrations to preserve order
-	sort.Strings(missing)
-	for _, file := range missing {
-		fmt.Printf("applying: %s\n", file)
-
-		// apply the missing ones
-		sql, err := ioutil.ReadFile(file)
-		if err != nil {
-			return err
-		}
-		_, err = db.Exec(ctx, string(sql))
-		if err != nil {
-			return err
-		}
-
-		// update migrations table
-		_, err = db.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", file)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func main() {
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
@@ -382,8 +190,7 @@ func main() {
 	}
 
 	// test a Connect and Ping now to verify DB connectivity
-	ctx := context.Background()
-	db, err := pgxpool.Connect(ctx, databaseURL)
+	db, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -395,7 +202,7 @@ func main() {
 //	}
 
 	// apply database migrations
-	if err = migrate(ctx, db, "migrations/*.sql"); err != nil {
+	if err = models.Migrate(db, "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -403,10 +210,10 @@ func main() {
 	session := scs.New()
 	session.Store = pgxstore.New(db)
 
-	store := NewPostgresStorage(ctx, db)
 	app := &Application{
 		session: session,
-		store:   store,
+		blogs:   models.NewBlogStorage(db),
+		posts:   models.NewPostStorage(db),
 	}
 
 	if *addblog {
@@ -421,7 +228,7 @@ func main() {
 		}
 		fmt.Printf("  found: %s\n", blog.Title)
 
-		_, err = app.store.CreateBlog(feedURL, siteURL, blog.Title)
+		_, err = app.blogs.Create(context.Background(), feedURL, siteURL, blog.Title)
 		if err != nil {
 			log.Fatal(err)
 		}

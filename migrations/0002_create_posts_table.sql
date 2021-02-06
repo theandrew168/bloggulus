@@ -1,7 +1,7 @@
-CREATE TABLE post (
+CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
-    blog_id INTEGER NOT NULL REFERENCES blog,
+    blog_id INTEGER NOT NULL REFERENCES blogs,
     url TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
     updated TIMESTAMPTZ NOT NULL
-)
+);

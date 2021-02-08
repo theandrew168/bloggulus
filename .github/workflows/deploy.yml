@@ -41,7 +41,8 @@ jobs:
         cp -r static dist/
         cp -r templates dist/
         tree dist/
-    - uses: appleboy/scp-action@master
+    - name: Copy build artifacts
+      uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
@@ -49,7 +50,8 @@ jobs:
         source: dist/*
         strip_components: 1
         target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
-    - uses: appleboy/ssh-action@master
+    - name: Restart service
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}
         username: ${{ secrets.BLOGGULUS_SSH_USER }}

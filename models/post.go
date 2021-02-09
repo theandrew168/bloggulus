@@ -26,7 +26,7 @@ func NewPostStorage(db *pgxpool.Pool) *PostStorage {
 }
 
 func (s *PostStorage) Create(ctx context.Context, blogID int, URL, title string, updated time.Time) (*Post, error) {
-	stmt := "INSERT INTO posts (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
+	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
 	row := s.db.QueryRow(ctx, stmt, blogID, URL, title, updated)
 
 	var postID int
@@ -47,7 +47,7 @@ func (s *PostStorage) Create(ctx context.Context, blogID int, URL, title string,
 }
 
 func (s *PostStorage) ReadRecent(ctx context.Context, n int) ([]*Post, error) {
-	query := "SELECT * FROM posts ORDER BY updated DESC LIMIT $1"
+	query := "SELECT * FROM post ORDER BY updated DESC LIMIT $1"
 	rows, err := s.db.Query(ctx, query, n)
 	if err != nil {
 		return nil, err

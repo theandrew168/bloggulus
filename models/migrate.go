@@ -13,7 +13,7 @@ import (
 func Migrate(db *pgxpool.Pool, migrationsGlob string) error {
 	// create migrations table if it doesn't exist
 	_, err := db.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS migrations (
+		CREATE TABLE IF NOT EXISTS migration (
 			migration_id SERIAL PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE
 		)`)
@@ -22,7 +22,7 @@ func Migrate(db *pgxpool.Pool, migrationsGlob string) error {
 	}
 
 	// get migrations that are already applied
-	rows, err := db.Query(context.Background(), "SELECT name FROM migrations")
+	rows, err := db.Query(context.Background(), "SELECT name FROM migration")
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func Migrate(db *pgxpool.Pool, migrationsGlob string) error {
 		}
 
 		// update migrations table
-		_, err = db.Exec(context.Background(), "INSERT INTO migrations (name) VALUES ($1)", file)
+		_, err = db.Exec(context.Background(), "INSERT INTO migration (name) VALUES ($1)", file)
 		if err != nil {
 			return err
 		}

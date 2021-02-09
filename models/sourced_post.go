@@ -27,14 +27,14 @@ func NewSourcedPostStorage(db *pgxpool.Pool) *SourcedPostStorage {
 func (s *SourcedPostStorage) ReadRecent(ctx context.Context, n int) ([]*SourcedPost, error) {
 	query := `
 		SELECT
-			posts.url,
-			posts.title,
-			posts.updated,
-			blogs.title
-		FROM posts
-		INNER JOIN blogs
-			ON blogs.blog_id = posts.blog_id
-		ORDER BY posts.updated DESC
+			post.url,
+			post.title,
+			post.updated,
+			blog.title
+		FROM post
+		INNER JOIN blog
+			ON blog.blog_id = post.blog_id
+		ORDER BY post.updated DESC
 		LIMIT $1`
 	rows, err := s.db.Query(ctx, query, n)
 	if err != nil {
@@ -59,17 +59,17 @@ func (s *SourcedPostStorage) ReadRecent(ctx context.Context, n int) ([]*SourcedP
 func (s *SourcedPostStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]*SourcedPost, error) {
 	query := `
 		SELECT
-			posts.url,
-			posts.title,
-			posts.updated,
-			blogs.title
-		FROM posts
-		INNER JOIN blogs
-			ON blogs.blog_id = posts.blog_id
+			post.url,
+			post.title,
+			post.updated,
+			blog.title
+		FROM post
+		INNER JOIN blog
+			ON blog.blog_id = post.blog_id
 		INNER JOIN follows
-			ON follows.blog_id = blogs.blog_id
+			ON follows.blog_id = blog.blog_id
 		WHERE follows.account_id = $1
-		ORDER BY posts.updated DESC
+		ORDER BY post.updated DESC
 		LIMIT $2`
 	rows, err := s.db.Query(ctx, query, accountID, n)
 	if err != nil {

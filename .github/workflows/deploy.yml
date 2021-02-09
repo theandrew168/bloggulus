@@ -18,6 +18,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
     steps:
     - name: Setup Go
       uses: actions/setup-go@v1
@@ -29,7 +31,7 @@ jobs:
       run: |
         go test -count=1 -v ./...
       env:
-        DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     - name: Build project
       run: |
         go build -o bloggulus main.go

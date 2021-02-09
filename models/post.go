@@ -26,8 +26,8 @@ func NewPostStorage(db *pgxpool.Pool) *PostStorage {
 }
 
 func (s *PostStorage) Create(ctx context.Context, blogID int, URL, title string, updated time.Time) (*Post, error) {
-	stmt := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
-	row := s.db.QueryRow(ctx, stmt, blogID, URL, title, updated)
+	command := "INSERT INTO post (blog_id, url, title, updated) VALUES ($1, $2, $3, $4) RETURNING post_id"
+	row := s.db.QueryRow(ctx, command, blogID, URL, title, updated)
 
 	var postID int
 	err := row.Scan(&postID)
@@ -46,24 +46,21 @@ func (s *PostStorage) Create(ctx context.Context, blogID int, URL, title string,
 	return post, nil
 }
 
-func (s *PostStorage) ReadRecent(ctx context.Context, n int) ([]*Post, error) {
-	query := "SELECT * FROM post ORDER BY updated DESC LIMIT $1"
-	rows, err := s.db.Query(ctx, query, n)
+func (s *PostStorage) Read(ctx context.Context, postID int) (*Post, error) {
+	query := "SELECT * FROM post WHERE post_id = $1"
+	row := s.db.QueryRow(ctx, query, postID)
+
+	var post Post
+	err := row.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	var posts []*Post
-	for rows.Next() {
-		var post Post
-		err := rows.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
-		if err != nil {
-			return nil, err
-		}
+	return &post, nil
+}
 
-		posts = append(posts, &post)
-	}
-
-	return posts, nil
+func (s *PostStorage) Delete(ctx context.Context, postID int) error {
+	command := "DELETE FROM post WHERE post_id = $1"
+	_, err := s.db.Exec(ctx, command, postID)
+	return err
 }

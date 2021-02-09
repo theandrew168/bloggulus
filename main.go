@@ -34,9 +34,9 @@ func GenerateSessionID() (string, error) {
 }
 
 type Application struct {
-	blogs        *models.BlogStorage
-	posts        *models.PostStorage
-	sourcedPosts *models.SourcedPostStorage
+	blog        *models.BlogStorage
+	post        *models.PostStorage
+	sourcedPost *models.SourcedPostStorage
 }
 
 type IndexData struct {
@@ -50,7 +50,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := app.sourcedPosts.ReadRecent(r.Context(), 20)
+	posts, err := app.sourcedPost.ReadRecent(r.Context(), 20)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -142,7 +142,7 @@ func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.It
 		updated = time.Now().AddDate(0, -3, 0)
 	}
 
-	_, err := app.posts.Create(context.Background(), blogID, post.Link, post.Title, updated)
+	_, err := app.post.Create(context.Background(), blogID, post.Link, post.Title, updated)
 	if err != nil {
 		log.Println(err)
 		return
@@ -171,7 +171,7 @@ func (app *Application) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
 }
 
 func (app *Application) SyncBlogs() error {
-	blogs, err := app.blogs.ReadAll(context.Background())
+	blogs, err := app.blog.ReadAll(context.Background())
 	if err != nil {
 		return err
 	}
@@ -237,9 +237,9 @@ func main() {
 	}
 
 	app := &Application{
-		blogs:        models.NewBlogStorage(db),
-		posts:        models.NewPostStorage(db),
-		sourcedPosts: models.NewSourcedPostStorage(db),
+		blog:        models.NewBlogStorage(db),
+		post:        models.NewPostStorage(db),
+		sourcedPost: models.NewSourcedPostStorage(db),
 	}
 
 	if *addblog {
@@ -254,7 +254,7 @@ func main() {
 		}
 		fmt.Printf("  found: %s\n", blog.Title)
 
-		_, err = app.blogs.Create(context.Background(), feedURL, siteURL, blog.Title)
+		_, err = app.blog.Create(context.Background(), feedURL, siteURL, blog.Title)
 		if err != nil {
 			log.Fatal(err)
 		}

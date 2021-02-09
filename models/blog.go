@@ -24,8 +24,8 @@ func NewBlogStorage(db *pgxpool.Pool) *BlogStorage {
 }
 
 func (s *BlogStorage) Create(ctx context.Context, feedURL, siteURL, title string) (*Blog, error) {
-	stmt := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
-	row := s.db.QueryRow(ctx, stmt, feedURL, siteURL, title)
+	command := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
+	row := s.db.QueryRow(ctx, command, feedURL, siteURL, title)
 
 	var blogID int
 	err := row.Scan(&blogID)
@@ -76,4 +76,10 @@ func (s *BlogStorage) ReadAll(ctx context.Context) ([]*Blog, error) {
 	}
 
 	return blogs, nil
+}
+
+func (s *BlogStorage) Delete(ctx context.Context, blogID int) error {
+	command := "DELETE FROM blog WHERE blog_id = $1"
+	_, err := s.db.Exec(ctx, command, blogID)
+	return err
 }

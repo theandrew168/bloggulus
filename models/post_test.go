@@ -22,7 +22,7 @@ func TestPostStorage(t *testing.T) {
 	}
 	defer db.Close()
 
-	if err = Migrate(db, "migrations/*.sql"); err != nil {
+	if err = Migrate(db, "../migrations/*.sql"); err != nil {
 		t.Fatal(err)
 	}
 

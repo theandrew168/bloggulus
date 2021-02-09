@@ -1,4 +1,4 @@
-CREATE TABLE accounts (
+CREATE TABLE account (
     account_id SERIAL PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,

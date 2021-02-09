@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"html/template"
@@ -19,7 +21,17 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mmcdole/gofeed"
 	"golang.org/x/crypto/acme/autocert"
+//	"golang.org/x/crypto/bcrypt"
 )
+
+func GenerateSessionID() (string, error) {
+	b := make([]byte, 32)
+	_ ,err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
 
 type Application struct {
 	blogs        *models.BlogStorage
@@ -190,6 +202,12 @@ func (app *Application) HourlySync() {
 }
 
 func main() {
+	sessionID, err := GenerateSessionID()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(sessionID)
+
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
 	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")

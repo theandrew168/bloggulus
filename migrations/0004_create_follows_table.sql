@@ -1,6 +1,6 @@
 CREATE TABLE follows (
-    account_id INTEGER REFERENCES accounts(account_id),
-    blog_id INTEGER REFERENCES blogs(blog_id),
+    account_id INTEGER REFERENCES account(account_id),
+    blog_id INTEGER REFERENCES blog(blog_id),
     PRIMARY KEY (account_id, blog_id)
 );
 

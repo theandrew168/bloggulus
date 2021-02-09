@@ -15,7 +15,7 @@ func Migrate(db *pgxpool.Pool, migrationsGlob string) error {
 	_, err := db.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS migrations (
 			migration_id SERIAL PRIMARY KEY,
-			name TEXT UNIQUE NOT NULL
+			name TEXT NOT NULL UNIQUE
 		)`)
 	if err != nil {
 		return err

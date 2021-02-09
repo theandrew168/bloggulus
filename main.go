@@ -16,18 +16,19 @@ import (
 
 	"github.com/theandrew168/bloggulus/models"
 
-	"github.com/mmcdole/gofeed"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mmcdole/gofeed"
 	"golang.org/x/crypto/acme/autocert"
 )
 
 type Application struct {
-	blogs   *models.BlogStorage
-	posts   *models.PostStorage
+	blogs        *models.BlogStorage
+	posts        *models.PostStorage
+	sourcedPosts *models.SourcedPostStorage
 }
 
 type IndexData struct {
-	Posts []*models.Post
+	Posts []*models.SourcedPost
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +38,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := app.posts.ReadRecent(r.Context(), 20)
+	posts, err := app.sourcedPosts.ReadRecent(r.Context(), 20)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -126,7 +127,7 @@ func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.It
 	if post.UpdatedParsed != nil {
 		updated = *post.UpdatedParsed
 	} else {
-		updated = time.Now().AddDate(0, -1, 0)
+		updated = time.Now().AddDate(0, -3, 0)
 	}
 
 	_, err := app.posts.Create(context.Background(), blogID, post.Link, post.Title, updated)
@@ -207,10 +208,10 @@ func main() {
 	}
 	defer db.Close()
 
-//	https://github.com/jackc/pgx/commit/aa8604b5c22989167e7158ecb1f6e7b8ddfebf04
-//	if err = db.Ping(ctx); err != nil {
-//		log.Fatal(err)
-//	}
+	//	https://github.com/jackc/pgx/commit/aa8604b5c22989167e7158ecb1f6e7b8ddfebf04
+	//	if err = db.Ping(ctx); err != nil {
+	//		log.Fatal(err)
+	//	}
 
 	// apply database migrations
 	if err = models.Migrate(db, "migrations/*.sql"); err != nil {
@@ -218,8 +219,9 @@ func main() {
 	}
 
 	app := &Application{
-		blogs:   models.NewBlogStorage(db),
-		posts:   models.NewPostStorage(db),
+		blogs:        models.NewBlogStorage(db),
+		posts:        models.NewPostStorage(db),
+		sourcedPosts: models.NewSourcedPostStorage(db),
 	}
 
 	if *addblog {
@@ -278,7 +280,7 @@ func main() {
 		}
 
 		// redirect http to https
-		go http.Serve(httpListener, http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+		go http.Serve(httpListener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			target := "https://" + r.Host + r.URL.Path
 			if len(r.URL.RawQuery) > 0 {
 				target += "?" + r.URL.RawQuery

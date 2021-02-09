@@ -27,19 +27,18 @@
 	</header>
 	<main>
 		<header>
-			<h3>Recent Posts</h3>
+			<h1>Recent Posts</h1>
 		</header>
 		{{range .Posts}}
-		<section>
-			<aside>
-				<h3><a href="{{.URL}}">{{.Title}}</a></h3>
-				<p><small>{{.BlogID}}</small></p>
-			</aside>
-		</section>
+			<article>
+				<h2><a href="{{.URL}}">{{.Title}}</a></h2>
+				<p>{{.BlogTitle}}</p>
+				<p><small>{{.Updated}}</small></p>
+				<hr>
+			</article>
 		{{end}}
 	</main>
 	<footer>
-		<hr>
 		<p>
 			Read the source on <a href="https://github.com/theandrew168/bloggulus" target="_blank">GitHub &nearr;</a><br>
 		</p>

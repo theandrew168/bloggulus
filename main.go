@@ -154,7 +154,7 @@ func main() {
 		}
 
 		// kick off hourly sync task
-		go app.HourlySync()
+//		go app.HourlySync()
 
 		s := &http.Server{
 			Handler:      mux,

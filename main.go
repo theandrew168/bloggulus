@@ -6,208 +6,34 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"time"
 
+	"github.com/theandrew168/bloggulus/handlers"
 	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/storage/postgres"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mmcdole/gofeed"
 	"golang.org/x/crypto/acme/autocert"
-//	"golang.org/x/crypto/bcrypt"
+	//	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateSessionID() (string, error) {
 	b := make([]byte, 32)
-	_ ,err := rand.Read(b)
+	_, err := rand.Read(b)
 	if err != nil {
 		return "", err
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-type Application struct {
-	blog        *models.BlogStorage
-	post        *models.PostStorage
-	sourcedPost *models.SourcedPostStorage
-}
-
-type IndexData struct {
-	Posts []*models.SourcedPost
-}
-
-func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	posts, err := app.sourcedPost.ReadRecent(r.Context(), 20)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	data := &IndexData{
-		Posts: posts,
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) HandleAbout(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFiles("templates/about.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	err = ts.Execute(w, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		log.Printf("attempted login from user: %s\n", r.PostFormValue("username"))
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	ts, err := template.ParseFiles("templates/login.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	err = ts.Execute(w, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		log.Printf("attempted register from user: %s\n", r.PostFormValue("username"))
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	ts, err := template.ParseFiles("templates/register.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	err = ts.Execute(w, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) syncPost(wg *sync.WaitGroup, blogID int, post *gofeed.Item) {
-	defer wg.Done()
-
-	// use an old date if the post doesn't have one
-	var updated time.Time
-	if post.UpdatedParsed != nil {
-		updated = *post.UpdatedParsed
-	} else {
-		updated = time.Now().AddDate(0, -3, 0)
-	}
-
-	_, err := app.post.Create(context.Background(), blogID, post.Link, post.Title, updated)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
-
-func (app *Application) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
-	defer wg.Done()
-
-	fmt.Printf("checking blog: %s\n", url)
-
-	// check if blog has been updated
-	fp := gofeed.NewParser()
-	blog, err := fp.ParseURL(url)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// sync each post in parallel
-	for _, post := range blog.Items {
-		fmt.Printf("updating post: %s\n", post.Title)
-		wg.Add(1)
-		go app.syncPost(wg, blogID, post)
-	}
-}
-
-func (app *Application) SyncBlogs() error {
-	blogs, err := app.blog.ReadAll(context.Background())
-	if err != nil {
-		return err
-	}
-
-	// sync each blog in parallel
-	var wg sync.WaitGroup
-	for _, blog := range blogs {
-		fmt.Printf("syncing blog: %s\n", blog.FeedURL)
-
-		wg.Add(1)
-		go app.syncBlog(&wg, blog.BlogID, blog.FeedURL)
-	}
-
-	wg.Wait()
-	return nil
-}
-
-func (app *Application) HourlySync() {
-	c := time.Tick(1 * time.Hour)
-	for {
-		<-c
-
-		err := app.SyncBlogs()
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
-
 func main() {
-	sessionID, err := GenerateSessionID()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(sessionID)
-
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
 	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
@@ -232,14 +58,16 @@ func main() {
 	//	}
 
 	// apply database migrations
-	if err = models.Migrate(db, "migrations/*.sql"); err != nil {
+	if err = postgres.Migrate(db, context.Background(), "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
-	app := &Application{
-		blog:        models.NewBlogStorage(db),
-		post:        models.NewPostStorage(db),
-		sourcedPost: models.NewSourcedPostStorage(db),
+	app := &handlers.Application{
+		Account:     postgres.NewAccountStorage(db),
+		Blog:        postgres.NewBlogStorage(db),
+		Post:        postgres.NewPostStorage(db),
+		Session:     postgres.NewSessionStorage(db),
+		SourcedPost: postgres.NewSourcedPostStorage(db),
 	}
 
 	if *addblog {
@@ -248,13 +76,18 @@ func main() {
 		fmt.Printf("adding blog: %s\n", feedURL)
 
 		fp := gofeed.NewParser()
-		blog, err := fp.ParseURL(feedURL)
+		feed, err := fp.ParseURL(feedURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("  found: %s\n", blog.Title)
+		fmt.Printf("  found: %s\n", feed.Title)
 
-		_, err = app.blog.Create(context.Background(), feedURL, siteURL, blog.Title)
+		blog := &models.Blog{
+			FeedURL: feedURL,
+			SiteURL: siteURL,
+			Title:   feed.Title,
+		}
+		_, err = app.Blog.Create(context.Background(), blog)
 		if err != nil {
 			log.Fatal(err)
 		}

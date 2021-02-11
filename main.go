@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"log"
@@ -23,15 +21,6 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	//	"golang.org/x/crypto/bcrypt"
 )
-
-func GenerateSessionID() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
-}
 
 func main() {
 	addr := flag.String("addr", "0.0.0.0:8080", "server listen address")

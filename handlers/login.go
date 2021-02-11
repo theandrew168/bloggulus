@@ -4,6 +4,9 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/theandrew168/bloggulus/models"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,15 +34,52 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("attempted login from user: %v\n", account)
 		err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		log.Println("successful login!")
-		log.Println("TODO: create session")
+
+		log.Printf("login: %v\n", account)
+
+		sessionID, err := GenerateSessionID()
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		expiry := time.Now().AddDate(0, 0, 7)
+		session := &models.Session{
+			SessionID: sessionID,
+			AccountID: account.AccountID,
+			Expiry:    expiry,
+		}
+		session, err = app.Session.Create(r.Context(), session)
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		// when the time comes to delete:
+		// Expires = time.Unix(1, 0)
+		// MaxAge = -1
+		cookie := http.Cookie{
+			Name:     "session_id",
+			Value:    sessionID,
+			Path:     "/",
+			Domain:   "",  // will default to the server's base domain
+			Expires:  time.Unix(expiry.Unix() + 1, 0),  // round up to nearest second
+//			Secure:   true,  // prod only
+			MaxAge:   int(time.Until(expiry).Seconds() + 1),  // round up to nearest second
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		}
+		w.Header().Add("Set-Cookie", cookie.String())
+		w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
+		w.Header().Add("Vary", "Cookie")
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return

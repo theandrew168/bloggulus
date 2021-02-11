@@ -6,6 +6,6 @@ import (
 
 type Session struct {
 	SessionID string
-	AccountID string
+	AccountID int
 	Expiry    time.Time
 }

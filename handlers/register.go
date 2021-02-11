@@ -51,7 +51,6 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("register: %v\n", account)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}

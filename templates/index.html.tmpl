@@ -21,7 +21,15 @@
 			<ul>
 				<li><a href="/">Home</a></li>
 				<li><a href="/about">About</a></li>
-				<li><a href="/login">Login</a></li>
+				{{if .Authed}}
+				<li>
+					<form method="POST" action="/logout">
+						<button type="submit">Logout</button>
+					</form>
+				</li>
+				{{else}}
+				<li><a href="/login"><b>Login</b></a></li>
+				{{end}}
 			</ul>
 		</nav>
 	</header>

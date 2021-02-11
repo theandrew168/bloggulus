@@ -338,7 +338,7 @@ button[disabled]:hover {
     filter: none;
 }
 
-form {
+main form {
     border: 1px solid var(--color-bg-secondary);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow) var(--color-shadow);
@@ -349,7 +349,7 @@ form {
     text-align: var(--justify-normal);
 }
 
-form header {
+main form header {
     margin: 1.5rem 0;
     padding: 1.5rem 0;
 }

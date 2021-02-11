@@ -41,8 +41,6 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("login: %v\n", account)
-
 		sessionID, err := GenerateSessionID()
 		if err != nil {
 			log.Println(err)

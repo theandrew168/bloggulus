@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/theandrew168/bloggulus/models"
@@ -41,7 +45,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionID, err := GenerateSessionID()
+		sessionID, err := generateSessionID()
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -61,20 +65,24 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// when the time comes to delete:
-		// Expires = time.Unix(1, 0)
-		// MaxAge = -1
+		// create session_id cookie
 		cookie := http.Cookie{
 			Name:     "session_id",
 			Value:    sessionID,
 			Path:     "/",
 			Domain:   "",  // will default to the server's base domain
 			Expires:  time.Unix(expiry.Unix() + 1, 0),  // round up to nearest second
-//			Secure:   true,  // prod only
 			MaxAge:   int(time.Until(expiry).Seconds() + 1),  // round up to nearest second
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
 		}
+
+		// TODO: find a better way to check if running with TLS?
+		if os.Getenv("LISTEN_PID") == strconv.Itoa(os.Getpid()) {
+			cookie.Secure = true
+		}
+
+		// add headers to set the cookie
 		w.Header().Add("Set-Cookie", cookie.String())
 		w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
 		w.Header().Add("Vary", "Cookie")
@@ -94,4 +102,13 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+}
+
+func generateSessionID() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage"
@@ -45,5 +46,11 @@ func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*models.Se
 func (s *sessionStorage) Delete(ctx context.Context, sessionID string) error {
 	command := "DELETE FROM session WHERE session_id = $1"
 	_, err := s.db.Exec(ctx, command, sessionID)
+	return err
+}
+
+func (s *sessionStorage) DeleteExpired(ctx context.Context) error {
+	command := "DELETE FROM session WHERE expiry <= $1"
+	_ ,err := s.db.Exec(ctx, command, time.Now())
 	return err
 }

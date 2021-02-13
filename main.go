@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -15,11 +15,11 @@ import (
 	"github.com/theandrew168/bloggulus/handlers"
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage/postgres"
+	"github.com/theandrew168/bloggulus/tasks"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mmcdole/gofeed"
 	"golang.org/x/crypto/acme/autocert"
-	//	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
@@ -51,32 +51,39 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// create storage interfaces
+	accountStorage := postgres.NewAccountStorage(db)
+	blogStorage := postgres.NewBlogStorage(db)
+	postStorage := postgres.NewPostStorage(db)
+	sessionStorage := postgres.NewSessionStorage(db)
+	sourcedPostStorage := postgres.NewSourcedPostStorage(db)
+
 	app := &handlers.Application{
-		Account:     postgres.NewAccountStorage(db),
-		Blog:        postgres.NewBlogStorage(db),
-		Post:        postgres.NewPostStorage(db),
-		Session:     postgres.NewSessionStorage(db),
-		SourcedPost: postgres.NewSourcedPostStorage(db),
+		Account:     accountStorage,
+		Blog:        blogStorage,
+		Post:        postStorage,
+		Session:     sessionStorage,
+		SourcedPost: sourcedPostStorage,
 	}
 
 	if *addblog {
 		feedURL := os.Args[2]
 		siteURL := os.Args[3]
-		fmt.Printf("adding blog: %s\n", feedURL)
+		log.Printf("adding blog: %s\n", feedURL)
 
 		fp := gofeed.NewParser()
 		feed, err := fp.ParseURL(feedURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("  found: %s\n", feed.Title)
+		log.Printf("  found: %s\n", feed.Title)
 
 		blog := &models.Blog{
 			FeedURL: feedURL,
 			SiteURL: siteURL,
 			Title:   feed.Title,
 		}
-		_, err = app.Blog.Create(context.Background(), blog)
+		_, err = blogStorage.Create(context.Background(), blog)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,12 +91,15 @@ func main() {
 	}
 
 	if *syncblogs {
-		fmt.Printf("syncing blogs\n")
-		err = app.SyncBlogs()
-		if err != nil {
-			log.Fatal(err)
-		}
+		syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+		syncBlogs.RunNow()
 		return
+	}
+
+	foo := tasks.CleanupSessions(sessionStorage)
+	err = foo.RunNow()
+	if err != nil {
+		log.Println(err)
 	}
 
 	mux := http.NewServeMux()
@@ -143,22 +153,31 @@ func main() {
 			m.Cache = autocert.DirCache(dir)
 		}
 
-		// kick off hourly sync task
-//		go app.HourlySync()
+		// kick off blog sync task
+		syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+		go syncBlogs.Run(1 * time.Hour)
+
+		// kick off session cleanup task
+		cleanupSessions := tasks.CleanupSessions(sessionStorage)
+		go cleanupSessions.Run(5 * time.Minute)
+
+		// set min version to TLS 1.2
+		tlsConfig := m.TLSConfig()
+		tlsConfig.MinVersion = tls.VersionTLS12
 
 		s := &http.Server{
 			Handler:      mux,
-			TLSConfig:    m.TLSConfig(),
+			TLSConfig:    tlsConfig,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 		}
 
-		fmt.Println("Listening on 0.0.0.0:80 and 0.0.0.0:443")
+		log.Println("Listening on 0.0.0.0:80 and 0.0.0.0:443")
 		s.ServeTLS(httpsListener, "", "")
 	} else {
 		// local development setup
-		fmt.Printf("Listening on %s\n", *addr)
+		log.Printf("Listening on %s\n", *addr)
 		log.Fatal(http.ListenAndServe(*addr, mux))
 	}
 }

@@ -148,6 +148,32 @@ nav ul li {
     font-size: large;
 }
 
+/* Logout form button */
+nav ul li form {
+    margin: 0;
+}
+
+nav ul li button {
+    background: none!important;
+    border: none;
+    padding: 0!important;
+
+    color: var(--color-secondary);
+    display: inline-block;
+    font-weight: bold;
+    text-decoration: none;
+
+    display: inline-block;
+    position: relative;
+    text-align: left;
+    font-size: large;
+}
+
+nav ul li button:hover {
+    filter: brightness(var(--hover-brightness));
+    text-decoration: underline;
+}
+
 /* Nav Dropdown */
 nav ul li:hover ul {
     display: block;

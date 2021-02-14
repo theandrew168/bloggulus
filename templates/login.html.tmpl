@@ -1,53 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+{{template "base" .}}
 
-<head>
-	<title>Bloggulus - A community for bloggers and readers</title>
-
-	<meta charset="utf-8">
-	<meta name="description" content="Bloggulus - A community for avid blog readers">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<link rel="icon" href="/static/img/bloggulus.png">
-	<link rel="stylesheet" href="/static/css/mvp.css">
-	<style>
-	</style>
-</head>
-
-<body>
-	<header>
-		<nav>
-			<a href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus.png" height="150"></a>
-			<ul>
-				<li><a href="/">Home</a></li>
-				<li><a href="/about">About</a></li>
-				<li><a href="/login">Login</a></li>
-			</ul>
-		</nav>
-	</header>
-	<main>
-		<section>
-			<form method="POST" action="/login">
-				<header>
-					<h2>Login</h2>
-				</header>
-				<label for="username">Username:</label>
-				<input type="text" id="username" name="username" autofocus>
-				<label for="password">Password:</label>
-				<input type="password" id="password" name="password">
-				<button type="submit">Login</button>
-				<br>
-				<br>
-				<a href="/register">Need an account?</a>
-			</form>
-		</section>
-	</main>
-	<footer>
-		<hr>
-		<p>
-			Read the source on <a href="https://github.com/theandrew168/bloggulus" target="_blank">GitHub &nearr;</a><br>
-		</p>
-	</footer>
-</body>
-
-</html>
+{{define "main"}}
+	<section>
+		<form method="POST" action="/login">
+			<header>
+				<h2>Login</h2>
+			</header>
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username" autofocus>
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password">
+			<button type="submit">Login</button>
+			<br>
+			<br>
+			<a href="/register">Need an account?</a>
+		</form>
+	</section>
+{{end}}

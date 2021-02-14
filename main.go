@@ -96,12 +96,6 @@ func main() {
 		return
 	}
 
-	foo := tasks.CleanupSessions(sessionStorage)
-	err = foo.RunNow()
-	if err != nil {
-		log.Println(err)
-	}
-
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
 	mux.Handle("/about", http.HandlerFunc(app.HandleAbout))
@@ -157,9 +151,9 @@ func main() {
 		syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
 		go syncBlogs.Run(1 * time.Hour)
 
-		// kick off session cleanup task
-		cleanupSessions := tasks.CleanupSessions(sessionStorage)
-		go cleanupSessions.Run(5 * time.Minute)
+		// kick off session prune task
+		pruneSessions := tasks.PruneSessions(sessionStorage)
+		go pruneSessions.Run(5 * time.Minute)
 
 		// set min version to TLS 1.2
 		tlsConfig := m.TLSConfig()

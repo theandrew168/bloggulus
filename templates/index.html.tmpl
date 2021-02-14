@@ -1,56 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
+{{template "base" .}}
 
-<head>
-	<title>Bloggulus - A community for bloggers and readers</title>
-
-	<meta charset="utf-8">
-	<meta name="description" content="Bloggulus - A community for avid blog readers">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<link rel="icon" href="/static/img/bloggulus.png">
-	<link rel="stylesheet" href="/static/css/mvp.css">
-	<style>
-	</style>
-</head>
-
-<body>
+{{define "main"}}
 	<header>
-		<nav>
-			<a href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus.png" height="150"></a>
-			<ul>
-				<li><a href="/">Home</a></li>
-				<li><a href="/about">About</a></li>
-				{{if .Authed}}
-				<li>
-					<form method="POST" action="/logout">
-						<button type="submit">Logout</button>
-					</form>
-				</li>
-				{{else}}
-				<li><a href="/login">Login</a></li>
-				{{end}}
-			</ul>
-		</nav>
+		<h1>Recent Posts</h1>
 	</header>
-	<main>
-		<header>
-			<h1>Recent Posts</h1>
-		</header>
-		{{range .Posts}}
-			<article>
-				<h2><a href="{{.URL}}">{{.Title}}</a></h2>
-				<p>{{.BlogTitle}}</p>
-				<p><small>{{.Updated}}</small></p>
-				<hr>
-			</article>
-		{{end}}
-	</main>
-	<footer>
-		<p>
-			Read the source on <a href="https://github.com/theandrew168/bloggulus" target="_blank">GitHub &nearr;</a><br>
-		</p>
-	</footer>
-</body>
-
-</html>
+	{{range .Posts}}
+		<article>
+			<h2><a href="{{.URL}}">{{.Title}}</a></h2>
+			<p>{{.BlogTitle}}</p>
+			<p><small>{{.Updated}}</small></p>
+			<hr>
+		</article>
+	{{end}}
+{{end}}

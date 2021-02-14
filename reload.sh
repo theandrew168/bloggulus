@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 go build -o bloggulus main.go
 ./bloggulus -addblog http://lucumr.pocoo.org/feed.atom https://lucumr.pocoo.org
@@ -8,7 +8,7 @@ go build -o bloggulus main.go
 ./bloggulus -addblog https://erikbern.com/atom.xml https://erikbern.com
 ./bloggulus -addblog http://stevehanov.ca/blog/?atom http://stevehanov.ca
 ./bloggulus -addblog https://stuartsierra.com/feed https://stuartsierra.com
-./bloggulus -addblog http://headerphile.com/feed/ http://headerphile.com
+#./bloggulus -addblog http://headerphile.com/feed/ http://headerphile.com
 ./bloggulus -addblog https://yogthos.net/feed.xml https://yogthos.net
 ./bloggulus -addblog http://fabiensanglard.net/rss.xml http://fabiensanglard.net
 ./bloggulus -addblog https://ruslanspivak.com/feeds/all.atom.xml https://ruslanspivak.com

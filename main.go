@@ -99,6 +99,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
 	mux.Handle("/about", http.HandlerFunc(app.HandleAbout))
+	mux.Handle("/blogs", http.HandlerFunc(app.HandleBlogs))
 	mux.Handle("/login", http.HandlerFunc(app.HandleLogin))
 	mux.Handle("/logout", http.HandlerFunc(app.HandleLogout))
 	mux.Handle("/register", http.HandlerFunc(app.HandleRegister))

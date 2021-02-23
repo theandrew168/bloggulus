@@ -66,6 +66,34 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]*models.Blog, error) {
 	return blogs, nil
 }
 
+func (s *blogStorage) ReadAllForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
+	query := `
+		SELECT
+			blog.*
+		FROM blog
+		INNER JOIN account_blog
+			ON account_blog.blog_id = blog.blog_id
+		WHERE account_blog.account_id = $1`
+	rows, err := s.db.Query(ctx, query, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var blogs []*models.Blog
+	for rows.Next() {
+		var blog models.Blog
+		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
+		if err != nil {
+			return nil, err
+		}
+
+		blogs = append(blogs, &blog)
+	}
+
+	return blogs, nil
+}
+
 func (s *blogStorage) Delete(ctx context.Context, blogID int) error {
 	command := "DELETE FROM blog WHERE blog_id = $1"
 	_, err := s.db.Exec(ctx, command, blogID)

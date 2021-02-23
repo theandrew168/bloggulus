@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type LoginData struct {
+type loginData struct {
 	Authed bool
 }
 
@@ -130,7 +130,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := &LoginData{
+	data := &loginData{
 		Authed: authed,
 	}
 

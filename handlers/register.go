@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterData struct {
+type registerData struct {
 	Authed bool
 }
 
@@ -95,7 +95,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := &RegisterData{
+	data := &registerData{
 		Authed: authed,
 	}
 

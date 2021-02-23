@@ -9,7 +9,7 @@ import (
 	"github.com/theandrew168/bloggulus/models"
 )
 
-type IndexData struct {
+type indexData struct {
 	Authed bool
 	Posts  []*models.SourcedPost
 }
@@ -67,7 +67,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := &IndexData{
+	data := &indexData{
 		Authed: authed,
 		Posts:  posts,
 	}

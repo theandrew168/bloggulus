@@ -1,0 +1,19 @@
+{{template "base" .}}
+
+{{define "main"}}
+	{{if .Authed}}
+		<header>
+			<h1>Followed Blogs</h1>
+		</header>
+		{{range .Blogs}}
+			<h2><a href="{{.SiteURL}}">{{.Title}}</a></h2>
+		{{end}}
+	{{else}}
+		<header>
+			<h1>Available Blogs</h1>
+		</header>
+		{{range .Blogs}}
+			<h2><a href="{{.SiteURL}}">{{.Title}}</a></h2>
+		{{end}}
+	{{end}}
+{{end}}

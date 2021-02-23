@@ -5,11 +5,9 @@
 		<h1>Recent Posts</h1>
 	</header>
 	{{range .Posts}}
-		<article>
-			<h2><a href="{{.URL}}">{{.Title}}</a></h2>
-			<p>{{.BlogTitle}}</p>
-			<p><small>{{.Updated}}</small></p>
-			<hr>
-		</article>
+		<h2><a href="{{.URL}}">{{.Title}}</a></h2>
+		<p>{{.BlogTitle}}</p>
+		<p><small>{{.Updated}}</small></p>
+		<hr>
 	{{end}}
 {{end}}

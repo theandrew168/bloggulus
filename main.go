@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/theandrew168/bloggulus/handlers"
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage/postgres"
 	"github.com/theandrew168/bloggulus/tasks"
+	"github.com/theandrew168/bloggulus/views"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mmcdole/gofeed"
@@ -58,7 +58,7 @@ func main() {
 	sessionStorage := postgres.NewSessionStorage(db)
 	sourcedPostStorage := postgres.NewSourcedPostStorage(db)
 
-	app := &handlers.Application{
+	app := &views.Application{
 		Account:     accountStorage,
 		Blog:        blogStorage,
 		Post:        postStorage,

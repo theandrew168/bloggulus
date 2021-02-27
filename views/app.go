@@ -1,4 +1,4 @@
-package handlers
+package views
 
 import (
 	"github.com/theandrew168/bloggulus/storage"

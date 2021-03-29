@@ -2,15 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"flag"
 	"log"
-	"net"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strconv"
-	"time"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage/postgres"
@@ -19,7 +14,6 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mmcdole/gofeed"
-	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {

@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", "0.0.0.0:5000", "server listen address")
+	addr := flag.String("addr", "127.0.0.1:5000", "server listen address")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
 	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
 	flag.Parse()

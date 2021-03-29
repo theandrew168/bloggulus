@@ -23,9 +23,9 @@ func main() {
 	flag.Parse()
 
 	// ensure conn string env var exists
-	databaseURL := os.Getenv("DATABASE_URL")
+	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {
-		log.Fatal("Missing required env var: DATABASE_URL")
+		log.Fatal("Missing required env var: BLOGGULUS_DATABASE_URL")
 	}
 
 	// test a Connect and Ping now to verify DB connectivity

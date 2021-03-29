@@ -9,7 +9,7 @@ I find [Docker](https://www.docker.com/) to be a nice tool for this but you can 
 The following commands start the database container and define an environment variable that the app will look for:
 ```
 docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 --detach postgres
-export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
+export BLOGGULUS_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
 ## Running

@@ -1,0 +1,78 @@
+html {
+  line-height: 1.6;
+	font-family: 'Nunito', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  line-height: 1.2;
+}
+
+footer,
+header,
+main {
+	max-width: 1200px;
+	padding: 0 15px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+header {
+	width: 100%;
+}
+
+body {
+	background: #f5f5fa;
+	color: #444444;
+}
+
+nav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: auto;
+	padding: 24px;
+}
+
+.nav-logo {
+	flex: 1 0 230px;
+	max-width: 230px;
+}
+
+.nav-search {
+	display: inline-block;
+	width: calc(100% - 324px);
+	margin-right: 16px;
+}
+
+.nav-search input {
+	height: 64px;
+	border-radius: 4px;
+	padding-left: 58px;
+	width: 100%;
+	border: none;
+	box-shadow: none;
+	background: rgba(197,201,224,.4);
+	color: rgba(0,0,0,.75);
+}
+
+.nav-search input:focus {
+	box-shadow: none;
+	outline: none;
+}
+
+.nav-login-logout {
+	font-size: 14px;
+}
+
+.nav-login-logout a {
+	padding: 22px;
+	text-align: center;
+	border-radius: 4px;
+	text-decoration: none;
+	background: rgba(197,201,224,.4);
+	color: rgba(33,36,61,.8);
+}

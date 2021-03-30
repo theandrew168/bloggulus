@@ -5,34 +5,34 @@
 <head>
 	<title>Bloggulus - A community for bloggers and readers</title>
 
-	<meta charset="utf-8">
-	<meta name="description" content="Bloggulus - A community for avid blog readers">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8" />
+	<meta name="description" content="Bloggulus - A community for bloggers and readers" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-	<link rel="icon" href="/static/img/bloggulus.png">
-	<link rel="stylesheet" href="/static/css/mvp.css">
-	<style>
-	</style>
+	<link rel="icon" href="/static/img/bloggulus_logo.png" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:400,700" />
+	<link rel="stylesheet" href="/static/css/minireset.css" />
+	<link rel="stylesheet" href="/static/css/bloggulus.css" />
 </head>
 
 <body>
 	<header>
 		<nav>
-			<a href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus.png" height="150"></a>
-			<ul>
-				<li><a href="/">Home</a></li>
-				<li><a href="/about">About</a></li>
-				<li><a href="/blogs">Blogs</a></li>
+			<a class="nav-logo" href="/"><img alt="Bloggulus Logo" src="/static/img/bloggulus_wide.png" /></a>
+			<div class="nav-search">
+				<form method="GET" action="/search">
+					<input type="text" name="q" />
+				</form>
+			</div>
+			<div class="nav-login-logout">
 				{{if .Authed}}
-				<li>
-					<form method="POST" action="/logout">
-						<button type="submit">Logout</button>
-					</form>
-				</li>
+				<form method="POST" action="/logout">
+					<button type="submit">Logout</button>
+				</form>
 				{{else}}
-				<li><a href="/login">Login</a></li>
+				<a href="/login">Login</a>
 				{{end}}
-			</ul>
+			</div>
 		</nav>
 	</header>
 	<main>

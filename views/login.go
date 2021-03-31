@@ -6,8 +6,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/theandrew168/bloggulus/models"
@@ -77,13 +75,9 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			Domain:   "",  // will default to the server's base domain
 			Expires:  time.Unix(expiry.Unix() + 1, 0),  // round up to nearest second
 			MaxAge:   int(time.Until(expiry).Seconds() + 1),  // round up to nearest second
+			Secure:   true,
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
-		}
-
-		// TODO: find a better way to check if running with TLS?
-		if os.Getenv("LISTEN_PID") == strconv.Itoa(os.Getpid()) {
-			cookie.Secure = true
 		}
 
 		// add headers to set the cookie
@@ -116,11 +110,12 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			// delete existing session_id cookie
 			cookie := http.Cookie{
 				Name:     "session_id",
+				Value:    "",
 				Path:     "/",
 				Domain:   "",  // will default to the server's base domain
 				Expires:  time.Unix(1, 0),
-		//		Secure:   true,  // prod only
 				MaxAge:   -1,
+				Secure:   true,  // prod only
 				HttpOnly: true,
 				SameSite: http.SameSiteLaxMode,
 			}

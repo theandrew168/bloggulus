@@ -37,11 +37,12 @@ func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	// delete existing session_id cookie
 	cookie := http.Cookie{
 		Name:     "session_id",
+		Value:    "",
 		Path:     "/",
 		Domain:   "",  // will default to the server's base domain
 		Expires:  time.Unix(1, 0),
-//		Secure:   true,  // prod only
 		MaxAge:   -1,
+		Secure:   true,  // prod only
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}

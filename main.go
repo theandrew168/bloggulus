@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage/postgres"
@@ -89,6 +90,14 @@ func main() {
 		syncBlogs.RunNow()
 		return
 	}
+
+	// kick off blog sync task
+	syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+	go syncBlogs.Run(1 * time.Hour)
+
+	// kick off session prune task
+	pruneSessions := tasks.PruneSessions(sessionStorage)
+	go pruneSessions.Run(5 * time.Minute)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(app.HandleIndex))

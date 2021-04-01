@@ -1,19 +1,27 @@
 {{template "base" .}}
 
 {{define "main"}}
+<div class="container mx-auto">
+	<div class="mt-8 md:mt-16">
 	{{if .Authed}}
-		<header>
-			<h1>Followed Blogs</h1>
-		</header>
+		<h1 class="mb-8 text-center text-2xl font-bold text-gray-700">
+			Followed Blogs
+		</h1>
 		{{range .Blogs}}
-			<h2><a href="{{.SiteURL}}">{{.Title}}</a></h2>
+		<p class="mx-6 mt-2">
+			<a class="text-blue-700 hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
+		</p>
 		{{end}}
 	{{else}}
-		<header>
-			<h1>Available Blogs</h1>
-		</header>
+		<h1 class="mb-8 text-center text-2xl font-bold text-gray-700">
+			Available Blogs
+		</h1>
 		{{range .Blogs}}
-			<h2><a href="{{.SiteURL}}">{{.Title}}</a></h2>
+		<p class="mx-6 mt-2">
+			<a class="text-blue-700 hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
+		</p>
 		{{end}}
 	{{end}}
+	</div>
+</div>
 {{end}}

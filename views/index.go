@@ -55,13 +55,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	var posts []*models.SourcedPost
 	if authed {
-		posts, err = app.SourcedPost.ReadRecentForUser(r.Context(), accountID, 20)
+		posts, err = app.SourcedPost.ReadRecentForUser(r.Context(), accountID, 10)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 	} else {
-		posts, err = app.SourcedPost.ReadRecent(r.Context(), 20)
+		posts, err = app.SourcedPost.ReadRecent(r.Context(), 10)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

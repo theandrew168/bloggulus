@@ -36,10 +36,9 @@ func main() {
 	}
 	defer db.Close()
 
-	//	https://github.com/jackc/pgx/commit/aa8604b5c22989167e7158ecb1f6e7b8ddfebf04
-	//	if err = db.Ping(ctx); err != nil {
-	//		log.Fatal(err)
-	//	}
+	if err = db.Ping(context.Background()); err != nil {
+		log.Fatal(err)
+	}
 
 	// apply database migrations
 	if err = postgres.Migrate(db, context.Background(), "migrations/*.sql"); err != nil {

@@ -3,7 +3,7 @@ module github.com/theandrew168/bloggulus
 go 1.16
 
 require (
-	github.com/jackc/pgx/v4 v4.10.1
+	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mmcdole/gofeed v1.1.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 )

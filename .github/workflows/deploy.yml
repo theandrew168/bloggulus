@@ -38,7 +38,7 @@ jobs:
         npm install -g purgecss
     - name: Strip unused CSS
       run: |
-        purgecss -css static/css/* -con templates/* -o static/css/
+        purgecss -c purgecss.config.js -con templates/* -css static/css/* -o static/css/
     - name: Run tests
       run: |
         go test -count=1 -v ./...

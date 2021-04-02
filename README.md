@@ -1,5 +1,5 @@
-# bloggulus
-Custom RSS aggregator and index powered by [Go](https://golang.org/), [PostgreSQL](https://www.postgresql.org/), and [FTS](https://www.postgresql.org/docs/current/textsearch-intro.html).
+# [bloggulus](https://bloggulus.com)
+A community for bloggers and readers
 
 ## Database
 This project uses [PostgreSQL](https://www.postgresql.org/) for persistent backend storage.

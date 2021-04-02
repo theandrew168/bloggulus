@@ -1,9 +1,8 @@
-package views
+package web
 
 import (
 	"log"
 	"net/http"
-	"time"
 )
 
 func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
@@ -12,14 +11,15 @@ func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check for valid session
-	sessionID, err := r.Cookie("session_id")
+	// check for session cookie
+	sessionID, err := r.Cookie(SessionIDCookieName)
 	if err != nil {
 		log.Println(err)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
+	// lookup session in the database
 	session, err := app.Session.Read(r.Context(), sessionID.Value)
 	if err != nil {
 		log.Println(err)
@@ -27,6 +27,7 @@ func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// delete session from the database
 	err = app.Session.Delete(r.Context(), session.SessionID)
 	if err != nil {
 		log.Println(err)
@@ -34,18 +35,8 @@ func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// delete existing session_id cookie
-	cookie := http.Cookie{
-		Name:     "session_id",
-		Value:    "",
-		Path:     "/",
-		Domain:   "",  // will default to the server's base domain
-		Expires:  time.Unix(1, 0),
-		MaxAge:   -1,
-		Secure:   true,  // prod only
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
+	// clear session cookie
+	cookie := GenerateExpiredCookie(SessionIDCookieName)
 	w.Header().Add("Set-Cookie", cookie.String())
 	w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
 	w.Header().Add("Vary", "Cookie")

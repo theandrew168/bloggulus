@@ -1,4 +1,4 @@
-package views
+package web
 
 import (
 	"crypto/rand"
@@ -67,20 +67,8 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// create session_id cookie
-		cookie := http.Cookie{
-			Name:     "session_id",
-			Value:    sessionID,
-			Path:     "/",
-			Domain:   "",  // will default to the server's base domain
-			Expires:  time.Unix(expiry.Unix() + 1, 0),  // round up to nearest second
-			MaxAge:   int(time.Until(expiry).Seconds() + 1),  // round up to nearest second
-			Secure:   true,
-			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		}
-
-		// add headers to set the cookie
+		// create session cookie
+		cookie := GenerateSessionCookie(SessionIDCookieName, sessionID, expiry)
 		w.Header().Add("Set-Cookie", cookie.String())
 		w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
 		w.Header().Add("Vary", "Cookie")
@@ -95,35 +83,15 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authed := false
-
-	// check for valid session
-	sessionID, err := r.Cookie("session_id")
-	if err == nil {
-		// user does have a session_id cookie
-
-		_, err := app.Session.Read(r.Context(), sessionID.Value)
-		if err == nil {
-			authed = true
-		} else {
-			// must be expired!
-			// delete existing session_id cookie
-			cookie := http.Cookie{
-				Name:     "session_id",
-				Value:    "",
-				Path:     "/",
-				Domain:   "",  // will default to the server's base domain
-				Expires:  time.Unix(1, 0),
-				MaxAge:   -1,
-				Secure:   true,  // prod only
-				HttpOnly: true,
-				SameSite: http.SameSiteLaxMode,
-			}
-			w.Header().Add("Set-Cookie", cookie.String())
-			w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
-			w.Header().Add("Vary", "Cookie")
+	_, err = app.CheckSessionAccount(w, r)
+	if err != nil {
+		if err != ErrNoSession {
+			http.Error(w, err.Error(), 500)
+			return
 		}
 	}
+
+	authed := err == nil
 
 	data := &loginData{
 		Authed: authed,

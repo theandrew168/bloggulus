@@ -1,4 +1,4 @@
-package views
+package web
 
 import (
 	"github.com/theandrew168/bloggulus/storage"

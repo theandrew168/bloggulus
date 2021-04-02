@@ -1,4 +1,4 @@
-# [bloggulus](https://bloggulus.com)
+# bloggulus
 A community for bloggers and readers
 
 ## Database

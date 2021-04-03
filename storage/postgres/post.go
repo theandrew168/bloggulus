@@ -44,6 +44,65 @@ func (s *postStorage) Read(ctx context.Context, postID int) (*models.Post, error
 	return &post, nil
 }
 
+func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*models.Post, error) {
+	query := `
+		SELECT
+			*
+		FROM post
+		ORDER BY updated DESC
+		LIMIT $1`
+	rows, err := s.db.Query(ctx, query, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
+}
+
+func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]*models.Post, error) {
+	query := `
+		SELECT
+			post.*
+		FROM post
+		INNER JOIN blog
+			ON blog.blog_id = post.blog_id
+		INNER JOIN account_blog
+			ON account_blog.blog_id = blog.blog_id
+		WHERE account_blog.account_id = $1
+		ORDER BY post.updated DESC
+		LIMIT $2`
+	rows, err := s.db.Query(ctx, query, accountID, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(&post.PostID, &post.BlogID, &post.URL, &post.Title, &post.Updated)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, &post)
+	}
+
+	return posts, nil
+}
+
 func (s *postStorage) Delete(ctx context.Context, postID int) error {
 	command := "DELETE FROM post WHERE post_id = $1"
 	_, err := s.db.Exec(ctx, command, postID)

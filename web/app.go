@@ -9,5 +9,4 @@ type Application struct {
 	Blog        storage.Blog
 	Post        storage.Post
 	Session     storage.Session
-	SourcedPost storage.SourcedPost
 }

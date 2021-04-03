@@ -50,14 +50,12 @@ func main() {
 	blogStorage := postgres.NewBlogStorage(db)
 	postStorage := postgres.NewPostStorage(db)
 	sessionStorage := postgres.NewSessionStorage(db)
-	sourcedPostStorage := postgres.NewSourcedPostStorage(db)
 
 	app := &web.Application{
-		Account:     accountStorage,
-		Blog:        blogStorage,
-		Post:        postStorage,
-		Session:     sessionStorage,
-		SourcedPost: sourcedPostStorage,
+		Account: accountStorage,
+		Blog:    blogStorage,
+		Post:    postStorage,
+		Session: sessionStorage,
 	}
 
 	if *addblog {

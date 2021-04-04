@@ -1,33 +1,30 @@
 {{template "base" .}}
 
 {{define "main"}}
-<div class="px-6 py-8">
-	<div class="container mx-auto">
-		<div class="w-full lg:w-8/12">
-			<div class="flex items-center justify-between">
-				<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Posts</h1>
-			</div>
-			{{range .BlogPosts}}
-			<div class="mt-6">
-				<div class="max-w-4xl px-10 py-6 bg-white rounded-lg shadow-md">
-					<div class="flex justify-between items-center">
-						<span class="text-sm font-light text-gray-600">{{.Post.Updated.Format "Jan 2, 2006"}}</span>
-						<a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
-					</div>
-					<div class="mt-2">
-						<a class="text-2xl text-gray-700 font-bold hover:underline" href="{{.Post.URL}}">{{.Post.Title}}</a>
-						<p class="mt-2 text-gray-600">
-							Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!
-						</p>
-					</div>
-					<div class="flex justify-between items-center mt-4">
-						<a class="text-blue-600 hover:underline" href="{{.Post.URL}}">Read more</a>
-						<a class="text-gray-700 font-bold hover:underline" href="{{.Post.URL}}">{{.Blog.Title}}</a>
-					</div>
-				</div>
-			</div>
-			{{end}}
-		</div>
+	<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
+		<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Posts</h1>
 	</div>
-</div>
+
+	<div class="px-6 md:px-0">
+		{{range .BlogPosts}}
+		<div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md hover:shadow-lg rounded-lg mb-6 p-6">
+			<!-- date and tags -->
+			<div class="flex justify-between items-center mb-2">
+				<span class="text-sm font-light text-gray-600">{{.Post.Updated.Format "Jan 2, 2006"}}</span>
+				<a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
+			</div>
+			<!-- title -->
+			<a class="text-2xl text-gray-700 font-bold hover:underline block mb-4" href="{{.Post.URL}}">{{.Post.Title}}</a>
+			<!-- description / overview -->
+			<p class="text-gray-600 mb-4">
+				Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!
+			</p>
+			<!-- read more / blog link -->
+			<div class="flex justify-between items-center">
+				<a class="text-blue-600 hover:underline" href="{{.Post.URL}}">Read more</a>
+				<a class="text-gray-700 font-bold hover:underline" href="{{.Post.URL}}">{{.Blog.Title}}</a>
+			</div>
+		</div>
+		{{end}}
+	</div>
 {{end}}

@@ -66,7 +66,7 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]*models.Blog, error) {
 	return blogs, nil
 }
 
-func (s *blogStorage) ReadAllForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
+func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
 	query := `
 		SELECT
 			blog.*
@@ -74,6 +74,37 @@ func (s *blogStorage) ReadAllForUser(ctx context.Context, accountID int) ([]*mod
 		INNER JOIN account_blog
 			ON account_blog.blog_id = blog.blog_id
 		WHERE account_blog.account_id = $1`
+	rows, err := s.db.Query(ctx, query, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var blogs []*models.Blog
+	for rows.Next() {
+		var blog models.Blog
+		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
+		if err != nil {
+			return nil, err
+		}
+
+		blogs = append(blogs, &blog)
+	}
+
+	return blogs, nil
+}
+
+func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
+	query := `
+		SELECT
+			blog.*
+		FROM blog
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM account_blog
+			WHERE account_blog.blog_id = blog.blog_id
+			AND account_blog.account_id = $1
+		)`
 	rows, err := s.db.Query(ctx, query, accountID)
 	if err != nil {
 		return nil, err

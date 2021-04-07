@@ -41,20 +41,12 @@ jobs:
         purgecss -c scripts/purgecss.config.js -con templates/* -css static/css/* -o static/css/
     - name: Run tests
       run: |
-        go test -count=1 -v ./...
+        make test
       env:
         BLOGGULUS_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     - name: Build project
       run: |
-        go build -o bloggulus main.go
-    - name: Bundle project
-      run: |
-        mkdir dist/
-        cp bloggulus dist/
-        cp -r migrations dist/
-        cp -r static dist/
-        cp -r templates dist/
-        tree dist/
+        make dist
     - name: Copy build artifacts
       uses: appleboy/scp-action@master
       with:

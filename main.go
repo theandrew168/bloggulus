@@ -48,14 +48,16 @@ func main() {
 	// create storage interfaces
 	accountStorage := postgres.NewAccountStorage(db)
 	blogStorage := postgres.NewBlogStorage(db)
+	accountBlogStorage := postgres.NewAccountBlogStorage(db)
 	postStorage := postgres.NewPostStorage(db)
 	sessionStorage := postgres.NewSessionStorage(db)
 
 	app := &web.Application{
-		Account: accountStorage,
-		Blog:    blogStorage,
-		Post:    postStorage,
-		Session: sessionStorage,
+		Account:     accountStorage,
+		Blog:        blogStorage,
+		AccountBlog: accountBlogStorage,
+		Post:        postStorage,
+		Session:     sessionStorage,
 	}
 
 	if *addblog {
@@ -99,9 +101,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
 	mux.Handle("/about", http.HandlerFunc(app.HandleAbout))
-	mux.Handle("/blogs", http.HandlerFunc(app.HandleBlogs))
 	mux.Handle("/login", http.HandlerFunc(app.HandleLogin))
 	mux.Handle("/logout", http.HandlerFunc(app.HandleLogout))
+	mux.Handle("/blogs", http.HandlerFunc(app.HandleBlogs))
+	mux.Handle("/follow", http.HandlerFunc(app.HandleFollow))
+	mux.Handle("/unfollow", http.HandlerFunc(app.HandleUnfollow))
 	mux.Handle("/register", http.HandlerFunc(app.HandleRegister))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 

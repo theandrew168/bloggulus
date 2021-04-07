@@ -1,27 +1,56 @@
 {{template "base" .}}
 
 {{define "main"}}
-<div class="container mx-auto">
-	<div class="mt-8 md:mt-16">
-	{{if .Authed}}
-		<h1 class="mb-8 text-center text-2xl font-bold text-gray-700">
-			Followed Blogs
-		</h1>
-		{{range .Blogs}}
-		<p class="mx-6 mt-2">
-			<a class="text-blue-700 hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
-		</p>
-		{{end}}
-	{{else}}
-		<h1 class="mb-8 text-center text-2xl font-bold text-gray-700">
-			Available Blogs
-		</h1>
-		{{range .Blogs}}
-		<p class="mx-6 mt-2">
-			<a class="text-blue-700 hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
-		</p>
-		{{end}}
-	{{end}}
+<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
+	<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Available Blogs</h1>
+</div>
+
+<div class="px-6 md:px-0">
+	{{range .Blogs}}
+	<div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6">
+		<div class="flex items-center space-x-4">
+			<!-- title -->
+			<div class="flex-grow">
+				<a class="flex-grow text-2xl text-gray-700 font-bold hover:underline" href="{{.Blog.SiteURL}}">{{.Blog.Title}}</a>
+			</div>
+
+			<!-- controls: follow -->
+			{{if .Followed}}
+			<button type="button" class="flex-none text-white p-2 bg-gray-400 rounded cursor-default focus:outline-none">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+				</svg>
+			</button>
+			{{else}}
+			<form method="POST" action="/follow">
+				<input type="hidden" id="blog_id" name="blog_id" value="{{.Blog.BlogID}}" />
+				<button type="submit" class="flex-none text-white p-2 bg-green-400 rounded hover:bg-green-500 focus:outline-none">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+					</svg>
+				</button>
+			</form>
+			{{end}}
+
+			<!-- controls: unfollow -->
+			{{if .Followed}}
+			<form method="POST" action="/unfollow">
+				<input type="hidden" id="blog_id" name="blog_id" value="{{.Blog.BlogID}}" />
+				<button type="submit" class="flex-none text-white p-2 bg-red-400 rounded hover:bg-red-500 focus:outline-none">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+					</svg>
+				</button>
+			</form>
+			{{else}}
+			<button type="button" class="flex-none text-white p-2 bg-gray-400 rounded cursor-default focus:outline-none">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+				</svg>
+			</button>
+			{{end}}
+		</div>
 	</div>
+	{{end}}
 </div>
 {{end}}

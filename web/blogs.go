@@ -8,9 +8,14 @@ import (
 	"github.com/theandrew168/bloggulus/models"
 )
 
+type followedBlog struct {
+	Blog     *models.Blog
+	Followed bool
+}
+
 type blogsData struct {
 	Authed bool
-	Blogs  []*models.Blog
+	Blogs  []followedBlog
 }
 
 func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
@@ -29,25 +34,33 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authed := err == nil
+	if !authed {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-	var blogs []*models.Blog
-	if authed {
-		blogs, err = app.Blog.ReadAllForUser(r.Context(), accountID)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	} else {
-		blogs, err = app.Blog.ReadAll(r.Context())
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	followed, err := app.Blog.ReadFollowedForUser(r.Context(), accountID)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	unfollowed, err := app.Blog.ReadUnfollowedForUser(r.Context(), accountID)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
 	}
 
 	data := &blogsData{
 		Authed: authed,
-		Blogs:  blogs,
+	}
+
+	for _, blog := range(followed) {
+		data.Blogs = append(data.Blogs, followedBlog{blog, true})
+	}
+
+	for _, blog := range(unfollowed) {
+		data.Blogs = append(data.Blogs, followedBlog{blog, false})
 	}
 
 	err = ts.Execute(w, data)

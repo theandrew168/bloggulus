@@ -8,14 +8,9 @@ import (
 	"github.com/theandrew168/bloggulus/models"
 )
 
-type blogPost struct {
-	Blog *models.Blog
-	Post *models.Post
-}
-
 type indexData struct {
-	Authed    bool
-	BlogPosts []*blogPost
+	Authed bool
+	Posts  []*models.Post
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -35,44 +30,26 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	authed := err == nil
 
-	var blogPosts []*blogPost
+	var posts []*models.Post
 	if authed {
-		posts, err := app.Post.ReadRecentForUser(r.Context(), accountID, 10)
+		// read the recent posts that the user follows
+		posts, err = app.Post.ReadRecentForUser(r.Context(), accountID, 10)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
-		}
-
-		for _, post := range posts {
-			blog, err := app.Blog.Read(r.Context(), post.BlogID)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			blogPosts = append(blogPosts, &blogPost{blog, post})
 		}
 	} else {
-		posts, err := app.Post.ReadRecent(r.Context(), 10)
+		// read the recent posts
+		posts, err = app.Post.ReadRecent(r.Context(), 10)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
-		}
-
-		for _, post := range posts {
-			blog, err := app.Blog.Read(r.Context(), post.BlogID)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-
-			blogPosts = append(blogPosts, &blogPost{blog, post})
 		}
 	}
 
 	data := &indexData{
-		Authed:    authed,
-		BlogPosts: blogPosts,
+		Authed: authed,
+		Posts:  posts,
 	}
 
 	err = ts.Execute(w, data)

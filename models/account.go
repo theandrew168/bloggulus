@@ -6,4 +6,7 @@ type Account struct {
 	Password  string
 	Email     string
 	Verified  bool
+
+	Blogs     []Blog  // aka "Follows"
+	Sessions  []Session
 }

@@ -10,4 +10,6 @@ type Post struct {
 	URL     string
 	Title   string
 	Updated time.Time
+
+	Blog    Blog
 }

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"time"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage"
@@ -21,7 +20,11 @@ func NewSessionStorage(db *pgxpool.Pool) storage.Session {
 }
 
 func (s *sessionStorage) Create(ctx context.Context, session *models.Session) (*models.Session, error) {
-	command := "INSERT INTO session (session_id, account_id, expiry) VALUES ($1, $2, $3)"
+	command := `
+		INSERT INTO session
+			(session_id, account_id, expiry)
+		VALUES
+			($1, $2, $3)`
 	_, err := s.db.Exec(ctx, command, session.SessionID, session.AccountID, session.Expiry)
 	if err != nil {
 		return nil, err
@@ -31,11 +34,27 @@ func (s *sessionStorage) Create(ctx context.Context, session *models.Session) (*
 }
 
 func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*models.Session, error) {
-	query := "SELECT * FROM session WHERE session_id = $1"
+	query := `
+		SELECT
+			session.*,
+			account.*
+		FROM session
+		INNER JOIN account
+			ON account.account_id = session.account_id
+		WHERE session_id = $1`
 	row := s.db.QueryRow(ctx, query, sessionID)
 
 	var session models.Session
-	err := row.Scan(&session.SessionID, &session.AccountID, &session.Expiry)
+	err := row.Scan(
+		&session.SessionID,
+		&session.AccountID,
+		&session.Expiry,
+		&session.Account.AccountID,
+		&session.Account.Username,
+		&session.Account.Password,
+		&session.Account.Email,
+		&session.Account.Verified,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +63,19 @@ func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*models.Se
 }
 
 func (s *sessionStorage) Delete(ctx context.Context, sessionID string) error {
-	command := "DELETE FROM session WHERE session_id = $1"
+	command := `
+		DELETE
+		FROM session
+		WHERE session_id = $1`
 	_, err := s.db.Exec(ctx, command, sessionID)
 	return err
 }
 
 func (s *sessionStorage) DeleteExpired(ctx context.Context) error {
-	command := "DELETE FROM session WHERE expiry <= $1"
-	_ ,err := s.db.Exec(ctx, command, time.Now())
+	command := `
+		DELETE
+		FROM session
+		WHERE expiry <= now()`
+	_ ,err := s.db.Exec(ctx, command)
 	return err
 }

@@ -46,7 +46,6 @@
 			<!-- menu -->
 			<div :class="isOpen ? 'show' : 'hidden'" class="md:flex items-center md:block mt-4 md:mt-0">
 				<div class="flex flex-col md:flex-row md:ml-6">
-					<a class="my-1 text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="/about">About</a>
 					{{if .Authed}}
 					<a class="my-1 text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="/blogs">Blogs</a>
 					<form method="POST" action="/logout">

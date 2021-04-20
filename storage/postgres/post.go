@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type postStorage struct {
@@ -30,6 +33,14 @@ func (s *postStorage) Create(ctx context.Context, post *models.Post) (*models.Po
 
 	err := row.Scan(&post.PostID)
 	if err != nil {
+		// https://github.com/jackc/pgx/wiki/Error-Handling
+		// https://github.com/jackc/pgx/issues/474
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return nil, storage.ErrDuplicateModel
+			}
+		}
 		return nil, err
 	}
 

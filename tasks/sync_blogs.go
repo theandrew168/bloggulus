@@ -6,10 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/feeds"
 	"github.com/theandrew168/bloggulus/storage"
-
-	"github.com/mmcdole/gofeed"
 )
 
 type syncBlogsTask struct {
@@ -49,8 +47,6 @@ func (t *syncBlogsTask) syncBlogs() error {
 	// sync each blog in parallel
 	var wg sync.WaitGroup
 	for _, blog := range blogs {
-		log.Printf("syncing blog: %s\n", blog.FeedURL)
-
 		wg.Add(1)
 		go t.syncBlog(&wg, blog.BlogID, blog.FeedURL)
 	}
@@ -59,47 +55,30 @@ func (t *syncBlogsTask) syncBlogs() error {
 	return nil
 }
 
-func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, url string) {
+func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string) {
 	defer wg.Done()
 
-	log.Printf("checking blog: %s\n", url)
+	log.Printf("syncing blog: %s\n", feedURL)
 
-	// check if blog has been updated
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
+	// read current list of posts
+	posts, err := feeds.ReadPosts(feedURL)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// sync each post in parallel
-	for _, item := range feed.Items {
-		log.Printf("updating post: %s\n", item.Title)
-		wg.Add(1)
-		go t.syncPost(wg, blogID, item)
-	}
-}
+	// sync each post with the database
+	for _, post := range posts {
+		log.Printf("updating post: %s\n", post.Title)
 
-func (t *syncBlogsTask) syncPost(wg *sync.WaitGroup, blogID int, item *gofeed.Item) {
-	defer wg.Done()
-
-	// use an old date if the post doesn't have one
-	var updated time.Time
-	if item.UpdatedParsed != nil {
-		updated = *item.UpdatedParsed
-	} else {
-		updated = time.Now().AddDate(0, -3, 0)
-	}
-
-	post := &models.Post{
-		BlogID:  blogID,
-		URL:     item.Link,
-		Title:   item.Title,
-		Updated: updated,
-	}
-	_, err := t.Post.Create(context.Background(), post)
-	if err != nil {
-		log.Println(err)
-		return
+		post.BlogID = blogID
+		_, err := t.Post.Create(context.Background(), post)
+		if err != nil {
+			if err == storage.ErrDuplicateModel {
+				log.Println("  already exists")
+			} else {
+				log.Println(err)
+			}
+		}
 	}
 }

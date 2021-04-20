@@ -8,18 +8,18 @@ import (
 	"os"
 	"time"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/theandrew168/bloggulus/app"
+	"github.com/theandrew168/bloggulus/feeds"
+	"github.com/theandrew168/bloggulus/storage"
 	"github.com/theandrew168/bloggulus/storage/postgres"
 	"github.com/theandrew168/bloggulus/tasks"
-	"github.com/theandrew168/bloggulus/web"
-
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mmcdole/gofeed"
 )
 
 func main() {
 	addr := flag.String("addr", "127.0.0.1:5000", "server listen address")
-	addblog := flag.Bool("addblog", false, "-addblog <feed_url> <site_url>")
+	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
 	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
 	flag.Parse()
 
@@ -52,7 +52,7 @@ func main() {
 	postStorage := postgres.NewPostStorage(db)
 	sessionStorage := postgres.NewSessionStorage(db)
 
-	app := &web.Application{
+	app := &app.Application{
 		Account:     accountStorage,
 		Blog:        blogStorage,
 		AccountBlog: accountBlogStorage,
@@ -62,24 +62,21 @@ func main() {
 
 	if *addblog {
 		feedURL := os.Args[2]
-		siteURL := os.Args[3]
 		log.Printf("adding blog: %s\n", feedURL)
 
-		fp := gofeed.NewParser()
-		feed, err := fp.ParseURL(feedURL)
+		blog, err := feeds.ReadBlog(feedURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("  found: %s\n", feed.Title)
+		log.Printf("  found: %s\n", blog.Title)
 
-		blog := &models.Blog{
-			FeedURL: feedURL,
-			SiteURL: siteURL,
-			Title:   feed.Title,
-		}
 		_, err = blogStorage.Create(context.Background(), blog)
 		if err != nil {
-			log.Fatal(err)
+			if err == storage.ErrDuplicateModel {
+				log.Println("  already exists")
+			} else {
+				log.Fatal(err)
+			}
 		}
 		return
 	}

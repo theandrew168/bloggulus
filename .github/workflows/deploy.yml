@@ -36,9 +36,10 @@ jobs:
     - name: Install PurgeCSS
       run: |
         npm install -g purgecss
+    # intentionally absent from the Makefile due to destructive behavior
     - name: Strip unused CSS
       run: |
-        purgecss -c scripts/purgecss.config.js -con templates/* -css static/css/* -o static/css/
+        purgecss -c purgecss.config.js -con templates/* -css static/css/* -o static/css/
     - name: Run tests
       run: |
         make test

@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/models"
 	"github.com/theandrew168/bloggulus/storage"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type blogStorage struct {
@@ -25,6 +28,14 @@ func (s *blogStorage) Create(ctx context.Context, blog *models.Blog) (*models.Bl
 
 	err := row.Scan(&blog.BlogID)
 	if err != nil {
+		// https://github.com/jackc/pgx/wiki/Error-Handling
+		// https://github.com/jackc/pgx/issues/474
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return nil, storage.ErrDuplicateModel
+			}
+		}
 		return nil, err
 	}
 

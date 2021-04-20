@@ -1,4 +1,4 @@
-package web
+package app
 
 import (
 	"html/template"
@@ -18,7 +18,8 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			log.Println(err)
+			http.Redirect(w, r, "/register", http.StatusSeeOther)
 			return
 		}
 
@@ -61,6 +62,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFiles("templates/register.html.tmpl", "templates/base.html.tmpl")
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -68,6 +70,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	_, err = app.CheckSessionAccount(w, r)
 	if err != nil {
 		if err != ErrNoSession {
+			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -82,6 +85,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	err = ts.Execute(w, data)
 	if err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 }

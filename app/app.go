@@ -1,4 +1,4 @@
-package web
+package app
 
 import (
 	"github.com/theandrew168/bloggulus/storage"

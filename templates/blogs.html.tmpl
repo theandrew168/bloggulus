@@ -1,7 +1,30 @@
 {{template "base" .}}
 
 {{define "main"}}
-<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
+<!-- new blog form -->
+<form method="POST" action="/blogs">
+	<div class="my-12 px-6 md:px-0">
+		<section class="flex flex-col max-w-3xl mx-auto overflow-hidden bg-white rounded-lg shadow-lg md:flex-row md:h-48">
+			<!-- description -->
+			<div class="md:flex md:items-center md:justify-center md:w-1/2 md:bg-gray-700">
+				<div class="px-6 py-6 md:px-8 md:py-0">
+					<h2 class="text-lg font-bold text-gray-700 md:text-gray-100">Don't see your favorite blog?</h2>
+					<p class="mt-2 text-sm text-gray-600 md:text-gray-400">Add it to Bloggulus by submitting a link to its Atom or RSS feed</p>
+				</div>
+			</div>
+
+			<!-- input / button -->
+			<div class="flex items-center justify-center pb-6 md:py-0 md:w-1/2">
+				<div class="flex flex-row overflow-hidden border rounded-lg">
+					<input class="px-6 py-3 text-gray-700 placeholder-gray-500 bg-white outline-none focus:placeholder-transparent" type="text" name="feed_url" placeholder="Atom or RSS Feed" aria-label="Atom or RSS Feed">
+					<button class="px-4 py-3 text-sm font-medium tracking-wider text-gray-100 transition-colors duration-200 transform bg-gray-700 hover:bg-gray-600 focus:bg-gray-600 focus:outline-none" type="submit">SUBMIT</button>
+				</div>
+			</div>
+		</section>
+	</div>
+</form>
+
+<div class="max-w-3xl mx-auto flex justify-start items-center mb-6 px-6 md:px-0">
 	<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Available Blogs</h1>
 </div>
 

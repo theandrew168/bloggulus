@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 
-	"github.com/theandrew168/bloggulus/storage"
-
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/theandrew168/bloggulus/storage"
 )
 
 type accountBlogStorage struct {

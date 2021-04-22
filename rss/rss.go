@@ -1,4 +1,4 @@
-package feeds
+package rss
 
 import (
 	"log"
@@ -6,10 +6,10 @@ import (
 
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 )
 
-func ReadBlog(feedURL string) (*models.Blog, error) {
+func ReadBlog(feedURL string) (*model.Blog, error) {
 	// early check to ensure the URL is valid
 	URL, err := url.Parse(feedURL)
 	if err != nil {
@@ -31,7 +31,7 @@ func ReadBlog(feedURL string) (*models.Blog, error) {
 	}
 
 	// create a Blog model for the feed
-	blog := models.Blog{
+	blog := model.Blog{
 		FeedURL: feedURL,
 		SiteURL: siteURL,
 		Title:   feed.Title,
@@ -40,7 +40,7 @@ func ReadBlog(feedURL string) (*models.Blog, error) {
 	return &blog, nil
 }
 
-func ReadPosts(feedURL string) ([]*models.Post, error) {
+func ReadPosts(feedURL string) ([]*model.Post, error) {
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
@@ -55,7 +55,7 @@ func ReadPosts(feedURL string) ([]*models.Post, error) {
 	}
 
 	// create a Post model for each entry
-	var posts []*models.Post
+	var posts []*model.Post
 	for _, item := range feed.Items {
 		// try Updated then Published to obtain a timestamp
 		updated := item.UpdatedParsed
@@ -67,7 +67,7 @@ func ReadPosts(feedURL string) ([]*models.Post, error) {
 			continue
 		}
 
-		post := models.Post{
+		post := model.Post{
 			URL:     item.Link,
 			Title:   item.Title,
 			Updated: *updated,

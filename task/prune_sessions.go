@@ -1,4 +1,4 @@
-package tasks
+package task
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 )
 
 type pruneSessionsTask struct {
-	Session storage.Session
+	Session *storage.Session
 }
 
-func PruneSessions(sessionStorage storage.Session) Task {
+func PruneSessions(sessionStorage *storage.Session) Task {
 	return &pruneSessionsTask{
 		Session: sessionStorage,
 	}

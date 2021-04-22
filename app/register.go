@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/models"
-
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/theandrew168/bloggulus/model"
 )
 
 type registerData struct {
@@ -45,7 +45,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		account := &models.Account{
+		account := &model.Account{
 			Username: username,
 			Password: string(hash),
 		}

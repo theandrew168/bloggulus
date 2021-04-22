@@ -5,9 +5,9 @@ import (
 )
 
 type Application struct {
-	Account     storage.Account
-	Blog        storage.Blog
-	AccountBlog storage.AccountBlog
-	Post        storage.Post
-	Session     storage.Session
+	Account     *storage.Account
+	Blog        *storage.Blog
+	AccountBlog *storage.AccountBlog
+	Post        *storage.Post
+	Session     *storage.Session
 }

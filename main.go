@@ -11,10 +11,9 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/app"
-	"github.com/theandrew168/bloggulus/feeds"
+	"github.com/theandrew168/bloggulus/rss"
 	"github.com/theandrew168/bloggulus/storage"
-	"github.com/theandrew168/bloggulus/storage/postgres"
-	"github.com/theandrew168/bloggulus/tasks"
+	"github.com/theandrew168/bloggulus/task"
 )
 
 func main() {
@@ -41,16 +40,16 @@ func main() {
 	}
 
 	// apply database migrations
-	if err = postgres.Migrate(db, context.Background(), "migrations/*.sql"); err != nil {
+	if err = storage.Migrate(db, context.Background(), "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
 	// create storage interfaces
-	accountStorage := postgres.NewAccountStorage(db)
-	blogStorage := postgres.NewBlogStorage(db)
-	accountBlogStorage := postgres.NewAccountBlogStorage(db)
-	postStorage := postgres.NewPostStorage(db)
-	sessionStorage := postgres.NewSessionStorage(db)
+	accountStorage := storage.NewAccount(db)
+	accountBlogStorage := storage.NewAccountBlog(db)
+	blogStorage := storage.NewBlog(db)
+	postStorage := storage.NewPost(db)
+	sessionStorage := storage.NewSession(db)
 
 	app := &app.Application{
 		Account:     accountStorage,
@@ -64,7 +63,7 @@ func main() {
 		feedURL := os.Args[2]
 		log.Printf("adding blog: %s\n", feedURL)
 
-		blog, err := feeds.ReadBlog(feedURL)
+		blog, err := rss.ReadBlog(feedURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -82,17 +81,17 @@ func main() {
 	}
 
 	if *syncblogs {
-		syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+		syncBlogs := task.SyncBlogs(blogStorage, postStorage)
 		syncBlogs.RunNow()
 		return
 	}
 
 	// kick off blog sync task
-	syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+	syncBlogs := task.SyncBlogs(blogStorage, postStorage)
 	go syncBlogs.Run(1 * time.Hour)
 
 	// kick off session prune task
-	pruneSessions := tasks.PruneSessions(sessionStorage)
+	pruneSessions := task.PruneSessions(sessionStorage)
 	go pruneSessions.Run(5 * time.Minute)
 
 	mux := http.NewServeMux()

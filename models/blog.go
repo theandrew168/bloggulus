@@ -1,4 +1,4 @@
-package model
+package models
 
 type Blog struct {
 	BlogID   int

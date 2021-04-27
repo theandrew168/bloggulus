@@ -1,4 +1,4 @@
-package task
+package tasks
 
 import (
 	"context"
@@ -6,16 +6,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theandrew168/bloggulus/rss"
+	"github.com/theandrew168/bloggulus/feeds"
 	"github.com/theandrew168/bloggulus/storage"
 )
 
 type syncBlogsTask struct {
-	Blog *storage.Blog
-	Post *storage.Post
+	Blog storage.Blog
+	Post storage.Post
 }
 
-func SyncBlogs(blog *storage.Blog, post *storage.Post) Task {
+func SyncBlogs(blog storage.Blog, post storage.Post) Task {
 	return &syncBlogsTask{
 		Blog: blog,
 		Post: post,
@@ -61,7 +61,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 	log.Printf("syncing blog: %s\n", feedURL)
 
 	// read current list of posts
-	posts, err := rss.ReadPosts(feedURL)
+	posts, err := feeds.ReadPosts(feedURL)
 	if err != nil {
 		log.Println(err)
 		return

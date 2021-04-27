@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/theandrew168/bloggulus/models"
 
-	"github.com/theandrew168/bloggulus/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type loginData struct {
@@ -55,7 +55,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		expiry := time.Now().AddDate(0, 0, 7)
-		session := &model.Session{
+		session := &models.Session{
 			SessionID: sessionID,
 			AccountID: account.AccountID,
 			Expiry:    expiry,

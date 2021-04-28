@@ -17,9 +17,10 @@ type blogStorage struct {
 }
 
 func NewBlogStorage(db *pgxpool.Pool) storage.Blog {
-	return &blogStorage{
+	s := blogStorage{
 		db: db,
 	}
+	return &s
 }
 
 func (s *blogStorage) Create(ctx context.Context, blog *model.Blog) (*model.Blog, error) {
@@ -45,6 +46,19 @@ func (s *blogStorage) Create(ctx context.Context, blog *model.Blog) (*model.Blog
 func (s *blogStorage) Read(ctx context.Context, blogID int) (*model.Blog, error) {
 	query := "SELECT * FROM blog WHERE blog_id = $1"
 	row := s.db.QueryRow(ctx, query, blogID)
+
+	var blog model.Blog
+	err := row.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
+	if err != nil {
+		return nil, err
+	}
+
+	return &blog, nil
+}
+
+func (s *blogStorage) ReadByURL(ctx context.Context, feedURL string) (*model.Blog, error) {
+	query := "SELECT * FROM blog WHERE feed_url = $1"
+	row := s.db.QueryRow(ctx, query, feedURL)
 
 	var blog model.Blog
 	err := row.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)

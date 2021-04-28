@@ -4,11 +4,15 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/theandrew168/bloggulus/storage"
 )
 
 func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		w.Header().Add("Allow", "POST")
+		status := http.StatusMethodNotAllowed
+		http.Error(w, http.StatusText(status), status)
 		return
 	}
 
@@ -16,7 +20,7 @@ func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
@@ -24,29 +28,33 @@ func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	blogID, err := strconv.Atoi(r.PostFormValue("blog_id"))
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		status := http.StatusBadRequest
+		http.Error(w, http.StatusText(status), status)
 		return
 	}
 
-	// check for session cookie
-	sessionID, err := r.Cookie(SessionIDCookieName)
+	// lookup account
+	account, err := app.CheckAccount(w, r)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
-		return
+		if err == ErrNoSession {
+			status := http.StatusUnauthorized
+			http.Error(w, http.StatusText(status), status)
+		} else {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 
-	// lookup session in the database
-	session, err := app.Session.Read(r.Context(), sessionID.Value)
+	// link the blog to the account
+	err = app.AccountBlog.Follow(r.Context(), account.AccountID, blogID)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
-		return
+		if err != storage.ErrDuplicateModel {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
-
-	accountID := session.Account.AccountID
-	log.Printf("account %d follow blog %d\n", accountID, blogID)
-	app.AccountBlog.Follow(r.Context(), accountID, blogID)
 
 	http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 	return

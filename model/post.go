@@ -11,5 +11,5 @@ type Post struct {
 	Title   string
 	Updated time.Time
 
-	Blog    Blog
+	Blog Blog
 }

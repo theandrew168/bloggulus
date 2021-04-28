@@ -6,20 +6,26 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4"
+
+	"github.com/theandrew168/bloggulus/model"
 )
 
 var ErrNoSession = errors.New("user request doesn't have a valid session")
 
-var SessionIDCookieName = "session_id"
+var (
+	SessionIDCookieName = "session_id"
+	SuccessCookieName   = "success"
+	ErrorCookieName     = "error"
+)
 
-func (app *Application) CheckSessionAccount(w http.ResponseWriter, r *http.Request) (int, error) {
+func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (*model.Account, error) {
 	// check for session cookie
 	sessionID, err := r.Cookie(SessionIDCookieName)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
-			return 0, ErrNoSession
+			return nil, ErrNoSession
 		} else {
-			return 0, err
+			return nil, err
 		}
 	}
 
@@ -29,27 +35,25 @@ func (app *Application) CheckSessionAccount(w http.ResponseWriter, r *http.Reque
 		if errors.Is(err, pgx.ErrNoRows) {
 			// user has a session cookie but it's expired
 			cookie := GenerateExpiredCookie(SessionIDCookieName)
-			w.Header().Add("Set-Cookie", cookie.String())
-			w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
-			w.Header().Add("Vary", "Cookie")
-			return 0, ErrNoSession
+			http.SetCookie(w, cookie)
+			return nil, ErrNoSession
 		} else {
-			return 0, err
+			return nil, err
 		}
 	}
 
-	// return ID of the account associated with the session
-	return session.AccountID, nil
+	account := &session.Account
+	return account, nil
 }
 
 func GenerateSessionCookie(name, value string, expiry time.Time) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
-		Path:     "/",  // applies to the whole site
-		Domain:   "",  // will default to the server's base domain
-		Expires:  time.Unix(expiry.Unix() + 1, 0),  // round up to nearest second
-		MaxAge:   int(time.Until(expiry).Seconds() + 1),  // round up to nearest second
+		Path:     "/",                                   // applies to the whole site
+		Domain:   "",                                    // will default to the server's base domain
+		Expires:  time.Unix(expiry.Unix()+1, 0),         // round up to nearest second
+		MaxAge:   int(time.Until(expiry).Seconds() + 1), // round up to nearest second
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -61,10 +65,10 @@ func GenerateExpiredCookie(name string) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    "",
-		Path:     "/",  // applies to the whole site
-		Domain:   "",  // will default to the server's base domain
-		Expires:  time.Unix(1, 0),  // expires now
-		MaxAge:   -1,  // expires now
+		Path:     "/",             // applies to the whole site
+		Domain:   "",              // will default to the server's base domain
+		Expires:  time.Unix(1, 0), // expires now
+		MaxAge:   -1,              // expires now
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

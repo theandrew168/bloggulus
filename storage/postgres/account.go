@@ -2,7 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/model"
@@ -14,9 +17,10 @@ type accountStorage struct {
 }
 
 func NewAccountStorage(db *pgxpool.Pool) storage.Account {
-	return &accountStorage{
+	s := accountStorage{
 		db: db,
 	}
+	return &s
 }
 
 func (s *accountStorage) Create(ctx context.Context, account *model.Account) (*model.Account, error) {
@@ -26,6 +30,14 @@ func (s *accountStorage) Create(ctx context.Context, account *model.Account) (*m
 	account.Verified = false
 	err := row.Scan(&account.AccountID)
 	if err != nil {
+		// https://github.com/jackc/pgx/wiki/Error-Handling
+		// https://github.com/jackc/pgx/issues/474
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return nil, storage.ErrDuplicateModel
+			}
+		}
 		return nil, err
 	}
 

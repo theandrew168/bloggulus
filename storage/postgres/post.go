@@ -17,9 +17,10 @@ type postStorage struct {
 }
 
 func NewPostStorage(db *pgxpool.Pool) storage.Post {
-	return &postStorage{
+	s := postStorage{
 		db: db,
 	}
+	return &s
 }
 
 func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post, error) {

@@ -4,14 +4,18 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type registerData struct {
-	Authed bool
+	Authed  bool
+	Success string
+	Error   string
 }
 
 func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +23,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/register", http.StatusSeeOther)
+			http.Error(w, err.Error(), 500)
 			return
 		}
 
@@ -27,13 +31,17 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		password1 := r.PostFormValue("password1")
 		password2 := r.PostFormValue("password2")
 		if username == "" || password1 == "" || password2 == "" {
-			log.Println("empty username or passwords")
+			expiry := time.Now().Add(time.Hour * 12)
+			cookie := GenerateSessionCookie(ErrorCookieName, "Empty username or password", expiry)
+			http.SetCookie(w, cookie)
 			http.Redirect(w, r, "/register", http.StatusSeeOther)
 			return
 		}
 
 		if password1 != password2 {
-			log.Println("passwords don't match")
+			expiry := time.Now().Add(time.Hour * 12)
+			cookie := GenerateSessionCookie(ErrorCookieName, "Passwords do not match", expiry)
+			http.SetCookie(w, cookie)
 			http.Redirect(w, r, "/register", http.StatusSeeOther)
 			return
 		}
@@ -41,7 +49,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		hash, err := bcrypt.GenerateFromPassword([]byte(password1), bcrypt.DefaultCost)
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/register", http.StatusSeeOther)
+			http.Error(w, err.Error(), 500)
 			return
 		}
 
@@ -51,11 +59,22 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 		account, err = app.Account.Create(r.Context(), account)
 		if err != nil {
-			log.Println(err)
-			http.Redirect(w, r, "/register", http.StatusSeeOther)
-			return
+			if err == storage.ErrDuplicateModel {
+				expiry := time.Now().Add(time.Hour * 12)
+				cookie := GenerateSessionCookie(ErrorCookieName, "Failed to create account", expiry)
+				http.SetCookie(w, cookie)
+				http.Redirect(w, r, "/register", http.StatusSeeOther)
+				return
+			} else {
+				log.Println(err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
 		}
 
+		expiry := time.Now().Add(time.Hour * 12)
+		cookie := GenerateSessionCookie(SuccessCookieName, "Account successfully created!", expiry)
+		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -67,7 +86,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.CheckSessionAccount(w, r)
+	_, err = app.CheckAccount(w, r)
 	if err != nil {
 		if err != ErrNoSession {
 			log.Println(err)
@@ -80,6 +99,22 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	data := &registerData{
 		Authed: authed,
+	}
+
+	// check for success cookie
+	cookie, err := r.Cookie(SuccessCookieName)
+	if err == nil {
+		data.Success = cookie.Value
+		cookie = GenerateExpiredCookie(SuccessCookieName)
+		http.SetCookie(w, cookie)
+	}
+
+	// check for error cookie
+	cookie, err = r.Cookie(ErrorCookieName)
+	if err == nil {
+		data.Error = cookie.Value
+		cookie = GenerateExpiredCookie(ErrorCookieName)
+		http.SetCookie(w, cookie)
 	}
 
 	err = ts.Execute(w, data)

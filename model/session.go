@@ -9,5 +9,5 @@ type Session struct {
 	AccountID int
 	Expiry    time.Time
 
-	Account   Account
+	Account Account
 }

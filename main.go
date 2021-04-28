@@ -84,7 +84,7 @@ func main() {
 	}
 
 	if *syncblogs {
-		syncBlogs := task.SyncBlogs(blogStorage, postStorage)
+		syncBlogs := task.SyncBlogs(app.Blog, app.Post)
 		syncBlogs.RunNow()
 		return
 	}

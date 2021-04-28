@@ -8,7 +8,9 @@ import (
 
 func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		w.Header().Add("Allow", "POST")
+		status := http.StatusMethodNotAllowed
+		http.Error(w, http.StatusText(status), status)
 		return
 	}
 
@@ -16,7 +18,7 @@ func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
@@ -24,29 +26,31 @@ func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
 	blogID, err := strconv.Atoi(r.PostFormValue("blog_id"))
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		status := http.StatusBadRequest
+		http.Error(w, http.StatusText(status), status)
 		return
 	}
 
-	// check for session cookie
-	sessionID, err := r.Cookie(SessionIDCookieName)
+	// lookup account
+	account, err := app.CheckAccount(w, r)
+	if err != nil {
+		if err == ErrNoSession {
+			status := http.StatusUnauthorized
+			http.Error(w, http.StatusText(status), status)
+		} else {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	}
+
+	// unlink the blog from the account
+	err = app.AccountBlog.Unfollow(r.Context(), account.AccountID, blogID)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+		http.Error(w, err.Error(), 500)
 		return
 	}
-
-	// lookup session in the database
-	session, err := app.Session.Read(r.Context(), sessionID.Value)
-	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
-		return
-	}
-
-	accountID := session.Account.AccountID
-	log.Printf("account %d unfollow blog %d\n", accountID, blogID)
-	app.AccountBlog.Unfollow(r.Context(), accountID, blogID)
 
 	http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 	return

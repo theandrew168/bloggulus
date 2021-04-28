@@ -14,13 +14,16 @@ import (
 )
 
 type loginData struct {
-	Authed bool
+	Authed  bool
+	Success string
+	Error   string
 }
 
 func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
 		if err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -28,21 +31,27 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		username := r.PostFormValue("username")
 		password := r.PostFormValue("password")
 		if username == "" || password == "" {
-			log.Println("empty username or password")
+			expiry := time.Now().Add(time.Hour * 12)
+			cookie := GenerateSessionCookie(ErrorCookieName, "Empty username or password", expiry)
+			http.SetCookie(w, cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
 		account, err := app.Account.ReadByUsername(r.Context(), username)
 		if err != nil {
-			log.Println(err)
+			expiry := time.Now().Add(time.Hour * 12)
+			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid username or password", expiry)
+			http.SetCookie(w, cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
 		if err != nil {
-			log.Println(err)
+			expiry := time.Now().Add(time.Hour * 12)
+			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid username or password", expiry)
+			http.SetCookie(w, cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -50,7 +59,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		sessionID, err := generateSessionID()
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Error(w, err.Error(), 500)
 			return
 		}
 
@@ -63,15 +72,13 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		session, err = app.Session.Create(r.Context(), session)
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Error(w, err.Error(), 500)
 			return
 		}
 
 		// create session cookie
 		cookie := GenerateSessionCookie(SessionIDCookieName, sessionID, expiry)
-		w.Header().Add("Set-Cookie", cookie.String())
-		w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
-		w.Header().Add("Vary", "Cookie")
+		http.SetCookie(w, cookie)
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -83,7 +90,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.CheckSessionAccount(w, r)
+	_, err = app.CheckAccount(w, r)
 	if err != nil {
 		if err != ErrNoSession {
 			http.Error(w, err.Error(), 500)
@@ -95,6 +102,22 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	data := &loginData{
 		Authed: authed,
+	}
+
+	// check for success cookie
+	cookie, err := r.Cookie(SuccessCookieName)
+	if err == nil {
+		data.Success = cookie.Value
+		cookie = GenerateExpiredCookie(SuccessCookieName)
+		http.SetCookie(w, cookie)
+	}
+
+	// check for error cookie
+	cookie, err = r.Cookie(ErrorCookieName)
+	if err == nil {
+		data.Error = cookie.Value
+		cookie = GenerateExpiredCookie(ErrorCookieName)
+		http.SetCookie(w, cookie)
 	}
 
 	err = ts.Execute(w, data)

@@ -14,9 +14,10 @@ type sessionStorage struct {
 }
 
 func NewSessionStorage(db *pgxpool.Pool) storage.Session {
-	return &sessionStorage{
+	s := sessionStorage{
 		db: db,
 	}
+	return &s
 }
 
 func (s *sessionStorage) Create(ctx context.Context, session *model.Session) (*model.Session, error) {
@@ -76,6 +77,6 @@ func (s *sessionStorage) DeleteExpired(ctx context.Context) error {
 		DELETE
 		FROM session
 		WHERE expiry <= now()`
-	_ ,err := s.db.Exec(ctx, command)
+	_, err := s.db.Exec(ctx, command)
 	return err
 }

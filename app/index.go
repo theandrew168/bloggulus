@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 )
 
 type indexData struct {
 	Authed bool
-	Posts  []*models.Post
+	Posts  []*model.Post
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	authed := err == nil
 
-	var posts []*models.Post
+	var posts []*model.Post
 	if authed {
 		// read the recent posts that the user follows
 		posts, err = app.Post.ReadRecentForUser(r.Context(), accountID, 10)

@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 	"github.com/theandrew168/bloggulus/storage"
 )
 
@@ -22,7 +22,7 @@ func NewBlogStorage(db *pgxpool.Pool) storage.Blog {
 	}
 }
 
-func (s *blogStorage) Create(ctx context.Context, blog *models.Blog) (*models.Blog, error) {
+func (s *blogStorage) Create(ctx context.Context, blog *model.Blog) (*model.Blog, error) {
 	command := "INSERT INTO blog (feed_url, site_url, title) VALUES ($1, $2, $3) RETURNING blog_id"
 	row := s.db.QueryRow(ctx, command, blog.FeedURL, blog.SiteURL, blog.Title)
 
@@ -42,11 +42,11 @@ func (s *blogStorage) Create(ctx context.Context, blog *models.Blog) (*models.Bl
 	return blog, nil
 }
 
-func (s *blogStorage) Read(ctx context.Context, blogID int) (*models.Blog, error) {
+func (s *blogStorage) Read(ctx context.Context, blogID int) (*model.Blog, error) {
 	query := "SELECT * FROM blog WHERE blog_id = $1"
 	row := s.db.QueryRow(ctx, query, blogID)
 
-	var blog models.Blog
+	var blog model.Blog
 	err := row.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (s *blogStorage) Read(ctx context.Context, blogID int) (*models.Blog, error
 	return &blog, nil
 }
 
-func (s *blogStorage) ReadAll(ctx context.Context) ([]*models.Blog, error) {
+func (s *blogStorage) ReadAll(ctx context.Context) ([]*model.Blog, error) {
 	query := "SELECT * FROM blog"
 	rows, err := s.db.Query(ctx, query)
 	if err != nil {
@@ -63,9 +63,9 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]*models.Blog, error) {
 	}
 	defer rows.Close()
 
-	var blogs []*models.Blog
+	var blogs []*model.Blog
 	for rows.Next() {
-		var blog models.Blog
+		var blog model.Blog
 		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
 		if err != nil {
 			return nil, err
@@ -77,7 +77,7 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]*models.Blog, error) {
 	return blogs, nil
 }
 
-func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
+func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([]*model.Blog, error) {
 	query := `
 		SELECT
 			blog.*
@@ -91,9 +91,9 @@ func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([
 	}
 	defer rows.Close()
 
-	var blogs []*models.Blog
+	var blogs []*model.Blog
 	for rows.Next() {
-		var blog models.Blog
+		var blog model.Blog
 		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
 		if err != nil {
 			return nil, err
@@ -105,7 +105,7 @@ func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([
 	return blogs, nil
 }
 
-func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) ([]*models.Blog, error) {
+func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) ([]*model.Blog, error) {
 	query := `
 		SELECT
 			blog.*
@@ -122,9 +122,9 @@ func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) 
 	}
 	defer rows.Close()
 
-	var blogs []*models.Blog
+	var blogs []*model.Blog
 	for rows.Next() {
-		var blog models.Blog
+		var blog model.Blog
 		err := rows.Scan(&blog.BlogID, &blog.FeedURL, &blog.SiteURL, &blog.Title)
 		if err != nil {
 			return nil, err

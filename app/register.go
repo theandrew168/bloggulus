@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -45,7 +45,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		account := &models.Account{
+		account := &model.Account{
 			Username: username,
 			Password: string(hash),
 		}

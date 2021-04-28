@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 	"github.com/theandrew168/bloggulus/storage"
 )
 
@@ -19,7 +19,7 @@ func NewAccountStorage(db *pgxpool.Pool) storage.Account {
 	}
 }
 
-func (s *accountStorage) Create(ctx context.Context, account *models.Account) (*models.Account, error) {
+func (s *accountStorage) Create(ctx context.Context, account *model.Account) (*model.Account, error) {
 	command := "INSERT INTO account (username, password, email) VALUES ($1, $2, $3) RETURNING account_id"
 	row := s.db.QueryRow(ctx, command, account.Username, account.Password, account.Email)
 
@@ -32,11 +32,11 @@ func (s *accountStorage) Create(ctx context.Context, account *models.Account) (*
 	return account, nil
 }
 
-func (s *accountStorage) Read(ctx context.Context, accountID int) (*models.Account, error) {
+func (s *accountStorage) Read(ctx context.Context, accountID int) (*model.Account, error) {
 	query := "SELECT * FROM account WHERE account_id = $1"
 	row := s.db.QueryRow(ctx, query, accountID)
 
-	var account models.Account
+	var account model.Account
 	err := row.Scan(&account.AccountID, &account.Username, &account.Password, &account.Email, &account.Verified)
 	if err != nil {
 		return nil, err
@@ -45,11 +45,11 @@ func (s *accountStorage) Read(ctx context.Context, accountID int) (*models.Accou
 	return &account, nil
 }
 
-func (s *accountStorage) ReadByUsername(ctx context.Context, username string) (*models.Account, error) {
+func (s *accountStorage) ReadByUsername(ctx context.Context, username string) (*model.Account, error) {
 	query := "SELECT * FROM account WHERE username = $1"
 	row := s.db.QueryRow(ctx, query, username)
 
-	var account models.Account
+	var account model.Account
 	err := row.Scan(&account.AccountID, &account.Username, &account.Password, &account.Email, &account.Verified)
 	if err != nil {
 		return nil, err

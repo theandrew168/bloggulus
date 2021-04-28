@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -55,7 +55,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		expiry := time.Now().AddDate(0, 0, 7)
-		session := &models.Session{
+		session := &model.Session{
 			SessionID: sessionID,
 			AccountID: account.AccountID,
 			Expiry:    expiry,

@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/feeds"
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/rss"
 )
 
 type followedBlog struct {
-	Blog     *models.Blog
+	Blog     *model.Blog
 	Followed bool
 }
 
@@ -49,7 +49,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blog, err := feeds.ReadBlog(feedURL)
+		blog, err := rss.ReadBlog(feedURL)
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/blogs", http.StatusSeeOther)

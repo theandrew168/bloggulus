@@ -4,4 +4,4 @@ import (
 	"errors"
 )
 
-var ErrDuplicateModel = errors.New("storage operation violates a unique constraint")
+var ErrDuplicateModel = errors.New("storage: operation violates a unique constraint")

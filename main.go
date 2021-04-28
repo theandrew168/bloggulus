@@ -6,15 +6,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/app"
-	"github.com/theandrew168/bloggulus/feeds"
+	"github.com/theandrew168/bloggulus/rss"
 	"github.com/theandrew168/bloggulus/storage"
 	"github.com/theandrew168/bloggulus/storage/postgres"
-	"github.com/theandrew168/bloggulus/tasks"
+	"github.com/theandrew168/bloggulus/task"
 )
 
 func main() {
@@ -41,7 +43,7 @@ func main() {
 	}
 
 	// apply database migrations
-	if err = postgres.Migrate(db, context.Background(), "migrations/*.sql"); err != nil {
+	if err = migrate(db, context.Background(), "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -64,7 +66,7 @@ func main() {
 		feedURL := os.Args[2]
 		log.Printf("adding blog: %s\n", feedURL)
 
-		blog, err := feeds.ReadBlog(feedURL)
+		blog, err := rss.ReadBlog(feedURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -82,17 +84,17 @@ func main() {
 	}
 
 	if *syncblogs {
-		syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+		syncBlogs := task.SyncBlogs(blogStorage, postStorage)
 		syncBlogs.RunNow()
 		return
 	}
 
 	// kick off blog sync task
-	syncBlogs := tasks.SyncBlogs(blogStorage, postStorage)
+	syncBlogs := task.SyncBlogs(blogStorage, postStorage)
 	go syncBlogs.Run(1 * time.Hour)
 
 	// kick off session prune task
-	pruneSessions := tasks.PruneSessions(sessionStorage)
+	pruneSessions := task.PruneSessions(sessionStorage)
 	go pruneSessions.Run(5 * time.Minute)
 
 	mux := http.NewServeMux()
@@ -107,4 +109,71 @@ func main() {
 
 	log.Printf("Listening on %s\n", *addr)
 	log.Fatal(http.ListenAndServe(*addr, mux))
+}
+
+func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error {
+	// create migrations table if it doesn't exist
+	_, err := db.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS migration (
+			migration_id SERIAL PRIMARY KEY,
+			name TEXT NOT NULL UNIQUE
+		)`)
+	if err != nil {
+		return err
+	}
+
+	// get migrations that are already applied
+	rows, err := db.Query(ctx, "SELECT name FROM migration")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	applied := make(map[string]bool)
+	for rows.Next() {
+		var name string
+		err = rows.Scan(&name)
+		if err != nil {
+			return err
+		}
+		applied[name] = true
+	}
+
+	// get migrations that should be applied (from migrations/ dir)
+	migrations, err := filepath.Glob(migrationsGlob)
+	if err != nil {
+		return err
+	}
+
+	// determine missing migrations
+	var missing []string
+	for _, migration := range migrations {
+		if _, ok := applied[migration]; !ok {
+			missing = append(missing, migration)
+		}
+	}
+
+	// sort missing migrations to preserve order
+	sort.Strings(missing)
+	for _, file := range missing {
+		log.Printf("applying: %s\n", file)
+
+		// apply the missing ones
+		sql, err := os.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		_, err = db.Exec(ctx, string(sql))
+		if err != nil {
+			return err
+		}
+
+		// update migrations table
+		_, err = db.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", file)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

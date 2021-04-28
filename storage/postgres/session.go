@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/models"
+	"github.com/theandrew168/bloggulus/model"
 	"github.com/theandrew168/bloggulus/storage"
 )
 
@@ -19,7 +19,7 @@ func NewSessionStorage(db *pgxpool.Pool) storage.Session {
 	}
 }
 
-func (s *sessionStorage) Create(ctx context.Context, session *models.Session) (*models.Session, error) {
+func (s *sessionStorage) Create(ctx context.Context, session *model.Session) (*model.Session, error) {
 	command := `
 		INSERT INTO session
 			(session_id, account_id, expiry)
@@ -33,7 +33,7 @@ func (s *sessionStorage) Create(ctx context.Context, session *models.Session) (*
 	return session, nil
 }
 
-func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*models.Session, error) {
+func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*model.Session, error) {
 	query := `
 		SELECT
 			session.*,
@@ -44,7 +44,7 @@ func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*models.Se
 		WHERE session_id = $1`
 	row := s.db.QueryRow(ctx, query, sessionID)
 
-	var session models.Session
+	var session model.Session
 	err := row.Scan(
 		&session.SessionID,
 		&session.AccountID,

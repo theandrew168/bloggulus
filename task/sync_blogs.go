@@ -58,8 +58,6 @@ func (t *syncBlogsTask) syncBlogs() error {
 func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string) {
 	defer wg.Done()
 
-	log.Printf("syncing blog: %s\n", feedURL)
-
 	// read current list of posts
 	posts, err := rss.ReadPosts(feedURL)
 	if err != nil {
@@ -69,14 +67,10 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 
 	// sync each post with the database
 	for _, post := range posts {
-		log.Printf("updating post: %s\n", post.Title)
-
 		post.BlogID = blogID
 		_, err := t.Post.Create(context.Background(), post)
 		if err != nil {
-			if err == storage.ErrDuplicateModel {
-				log.Println("  already exists")
-			} else {
+			if err != storage.ErrDuplicateModel {
 				log.Println(err)
 			}
 		}

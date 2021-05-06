@@ -60,6 +60,7 @@
 		</div>
 	</nav>
 
+	<!-- success flash message -->
 	{{with .Success}}
 	<div class="mt-6 flex w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md">
 		<div class="flex items-center justify-center w-12 bg-green-500">
@@ -77,6 +78,7 @@
 	</div>
 	{{end}}
 
+	<!-- error flash message -->
 	{{with .Error}}
 	<div class="mt-6 flex w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md">
 		<div class="flex items-center justify-center w-12 bg-red-500">
@@ -94,10 +96,12 @@
 	</div>
 	{{end}}
 
+	<!-- main content -->
 	<main class="flex-grow">
 		{{template "main" .}}
 	</main>
 
+	<!-- footer -->
 	<footer class="text-gray-100 bg-gray-800">
 		<div class="max-w-3xl mx-auto py-4">
 			<div class="flex flex-col items-center justify-between md:flex-row space-y-1 md:space-y-0">

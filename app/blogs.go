@@ -13,7 +13,7 @@ import (
 )
 
 type followedBlog struct {
-	Blog	 *model.Blog
+	Blog     *model.Blog
 	Followed bool
 }
 

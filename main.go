@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/julienschmidt/httprouter"
 
 	"github.com/theandrew168/bloggulus/app"
 	"github.com/theandrew168/bloggulus/rss"
@@ -47,19 +48,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// create storage interfaces
-	accountStorage := postgres.NewAccountStorage(db)
-	blogStorage := postgres.NewBlogStorage(db)
-	accountBlogStorage := postgres.NewAccountBlogStorage(db)
-	postStorage := postgres.NewPostStorage(db)
-	sessionStorage := postgres.NewSessionStorage(db)
-
+	// init app with storage interfaces
 	app := &app.Application{
-		Account:     accountStorage,
-		Blog:        blogStorage,
-		AccountBlog: accountBlogStorage,
-		Post:        postStorage,
-		Session:     sessionStorage,
+		Account:     postgres.NewAccountStorage(db),
+		Blog:        postgres.NewBlogStorage(db),
+		AccountBlog: postgres.NewAccountBlogStorage(db),
+		Post:        postgres.NewPostStorage(db),
+		Session:     postgres.NewSessionStorage(db),
 	}
 
 	if *addblog {
@@ -72,7 +67,7 @@ func main() {
 		}
 		log.Printf("  found: %s\n", blog.Title)
 
-		_, err = blogStorage.Create(context.Background(), blog)
+		_, err = app.Blog.Create(context.Background(), blog)
 		if err != nil {
 			if err == storage.ErrDuplicateModel {
 				log.Println("  already exists")
@@ -90,25 +85,28 @@ func main() {
 	}
 
 	// kick off blog sync task
-	syncBlogs := task.SyncBlogs(blogStorage, postStorage)
+	syncBlogs := task.SyncBlogs(app.Blog, app.Post)
 	go syncBlogs.Run(1 * time.Hour)
 
 	// kick off session prune task
-	pruneSessions := task.PruneSessions(sessionStorage)
+	pruneSessions := task.PruneSessions(app.Session)
 	go pruneSessions.Run(5 * time.Minute)
 
-	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(app.HandleIndex))
-	mux.Handle("/login", http.HandlerFunc(app.HandleLogin))
-	mux.Handle("/logout", http.HandlerFunc(app.HandleLogout))
-	mux.Handle("/blogs", http.HandlerFunc(app.HandleBlogs))
-	mux.Handle("/follow", http.HandlerFunc(app.HandleFollow))
-	mux.Handle("/unfollow", http.HandlerFunc(app.HandleUnfollow))
-	mux.Handle("/register", http.HandlerFunc(app.HandleRegister))
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	router := httprouter.New()
+	router.HandlerFunc("GET", "/", app.HandleIndex)
+	router.HandlerFunc("GET", "/login", app.HandleLogin)
+	router.HandlerFunc("POST", "/login", app.HandleLogin)
+	router.HandlerFunc("POST", "/logout", app.HandleLogout)
+	router.HandlerFunc("GET", "/blogs", app.HandleBlogs)
+	router.HandlerFunc("POST", "/blogs", app.HandleBlogs)
+	router.HandlerFunc("POST", "/follow", app.HandleFollow)
+	router.HandlerFunc("POST", "/unfollow", app.HandleUnfollow)
+	router.HandlerFunc("GET", "/register", app.HandleRegister)
+	router.HandlerFunc("POST", "/register", app.HandleRegister)
+	router.ServeFiles("/static/*filepath", http.Dir("./static"))
 
 	log.Printf("Listening on %s\n", *addr)
-	log.Fatal(http.ListenAndServe(*addr, mux))
+	log.Fatal(http.ListenAndServe(*addr, router))
 }
 
 func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error {

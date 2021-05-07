@@ -6,14 +6,13 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/storage"
 )
 
 type sessionStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewSessionStorage(db *pgxpool.Pool) storage.Session {
+func NewSessionStorage(db *pgxpool.Pool) model.SessionStorage {
 	s := sessionStorage{
 		db: db,
 	}

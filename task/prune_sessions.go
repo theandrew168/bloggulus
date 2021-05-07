@@ -5,14 +5,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/theandrew168/bloggulus/storage"
+	"github.com/theandrew168/bloggulus/model"
 )
 
 type pruneSessionsTask struct {
-	Session storage.Session
+	Session model.SessionStorage
 }
 
-func PruneSessions(sessionStorage storage.Session) Task {
+func PruneSessions(sessionStorage model.SessionStorage) Task {
 	return &pruneSessionsTask{
 		Session: sessionStorage,
 	}

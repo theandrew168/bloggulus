@@ -8,7 +8,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/model"
 	"github.com/theandrew168/bloggulus/rss"
-	"github.com/theandrew168/bloggulus/storage"
 	"github.com/theandrew168/bloggulus/task"
 )
 
@@ -68,7 +67,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 		blog, err = app.Blog.Create(r.Context(), blog)
 		if err != nil {
-			if err == storage.ErrDuplicateModel {
+			if err == model.ErrExist {
 				// blog already exists!
 				// look it up and link to the account
 				blog, err = app.Blog.ReadByURL(r.Context(), feedURL)
@@ -80,7 +79,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 				err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
 				if err != nil {
-					if err != storage.ErrDuplicateModel {
+					if err != model.ErrExist {
 						log.Println(err)
 						http.Error(w, err.Error(), 500)
 						return
@@ -102,7 +101,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		// link the blog to the account
 		err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
 		if err != nil {
-			if err != storage.ErrDuplicateModel {
+			if err != model.ErrExist {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 				return

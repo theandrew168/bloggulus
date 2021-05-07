@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -59,7 +58,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		}
 		account, err = app.Account.Create(r.Context(), account)
 		if err != nil {
-			if err == storage.ErrDuplicateModel {
+			if err == model.ErrExist {
 				expiry := time.Now().Add(time.Hour * 12)
 				cookie := GenerateSessionCookie(ErrorCookieName, "Failed to create account", expiry)
 				http.SetCookie(w, cookie)

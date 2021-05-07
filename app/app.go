@@ -1,13 +1,13 @@
 package app
 
 import (
-	"github.com/theandrew168/bloggulus/storage"
+	"github.com/theandrew168/bloggulus/model"
 )
 
 type Application struct {
-	Account     storage.Account
-	Blog        storage.Blog
-	AccountBlog storage.AccountBlog
-	Post        storage.Post
-	Session     storage.Session
+	Account     model.AccountStorage
+	AccountBlog model.AccountBlogStorage
+	Blog        model.BlogStorage
+	Post        model.PostStorage
+	Session     model.SessionStorage
 }

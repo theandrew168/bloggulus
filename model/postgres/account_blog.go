@@ -8,14 +8,14 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/storage"
+	"github.com/theandrew168/bloggulus/model"
 )
 
 type accountBlogStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewAccountBlogStorage(db *pgxpool.Pool) storage.AccountBlog {
+func NewAccountBlogStorage(db *pgxpool.Pool) model.AccountBlogStorage {
 	s := accountBlogStorage{
 		db: db,
 	}
@@ -36,7 +36,7 @@ func (s *accountBlogStorage) Follow(ctx context.Context, accountID int, blogID i
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return storage.ErrDuplicateModel
+				return model.ErrExist
 			}
 		}
 		return err

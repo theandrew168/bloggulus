@@ -9,14 +9,13 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/storage"
 )
 
 type accountStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewAccountStorage(db *pgxpool.Pool) storage.Account {
+func NewAccountStorage(db *pgxpool.Pool) model.AccountStorage {
 	s := accountStorage{
 		db: db,
 	}
@@ -35,7 +34,7 @@ func (s *accountStorage) Create(ctx context.Context, account *model.Account) (*m
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, storage.ErrDuplicateModel
+				return nil, model.ErrExist
 			}
 		}
 		return nil, err

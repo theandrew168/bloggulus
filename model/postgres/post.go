@@ -9,14 +9,13 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/storage"
 )
 
 type postStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewPostStorage(db *pgxpool.Pool) storage.Post {
+func NewPostStorage(db *pgxpool.Pool) model.PostStorage {
 	s := postStorage{
 		db: db,
 	}
@@ -39,7 +38,7 @@ func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, storage.ErrDuplicateModel
+				return nil, model.ErrExist
 			}
 		}
 		return nil, err

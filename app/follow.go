@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus/storage"
+	"github.com/theandrew168/bloggulus/model"
 )
 
 func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	// link the blog to the account
 	err = app.AccountBlog.Follow(r.Context(), account.AccountID, blogID)
 	if err != nil {
-		if err != storage.ErrDuplicateModel {
+		if err != model.ErrExist {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return

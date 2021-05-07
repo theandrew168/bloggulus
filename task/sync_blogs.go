@@ -6,16 +6,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/theandrew168/bloggulus/model"
 	"github.com/theandrew168/bloggulus/rss"
-	"github.com/theandrew168/bloggulus/storage"
 )
 
 type syncBlogsTask struct {
-	Blog storage.Blog
-	Post storage.Post
+	Blog model.BlogStorage
+	Post model.PostStorage
 }
 
-func SyncBlogs(blog storage.Blog, post storage.Post) Task {
+func SyncBlogs(blog model.BlogStorage, post model.PostStorage) Task {
 	return &syncBlogsTask{
 		Blog: blog,
 		Post: post,
@@ -70,7 +70,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 		post.BlogID = blogID
 		_, err := t.Post.Create(context.Background(), post)
 		if err != nil {
-			if err != storage.ErrDuplicateModel {
+			if err != model.ErrExist {
 				log.Println(err)
 			}
 		}

@@ -14,9 +14,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/theandrew168/bloggulus/app"
+	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/model/postgres"
 	"github.com/theandrew168/bloggulus/rss"
-	"github.com/theandrew168/bloggulus/storage"
-	"github.com/theandrew168/bloggulus/storage/postgres"
 	"github.com/theandrew168/bloggulus/task"
 )
 
@@ -69,7 +69,7 @@ func main() {
 
 		_, err = app.Blog.Create(context.Background(), blog)
 		if err != nil {
-			if err == storage.ErrDuplicateModel {
+			if err == model.ErrExist {
 				log.Println("  already exists")
 			} else {
 				log.Fatal(err)

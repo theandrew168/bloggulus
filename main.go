@@ -15,7 +15,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/app"
 	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/model/postgres"
+	"github.com/theandrew168/bloggulus/model/postgresql"
 	"github.com/theandrew168/bloggulus/rss"
 	"github.com/theandrew168/bloggulus/task"
 )
@@ -50,11 +50,11 @@ func main() {
 
 	// init app with storage interfaces
 	app := &app.Application{
-		Account:     postgres.NewAccountStorage(db),
-		Blog:        postgres.NewBlogStorage(db),
-		AccountBlog: postgres.NewAccountBlogStorage(db),
-		Post:        postgres.NewPostStorage(db),
-		Session:     postgres.NewSessionStorage(db),
+		Account:     postgresql.NewAccountStorage(db),
+		Blog:        postgresql.NewBlogStorage(db),
+		AccountBlog: postgresql.NewAccountBlogStorage(db),
+		Post:        postgresql.NewPostStorage(db),
+		Session:     postgresql.NewSessionStorage(db),
 	}
 
 	if *addblog {

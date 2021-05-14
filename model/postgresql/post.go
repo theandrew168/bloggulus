@@ -25,11 +25,11 @@ func NewPostStorage(db *pgxpool.Pool) model.PostStorage {
 func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post, error) {
 	command := `
 		INSERT INTO post
-			(blog_id, url, title, updated)
+			(blog_id, url, title, preview, updated)
 		VALUES
 			($1, $2, $3, $4)
 		RETURNING post_id`
-	row := s.db.QueryRow(ctx, command, post.BlogID, post.URL, post.Title, post.Updated)
+	row := s.db.QueryRow(ctx, command, post.BlogID, post.URL, post.Title, post.Preview, post.Updated)
 
 	err := row.Scan(&post.PostID)
 	if err != nil {
@@ -64,6 +64,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (*model.Post, error)
 		&post.BlogID,
 		&post.URL,
 		&post.Title,
+		&post.Preview,
 		&post.Updated,
 		&post.Blog.BlogID,
 		&post.Blog.FeedURL,
@@ -101,6 +102,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*model.Post, err
 			&post.BlogID,
 			&post.URL,
 			&post.Title,
+			&post.Preview,
 			&post.Updated,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
@@ -144,6 +146,7 @@ func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n in
 			&post.BlogID,
 			&post.URL,
 			&post.Title,
+			&post.Preview,
 			&post.Updated,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,

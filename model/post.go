@@ -10,6 +10,7 @@ type Post struct {
 	BlogID  int
 	URL     string
 	Title   string
+	Preview string
 	Updated time.Time
 
 	Blog Blog

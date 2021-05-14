@@ -68,6 +68,8 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 	// sync each post with the database
 	for _, post := range posts {
 		post.BlogID = blogID
+		// TODO: get this from the feed or the page itself
+		post.Preview = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
 		_, err := t.Post.Create(context.Background(), post)
 		if err != nil {
 			if err != model.ErrExist {

@@ -27,7 +27,7 @@ func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post
 		INSERT INTO post
 			(blog_id, url, title, preview, updated)
 		VALUES
-			($1, $2, $3, $4)
+			($1, $2, $3, $4, $5)
 		RETURNING post_id`
 	row := s.db.QueryRow(ctx, command, post.BlogID, post.URL, post.Title, post.Preview, post.Updated)
 

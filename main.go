@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -21,10 +22,16 @@ import (
 )
 
 func main() {
-	addr := flag.String("addr", "127.0.0.1:5000", "server listen address")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
 	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
 	flag.Parse()
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	addr := fmt.Sprintf("127.0.0.1:%s", port)
+	fmt.Println(addr)
 
 	// ensure conn string env var exists
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
@@ -105,8 +112,8 @@ func main() {
 	router.HandlerFunc("POST", "/register", app.HandleRegister)
 	router.ServeFiles("/static/*filepath", http.Dir("./static"))
 
-	log.Printf("Listening on %s\n", *addr)
-	log.Fatal(http.ListenAndServe(*addr, router))
+	log.Printf("Listening on %s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, router))
 }
 
 func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error {

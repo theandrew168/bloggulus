@@ -1,4 +1,5 @@
 bloggulus
+bloggulus-*
 *.sqlite3
 *.pyz
 build/

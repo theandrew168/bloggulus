@@ -6,7 +6,7 @@ default: build
 
 .PHONY: build
 build:
-	go build -o bloggulus cmd/web/main.go
+	go build -o bloggulus-web cmd/web/main.go
 #	go build -o bloggulus-worker cmd/worker/main.go
 #	go build -o bloggulus-scheduler cmd/scheduler/main.go
 
@@ -14,16 +14,10 @@ build:
 dist: build
 	rm -fr dist/
 	mkdir dist/
-	cp bloggulus dist/
-#	cp bloggulus-worker dist/
-#	cp bloggulus-scheduler dist/
+	cp bloggulus-* dist/
 	cp -r migrations dist/
 	cp -r static dist/
 	cp -r templates dist/
-
-.PHONY: run
-run: build
-	./bloggulus
 
 .PHONY: test
 test:
@@ -31,7 +25,7 @@ test:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus dist/
+	rm -fr bloggulus-* dist/
 
 .PHONY: reload
 reload: build

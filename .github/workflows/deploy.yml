@@ -45,6 +45,7 @@ jobs:
         make test
       env:
         BLOGGULUS_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        BLOGGULUS_REDIS_ADDR: localhost:6397
     - name: Build project
       run: |
         make dist

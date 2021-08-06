@@ -31,7 +31,6 @@ func main() {
 		port = "5000"
 	}
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
-	fmt.Println(addr)
 
 	// ensure conn string env var exists
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")

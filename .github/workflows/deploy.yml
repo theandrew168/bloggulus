@@ -34,10 +34,14 @@ jobs:
     steps:
     - name: Checkout source
       uses: actions/checkout@v2
-    - name: Setup Go
-      uses: actions/setup-go@v2
+    - name: Setup Java
+      uses: actions/setup-java@v1
       with:
-        go-version: 1.16
+        java-version: 1.8
+    - name: Setup Clojure
+      uses: DeLaGuardo/setup-clojure@3.4
+      with:
+        lein: latest
     - name: Setup NodeJS
       uses: actions/setup-node@v2
       with:
@@ -47,8 +51,12 @@ jobs:
         npm install -g purgecss
     # intentionally absent from the Makefile due to destructive behavior
     - name: Strip unused CSS
-      run: |
-        purgecss -c scripts/purgecss.config.js -con templates/*.tmpl -css static/css/* -o static/css/
+      run: >
+        purgecss
+          -c scripts/purgecss.config.js
+          -con resources/templates/*.html
+          -css resources/static/css/*
+          -o static/css/
     - name: Run tests
       run: |
         make test

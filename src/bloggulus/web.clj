@@ -2,11 +2,12 @@
   (:gen-class)
   (:require [clojure.pprint :refer [pprint]]
             [compojure.core :refer [defroutes GET]]
-            [compojure.route :refer [files]]
+            [compojure.route :refer [resources]]
+            [selmer.parser :as tmpl]
             [org.httpkit.server :refer [run-server]]))
 
 (defn render-index [req]
-  "index")
+  (tmpl/render-file "templates/index.html" {:authed true}))
 
 (defn render-blogs [req]
   "blogs")
@@ -18,13 +19,11 @@
   (GET "/" [] render-index)
   (GET "/blogs" [] render-blogs)
   (GET "/request" [] render-request)
-  (files "/static" {:root "static"}))
-
-(def port (Integer/parseInt
-           (or (System/getenv "PORT")
-               "5000")))
+  (resources "/static" {:root "static"}))
 
 (defn -main []
-  (printf "Listening on 127.0.0.1:%s\n" port)
-  (flush)
-  (run-server #'app {:host "127.0.0.1" :port port}))
+  (let [port (Integer/parseInt
+              (or (System/getenv "PORT") "5000"))]
+    (printf "Listening on 127.0.0.1:%s\n" port)
+    (flush)
+    (run-server #'app {:host "127.0.0.1" :port port})))

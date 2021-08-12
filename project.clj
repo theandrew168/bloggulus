@@ -9,8 +9,6 @@
                  [compojure/compojure "1.6.2"]
                  [http-kit "2.5.3"]
                  [selmer "1.12.44"]]
-  :main bloggulus.web
-  :aot [bloggulus.web]
   :auto-clean false
   :target-path "target/%s"
   :profiles {:uberjar {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}

@@ -6,6 +6,7 @@ default: build
 
 .PHONY: build
 build:
+	lein clean
 	lein with-profiles web:worker:scheduler uberjar
 	cp target/uberjar/*.jar .
 
@@ -14,9 +15,6 @@ dist: build
 	rm -fr dist/
 	mkdir dist/
 	cp *.jar dist/
-	cp -r migrations dist/
-	cp -r static dist/
-	cp -r templates dist/
 
 .PHONY: test
 test:

@@ -16,5 +16,5 @@ export BLOGGULUS_REDIS_ADDR=localhost:6397
 ## Running
 Assuming [Clojure](https://clojure.org/) and [Leiningen](https://leiningen.org/) are installed, simply run:
 ```
-lein run
+lein with-profile web run
 ```

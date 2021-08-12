@@ -16,6 +16,7 @@ dist: build
 	cp *.jar dist/
 	cp -r migrations dist/
 	cp -r static dist/
+	cp -r templates dist/
 
 .PHONY: test
 test:

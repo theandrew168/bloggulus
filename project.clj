@@ -7,8 +7,8 @@
                  [com.github.seancorfield/next.jdbc "1.2.689"]
                  [org.postgresql/postgresql "42.2.23"]
                  [compojure/compojure "1.6.2"]
-                 [hiccup "1.0.5"]
-                 [http-kit "2.5.3"]]
+                 [http-kit "2.5.3"]
+                 [selmer "1.12.44"]]
   :main bloggulus.web
   :aot [bloggulus.web]
   :auto-clean false

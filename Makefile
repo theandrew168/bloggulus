@@ -14,6 +14,7 @@ dist: build
 	rm -fr dist/
 	mkdir dist/
 	cp *.jar dist/
+	cp -r migrations dist/
 	cp -r static dist/
 
 .PHONY: test

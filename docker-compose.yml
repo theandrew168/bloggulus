@@ -5,7 +5,7 @@ services:
     image: postgres
     ports:
       - 5432:5432
-    env:
+    environment:
       POSTGRES_PASSWORD: postgres
   redis:
     image: redis

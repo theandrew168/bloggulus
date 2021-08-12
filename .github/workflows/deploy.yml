@@ -12,15 +12,24 @@ jobs:
     services:
       postgres:
         image: postgres
+        ports:
+          - 5432:5432
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis
         ports:
-          - 5432:5432
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Checkout source
@@ -66,3 +75,5 @@ jobs:
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
           sudo systemctl restart bloggulus-web
+          sudo systemctl restart bloggulus-worker
+          sudo systemctl restart bloggulus-scheduler

@@ -8,15 +8,13 @@ I find [Docker](https://www.docker.com/) to be a nice tool for this but you can 
 
 The following commands start the necessary containers and define environment variables that the app will look for:
 ```
-docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 --detach postgres
+docker-compose up -d
 export BLOGGULUS_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
-
-docker run -p 6379:6379 --detach redis
 export BLOGGULUS_REDIS_ADDR=localhost:6397
 ```
 
 ## Running
-Assuming a recent version of Go is [installed](https://golang.org/dl/), simply run:
+Assuming [Clojure]() and [Leiningen]() are installed, simply run:
 ```
-go run main.go
+lein run
 ```

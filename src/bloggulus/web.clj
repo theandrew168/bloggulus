@@ -25,8 +25,10 @@
   (resources "/static" {:root "static"}))
 
 (defn -main []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "5000"))
-        db-url (System/getenv "BLOGGULUS_DATABASE_URL")
+  (let [port (Integer/parseInt
+               (or (System/getenv "PORT") "5000"))
+        db-url (or (System/getenv "BLOGGULUS_DATABASE_URL")
+                   (throw (Exception. "missing env var: BLOGGULUS_DATABASE_URL")))
         jdbc-url (db/db-url-to-jdbc-url db-url)
         db-spec {:jdbcUrl jdbc-url}]
     (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]

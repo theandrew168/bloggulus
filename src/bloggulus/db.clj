@@ -48,3 +48,26 @@
         missing (sort (clojure.set/difference migrations applied))]
     (doall (map #(apply-migration conn %) missing))
     missing))
+
+(comment
+  (list-migrations)
+  (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]
+    (list-applied-migrations conn))
+
+  (def db-url (System/getenv "BLOGGULUS_DATABASE_URL"))
+  (def jdbc-url (db-url-to-jdbc-url db-url))
+
+  (def ds (jdbc/get-datasource jdbc-url))
+
+  (with-open [conn (jdbc/get-connection ds)]
+    (jdbc/execute! conn ["select * from pg_settings limit 5"]))
+
+  (def db-spec {:jdbcUrl jdbc-url})
+  (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]
+    (jdbc/execute! conn ["select * from pg_settings limit 1"])
+    (into [] (map :name) (jdbc/plan conn ["select * from pg_settings"])))
+
+  (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]
+    (migrate conn))
+
+  )

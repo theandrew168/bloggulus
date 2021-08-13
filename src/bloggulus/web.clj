@@ -4,7 +4,10 @@
             [compojure.core :refer [defroutes GET]]
             [compojure.route :refer [resources]]
             [selmer.parser :as tmpl]
-            [org.httpkit.server :refer [run-server]]))
+            [org.httpkit.server :refer [run-server]]
+            [next.jdbc.connection :as connection]
+            [bloggulus.db :as db])
+  (:import (com.zaxxer.hikari HikariDataSource)))
 
 (defn render-index [req]
   (tmpl/render-file "templates/index.html" {:authed true}))
@@ -22,8 +25,12 @@
   (resources "/static" {:root "static"}))
 
 (defn -main []
-  (let [port (Integer/parseInt
-              (or (System/getenv "PORT") "5000"))]
-    (printf "Listening on 127.0.0.1:%s\n" port)
-    (flush)
-    (run-server #'app {:host "127.0.0.1" :port port})))
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "5000"))
+        db-url (System/getenv "BLOGGULUS_DATABASE_URL")
+        jdbc-url (db/db-url-to-jdbc-url db-url)
+        db-spec {:jdbcUrl jdbc-url}]
+    (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]
+      (db/migrate conn)
+      (printf "Listening on 127.0.0.1:%s\n" port)
+      (flush)
+      (run-server #'app {:host "127.0.0.1" :port port}))))

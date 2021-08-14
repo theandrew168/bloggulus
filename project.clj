@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [com.github.seancorfield/next.jdbc "1.2.689"]
                  [org.postgresql/postgresql "42.2.23"]
-                 [com.zaxxer/HikariCP "4.0.3"]
+                 [com.zaxxer/hikaricp "4.0.3"]
                  [compojure/compojure "1.6.2"]
                  [http-kit "2.5.3"]
                  [selmer "1.12.44"]]

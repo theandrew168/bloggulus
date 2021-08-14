@@ -29,7 +29,7 @@
                (or (System/getenv "PORT") "5000"))
         db-url (or (System/getenv "BLOGGULUS_DATABASE_URL")
                    (throw (Exception. "missing env var: BLOGGULUS_DATABASE_URL")))
-        jdbc-url (db/db-url-to-jdbc-url db-url)
+        jdbc-url (db/db-url->jdbc-url db-url)
         db-spec {:jdbcUrl jdbc-url}]
     (with-open [^HikariDataSource conn (connection/->pool HikariDataSource db-spec)]
       (db/migrate conn)

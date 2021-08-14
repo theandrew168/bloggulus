@@ -50,5 +50,6 @@
   (let [migrations (list-migrations)
         applied (list-applied-migrations conn)
         missing (sort (difference migrations applied))]
-    (doall (map #(apply-migration conn %) missing))
+    (doseq [migration missing]
+      (apply-migration conn migration))
     missing))

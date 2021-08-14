@@ -53,10 +53,10 @@ jobs:
     - name: Strip unused CSS
       run: >
         purgecss
-          -c scripts/purgecss.config.js
-          -con resources/templates/*.html
-          -css resources/static/css/*
-          -o static/css/
+        -c scripts/purgecss.config.js
+        -con resources/templates/*.html
+        -css resources/static/css/*
+        -o static/css/
     - name: Run tests
       run: |
         make test

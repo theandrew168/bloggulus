@@ -7,4 +7,4 @@ CREATE TABLE post (
     updated TIMESTAMPTZ NOT NULL
 );
 
-CREATE INDEX posts_blog_id_idx ON post(blog_id);
+CREATE INDEX post_blog_id_idx ON post(blog_id);

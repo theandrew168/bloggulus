@@ -33,5 +33,8 @@
   (read-blog feed-url)
   (read-posts feed-url)
 
+  (def bad-feed-url "https://nullprogram.com/feexxx/")
+  (read-blog bad-feed-url)
+  (read-posts bad-feed-url)
 
   )

@@ -9,7 +9,8 @@
                  [com.zaxxer/HikariCP "4.0.3"]
                  [compojure/compojure "1.6.2"]
                  [http-kit "2.5.3"]
-                 [selmer "1.12.44"]]
+                 [selmer "1.12.44"]
+                 [remus "0.2.2"]]
   :auto-clean false
   :target-path "target/%s"
   :profiles {:uberjar {:jvm-opts ["-Dclojure.compiler.direct-linking=true"]}

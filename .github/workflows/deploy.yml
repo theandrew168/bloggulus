@@ -56,7 +56,7 @@ jobs:
         -c scripts/purgecss.config.js
         -con resources/templates/*.html
         -css resources/static/css/*
-        -o static/css/
+        -o resources/static/css/
     - name: Run tests
       run: |
         make test

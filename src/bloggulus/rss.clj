@@ -1,22 +1,22 @@
 (ns bloggulus.rss
-  (:require [remus :refer [parse-url]]))
+  (:require [remus]))
 
 (defn read-blog[feed-url]
-  (let [result (parse-url feed-url)
+  (let [result (remus/parse-url feed-url)
         feed (:feed result)]
     {:feed-url feed-url
      :site-url (:link feed)
      :title (:title feed)}))
 
 (defn read-posts [feed-url]
-  (let [result (parse-url feed-url)
+  (let [result (remus/parse-url feed-url)
         feed (:feed result)
         entries (:entries feed)]
     (map #(select-keys % [:link :title :updated-date]) entries)))
 
 (comment
   (def feed-url "https://nullprogram.com/feed/")
-  (def result (parse-url feed-url))
+  (def result (remus/parse-url feed-url))
   (def feed (:feed result))
   (:title feed)
 

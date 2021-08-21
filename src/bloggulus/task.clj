@@ -1,6 +1,6 @@
 (ns bloggulus.task
   (:require [next.jdbc :as jdbc]
-            [next.jdbc.date-time]
+            [next.jdbc.date-time]  ; import for transparent PG timestamp conversions
             [bloggulus.db :as db]
             [bloggulus.rss :as rss]))
 

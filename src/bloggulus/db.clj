@@ -1,7 +1,7 @@
 (ns bloggulus.db
-  (:require [clojure.java.io :refer [resource]]
-            [clojure.set :refer [difference]]
-            [clojure.string :refer [join split split-lines]]
+  (:require [clojure.java.io :as io]
+            [clojure.set :as set]
+            [clojure.string :as string]
             [next.jdbc :as jdbc]
             [next.jdbc.connection :as connection])
   (:import (com.zaxxer.hikari HikariDataSource)
@@ -9,7 +9,7 @@
 
 (defn db-url->jdbc-url [db-url]
   (let [uri (URI. db-url)
-        [username password] (split (.getUserInfo uri) #":")]
+        [username password] (string/split (.getUserInfo uri) #":")]
     (format
      "jdbc:%s://%s:%s%s?user=%s&password=%s"
      (.getScheme uri)
@@ -28,9 +28,9 @@
 
 (defn- list-migrations []
   (-> "migrations/migrations.txt"
-      (resource)
+      (io/resource)
       (slurp)
-      (split-lines)
+      (string/split-lines)
       (set)))
 
 (defn- list-applied-migrations [conn]
@@ -39,8 +39,8 @@
 
 (defn- apply-migration [conn name]
   (println "applying migration:" name)
-  (let [path (join "/" ["migrations" name])
-        migration (slurp (resource path))
+  (let [path (string/join "/" ["migrations" name])
+        migration (slurp (io/resource path))
         insert "INSERT INTO migration (name) VALUES (?)"]
     (jdbc/execute! conn [migration])
     (jdbc/execute! conn [insert name])))
@@ -49,7 +49,7 @@
   (create-migrations-table conn)
   (let [migrations (list-migrations)
         applied (list-applied-migrations conn)
-        missing (sort (difference migrations applied))]
+        missing (sort (set/difference migrations applied))]
     (doseq [migration missing]
       (apply-migration conn migration))
     missing))

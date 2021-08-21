@@ -1,28 +1,28 @@
 (ns bloggulus.web
   (:gen-class)
-  (:require [clojure.pprint :refer [pprint]]
-            [compojure.core :refer [defroutes GET]]
-            [compojure.route :refer [resources]]
-            [selmer.parser :as tmpl]
-            [ring.adapter.jetty :refer [run-jetty]]
+  (:require [clojure.pprint :as pprint]
+            [compojure.core :as route]
+            [compojure.route :as route-ext]
+            [selmer.parser :as template]
+            [ring.adapter.jetty :as server]
             [next.jdbc.connection :as connection]
             [bloggulus.db :as db])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
 (defn render-index [req]
-  (tmpl/render-file "templates/index.html" {:authed true}))
+  (template/render-file "templates/index.html" {:authed true}))
 
 (defn render-blogs [req]
   "blogs")
 
 (defn render-request [req]
-  (with-out-str (pprint req)))
+  (with-out-str (pprint/pprint req)))
 
-(defroutes app
-  (GET "/" [] render-index)
-  (GET "/blogs" [] render-blogs)
-  (GET "/request" [] render-request)
-  (resources "/static" {:root "static"}))
+(route/defroutes app
+  (route/GET "/" [] render-index)
+  (route/GET "/blogs" [] render-blogs)
+  (route/GET "/request" [] render-request)
+  (route-ext/resources "/static" {:root "static"}))
 
 (defn -main []
   (let [port (Integer/parseInt
@@ -35,4 +35,4 @@
       (db/migrate conn)
       (printf "Listening on 127.0.0.1:%s\n" port)
       (flush)
-      (run-jetty #'app {:host "127.0.0.1" :port port}))))
+      (server/run-jetty #'app {:host "127.0.0.1" :port port}))))

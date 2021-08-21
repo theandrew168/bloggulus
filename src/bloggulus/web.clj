@@ -4,7 +4,7 @@
             [compojure.core :refer [defroutes GET]]
             [compojure.route :refer [resources]]
             [selmer.parser :as tmpl]
-            [org.httpkit.server :refer [run-server]]
+            [ring.adapter.jetty :refer [run-jetty]]
             [next.jdbc.connection :as connection]
             [bloggulus.db :as db])
   (:import (com.zaxxer.hikari HikariDataSource)))
@@ -35,4 +35,4 @@
       (db/migrate conn)
       (printf "Listening on 127.0.0.1:%s\n" port)
       (flush)
-      (run-server #'app {:host "127.0.0.1" :port port}))))
+      (run-jetty #'app {:host "127.0.0.1" :port port}))))

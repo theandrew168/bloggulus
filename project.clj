@@ -7,8 +7,9 @@
                  [com.github.seancorfield/next.jdbc "1.2.689"]
                  [org.postgresql/postgresql "42.2.23"]
                  [com.zaxxer/HikariCP "4.0.3"]
+                 [ring/ring-core "1.9.4"]
+                 [ring/ring-jetty-adapter "1.9.4"]
                  [compojure/compojure "1.6.2"]
-                 [http-kit "2.5.3"]
                  [selmer "1.12.44"]
                  [remus "0.2.2"]]
   :auto-clean false

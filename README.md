@@ -8,7 +8,7 @@ I find [Docker](https://www.docker.com/) to be a nice tool for this but you can 
 
 The following commands start the necessary containers and define environment variables that the app will look for:
 ```
-docker-compose up -d
+docker compose up -d
 export BLOGGULUS_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
 export BLOGGULUS_REDIS_ADDR=localhost:6397
 ```

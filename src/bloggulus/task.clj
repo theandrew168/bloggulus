@@ -27,12 +27,11 @@
   (jdbc/execute! conn ["DELETE FROM session WHERE expiry <= now()"]))
 
 (comment
-  (def db-url (System/getenv "BLOGGULUS_DATABASE_URL"))
+  (def db-url "postgresql://postgres:postgres@localhost:5432/postgres")
   (def jdbc-url (db/db-url->jdbc-url db-url))
   (def db-spec {:jdbcUrl jdbc-url})
-  (def ds (jdbc/get-datasource jdbc-url))
+  (def conn (jdbc/get-datasource db-spec))
 
-  (with-open [conn (jdbc/get-connection ds)]
-    (sync-blog conn 1))
+  (sync-blog conn 3)
 
   .)

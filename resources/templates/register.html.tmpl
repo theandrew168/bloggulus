@@ -2,37 +2,37 @@
 
 {{define "main"}}
 <div class="mt-36 md:mt-48">
-	<div class="w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md">
-		<div class="px-6 py-4">
-			<h2 class="text-3xl font-bold text-center text-gray-700">Bloggulus</h2>
-			<h3 class="mt-1 text-xl font-medium text-center text-gray-600">Account Registration</h3>
+  <div class="w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-md">
+    <div class="px-6 py-4">
+      <h2 class="text-3xl font-bold text-center text-gray-700">Bloggulus</h2>
+      <h3 class="mt-1 text-xl font-medium text-center text-gray-600">Account Registration</h3>
 
-			<form method="POST" action="/register">
-				<div class="w-full mt-4">
-					<input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="text" placeholder="Username" aria-label="Username" id="username" name="username" autofocus>
-				</div>
+      <form method="POST" action="/register">
+        <div class="w-full mt-4">
+          <input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="text" placeholder="Username" aria-label="Username" id="username" name="username" autofocus>
+        </div>
 
-				<div class="w-full mt-4">
-					<input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="password" placeholder="Password" aria-label="Password" id="password1" name="password1">
-				</div>
+        <div class="w-full mt-4">
+          <input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="password" placeholder="Password" aria-label="Password" id="password1" name="password1">
+        </div>
 
-				<div class="w-full mt-4">
-					<input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="password" placeholder="Password (again)" aria-label="Password (again)" id="password2" name="password2">
-				</div>
+        <div class="w-full mt-4">
+          <input class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" type="password" placeholder="Password (again)" aria-label="Password (again)" id="password2" name="password2">
+        </div>
 
-				<div class="flex items-center justify-between mt-4">
-					<a href="#" class="text-sm text-gray-600 hover:text-gray-500">Forgot Password?</a>
-					<button class="px-4 py-2 leading-5 text-white transition-colors duration-200 transform bg-gray-700 rounded hover:bg-gray-600 focus:outline-none" type="submit">
-						Register
-					</button>
-				</div>
-			</form>
-		</div>
+        <div class="flex items-center justify-between mt-4">
+          <a href="#" class="text-sm text-gray-600 hover:text-gray-500">Forgot Password?</a>
+          <button class="px-4 py-2 leading-5 text-white transition-colors duration-200 transform bg-gray-700 rounded hover:bg-gray-600 focus:outline-none" type="submit">
+            Register
+          </button>
+        </div>
+      </form>
+    </div>
 
-		<div class="flex items-center justify-center py-4 text-center bg-gray-100">
-			<span class="text-sm text-gray-600">Already have an account? </span>
-			<a href="/login" class="mx-2 text-sm font-bold text-blue-600 hover:text-blue-500">Login</a>
-		</div>
-	</div>
+    <div class="flex items-center justify-center py-4 text-center bg-gray-100">
+      <span class="text-sm text-gray-600">Already have an account? </span>
+      <a href="/login" class="mx-2 text-sm font-bold text-blue-600 hover:text-blue-500">Login</a>
+    </div>
+  </div>
 </div>
 {{end}}

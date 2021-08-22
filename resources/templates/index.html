@@ -2,32 +2,32 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
-	<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Posts</h1>
+  <h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Posts</h1>
 </div>
 
 <div class="px-6 md:px-0">
-	{% for post in posts %}
-	<div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6">
-		<!-- date and tags -->
-		<div class="flex justify-between items-center mb-2">
-			<span class="text-sm font-light text-gray-600">{{post.updated}}</span>
-			<a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
-		</div>
+  {% for post in posts %}
+  <div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6">
+    <!-- date and tags -->
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-sm font-light text-gray-600">{{post.updated}}</span>
+      <a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
+    </div>
 
-		<!-- title -->
-		<a class="text-2xl text-gray-700 font-bold hover:underline block mb-4" href="{{post.url}}">{{post.title}}</a>
+    <!-- title -->
+    <a class="text-2xl text-gray-700 font-bold hover:underline block mb-4" href="{{post.url}}">{{post.title}}</a>
 
-		<!-- description / overview -->
-		<p class="text-gray-600 mb-4">
-			{{post.preview}}
-		</p>
+    <!-- description / overview -->
+    <p class="text-gray-600 mb-4">
+      {{post.preview}}
+    </p>
 
-		<!-- read more / blog link -->
-		<div class="flex justify-between items-center">
-			<a class="text-blue-600 hover:underline" href="{{post.url}}">Read more</a>
-			<a class="text-gray-700 font-bold hover:underline" href="{{post.blog.site_url}}">{{post.blog.title}}</a>
-		</div>
-	</div>
-	{% endfor %}
+    <!-- read more / blog link -->
+    <div class="flex justify-between items-center">
+      <a class="text-blue-600 hover:underline" href="{{post.url}}">Read more</a>
+      <a class="text-gray-700 font-bold hover:underline" href="{{post.blog.site_url}}">{{post.blog.title}}</a>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}

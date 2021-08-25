@@ -30,8 +30,7 @@
   (def db-url "postgresql://postgres:postgres@localhost:5432/postgres")
   (def jdbc-url (db/db-url->jdbc-url db-url))
   (def db-spec {:jdbcUrl jdbc-url})
-  (def conn (jdbc/get-datasource db-spec))
 
-  (sync-blog conn 3)
+  (sync-blog db-spec 1)
 
   .)

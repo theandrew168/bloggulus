@@ -10,7 +10,7 @@
   <div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6">
     <!-- date and tags -->
     <div class="flex justify-between items-center mb-2">
-      <span class="text-sm font-light text-gray-600">{{post.updated}}</span>
+      <span class="text-sm font-light text-gray-600">{{post.updated|date:longDate}}</span>
       <a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
     </div>
 
@@ -25,7 +25,7 @@
     <!-- read more / blog link -->
     <div class="flex justify-between items-center">
       <a class="text-blue-600 hover:underline" href="{{post.url}}">Read more</a>
-      <a class="text-gray-700 font-bold hover:underline" href="{{post.blog.site_url}}">{{post.blog.title}}</a>
+      <a class="text-gray-700 font-bold hover:underline" href="{{post.blog.site_url}}">{{post.blog-title}}</a>
     </div>
   </div>
   {% endfor %}

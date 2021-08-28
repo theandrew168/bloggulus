@@ -1,8 +1,8 @@
 (ns bloggulus.web
   (:gen-class)
   (:require [clojure.pprint :as pprint]
-            [compojure.core :as route]
-            [compojure.route :as route-ext]
+            [compojure.core :refer [routes GET]]
+            [compojure.route :refer [resources]]
             [selmer.parser :as template]
             [ring.adapter.jetty :as server]
             [next.jdbc :as jdbc]
@@ -10,8 +10,10 @@
             [bloggulus.db :as db])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
-(defn render-index [req]
-  (template/render-file "templates/index.html" {:authed true}))
+(defn render-index [conn req]
+  (let [posts (db/read-recent-posts conn 20)
+        data {:authed true :posts posts}]
+    (template/render-file "templates/index.html" data)))
 
 (defn render-blogs [req]
   "blogs")
@@ -19,11 +21,14 @@
 (defn render-request [req]
   (with-out-str (pprint/pprint req)))
 
-(route/defroutes app
-  (route/GET "/" [] render-index)
-  (route/GET "/blogs" [] render-blogs)
-  (route/GET "/request" [] render-request)
-  (route-ext/resources "/static" {:root "static"}))
+(defn app-routes
+  "Build app routes with the DB conn pool baked in."
+  [conn]
+  (routes
+   (GET "/" [] (partial render-index conn))
+   (GET "/blogs" [] render-blogs)
+   (GET "/request" [] render-request)
+   (resources "/static" {:root "static"})))
 
 (defn -main []
   (let [port (Integer/parseInt (or (System/getenv "PORT") "5000"))
@@ -35,17 +40,19 @@
       (db/migrate conn)
       (printf "Listening on 127.0.0.1:%s\n" port)
       (flush)
-      (server/run-jetty #'app {:host "127.0.0.1" :port port}))))
+      (server/run-jetty (app-routes conn) {:host "127.0.0.1" :port port}))))
 
 (comment
-  (def port 5000)
-  (def server (server/run-jetty #'app {:host "127.0.0.1" :port port :join? false}))
-  (.stop server)
-  (.start server)
-
   (def db-url "postgresql://postgres:postgres@localhost:5432/postgres")
   (def jdbc-url (db/db-url->jdbc-url db-url))
   (def db-spec {:jdbcUrl jdbc-url})
-  (def conn (jdbc/get-datasource db-spec))
+
+  (def server
+    (server/run-jetty
+     (app-routes db-spec)
+     {:host "127.0.0.1" :port 5000 :join? false}))
+  (.stop server)
+
+  (template/cache-off!)
 
   .)

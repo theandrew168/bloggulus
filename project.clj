@@ -3,7 +3,7 @@
   :url "https://github.com/theandrew168/bloggulus"
   :license {:name "MIT License"
             :url "https://spdx.org/licenses/MIT.html"}
-  :dependencies [[org.clojure/clojure "1.10.1"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [com.github.seancorfield/next.jdbc "1.2.689"]
                  [org.postgresql/postgresql "42.2.23"]
                  [com.zaxxer/HikariCP "4.0.3"]

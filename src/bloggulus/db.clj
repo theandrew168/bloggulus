@@ -2,12 +2,14 @@
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as string]
-            [next.jdbc :as jdbc])
+            [next.jdbc :as jdbc]
+            [bloggulus.core :as core])
   (:import (java.net URI)))
 
 
+;;
 ;; helpers
-
+;;
 
 (defn db-url->jdbc-url
   "Convert a libpq/python/golang database URL into a JDBC URL."
@@ -23,7 +25,10 @@
      username
      password)))
 
+
+;;
 ;; migrations
+;;
 
 (def ^:private stmt-create-migration-table
   "CREATE TABLE IF NOT EXISTS migration (
@@ -65,28 +70,97 @@
       (apply-migration conn migration))
     missing))
 
-;; data abstraction layer
 
-(def ^:private stmt-create-account
+;;
+;; data abstraction layer
+;;
+
+(defn- account-rename
+  [row]
+  (set/rename-keys
+   row {:account/account_id :account-id
+        :account/username :username
+        :account/password :password
+        :account/email :email
+        :account/verified :verified}))
+
+(def ^:private stmt-account-create
   "INSERT INTO account (
      username,
      password,
-     email
+     email,
+     verified
    ) VALUES (
-     ?,?,?
+     ?,?,?,?
    ) RETURNING account_id")
 
-(defn create-account
-  [conn account]
-  (let [username (:username account)
-        password (:password account)
-        email (:email account)
-        stmt stmt-create-account
-        row (jdbc/execute-one! conn [stmt username password email])
+(defn- account-create
+  [conn {:keys [username password email verified] :as account}]
+  (let [row (jdbc/execute-one!
+             conn [stmt-account-create username password email verified])
         account-id (:account/account_id row)]
     (assoc account :account-id account-id)))
 
-(def ^:private stmt-read-recent-posts
+(def ^:private stmt-account-read
+  "SELECT
+     account_id,
+     username,
+     password,
+     email,
+     verified
+   FROM account
+   WHERE account_id = ?")
+
+(defn- account-read
+ [conn account-id]
+ (let [row (jdbc/execute-one! conn [stmt-account-read account-id])]
+   (account-rename row)))
+
+(def ^:private stmt-account-read-by-username
+  "SELECT
+     account_id,
+     username,
+     password,
+     email,
+     verified
+   FROM account
+   WHERE username = ?")
+
+(defn- account-read-by-username
+ [conn username]
+ (let [row (jdbc/execute-one! conn [stmt-account-read-by-username username])]
+   (account-rename row)))
+
+(def ^:private stmt-account-delete
+  "DELETE
+   FROM account
+   WHERE account_id = ?")
+
+(defn- account-delete
+ [conn account-id]
+ (jdbc/execute-one! conn [stmt-account-delete account-id]))
+
+;; TODO: build this per data type or all in one? PGAccountStorage vs PGStorage
+;; TODO: how much of this can be automated? maybe with SC's honeysql?
+(defrecord PostgreSQLStorage [conn]
+  core/AccountStorage
+  (account-create
+    [_ account]
+    (account-create conn account))
+
+  (account-read
+    [_ account-id]
+    (account-read conn account-id))
+
+  (account-read-by-username
+    [_ username]
+    (account-read-by-username conn username))
+
+  (account-delete
+    [_ account-id]
+    (account-delete conn account-id)))
+
+(def ^:private stmt-post-read-recent
   "SELECT
      post.post_id,
      post.blog_id,
@@ -104,7 +178,7 @@
 (defn read-recent-posts
   "List the N most recent blog posts."
   [conn n]
-  (let [stmt stmt-read-recent-posts
+  (let [stmt stmt-post-read-recent
         rows (jdbc/execute! conn [stmt n])]
     (map ; apply naming conversions
      #(set/rename-keys
@@ -116,7 +190,7 @@
           :post/updated :updated
           :blog/title :blog-title}) rows)))
 
-(def ^:private stmt-create-blog
+(def ^:private stmt-blog-create
   "INSERT INTO blog (
     feed_url,
     site_url,
@@ -130,7 +204,7 @@
   (let [feed-url (:feed-url blog)
         site-url (:site-url blog)
         title (:title blog)
-        stmt stmt-create-blog
+        stmt stmt-blog-create
         result (jdbc/execute-one! conn [stmt feed-url site-url title])
         blog-id (:blog/blog_id result)]
     (assoc blog :blog-id blog-id)))

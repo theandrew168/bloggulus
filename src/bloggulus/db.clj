@@ -72,93 +72,96 @@
 
 
 ;;
-;; data abstraction layer
+;; blog
 ;;
 
-(defn- account-rename
+(defn- blog-rename
   [row]
   (set/rename-keys
-   row {:account/account_id :account-id
-        :account/username :username
-        :account/password :password
-        :account/email :email
-        :account/verified :verified}))
+   row {:blog/blog_id :blog-id
+        :blog/feed_url :feed-url
+        :blog/site_url :site-url
+        :blog/title :title}))
 
-(def ^:private stmt-account-create
-  "INSERT INTO account (
-     username,
-     password,
-     email,
-     verified
-   ) VALUES (
-     ?,?,?,?
-   ) RETURNING account_id")
+(def ^:private stmt-blog-create
+  "INSERT INTO blog (
+    feed_url,
+    site_url,
+    title
+  )
+  VALUES (?,?,?)
+  RETURNING blog_id")
 
-(defn- account-create
-  [conn {:keys [username password email verified] :as account}]
+(defn blog-create
+  "Create a new blog."
+  [conn {:keys [feed-url site-url title] :as blog}]
   (let [row (jdbc/execute-one!
-             conn [stmt-account-create username password email verified])
-        account-id (:account/account_id row)]
-    (assoc account :account-id account-id)))
+             conn [stmt-blog-create feed-url site-url title])
+        blog-id (:blog/blog_id row)]
+    (assoc blog :blog-id blog-id)))
 
-(def ^:private stmt-account-read
+(def ^:private stmt-blog-read
   "SELECT
-     account_id,
-     username,
-     password,
-     email,
-     verified
-   FROM account
-   WHERE account_id = ?")
+     blog_id,
+     feed_url,
+     site_url,
+     title
+   FROM blog
+   WHERE blog_id = ?")
 
-(defn- account-read
- [conn account-id]
- (let [row (jdbc/execute-one! conn [stmt-account-read account-id])]
-   (account-rename row)))
+(defn blog-read
+  "Read a blog by id."
+  [conn blog-id]
+  (let [row (jdbc/execute-one! conn [stmt-blog-read blog-id])]
+    (-> row blog-rename core/map->Blog)))
 
-(def ^:private stmt-account-read-by-username
+(def ^:private stmt-blog-read-all
   "SELECT
-     account_id,
-     username,
-     password,
-     email,
-     verified
-   FROM account
-   WHERE username = ?")
+     blog_id,
+     feed_url,
+     site_url,
+     title
+   FROM blog")
 
-(defn- account-read-by-username
- [conn username]
- (let [row (jdbc/execute-one! conn [stmt-account-read-by-username username])]
-   (account-rename row)))
+(defn blog-read-all
+  "Read all blogs."
+  [conn]
+  (let [rows (jdbc/execute! conn [stmt-blog-read-all])]
+    (map (comp blog-rename core/map->Blog) rows)))
 
-(def ^:private stmt-account-delete
-  "DELETE
-   FROM account
-   WHERE account_id = ?")
 
-(defn- account-delete
- [conn account-id]
- (jdbc/execute-one! conn [stmt-account-delete account-id]))
+;;
+;; post
+;;
 
-;; TODO: build this per data type or all in one? PGAccountStorage vs PGStorage
-;; TODO: how much of this can be automated? maybe with SC's honeysql?
-(defrecord PostgreSQLStorage [conn]
-  core/AccountStorage
-  (account-create
-    [_ account]
-    (account-create conn account))
+(defn- post-rename
+  [row]
+  (set/rename-keys
+   row {:post/post_id :post-id
+        :post/blog_id :blog-id
+        :post/url :url
+        :post/title :title
+        :post/preview :preview
+        :post/updated :updated}))
 
-  (account-read
-    [_ account-id]
-    (account-read conn account-id))
+(def ^:private stmt-post-create
+  "INSERT INTO post (
+    blog_id,
+    url,
+    title,
+    preview,
+    updated
+  ) VALUES (?,?,?,?,?)
+  ON CONFLICT DO NOTHING
+  RETURNING post_id")
 
-  (account-read-by-username
-    [_ username]
-    (account-read-by-username conn username))
-
-  (account-delete
-    [_ account-id]
-    (account-delete conn account-id)))
+(defn post-create
+  "Create a new post."
+  [conn {:keys [blog-id url title preview updated] :as post}]
+  (let [row (jdbc/execute-one!
+             conn [stmt-post-create blog-id url title preview updated])
+        post-id (:post/post_id row)]
+    (assoc post :post-id post-id)))
 
 (def ^:private stmt-post-read-recent
   "SELECT
@@ -167,47 +170,33 @@
      post.url,
      post.title,
      post.preview,
-     post.updated,
-     blog.title
+     post.updated
    FROM post
-   INNER JOIN blog
-     ON blog.blog_id = post.blog_id
    ORDER BY post.updated DESC
    LIMIT ?")
 
-(defn read-recent-posts
-  "List the N most recent blog posts."
+(defn post-read-recent
+  "Read the N most recent blog posts."
   [conn n]
-  (let [stmt stmt-post-read-recent
-        rows (jdbc/execute! conn [stmt n])]
-    (map ; apply naming conversions
-     #(set/rename-keys
-       % {:post/post_id :post-id
-          :post/blog_id :blog-id
-          :post/url :url
-          :post/title :title
-          :post/preview :preview
-          :post/updated :updated
-          :blog/title :blog-title}) rows)))
+  (let [rows (jdbc/execute! conn [stmt-post-read-recent n])]
+    (map (comp post-rename core/map->Post) rows)))
 
-(def ^:private stmt-blog-create
-  "INSERT INTO blog (
-    feed_url,
-    site_url,
-    title
-  ) VALUES (
-    ?,?,?
-  ) RETURNING blog_id")
 
-(defn create-blog
-  [conn blog]
-  (let [feed-url (:feed-url blog)
-        site-url (:site-url blog)
-        title (:title blog)
-        stmt stmt-blog-create
-        result (jdbc/execute-one! conn [stmt feed-url site-url title])
-        blog-id (:blog/blog_id result)]
-    (assoc blog :blog-id blog-id)))
+;;
+;; session
+;;
+
+(def ^:private stmt-session-delete-expired
+  "DELETE
+   FROM session
+   WHERE expiry <= now()")
+
+(defn session-delete-expired
+  "Delete expired sessions."
+  [conn]
+  (jdbc/execute-one! conn [stmt-session-delete-expired]))
+
+
 
 (comment
   (def db-url "postgresql://postgres:postgres@localhost:5432/postgres")
@@ -226,6 +215,8 @@
              :title "null program"})
   (create-blog db-spec blog)
 
-  (read-recent-posts db-spec 5)
+  (blog-read db-spec 1)
+  (blog-read-all db-spec)
+  (post-read-recent db-spec 5)
 
   .)

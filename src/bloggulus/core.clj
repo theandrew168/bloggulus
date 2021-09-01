@@ -6,38 +6,6 @@
 (defrecord Post [post-id blog-id url title preview updated])
 (defrecord Session [session-id account-id expiry])
 
-(defprotocol AccountStorage
-  (account-create [this account])
-  (account-read [this account-id])
-  (account-read-by-username [this username])
-  (account-delete [this account-id]))
-
-(defprotocol AccountBlogStorage
-  (account-blog-follow [this account-id blog-id])
-  (account-blog-unfollow [this account-id blog-id]))
-
-(defprotocol BlogStorage
-  (blog-create [this blog])
-  (blog-read [this blog-id])
-  (blog-read-by-feed-url [this feed-url])
-  (blog-read-all [this])
-  (blog-read-followed-for-account [this account-id])
-  (blog-read-unfollowed-for-account [this account-id])
-  (blog-delete [this blog-id]))
-
-(defprotocol PostStorage
-  (post-create [this post])
-  (post-read [this post-id])
-  (post-read-recent [this n])
-  (post-read-recent-for-user [this account-id n])
-  (post-delete [this post-id]))
-
-(defprotocol SessionStorage
-  (session-create [this session])
-  (session-read [this session-id])
-  (session-delete [this session-id])
-  (session-delete-expired [this]))
-
 (def db
   {:blogs [(map->Blog {:blog-id 1
                        :feed-url "https://nullprogram.com/feed/"

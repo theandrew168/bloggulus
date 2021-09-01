@@ -11,7 +11,7 @@
   (:import (com.zaxxer.hikari HikariDataSource)))
 
 (defn render-index [conn req]
-  (let [posts (db/read-recent-posts conn 20)
+  (let [posts (db/post-read-recent conn 20)
         data {:authed true :posts posts}]
     (template/render-file "templates/index.html" data)))
 

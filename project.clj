@@ -7,6 +7,7 @@
                  [com.github.seancorfield/next.jdbc "1.2.689"]
                  [org.postgresql/postgresql "42.2.23"]
                  [com.zaxxer/HikariCP "4.0.3"]
+                 [com.taoensso/carmine "3.1.0"]
                  [ring/ring-core "1.9.4"]
                  [ring/ring-jetty-adapter "1.9.4"]
                  [compojure/compojure "1.6.2"]

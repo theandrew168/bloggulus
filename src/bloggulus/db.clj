@@ -157,8 +157,9 @@
 
 (defn post-create
   "Create a new post."
-  [conn {:keys [blog-id url title preview updated] :as post}]
-  (let [row (jdbc/execute-one!
+  [conn {:keys [url title preview updated blog] :as post}]
+  (let [blog-id (:blog-id blog)
+        row (jdbc/execute-one!
              conn [stmt-post-create blog-id url title preview updated])
         post-id (:post/post_id row)]
     (assoc post :post-id post-id)))
@@ -166,12 +167,17 @@
 (def ^:private stmt-post-read-recent
   "SELECT
      post.post_id,
-     post.blog_id,
      post.url,
      post.title,
      post.preview,
-     post.updated
+     post.updated,
+     blog.blog_id,
+     blog.feed_url,
+     blog.site_url,
+     blog.title
    FROM post
+   INNER JOIN blog
+     ON blog.blog_id = post.blog_id
    ORDER BY post.updated DESC
    LIMIT ?")
 

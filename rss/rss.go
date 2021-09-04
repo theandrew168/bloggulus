@@ -1,7 +1,6 @@
 package rss
 
 import (
-	"log"
 	"net/url"
 
 	"github.com/mmcdole/gofeed"

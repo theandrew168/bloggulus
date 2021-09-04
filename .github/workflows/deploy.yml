@@ -21,6 +21,15 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Checkout source
@@ -38,14 +47,18 @@ jobs:
         npm install -g purgecss
     # intentionally absent from the Makefile due to destructive behavior
     - name: Strip unused CSS
-      run: |
-        purgecss -c scripts/purgecss.config.js -con templates/*.tmpl -css static/css/* -o static/css/
+      run: >
+        purgecss
+        -c scripts/purgecss.config.js
+        -con templates/*.tmpl
+        -css static/css/*
+        -o static/css/
     - name: Run tests
       run: |
         make test
       env:
         BLOGGULUS_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-        BLOGGULUS_REDIS_ADDR: localhost:6397
+        BLOGGULUS_REDIS_URL: redis://localhost:6397
     - name: Build project
       run: |
         make dist

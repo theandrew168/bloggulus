@@ -115,7 +115,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, router))
 }
 
-func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error {
+func migrate(db *pgxpool.Pool, ctx context.Context, pattern string) error {
 	// create migrations table if it doesn't exist
 	_, err := db.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
@@ -144,7 +144,7 @@ func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error
 	}
 
 	// get migrations that should be applied (from migrations/ dir)
-	migrations, err := filepath.Glob(migrationsGlob)
+	migrations, err := filepath.Glob(pattern)
 	if err != nil {
 		return err
 	}
@@ -179,5 +179,6 @@ func migrate(db *pgxpool.Pool, ctx context.Context, migrationsGlob string) error
 		}
 	}
 
+	log.Printf("migrations up to date!\n")
 	return nil
 }

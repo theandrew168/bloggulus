@@ -63,7 +63,7 @@ func ReadPosts(feedURL string) ([]*model.Post, error) {
 			updated = item.PublishedParsed
 		}
 		if updated == nil {
-			log.Printf("skipping dateless post: %s\n", item.Title)
+			// TODO: handle dateless posts?
 			continue
 		}
 

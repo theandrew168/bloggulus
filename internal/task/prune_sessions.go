@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type pruneSessionsTask struct {

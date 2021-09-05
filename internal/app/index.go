@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type indexData struct {

@@ -78,4 +78,7 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
+          sudo systemctl restart bloggulus-migrate
           sudo systemctl restart bloggulus-web
+          sudo systemctl restart bloggulus-worker
+          sudo systemctl restart bloggulus-scheduler

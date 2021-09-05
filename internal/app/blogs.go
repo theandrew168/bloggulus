@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/rss"
-	"github.com/theandrew168/bloggulus/task"
+	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/rss"
+	"github.com/theandrew168/bloggulus/internal/task"
 )
 
 type followedBlog struct {

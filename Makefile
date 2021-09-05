@@ -6,9 +6,10 @@ default: build
 
 .PHONY: build
 build:
+	go build -o bloggulus-migrate cmd/migrate/main.go
 	go build -o bloggulus-web cmd/web/main.go
-#	go build -o bloggulus-worker cmd/worker/main.go
-#	go build -o bloggulus-scheduler cmd/scheduler/main.go
+	go build -o bloggulus-worker cmd/worker/main.go
+	go build -o bloggulus-scheduler cmd/scheduler/main.go
 
 .PHONY: dist
 dist: build

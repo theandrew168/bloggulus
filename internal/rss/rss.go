@@ -5,7 +5,7 @@ import (
 
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 func ReadBlog(feedURL string) (*model.Blog, error) {

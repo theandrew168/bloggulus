@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {

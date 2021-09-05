@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 var ErrNoSession = errors.New("user request doesn't have a valid session")

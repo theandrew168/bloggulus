@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/rss"
+	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/rss"
 )
 
 type syncBlogsTask struct {

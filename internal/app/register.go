@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/theandrew168/bloggulus/model"
-
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type registerData struct {

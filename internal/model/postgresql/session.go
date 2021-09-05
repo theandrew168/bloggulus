@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type sessionStorage struct {

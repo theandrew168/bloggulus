@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/theandrew168/bloggulus/model"
+	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type Application struct {

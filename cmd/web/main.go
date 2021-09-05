@@ -7,18 +7,16 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"sort"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/theandrew168/bloggulus/app"
-	"github.com/theandrew168/bloggulus/model"
-	"github.com/theandrew168/bloggulus/model/postgresql"
-	"github.com/theandrew168/bloggulus/rss"
-	"github.com/theandrew168/bloggulus/task"
+	"github.com/theandrew168/bloggulus/internal/app"
+	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/model/postgresql"
+	"github.com/theandrew168/bloggulus/internal/rss"
+	"github.com/theandrew168/bloggulus/internal/task"
 )
 
 func main() {
@@ -32,13 +30,11 @@ func main() {
 	}
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
-	// ensure conn string env var exists
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatal("Missing required env var: BLOGGULUS_DATABASE_URL")
 	}
 
-	// test a Connect and Ping now to verify DB connectivity
 	db, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -46,11 +42,6 @@ func main() {
 	defer db.Close()
 
 	if err = db.Ping(context.Background()); err != nil {
-		log.Fatal(err)
-	}
-
-	// apply database migrations
-	if err = migrate(db, context.Background(), "migrations/*.sql"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -113,72 +104,4 @@ func main() {
 
 	log.Printf("Listening on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
-}
-
-func migrate(db *pgxpool.Pool, ctx context.Context, pattern string) error {
-	// create migrations table if it doesn't exist
-	_, err := db.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS migration (
-			migration_id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL UNIQUE
-		)`)
-	if err != nil {
-		return err
-	}
-
-	// get migrations that are already applied
-	rows, err := db.Query(ctx, "SELECT name FROM migration")
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	applied := make(map[string]bool)
-	for rows.Next() {
-		var name string
-		err = rows.Scan(&name)
-		if err != nil {
-			return err
-		}
-		applied[name] = true
-	}
-
-	// get migrations that should be applied (from migrations/ dir)
-	migrations, err := filepath.Glob(pattern)
-	if err != nil {
-		return err
-	}
-
-	// determine missing migrations
-	var missing []string
-	for _, migration := range migrations {
-		if _, ok := applied[migration]; !ok {
-			missing = append(missing, migration)
-		}
-	}
-
-	// sort missing migrations to preserve order
-	sort.Strings(missing)
-	for _, file := range missing {
-		log.Printf("applying: %s\n", file)
-
-		// apply the missing ones
-		sql, err := os.ReadFile(file)
-		if err != nil {
-			return err
-		}
-		_, err = db.Exec(ctx, string(sql))
-		if err != nil {
-			return err
-		}
-
-		// update migrations table
-		_, err = db.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", file)
-		if err != nil {
-			return err
-		}
-	}
-
-	log.Printf("migrations up to date!\n")
-	return nil
 }

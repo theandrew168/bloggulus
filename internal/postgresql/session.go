@@ -22,10 +22,10 @@ func NewSessionStorage(db *pgxpool.Pool) core.SessionStorage {
 func (s *sessionStorage) Create(ctx context.Context, session *core.Session) (*core.Session, error) {
 	command := `
 		INSERT INTO session
-			(session_id, account_id, expiry)
+			(session_id, expiry, account_id)
 		VALUES
 			($1, $2, $3)`
-	_, err := s.db.Exec(ctx, command, session.SessionID, session.AccountID, session.Expiry)
+	_, err := s.db.Exec(ctx, command, session.SessionID, session.Expiry, session.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +47,8 @@ func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*core.Sess
 	var session core.Session
 	err := row.Scan(
 		&session.SessionID,
-		&session.AccountID,
 		&session.Expiry,
+		&session.AccountID,
 		&session.Account.AccountID,
 		&session.Account.Username,
 		&session.Account.Password,

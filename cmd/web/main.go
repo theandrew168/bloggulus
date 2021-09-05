@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,18 +10,12 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/internal/app"
-	"github.com/theandrew168/bloggulus/internal/model"
 	"github.com/theandrew168/bloggulus/internal/model/postgresql"
-	"github.com/theandrew168/bloggulus/internal/rss"
 	"github.com/theandrew168/bloggulus/internal/task"
+	"github.com/theandrew168/bloggulus/internal/web"
 )
 
 func main() {
-	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
-	syncblogs := flag.Bool("syncblogs", false, "sync blog posts with the database")
-	flag.Parse()
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
@@ -34,50 +27,23 @@ func main() {
 		log.Fatal("Missing required env var: BLOGGULUS_DATABASE_URL")
 	}
 
-	db, err := pgxpool.Connect(context.Background(), databaseURL)
+	conn, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer conn.Close()
 
-	if err = db.Ping(context.Background()); err != nil {
+	if err = conn.Ping(context.Background()); err != nil {
 		log.Fatal(err)
 	}
 
 	// init app with storage interfaces
-	app := &app.Application{
-		Account:     postgresql.NewAccountStorage(db),
-		Blog:        postgresql.NewBlogStorage(db),
-		AccountBlog: postgresql.NewAccountBlogStorage(db),
-		Post:        postgresql.NewPostStorage(db),
-		Session:     postgresql.NewSessionStorage(db),
-	}
-
-	if *addblog {
-		feedURL := os.Args[2]
-		log.Printf("adding blog: %s\n", feedURL)
-
-		blog, err := rss.ReadBlog(feedURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("  found: %s\n", blog.Title)
-
-		_, err = app.Blog.Create(context.Background(), blog)
-		if err != nil {
-			if err == model.ErrExist {
-				log.Println("  already exists")
-			} else {
-				log.Fatal(err)
-			}
-		}
-		return
-	}
-
-	if *syncblogs {
-		syncBlogs := task.SyncBlogs(app.Blog, app.Post)
-		syncBlogs.RunNow()
-		return
+	app := &web.Application{
+		Account:     postgresql.NewAccountStorage(conn),
+		Blog:        postgresql.NewBlogStorage(conn),
+		AccountBlog: postgresql.NewAccountBlogStorage(conn),
+		Post:        postgresql.NewPostStorage(conn),
+		Session:     postgresql.NewSessionStorage(conn),
 	}
 
 	// kick off blog sync task

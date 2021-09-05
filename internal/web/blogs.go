@@ -1,4 +1,4 @@
-package app
+package web
 
 import (
 	"html/template"
@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/model"
-	"github.com/theandrew168/bloggulus/internal/rss"
 	"github.com/theandrew168/bloggulus/internal/task"
 )
 
@@ -56,7 +56,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blog, err := rss.ReadBlog(feedURL)
+		blog, err := feed.ReadBlog(feedURL)
 		if err != nil {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid RSS / Atom feed", expiry)

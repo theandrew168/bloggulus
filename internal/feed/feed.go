@@ -1,4 +1,4 @@
-package rss
+package feed
 
 import (
 	"net/url"

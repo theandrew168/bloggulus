@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/model"
-	"github.com/theandrew168/bloggulus/internal/rss"
 )
 
 type syncBlogsTask struct {
@@ -59,7 +59,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 	defer wg.Done()
 
 	// read current list of posts
-	posts, err := rss.ReadPosts(feedURL)
+	posts, err := feed.ReadPosts(feedURL)
 	if err != nil {
 		log.Println(err)
 		return

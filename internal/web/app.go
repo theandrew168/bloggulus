@@ -5,18 +5,18 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 type Application struct {
-	Account     model.AccountStorage
-	AccountBlog model.AccountBlogStorage
-	Blog        model.BlogStorage
-	Post        model.PostStorage
-	Session     model.SessionStorage
+	Account     core.AccountStorage
+	AccountBlog core.AccountBlogStorage
+	Blog        core.BlogStorage
+	Post        core.PostStorage
+	Session     core.SessionStorage
 }
 
-func (app *Application) Router() *httprouter.Router {
+func (app *Application) Router() http.Handler {
 	router := httprouter.New()
 	router.HandlerFunc("GET", "/", app.HandleIndex)
 	router.HandlerFunc("GET", "/login", app.HandleLogin)

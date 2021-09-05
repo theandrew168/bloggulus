@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
-	"github.com/theandrew168/bloggulus/internal/model"
 	"github.com/theandrew168/bloggulus/internal/task"
 )
 
 type followedBlog struct {
-	Blog     *model.Blog
+	Blog     *core.Blog
 	Followed bool
 }
 
@@ -67,7 +67,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 		blog, err = app.Blog.Create(r.Context(), blog)
 		if err != nil {
-			if err == model.ErrExist {
+			if err == core.ErrExist {
 				// blog already exists!
 				// look it up and link to the account
 				blog, err = app.Blog.ReadByURL(r.Context(), feedURL)
@@ -79,7 +79,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 				err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
 				if err != nil {
-					if err != model.ErrExist {
+					if err != core.ErrExist {
 						log.Println(err)
 						http.Error(w, err.Error(), 500)
 						return
@@ -101,7 +101,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		// link the blog to the account
 		err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
 		if err != nil {
-			if err != model.ErrExist {
+			if err != core.ErrExist {
 				log.Println(err)
 				http.Error(w, err.Error(), 500)
 				return

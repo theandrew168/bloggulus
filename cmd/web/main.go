@@ -10,7 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/internal/model/postgresql"
+	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/task"
 	"github.com/theandrew168/bloggulus/internal/web"
 )

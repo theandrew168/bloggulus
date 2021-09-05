@@ -8,21 +8,21 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 type postStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewPostStorage(db *pgxpool.Pool) model.PostStorage {
+func NewPostStorage(db *pgxpool.Pool) core.PostStorage {
 	s := postStorage{
 		db: db,
 	}
 	return &s
 }
 
-func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post, error) {
+func (s *postStorage) Create(ctx context.Context, post *core.Post) (*core.Post, error) {
 	command := `
 		INSERT INTO post
 			(blog_id, url, title, preview, updated)
@@ -38,7 +38,7 @@ func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, model.ErrExist
+				return nil, core.ErrExist
 			}
 		}
 		return nil, err
@@ -47,7 +47,7 @@ func (s *postStorage) Create(ctx context.Context, post *model.Post) (*model.Post
 	return post, nil
 }
 
-func (s *postStorage) Read(ctx context.Context, postID int) (*model.Post, error) {
+func (s *postStorage) Read(ctx context.Context, postID int) (*core.Post, error) {
 	query := `
 		SELECT
 			post.*,
@@ -58,7 +58,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (*model.Post, error)
 		WHERE post.post_id = $1`
 	row := s.db.QueryRow(ctx, query, postID)
 
-	var post model.Post
+	var post core.Post
 	err := row.Scan(
 		&post.PostID,
 		&post.BlogID,
@@ -78,7 +78,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (*model.Post, error)
 	return &post, nil
 }
 
-func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*model.Post, error) {
+func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*core.Post, error) {
 	query := `
 		SELECT
 			post.*,
@@ -94,9 +94,9 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*model.Post, err
 	}
 	defer rows.Close()
 
-	var posts []*model.Post
+	var posts []*core.Post
 	for rows.Next() {
-		var post model.Post
+		var post core.Post
 		err := rows.Scan(
 			&post.PostID,
 			&post.BlogID,
@@ -119,7 +119,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*model.Post, err
 	return posts, nil
 }
 
-func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]*model.Post, error) {
+func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]*core.Post, error) {
 	query := `
 		SELECT
 			post.*,
@@ -138,9 +138,9 @@ func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n in
 	}
 	defer rows.Close()
 
-	var posts []*model.Post
+	var posts []*core.Post
 	for rows.Next() {
-		var post model.Post
+		var post core.Post
 		err := rows.Scan(
 			&post.PostID,
 			&post.BlogID,

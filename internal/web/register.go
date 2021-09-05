@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 type registerData struct {
@@ -52,13 +52,13 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		account := &model.Account{
+		account := &core.Account{
 			Username: username,
 			Password: string(hash),
 		}
 		account, err = app.Account.Create(r.Context(), account)
 		if err != nil {
-			if err == model.ErrExist {
+			if err == core.ErrExist {
 				expiry := time.Now().Add(time.Hour * 12)
 				cookie := GenerateSessionCookie(ErrorCookieName, "Failed to create account", expiry)
 				http.SetCookie(w, cookie)

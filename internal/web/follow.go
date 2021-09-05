@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	// link the blog to the account
 	err = app.AccountBlog.Follow(r.Context(), account.AccountID, blogID)
 	if err != nil {
-		if err != model.ErrExist {
+		if err != core.ErrExist {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return

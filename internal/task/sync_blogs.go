@@ -6,16 +6,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
-	"github.com/theandrew168/bloggulus/internal/model"
 )
 
 type syncBlogsTask struct {
-	Blog model.BlogStorage
-	Post model.PostStorage
+	Blog core.BlogStorage
+	Post core.PostStorage
 }
 
-func SyncBlogs(blog model.BlogStorage, post model.PostStorage) Task {
+func SyncBlogs(blog core.BlogStorage, post core.PostStorage) Task {
 	return &syncBlogsTask{
 		Blog: blog,
 		Post: post,
@@ -72,7 +72,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 		post.Preview = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
 		_, err := t.Post.Create(context.Background(), post)
 		if err != nil {
-			if err != model.ErrExist {
+			if err != core.ErrExist {
 				log.Println(err)
 			}
 		}

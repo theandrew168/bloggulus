@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 var ErrNoSession = errors.New("user request doesn't have a valid session")
@@ -18,7 +18,7 @@ var (
 	ErrorCookieName     = "error"
 )
 
-func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (*model.Account, error) {
+func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (*core.Account, error) {
 	// check for session cookie
 	sessionID, err := r.Cookie(SessionIDCookieName)
 	if err != nil {

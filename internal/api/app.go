@@ -1,13 +1,13 @@
 package api
 
 import (
-	"github.com/theandrew168/bloggulus/internal/model"
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 type Application struct {
-	Account     model.AccountStorage
-	AccountBlog model.AccountBlogStorage
-	Blog        model.BlogStorage
-	Post        model.PostStorage
-	Session     model.SessionStorage
+	Account     core.AccountStorage
+	AccountBlog core.AccountBlogStorage
+	Blog        core.BlogStorage
+	Post        core.PostStorage
+	Session     core.SessionStorage
 }

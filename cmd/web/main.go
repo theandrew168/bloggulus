@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/julienschmidt/httprouter"
 
 	"github.com/theandrew168/bloggulus/internal/app"
 	"github.com/theandrew168/bloggulus/internal/model"
@@ -89,19 +88,6 @@ func main() {
 	pruneSessions := task.PruneSessions(app.Session)
 	go pruneSessions.Run(5 * time.Minute)
 
-	router := httprouter.New()
-	router.HandlerFunc("GET", "/", app.HandleIndex)
-	router.HandlerFunc("GET", "/login", app.HandleLogin)
-	router.HandlerFunc("POST", "/login", app.HandleLogin)
-	router.HandlerFunc("POST", "/logout", app.HandleLogout)
-	router.HandlerFunc("GET", "/blogs", app.HandleBlogs)
-	router.HandlerFunc("POST", "/blogs", app.HandleBlogs)
-	router.HandlerFunc("POST", "/follow", app.HandleFollow)
-	router.HandlerFunc("POST", "/unfollow", app.HandleUnfollow)
-	router.HandlerFunc("GET", "/register", app.HandleRegister)
-	router.HandlerFunc("POST", "/register", app.HandleRegister)
-	router.ServeFiles("/static/*filepath", http.Dir("./static"))
-
 	log.Printf("Listening on %s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, router))
+	log.Fatal(http.ListenAndServe(addr, app.Router()))
 }

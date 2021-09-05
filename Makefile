@@ -16,8 +16,6 @@ dist: build
 	rm -fr dist/
 	mkdir dist/
 	cp bloggulus-* dist/
-	cp -r static dist/
-	cp -r templates dist/
 
 .PHONY: test
 test:

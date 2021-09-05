@@ -47,7 +47,7 @@ func (app *Application) HandleFollow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// link the blog to the account
-	err = app.AccountBlog.Follow(r.Context(), account.AccountID, blogID)
+	err = app.Follow.Follow(r.Context(), account.AccountID, blogID)
 	if err != nil {
 		if err != core.ErrExist {
 			log.Println(err)

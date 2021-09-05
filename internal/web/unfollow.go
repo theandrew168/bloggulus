@@ -45,7 +45,7 @@ func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// unlink the blog from the account
-	err = app.AccountBlog.Unfollow(r.Context(), account.AccountID, blogID)
+	err = app.Follow.Unfollow(r.Context(), account.AccountID, blogID)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

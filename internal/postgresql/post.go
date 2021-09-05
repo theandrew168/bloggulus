@@ -127,9 +127,9 @@ func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n in
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
-		INNER JOIN account_blog
-			ON account_blog.blog_id = blog.blog_id
-		WHERE account_blog.account_id = $1
+		INNER JOIN follow
+			ON follow.blog_id = blog.blog_id
+		WHERE follow.account_id = $1
 		ORDER BY post.updated DESC
 		LIMIT $2`
 	rows, err := s.db.Query(ctx, query, accountID, n)

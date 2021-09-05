@@ -77,7 +77,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
+				err = app.Follow.Follow(r.Context(), account.AccountID, blog.BlogID)
 				if err != nil {
 					if err != core.ErrExist {
 						log.Println(err)
@@ -99,7 +99,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// link the blog to the account
-		err = app.AccountBlog.Follow(r.Context(), account.AccountID, blog.BlogID)
+		err = app.Follow.Follow(r.Context(), account.AccountID, blog.BlogID)
 		if err != nil {
 			if err != core.ErrExist {
 				log.Println(err)

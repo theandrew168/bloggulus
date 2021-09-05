@@ -39,11 +39,11 @@ func main() {
 
 	// init app with storage interfaces
 	app := &web.Application{
-		Account:     postgresql.NewAccountStorage(conn),
-		Blog:        postgresql.NewBlogStorage(conn),
-		AccountBlog: postgresql.NewAccountBlogStorage(conn),
-		Post:        postgresql.NewPostStorage(conn),
-		Session:     postgresql.NewSessionStorage(conn),
+		Account: postgresql.NewAccountStorage(conn),
+		Blog:    postgresql.NewBlogStorage(conn),
+		Follow:  postgresql.NewFollowStorage(conn),
+		Post:    postgresql.NewPostStorage(conn),
+		Session: postgresql.NewSessionStorage(conn),
 	}
 
 	// kick off blog sync task

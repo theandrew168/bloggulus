@@ -95,9 +95,9 @@ func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([
 		SELECT
 			blog.*
 		FROM blog
-		INNER JOIN account_blog
-			ON account_blog.blog_id = blog.blog_id
-		WHERE account_blog.account_id = $1`
+		INNER JOIN follow
+			ON follow.blog_id = blog.blog_id
+		WHERE follow.account_id = $1`
 	rows, err := s.db.Query(ctx, query, accountID)
 	if err != nil {
 		return nil, err
@@ -125,9 +125,9 @@ func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) 
 		FROM blog
 		WHERE NOT EXISTS (
 			SELECT 1
-			FROM account_blog
-			WHERE account_blog.blog_id = blog.blog_id
-			AND account_blog.account_id = $1
+			FROM follow
+			WHERE follow.blog_id = blog.blog_id
+			AND follow.account_id = $1
 		)`
 	rows, err := s.db.Query(ctx, query, accountID)
 	if err != nil {

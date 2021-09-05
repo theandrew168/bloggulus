@@ -11,21 +11,20 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-type accountBlogStorage struct {
+type followStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewAccountBlogStorage(db *pgxpool.Pool) core.AccountBlogStorage {
-	s := accountBlogStorage{
+func NewFollowStorage(db *pgxpool.Pool) core.FollowStorage {
+	s := followStorage{
 		db: db,
 	}
 	return &s
 }
 
-func (s *accountBlogStorage) Follow(ctx context.Context, accountID int, blogID int) error {
+func (s *followStorage) Follow(ctx context.Context, accountID int, blogID int) error {
 	command := `
-		INSERT	
-		INTO account_blog
+		INSERT INTO follow
 			(account_id, blog_id)
 		VALUES
 			($1, $2)`
@@ -45,10 +44,9 @@ func (s *accountBlogStorage) Follow(ctx context.Context, accountID int, blogID i
 	return nil
 }
 
-func (s *accountBlogStorage) Unfollow(ctx context.Context, accountID int, blogID int) error {
+func (s *followStorage) Unfollow(ctx context.Context, accountID int, blogID int) error {
 	command := `
-		DELETE
-		FROM account_blog
+		DELETE FROM follow
 		WHERE account_id = $1
 		AND blog_id = $2`
 	_, err := s.db.Exec(ctx, command, accountID, blogID)

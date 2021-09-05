@@ -14,8 +14,8 @@ type Session struct {
 }
 
 type SessionStorage interface {
-    Create(ctx context.Context, session *Session) (*Session, error)
-    Read(ctx context.Context, sessionID string) (*Session, error)
-    Delete(ctx context.Context, sessionID string) error
-    DeleteExpired(ctx context.Context) error
+	Create(ctx context.Context, session *Session) (*Session, error)
+	Read(ctx context.Context, sessionID string) (*Session, error)
+	Delete(ctx context.Context, sessionID string) error
+	DeleteExpired(ctx context.Context) error
 }

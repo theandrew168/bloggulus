@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,12 @@ import (
 	"github.com/theandrew168/bloggulus/internal/task"
 	"github.com/theandrew168/bloggulus/internal/web"
 )
+
+//go:embed static
+var staticFS embed.FS
+
+//go:embed templates
+var templatesFS embed.FS
 
 func main() {
 	port := os.Getenv("PORT")
@@ -39,6 +46,9 @@ func main() {
 
 	// init app with storage interfaces
 	app := &web.Application{
+		StaticFS:    staticFS,
+		TemplatesFS: templatesFS,
+
 		Account: postgresql.NewAccountStorage(conn),
 		Blog:    postgresql.NewBlogStorage(conn),
 		Follow:  postgresql.NewFollowStorage(conn),

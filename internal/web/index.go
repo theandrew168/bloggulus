@@ -16,7 +16,7 @@ type indexData struct {
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFiles("templates/index.html.tmpl", "templates/base.html.tmpl")
+	ts, err := template.ParseFS(app.TemplatesFS, "templates/index.html.tmpl", "templates/base.html.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

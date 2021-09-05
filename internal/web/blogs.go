@@ -163,7 +163,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 	}
 
-	ts, err := template.ParseFiles("templates/blogs.html.tmpl", "templates/base.html.tmpl")
+	ts, err := template.ParseFS(app.TemplatesFS, "templates/blogs.html.tmpl", "templates/base.html.tmpl")
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

@@ -78,7 +78,7 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts, err := template.ParseFiles("templates/register.html.tmpl", "templates/base.html.tmpl")
+	ts, err := template.ParseFS(app.TemplatesFS, "templates/register.html.tmpl", "templates/base.html.tmpl")
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

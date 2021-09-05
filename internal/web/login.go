@@ -84,7 +84,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts, err := template.ParseFiles("templates/login.html.tmpl", "templates/base.html.tmpl")
+	ts, err := template.ParseFS(app.TemplatesFS, "templates/login.html.tmpl", "templates/base.html.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

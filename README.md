@@ -16,5 +16,6 @@ export BLOGGULUS_REDIS_URL=redis://localhost:6397
 ## Running
 Assuming a recent version of Go is [installed](https://golang.org/dl/), simply run:
 ```
+go run cmd/migrate/main.go
 go run cmd/web/main.go
 ```

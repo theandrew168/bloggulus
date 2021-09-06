@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"io/fs"
 	"log"
 	"os"
 
@@ -30,7 +31,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err = postgresql.Migrate(conn, context.Background(), migrationsFS); err != nil {
+	migrations, _ := fs.Sub(migrationsFS, "migrations")
+	if err = postgresql.Migrate(conn, context.Background(), migrations); err != nil {
 		log.Fatal(err)
 	}
 }

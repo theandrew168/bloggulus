@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ var staticFS embed.FS
 var templatesFS embed.FS
 
 func main() {
+	env := os.Getenv("ENV")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
@@ -44,10 +46,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// init app with storage interfaces
+	// reload templates from filesystem if ENV=debug
+	var templates fs.FS
+	if env == "debug" {
+		templates = os.DirFS("cmd/web/templates")
+	} else {
+		templates, _ = fs.Sub(templatesFS, "templates")
+	}
+
+	static, _ := fs.Sub(staticFS, "static")
+
 	app := &web.Application{
-		StaticFS:    staticFS,
-		TemplatesFS: templatesFS,
+		StaticFS:    static,
+		TemplatesFS: templates,
 
 		Account: postgresql.NewAccountStorage(conn),
 		Blog:    postgresql.NewBlogStorage(conn),

@@ -4,7 +4,6 @@ import (
 	"context"
 	"io/fs"
 	"log"
-	"path/filepath"
 	"sort"
 
 	"github.com/jackc/pgx/v4"
@@ -39,7 +38,7 @@ func Migrate(conn *pgx.Conn, ctx context.Context, migrationsFS fs.FS) error {
 	}
 
 	// get migrations that should be applied (from migrations/ dir)
-	migrations, err := fs.ReadDir(migrationsFS, "migrations")
+	migrations, err := fs.ReadDir(migrationsFS, ".")
 	if err != nil {
 		return err
 	}
@@ -59,8 +58,7 @@ func Migrate(conn *pgx.Conn, ctx context.Context, migrationsFS fs.FS) error {
 		log.Printf("applying: %s\n", name)
 
 		// apply the missing ones
-		path := filepath.Join("migrations", name)
-		sql, err := fs.ReadFile(migrationsFS, path)
+		sql, err := fs.ReadFile(migrationsFS, name)
 		if err != nil {
 			return err
 		}

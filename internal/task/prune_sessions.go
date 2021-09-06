@@ -9,12 +9,12 @@ import (
 )
 
 type pruneSessionsTask struct {
-	Session core.SessionStorage
+	session core.SessionStorage
 }
 
-func PruneSessions(sessionStorage core.SessionStorage) Task {
+func PruneSessions(session core.SessionStorage) Task {
 	return &pruneSessionsTask{
-		Session: sessionStorage,
+		session: session,
 	}
 }
 
@@ -35,5 +35,5 @@ func (t *pruneSessionsTask) RunNow() error {
 }
 
 func (t *pruneSessionsTask) pruneSessions() error {
-	return t.Session.DeleteExpired(context.Background())
+	return t.session.DeleteExpired(context.Background())
 }

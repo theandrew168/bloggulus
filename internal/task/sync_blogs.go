@@ -11,14 +11,14 @@ import (
 )
 
 type syncBlogsTask struct {
-	Blog core.BlogStorage
-	Post core.PostStorage
+	blog core.BlogStorage
+	post core.PostStorage
 }
 
 func SyncBlogs(blog core.BlogStorage, post core.PostStorage) Task {
 	return &syncBlogsTask{
-		Blog: blog,
-		Post: post,
+		blog: blog,
+		post: post,
 	}
 }
 
@@ -39,7 +39,7 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	blogs, err := t.Blog.ReadAll(context.Background())
+	blogs, err := t.blog.ReadAll(context.Background())
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string)
 		post.BlogID = blogID
 		// TODO: get this from the feed or the page itself
 		post.Preview = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
-		_, err := t.Post.Create(context.Background(), post)
+		_, err := t.post.Create(context.Background(), post)
 		if err != nil {
 			if err != core.ErrExist {
 				log.Println(err)

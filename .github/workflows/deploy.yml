@@ -49,10 +49,10 @@ jobs:
     - name: Strip unused CSS
       run: >
         purgecss
-        -c scripts/purgecss.config.js
-        -con templates/*.tmpl
-        -css static/css/*
-        -o static/css/
+        -c cmd/web/scripts/purgecss.config.js
+        -con cmd/web/templates/*.tmpl
+        -css cmd/web/static/css/*
+        -o cmd/web/static/css/
     - name: Run tests
       run: |
         make test

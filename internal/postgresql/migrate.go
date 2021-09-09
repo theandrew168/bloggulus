@@ -6,10 +6,10 @@ import (
 	"log"
 	"sort"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func Migrate(conn *pgx.Conn, ctx context.Context, migrationsFS fs.FS) error {
+func Migrate(conn *pgxpool.Pool, ctx context.Context, migrationsFS fs.FS) error {
 	// create migrations table if it doesn't exist
 	_, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
@@ -74,6 +74,6 @@ func Migrate(conn *pgx.Conn, ctx context.Context, migrationsFS fs.FS) error {
 		}
 	}
 
-	log.Printf("migrations up to date!\n")
+	log.Printf("migrations up to date\n")
 	return nil
 }

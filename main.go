@@ -17,6 +17,9 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
+//go:embed migrations
+var migrationsFS embed.FS
+
 //go:embed static
 var staticFS embed.FS
 
@@ -46,10 +49,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	migrations, _ := fs.Sub(migrationsFS, "migrations")
+	if err = postgresql.Migrate(conn, context.Background(), migrations); err != nil {
+		log.Fatal(err)
+	}
+
 	// reload templates from filesystem if ENV=debug
 	var templates fs.FS
 	if env == "debug" {
-		templates = os.DirFS("cmd/web/templates")
+		templates = os.DirFS("templates")
 	} else {
 		templates, _ = fs.Sub(templatesFS, "templates")
 	}
@@ -75,6 +83,6 @@ func main() {
 	pruneSessions := task.PruneSessions(app.Session)
 	go pruneSessions.Run(5 * time.Minute)
 
-	log.Printf("Listening on %s\n", addr)
+	log.Printf("listening on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, app.Router()))
 }

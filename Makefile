@@ -6,16 +6,7 @@ default: build
 
 .PHONY: build
 build:
-	go build -o bloggulus-migrate cmd/migrate/main.go
-	go build -o bloggulus-web cmd/web/main.go
-	go build -o bloggulus-worker cmd/worker/main.go
-	go build -o bloggulus-scheduler cmd/scheduler/main.go
-
-.PHONY: dist
-dist: build
-	rm -fr dist/
-	mkdir dist/
-	cp bloggulus-* dist/
+	go build -o bloggulus main.go
 
 .PHONY: test
 test:
@@ -27,4 +18,4 @@ format:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus-* dist/
+	rm -fr bloggulus

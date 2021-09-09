@@ -49,10 +49,10 @@ jobs:
     - name: Strip unused CSS
       run: >
         purgecss
-        -c cmd/web/scripts/purgecss.config.js
-        -con cmd/web/templates/*.tmpl
-        -css cmd/web/static/css/*
-        -o cmd/web/static/css/
+        -c scripts/purgecss.config.js
+        -con templates/*.tmpl
+        -css static/css/*
+        -o static/css/
     - name: Run tests
       run: |
         make test
@@ -62,14 +62,13 @@ jobs:
     - name: Build project
       run: |
         make dist
-    - name: Copy build artifacts
+    - name: Copy build artifact
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.BLOGGULUS_HOSTNAME }}
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-        source: dist/*
-        strip_components: 1
+        source: bloggulus
         target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
     - name: Restart web service
       uses: appleboy/ssh-action@master
@@ -78,7 +77,4 @@ jobs:
         username: ${{ secrets.BLOGGULUS_SSH_USER }}
         key: ${{ secrets.BLOGGULUS_SSH_KEY }}
         script: |
-          sudo systemctl restart bloggulus-migrate
-          sudo systemctl restart bloggulus-web
-          sudo systemctl restart bloggulus-worker
-          sudo systemctl restart bloggulus-scheduler
+          sudo systemctl restart bloggulus

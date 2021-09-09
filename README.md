@@ -2,7 +2,7 @@
 A community for bloggers and readers
 
 ## Database
-This project uses [PostgreSQL](https://www.postgresql.org/) for persistent storage and [Redis](https://redis.io/) as a task queue.
+This project uses [PostgreSQL](https://www.postgresql.org/) for persistent storage and [Redis](https://redis.io/) for general caching.
 To develop locally, you'll an instance of both tools running somehow or another.
 I find [Docker](https://www.docker.com/) to be a nice tool for this but you can do whatever works best.
 
@@ -13,9 +13,13 @@ export BLOGGULUS_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/post
 export BLOGGULUS_REDIS_URL=redis://localhost:6397
 ```
 
+These containers can be stopped via:
+```
+docker compose down
+```
+
 ## Running
 Assuming a recent version of Go is [installed](https://golang.org/dl/), simply run:
 ```
-go run cmd/migrate/main.go
-go run cmd/web/main.go
+go run main.go
 ```

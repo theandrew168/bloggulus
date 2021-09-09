@@ -61,7 +61,7 @@ jobs:
         BLOGGULUS_REDIS_URL: redis://localhost:6397
     - name: Build project
       run: |
-        make dist
+        make
     - name: Copy build artifact
       uses: appleboy/scp-action@master
       with:

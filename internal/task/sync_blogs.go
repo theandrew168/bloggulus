@@ -2,9 +2,14 @@ package task
 
 import (
 	"context"
+	"html"
+	"io"
 	"log"
+	"net/http"
 	"sync"
 	"time"
+
+	"github.com/microcosm-cc/bluemonday"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
@@ -58,19 +63,61 @@ func (t *syncBlogsTask) syncBlogs() error {
 func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
-	// read current list of posts
-	posts, err := feed.ReadPosts(blog)
+	// read posts currently in storage
+	knownPosts, err := t.post.ReadAllByBlog(context.Background(), blog.BlogID)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// TODO: do some SET work to minimize content / preview fetching
+	// build a set of known post URLs
+	knownPostURLs := make(map[string]bool)
+	for _, post := range knownPosts {
+		knownPostURLs[post.URL] = true
+	}
+
+	// read posts from feed
+	feedPosts, err := feed.ReadPosts(blog)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// newPosts = feedPosts - knownPosts
+	var newPosts []core.Post
+	for _, post := range feedPosts {
+		if _, ok := knownPostURLs[post.URL]; ok {
+			continue
+		}
+		newPosts = append(newPosts, post)
+	}
 
 	// sync each post with the database
-	for _, post := range posts {
-		// TODO: get this from the feed or the page itself
-		post.Body = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
+	for _, post := range newPosts {
+		// attempt to manually fetch post body if not already present in feed
+		if post.Body == "" {
+			resp, err := http.Get(post.URL)
+			if err != nil {
+				log.Println(err)
+				goto create
+			}
+			defer resp.Body.Close()
+
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Println(err)
+				goto create
+			}
+
+			p := bluemonday.StripTagsPolicy()
+			body := string(buf)
+			body = p.Sanitize(body)
+			body = html.UnescapeString(body)
+
+			post.Body = body
+		}
+
+create:
 		err := t.post.Create(context.Background(), &post)
 		if err != nil {
 			if err != core.ErrExist {

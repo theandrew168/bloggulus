@@ -110,7 +110,7 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]core.Blog, error) {
 	return blogs, nil
 }
 
-func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([]core.Blog, error) {
+func (s *blogStorage) ReadFollowedByAccount(ctx context.Context, accountID int) ([]core.Blog, error) {
 	stmt := `
 		SELECT
 			blog.*
@@ -142,7 +142,7 @@ func (s *blogStorage) ReadFollowedForUser(ctx context.Context, accountID int) ([
 	return blogs, nil
 }
 
-func (s *blogStorage) ReadUnfollowedForUser(ctx context.Context, accountID int) ([]core.Blog, error) {
+func (s *blogStorage) ReadUnfollowedByAccount(ctx context.Context, accountID int) ([]core.Blog, error) {
 	stmt := `
 		SELECT
 			blog.*

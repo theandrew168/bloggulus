@@ -1,17 +1,18 @@
 package feed
 
 import (
+	"html"
 	"net/url"
 	"time"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
+// TODO: consume an io.Reader?
 func ReadBlog(feedURL string) (core.Blog, error) {
-	// TODO: check if feed contains its link else default to hostname
-
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
@@ -28,13 +29,14 @@ func ReadBlog(feedURL string) (core.Blog, error) {
 	// create a Blog core for the feed
 	blog := core.Blog{
 		FeedURL: feedURL,
-		SiteURL: feed.Link,  // TODO: check this
+		SiteURL: feed.Link,
 		Title:   feed.Title,
 	}
 
 	return blog, nil
 }
 
+// TODO: consume an io.Reader?
 func ReadPosts(blog core.Blog) ([]core.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
@@ -54,6 +56,14 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 			author = feed.Title
 		}
 
+		// check for in-feed body and strip HTML
+		body := item.Content
+		if body != "" {
+			p := bluemonday.StripTagsPolicy()
+			body = p.Sanitize(body)
+			body = html.UnescapeString(body)
+		}
+
 		// try Updated then Published to obtain a timestamp
 		var updated time.Time
 		if item.UpdatedParsed != nil {
@@ -65,11 +75,11 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 			updated = time.Now().AddDate(0, 0, -7)
 		}
 
-		// don't worry about Post.Body here (sync_blogs task will check later)
 		post := core.Post{
 			URL:     item.Link,
 			Title:   item.Title,
 			Author:  author,
+			Body:    body,
 			Updated: updated,
 			Blog:    blog,
 		}

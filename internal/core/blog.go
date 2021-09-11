@@ -16,7 +16,7 @@ type BlogStorage interface {
 	Read(ctx context.Context, blogID int) (Blog, error)
 	ReadByURL(ctx context.Context, feedURL string) (Blog, error)
 	ReadAll(ctx context.Context) ([]Blog, error)
-	ReadFollowedForUser(ctx context.Context, accountID int) ([]Blog, error)
-	ReadUnfollowedForUser(ctx context.Context, accountID int) ([]Blog, error)
+	ReadFollowedByAccount(ctx context.Context, accountID int) ([]Blog, error)
+	ReadUnfollowedByAccount(ctx context.Context, accountID int) ([]Blog, error)
 	Delete(ctx context.Context, blogID int) error
 }

@@ -35,7 +35,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	var posts []core.Post
 	if authed {
 		// read the recent posts that the user follows
-		posts, err = app.Post.ReadRecentForUser(r.Context(), account.AccountID, 10)
+		posts, err = app.Post.ReadRecentByAccount(r.Context(), account.AccountID, 10)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -49,9 +49,15 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var previewPosts []core.Post
+	for _, post := range posts {
+		post.Body = post.Body[:365] + "..."
+		previewPosts = append(previewPosts, post)
+	}
+
 	data := &indexData{
 		Authed: authed,
-		Posts:  posts,
+		Posts:  previewPosts,
 	}
 
 	err = ts.Execute(w, data)

@@ -120,7 +120,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: sort followed
-	followed, err := app.Blog.ReadFollowedForUser(r.Context(), account.AccountID)
+	followed, err := app.Blog.ReadFollowedByAccount(r.Context(), account.AccountID)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)
@@ -128,7 +128,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: sort unfollowed
-	unfollowed, err := app.Blog.ReadUnfollowedForUser(r.Context(), account.AccountID)
+	unfollowed, err := app.Blog.ReadUnfollowedByAccount(r.Context(), account.AccountID)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

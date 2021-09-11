@@ -12,7 +12,7 @@ import (
 )
 
 type followedBlog struct {
-	Blog     *core.Blog
+	Blog     core.Blog
 	Followed bool
 }
 
@@ -65,7 +65,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		blog, err = app.Blog.Create(r.Context(), blog)
+		err = app.Blog.Create(r.Context(), &blog)
 		if err != nil {
 			if err == core.ErrExist {
 				// blog already exists!

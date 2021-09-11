@@ -12,24 +12,30 @@ import (
 )
 
 type postStorage struct {
-	db *pgxpool.Pool
+	conn *pgxpool.Pool
 }
 
-func NewPostStorage(db *pgxpool.Pool) core.PostStorage {
+func NewPostStorage(conn *pgxpool.Pool) core.PostStorage {
 	s := postStorage{
-		db: db,
+		conn: conn,
 	}
 	return &s
 }
 
-func (s *postStorage) Create(ctx context.Context, post *core.Post) (*core.Post, error) {
-	command := `
+func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
+	stmt := `
 		INSERT INTO post
-			(url, title, preview, updated, blog_id)
+			(url, title, author, body, updated, blog_id)
 		VALUES
-			($1, $2, $3, $4, $5)
+			($1, $2, $3, $4, $5, $6)
 		RETURNING post_id`
-	row := s.db.QueryRow(ctx, command, post.URL, post.Title, post.Preview, post.Updated, post.BlogID)
+	row := s.conn.QueryRow(ctx, stmt,
+		post.URL,
+		post.Title,
+		post.Author,
+		post.Body,
+		post.Updated,
+		post.Blog.BlogID)
 
 	err := row.Scan(&post.PostID)
 	if err != nil {
@@ -38,72 +44,88 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) (*core.Post, 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, core.ErrExist
+				return core.ErrExist
 			}
 		}
-		return nil, err
+		return err
 	}
 
-	return post, nil
+	return nil
 }
 
-func (s *postStorage) Read(ctx context.Context, postID int) (*core.Post, error) {
-	query := `
+func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
+	stmt := `
 		SELECT
-			post.*,
-			blog.*
+			post.post_id,
+			post.url,
+			post.title,
+			post.author,
+			post.body,
+			post.updated,
+			blog.blog_id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
 		WHERE post.post_id = $1`
-	row := s.db.QueryRow(ctx, query, postID)
+	row := s.conn.QueryRow(ctx, stmt, postID)
 
 	var post core.Post
 	err := row.Scan(
 		&post.PostID,
 		&post.URL,
 		&post.Title,
-		&post.Preview,
+		&post.Author,
+		&post.Body,
 		&post.Updated,
-		&post.BlogID,
 		&post.Blog.BlogID,
 		&post.Blog.FeedURL,
 		&post.Blog.SiteURL,
 		&post.Blog.Title,
 	)
 	if err != nil {
-		return nil, err
+		return core.Post{}, err
 	}
 
-	return &post, nil
+	return post, nil
 }
 
-func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*core.Post, error) {
-	query := `
+func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]core.Post, error) {
+	stmt := `
 		SELECT
-			post.*,
-			blog.*
+			post.post_id,
+			post.url,
+			post.title,
+			post.author,
+			post.body,
+			post.updated,
+			blog.blog_id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
 		ORDER BY post.updated DESC
 		LIMIT $1`
-	rows, err := s.db.Query(ctx, query, n)
+	rows, err := s.conn.Query(ctx, stmt, n)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var posts []*core.Post
+	var posts []core.Post
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
 			&post.PostID,
 			&post.URL,
 			&post.Title,
-			&post.Preview,
+			&post.Author,
+			&post.Body,
 			&post.Updated,
-			&post.BlogID,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
@@ -113,17 +135,24 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]*core.Post, erro
 			return nil, err
 		}
 
-		posts = append(posts, &post)
+		posts = append(posts, post)
 	}
 
 	return posts, nil
 }
 
-func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]*core.Post, error) {
-	query := `
+func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n int) ([]core.Post, error) {
+	stmt := `
 		SELECT
-			post.*,
-			blog.*
+			post.post_id,
+			post.url,
+			post.title,
+			post.body,
+			post.updated,
+			blog.blog_id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
@@ -132,22 +161,21 @@ func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n in
 		WHERE follow.account_id = $1
 		ORDER BY post.updated DESC
 		LIMIT $2`
-	rows, err := s.db.Query(ctx, query, accountID, n)
+	rows, err := s.conn.Query(ctx, stmt, accountID, n)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var posts []*core.Post
+	var posts []core.Post
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
 			&post.PostID,
 			&post.URL,
 			&post.Title,
-			&post.Preview,
+			&post.Body,
 			&post.Updated,
-			&post.BlogID,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
@@ -157,17 +185,17 @@ func (s *postStorage) ReadRecentForUser(ctx context.Context, accountID int, n in
 			return nil, err
 		}
 
-		posts = append(posts, &post)
+		posts = append(posts, post)
 	}
 
 	return posts, nil
 }
 
 func (s *postStorage) Delete(ctx context.Context, postID int) error {
-	command := `
+	stmt := `
 		DELETE
 		FROM post
 		WHERE post_id = $1`
-	_, err := s.db.Exec(ctx, command, postID)
+	_, err := s.conn.Exec(ctx, stmt, postID)
 	return err
 }

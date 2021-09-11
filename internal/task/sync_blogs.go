@@ -48,29 +48,30 @@ func (t *syncBlogsTask) syncBlogs() error {
 	var wg sync.WaitGroup
 	for _, blog := range blogs {
 		wg.Add(1)
-		go t.syncBlog(&wg, blog.BlogID, blog.FeedURL)
+		go t.syncBlog(&wg, blog)
 	}
 
 	wg.Wait()
 	return nil
 }
 
-func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blogID int, feedURL string) {
+func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
 	// read current list of posts
-	posts, err := feed.ReadPosts(feedURL)
+	posts, err := feed.ReadPosts(blog)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
+	// TODO: do some SET work to minimize content / preview fetching
+
 	// sync each post with the database
 	for _, post := range posts {
-		post.BlogID = blogID
 		// TODO: get this from the feed or the page itself
-		post.Preview = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
-		_, err := t.post.Create(context.Background(), post)
+		post.Body = "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora expedita dicta totam aspernatur doloremque. Excepturi iste iusto eos enim reprehenderit nisi, accusamus delectus nihil quis facere in modi ratione libero!"
+		err := t.post.Create(context.Background(), &post)
 		if err != nil {
 			if err != core.ErrExist {
 				log.Println(err)

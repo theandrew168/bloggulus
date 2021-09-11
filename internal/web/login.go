@@ -64,12 +64,12 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		expiry := time.Now().AddDate(0, 0, 7)
-		session := &core.Session{
+		session := core.Session{
 			SessionID: sessionID,
-			AccountID: account.AccountID,
 			Expiry:    expiry,
+			Account:   account,
 		}
-		session, err = app.Session.Create(r.Context(), session)
+		err = app.Session.Create(r.Context(), &session)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)

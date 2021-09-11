@@ -23,12 +23,12 @@ func NewFollowStorage(db *pgxpool.Pool) core.FollowStorage {
 }
 
 func (s *followStorage) Follow(ctx context.Context, accountID int, blogID int) error {
-	command := `
+	stmt := `
 		INSERT INTO follow
 			(account_id, blog_id)
 		VALUES
 			($1, $2)`
-	_, err := s.db.Exec(ctx, command, accountID, blogID)
+	_, err := s.db.Exec(ctx, stmt, accountID, blogID)
 	if err != nil {
 		// https://github.com/jackc/pgx/wiki/Error-Handling
 		// https://github.com/jackc/pgx/issues/474
@@ -45,10 +45,10 @@ func (s *followStorage) Follow(ctx context.Context, accountID int, blogID int) e
 }
 
 func (s *followStorage) Unfollow(ctx context.Context, accountID int, blogID int) error {
-	command := `
+	stmt := `
 		DELETE FROM follow
 		WHERE account_id = $1
 		AND blog_id = $2`
-	_, err := s.db.Exec(ctx, command, accountID, blogID)
+	_, err := s.db.Exec(ctx, stmt, accountID, blogID)
 	return err
 }

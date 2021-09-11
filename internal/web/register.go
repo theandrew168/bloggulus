@@ -52,11 +52,11 @@ func (app *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		account := &core.Account{
+		account := core.Account{
 			Username: username,
 			Password: string(hash),
 		}
-		account, err = app.Account.Create(r.Context(), account)
+		err = app.Account.Create(r.Context(), &account)
 		if err != nil {
 			if err == core.ErrExist {
 				expiry := time.Now().Add(time.Hour * 12)

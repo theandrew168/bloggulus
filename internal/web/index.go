@@ -12,7 +12,7 @@ type indexData struct {
 	Authed  bool
 	Success string
 	Error   string
-	Posts   []*core.Post
+	Posts   []core.Post
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	authed := err == nil
 
-	var posts []*core.Post
+	var posts []core.Post
 	if authed {
 		// read the recent posts that the user follows
 		posts, err = app.Post.ReadRecentForUser(r.Context(), account.AccountID, 10)

@@ -9,46 +9,53 @@ import (
 )
 
 type sessionStorage struct {
-	db *pgxpool.Pool
+	conn *pgxpool.Pool
 }
 
-func NewSessionStorage(db *pgxpool.Pool) core.SessionStorage {
+func NewSessionStorage(conn *pgxpool.Pool) core.SessionStorage {
 	s := sessionStorage{
-		db: db,
+		conn: conn,
 	}
 	return &s
 }
 
-func (s *sessionStorage) Create(ctx context.Context, session *core.Session) (*core.Session, error) {
-	command := `
+func (s *sessionStorage) Create(ctx context.Context, session *core.Session) error {
+	stmt := `
 		INSERT INTO session
 			(session_id, expiry, account_id)
 		VALUES
 			($1, $2, $3)`
-	_, err := s.db.Exec(ctx, command, session.SessionID, session.Expiry, session.AccountID)
+	_, err := s.conn.Exec(ctx, stmt,
+		session.SessionID,
+		session.Expiry,
+		session.Account.AccountID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return session, nil
+	return nil
 }
 
-func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*core.Session, error) {
-	query := `
+func (s *sessionStorage) Read(ctx context.Context, sessionID string) (core.Session, error) {
+	stmt := `
 		SELECT
-			session.*,
-			account.*
+			session.session_id,
+			session.expiry,
+			account.account_id,
+			account.username,
+			account.password,
+			account.email,
+			account.verified
 		FROM session
 		INNER JOIN account
 			ON account.account_id = session.account_id
 		WHERE session_id = $1`
-	row := s.db.QueryRow(ctx, query, sessionID)
+	row := s.conn.QueryRow(ctx, stmt, sessionID)
 
 	var session core.Session
 	err := row.Scan(
 		&session.SessionID,
 		&session.Expiry,
-		&session.AccountID,
 		&session.Account.AccountID,
 		&session.Account.Username,
 		&session.Account.Password,
@@ -56,26 +63,26 @@ func (s *sessionStorage) Read(ctx context.Context, sessionID string) (*core.Sess
 		&session.Account.Verified,
 	)
 	if err != nil {
-		return nil, err
+		return core.Session{}, err
 	}
 
-	return &session, nil
+	return session, nil
 }
 
 func (s *sessionStorage) Delete(ctx context.Context, sessionID string) error {
-	command := `
+	stmt := `
 		DELETE
 		FROM session
 		WHERE session_id = $1`
-	_, err := s.db.Exec(ctx, command, sessionID)
+	_, err := s.conn.Exec(ctx, stmt, sessionID)
 	return err
 }
 
 func (s *sessionStorage) DeleteExpired(ctx context.Context) error {
-	command := `
+	stmt := `
 		DELETE
 		FROM session
 		WHERE expiry <= now()`
-	_, err := s.db.Exec(ctx, command)
+	_, err := s.conn.Exec(ctx, stmt)
 	return err
 }

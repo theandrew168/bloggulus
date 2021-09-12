@@ -117,7 +117,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 			post.Body = body
 		}
 
-create:
+	create:
 		err := t.post.Create(context.Background(), &post)
 		if err != nil {
 			if err != core.ErrExist {

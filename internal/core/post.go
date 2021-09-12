@@ -27,5 +27,5 @@ type PostStorage interface {
 	// select ...
 	// from post
 	// where body_index @@ websearch_to_tsquery('english',  $1);
-//	Search(ctx context.Context, query string) ([]Post, error)
+	//	Search(ctx context.Context, query string) ([]Post, error)
 }

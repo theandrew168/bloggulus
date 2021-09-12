@@ -24,7 +24,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	account, err := app.CheckAccount(w, r)
 	if err != nil {
-		if err != ErrNoSession {
+		if err != core.ErrNotExist {
 			http.Error(w, err.Error(), 500)
 			return
 		}

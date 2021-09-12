@@ -33,7 +33,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if username == "" || password == "" {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Empty username or password", expiry)
-			http.SetCookie(w, cookie)
+			http.SetCookie(w, &cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -42,7 +42,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid username or password", expiry)
-			http.SetCookie(w, cookie)
+			http.SetCookie(w, &cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -51,7 +51,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid username or password", expiry)
-			http.SetCookie(w, cookie)
+			http.SetCookie(w, &cookie)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
@@ -78,7 +78,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		// create session cookie
 		cookie := GenerateSessionCookie(SessionIDCookieName, sessionID, expiry)
-		http.SetCookie(w, cookie)
+		http.SetCookie(w, &cookie)
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -92,7 +92,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	_, err = app.CheckAccount(w, r)
 	if err != nil {
-		if err != ErrNoSession {
+		if err != core.ErrNotExist {
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -105,19 +105,19 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check for success cookie
-	cookie, err := r.Cookie(SuccessCookieName)
+	successCookie, err := r.Cookie(SuccessCookieName)
 	if err == nil {
-		data.Success = cookie.Value
-		cookie = GenerateExpiredCookie(SuccessCookieName)
-		http.SetCookie(w, cookie)
+		data.Success = successCookie.Value
+		cookie := GenerateExpiredCookie(SuccessCookieName)
+		http.SetCookie(w, &cookie)
 	}
 
 	// check for error cookie
-	cookie, err = r.Cookie(ErrorCookieName)
+	errorCookie, err := r.Cookie(ErrorCookieName)
 	if err == nil {
-		data.Error = cookie.Value
-		cookie = GenerateExpiredCookie(ErrorCookieName)
-		http.SetCookie(w, cookie)
+		data.Error = errorCookie.Value
+		cookie := GenerateExpiredCookie(ErrorCookieName)
+		http.SetCookie(w, &cookie)
 	}
 
 	err = ts.Execute(w, data)

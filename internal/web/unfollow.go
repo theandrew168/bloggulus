@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/theandrew168/bloggulus/internal/core"
 )
 
 func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +36,7 @@ func (app *Application) HandleUnfollow(w http.ResponseWriter, r *http.Request) {
 	// lookup account
 	account, err := app.CheckAccount(w, r)
 	if err != nil {
-		if err == ErrNoSession {
+		if err == core.ErrNotExist {
 			status := http.StatusUnauthorized
 			http.Error(w, http.StatusText(status), status)
 		} else {

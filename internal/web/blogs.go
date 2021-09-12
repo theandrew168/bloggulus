@@ -26,7 +26,7 @@ type blogsData struct {
 func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 	account, err := app.CheckAccount(w, r)
 	if err != nil {
-		if err != ErrNoSession {
+		if err != core.ErrNotExist {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
 			return
@@ -51,7 +51,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		if feedURL == "" {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Empty RSS / Atom feed URL", expiry)
-			http.SetCookie(w, cookie)
+			http.SetCookie(w, &cookie)
 			http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 			return
 		}
@@ -60,7 +60,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			expiry := time.Now().Add(time.Hour * 12)
 			cookie := GenerateSessionCookie(ErrorCookieName, "Invalid RSS / Atom feed", expiry)
-			http.SetCookie(w, cookie)
+			http.SetCookie(w, &cookie)
 			http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 			return
 		}
@@ -88,7 +88,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 				expiry := time.Now().Add(time.Hour * 12)
 				cookie := GenerateSessionCookie(SuccessCookieName, "RSS / Atom feed already exists!", expiry)
-				http.SetCookie(w, cookie)
+				http.SetCookie(w, &cookie)
 				http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 				return
 			} else {
@@ -114,7 +114,7 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 
 		expiry := time.Now().Add(time.Hour * 12)
 		cookie := GenerateSessionCookie(SuccessCookieName, "RSS / Atom feed successfully added!", expiry)
-		http.SetCookie(w, cookie)
+		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 		return
 	}
@@ -148,19 +148,19 @@ func (app *Application) HandleBlogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check for success cookie
-	cookie, err := r.Cookie(SuccessCookieName)
+	successCookie, err := r.Cookie(SuccessCookieName)
 	if err == nil {
-		data.Success = cookie.Value
-		cookie = GenerateExpiredCookie(SuccessCookieName)
-		http.SetCookie(w, cookie)
+		data.Success = successCookie.Value
+		cookie := GenerateExpiredCookie(SuccessCookieName)
+		http.SetCookie(w, &cookie)
 	}
 
 	// check for error cookie
-	cookie, err = r.Cookie(ErrorCookieName)
+	errorCookie, err := r.Cookie(ErrorCookieName)
 	if err == nil {
-		data.Error = cookie.Value
-		cookie = GenerateExpiredCookie(ErrorCookieName)
-		http.SetCookie(w, cookie)
+		data.Error = errorCookie.Value
+		cookie := GenerateExpiredCookie(ErrorCookieName)
+		http.SetCookie(w, &cookie)
 	}
 
 	ts, err := template.ParseFS(app.TemplatesFS, "blogs.html.tmpl", "base.html.tmpl")

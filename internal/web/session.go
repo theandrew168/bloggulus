@@ -10,22 +10,20 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-var ErrNoSession = errors.New("user request doesn't have a valid session")
-
 var (
 	SessionIDCookieName = "session_id"
 	SuccessCookieName   = "success"
 	ErrorCookieName     = "error"
 )
 
-func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (*core.Account, error) {
+func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (core.Account, error) {
 	// check for session cookie
 	sessionID, err := r.Cookie(SessionIDCookieName)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
-			return nil, ErrNoSession
+			return core.Account{}, core.ErrNotExist
 		} else {
-			return nil, err
+			return core.Account{}, err
 		}
 	}
 
@@ -35,19 +33,18 @@ func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (*c
 		if errors.Is(err, pgx.ErrNoRows) {
 			// user has a session cookie but it's expired
 			cookie := GenerateExpiredCookie(SessionIDCookieName)
-			http.SetCookie(w, cookie)
-			return nil, ErrNoSession
+			http.SetCookie(w, &cookie)
+			return core.Account{}, core.ErrNotExist
 		} else {
-			return nil, err
+			return core.Account{}, err
 		}
 	}
 
-	account := &session.Account
-	return account, nil
+	return session.Account, nil
 }
 
-func GenerateSessionCookie(name, value string, expiry time.Time) *http.Cookie {
-	cookie := &http.Cookie{
+func GenerateSessionCookie(name, value string, expiry time.Time) http.Cookie {
+	cookie := http.Cookie{
 		Name:     name,
 		Value:    value,
 		Path:     "/",                                   // applies to the whole site
@@ -61,8 +58,8 @@ func GenerateSessionCookie(name, value string, expiry time.Time) *http.Cookie {
 	return cookie
 }
 
-func GenerateExpiredCookie(name string) *http.Cookie {
-	cookie := &http.Cookie{
+func GenerateExpiredCookie(name string) http.Cookie {
+	cookie := http.Cookie{
 		Name:     name,
 		Value:    "",
 		Path:     "/",             // applies to the whole site

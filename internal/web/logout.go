@@ -37,7 +37,7 @@ func (app *Application) HandleLogout(w http.ResponseWriter, r *http.Request) {
 
 	// clear session cookie
 	cookie := GenerateExpiredCookie(SessionIDCookieName)
-	http.SetCookie(w, cookie)
+	http.SetCookie(w, &cookie)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return

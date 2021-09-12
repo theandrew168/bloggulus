@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -101,40 +102,19 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 			post.author,
 			post.body,
 			post.updated,
-			blog.blog_id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
+			blog.blog_id AS "blog.blog_id",
+			blog.feed_url AS "blog.feed_url",
+			blog.site_url AS "blog.site_url",
+			blog.title AS "blog.title"
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
 		WHERE blog.blog_id = $1`
-	rows, err := s.conn.Query(ctx, stmt, blogID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
 	var posts []core.Post
-	for rows.Next() {
-		var post core.Post
-		err := rows.Scan(
-			&post.PostID,
-			&post.URL,
-			&post.Title,
-			&post.Author,
-			&post.Body,
-			&post.Updated,
-			&post.Blog.BlogID,
-			&post.Blog.FeedURL,
-			&post.Blog.SiteURL,
-			&post.Blog.Title,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, post)
+	err := pgxscan.Select(ctx, s.conn, &posts, stmt, blogID)
+	if err != nil {
+		return nil, err
 	}
 
 	return posts, nil

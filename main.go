@@ -76,6 +76,14 @@ func main() {
 		Session: postgresql.NewSessionStorage(conn),
 	}
 
+	posts, err := app.Post.ReadAllByBlog(context.Background(), 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, post := range posts {
+		log.Printf("%v %v\n", post.Title, post.URL)
+	}
+
 	// kick off blog sync task
 	syncBlogs := task.SyncBlogs(app.Blog, app.Post)
 	go syncBlogs.Run(1 * time.Hour)

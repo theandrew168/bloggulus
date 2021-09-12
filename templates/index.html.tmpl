@@ -14,11 +14,11 @@
 			<a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
 		</div>
 
-		<!-- read more / blog link -->
-		<div class="flex justify-between items-center">
-			<a class="text-2xl text-gray-700 font-bold hover:underline block" href="{{.URL}}">{{.Title}}</a>
-			<a class="text-gray-700 font-bold hover:underline" href="{{.Blog.SiteURL}}">{{.Blog.Title}}</a>
-		</div>
+		<!-- post title -->
+		<a class="text-2xl text-gray-700 font-bold hover:underline block mb-2" href="{{.URL}}">{{.Title}}</a>
+
+		<!-- blog title -->
+		<a class="text-gray-700 font-bold hover:underline block" href="{{.Blog.SiteURL}}">{{.Blog.Title}}</a>
 	</div>
 	{{end}}
 </div>

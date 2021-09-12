@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -54,9 +55,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// reload templates from filesystem if ENV=debug
+	// reload templates from filesystem if ENV starts with "dev"
 	var templates fs.FS
-	if env == "debug" {
+	if strings.HasPrefix(env, "dev") {
 		templates = os.DirFS("templates")
 	} else {
 		templates, _ = fs.Sub(templatesFS, "templates")

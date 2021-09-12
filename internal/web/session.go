@@ -1,6 +1,8 @@
 package web
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"net/http"
 	"time"
@@ -41,6 +43,15 @@ func (app *Application) CheckAccount(w http.ResponseWriter, r *http.Request) (co
 	}
 
 	return session.Account, nil
+}
+
+func GenerateSessionID() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
 func GenerateSessionCookie(name, value string, expiry time.Time) http.Cookie {

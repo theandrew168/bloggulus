@@ -1,8 +1,6 @@
 package web
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"html/template"
 	"log"
 	"net/http"
@@ -56,7 +54,7 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionID, err := generateSessionID()
+		sessionID, err := GenerateSessionID()
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), 500)
@@ -125,13 +123,4 @@ func (app *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-}
-
-func generateSessionID() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
 }

@@ -49,19 +49,9 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var previewPosts []core.Post
-	for _, post := range posts {
-		size := 365
-		if len(post.Body) < size {
-			size = len(post.Body)
-		}
-		post.Body = post.Body[:size] + "..."
-		previewPosts = append(previewPosts, post)
-	}
-
 	data := &indexData{
 		Authed: authed,
-		Posts:  previewPosts,
+		Posts:  posts,
 	}
 
 	err = ts.Execute(w, data)

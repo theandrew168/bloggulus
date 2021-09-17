@@ -52,19 +52,19 @@ jobs:
     - name: Build project
       run: |
         make
-#    - name: Copy build artifact
-#      uses: appleboy/scp-action@master
-#      with:
-#        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
-#        username: ${{ secrets.BLOGGULUS_SSH_USER }}
-#        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-#        source: bloggulus
-#        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
-#    - name: Restart web service
-#      uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
-#        username: ${{ secrets.BLOGGULUS_SSH_USER }}
-#        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
-#        script: |
-#          sudo systemctl restart bloggulus
+    - name: Copy build artifact
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
+        username: ${{ secrets.BLOGGULUS_SSH_USER }}
+        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
+        source: bloggulus
+        target: /home/${{ secrets.BLOGGULUS_SSH_USER }}/
+    - name: Restart web service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.BLOGGULUS_HOSTNAME }}
+        username: ${{ secrets.BLOGGULUS_SSH_USER }}
+        key: ${{ secrets.BLOGGULUS_SSH_KEY }}
+        script: |
+          sudo systemctl restart bloggulus

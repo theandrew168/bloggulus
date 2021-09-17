@@ -1,5 +1,6 @@
 module github.com/theandrew168/bloggulus
 
+
 go 1.16
 
 require (

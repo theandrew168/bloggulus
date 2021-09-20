@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/task"
@@ -83,6 +84,11 @@ func main() {
 	// kick off session prune task
 	pruneSessions := task.PruneSessions(app.Session)
 	go pruneSessions.Run(5 * time.Minute)
+
+	// kick off prometheus metrics handler
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	go http.ListenAndServe("127.0.0.1:2112", mux)
 
 	log.Printf("listening on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, app.Router()))

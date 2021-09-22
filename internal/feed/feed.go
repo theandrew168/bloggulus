@@ -53,8 +53,8 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 		} else if item.PublishedParsed != nil {
 			updated = *item.PublishedParsed
 		} else {
-			// else default to a week ago
-			updated = time.Now().AddDate(0, 0, -7)
+			// else default to a month ago
+			updated = time.Now().AddDate(0, -1, 0)
 		}
 
 		post := core.Post{

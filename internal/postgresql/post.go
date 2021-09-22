@@ -22,19 +22,18 @@ func NewPostStorage(conn *pgxpool.Pool) core.PostStorage {
 	return &s
 }
 
-func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
+func (s *postStorage) Create(ctx context.Context, post *core.Post, body string) error {
 	stmt := `
 		INSERT INTO post
-			(url, title, author, body, updated, blog_id)
+			(url, title, updated, body, blog_id)
 		VALUES
-			($1, $2, $3, $4, $5, $6)
+			($1, $2, $3, $4, $5)
 		RETURNING post_id`
 	row := s.conn.QueryRow(ctx, stmt,
 		post.URL,
 		post.Title,
-		post.Author,
-		post.Body,
 		post.Updated,
+		body,
 		post.Blog.BlogID)
 
 	err := row.Scan(&post.PostID)
@@ -59,8 +58,6 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 			post.post_id,
 			post.url,
 			post.title,
-			post.author,
-			post.body,
 			post.updated,
 			blog.blog_id,
 			blog.feed_url,
@@ -77,8 +74,6 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 		&post.PostID,
 		&post.URL,
 		&post.Title,
-		&post.Author,
-		&post.Body,
 		&post.Updated,
 		&post.Blog.BlogID,
 		&post.Blog.FeedURL,
@@ -98,8 +93,6 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 			post.post_id,
 			post.url,
 			post.title,
-			post.author,
-			post.body,
 			post.updated,
 			blog.blog_id,
 			blog.feed_url,
@@ -122,8 +115,6 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 			&post.PostID,
 			&post.URL,
 			&post.Title,
-			&post.Author,
-			&post.Body,
 			&post.Updated,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
@@ -146,8 +137,6 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]core.Post, error
 			post.post_id,
 			post.url,
 			post.title,
-			post.author,
-			post.body,
 			post.updated,
 			blog.blog_id,
 			blog.feed_url,
@@ -171,8 +160,6 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]core.Post, error
 			&post.PostID,
 			&post.URL,
 			&post.Title,
-			&post.Author,
-			&post.Body,
 			&post.Updated,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
@@ -195,7 +182,6 @@ func (s *postStorage) ReadRecentByAccount(ctx context.Context, accountID int, n 
 			post.post_id,
 			post.url,
 			post.title,
-			post.body,
 			post.updated,
 			blog.blog_id,
 			blog.feed_url,
@@ -222,7 +208,6 @@ func (s *postStorage) ReadRecentByAccount(ctx context.Context, accountID int, n 
 			&post.PostID,
 			&post.URL,
 			&post.Title,
-			&post.Body,
 			&post.Updated,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,

@@ -1,11 +1,9 @@
 package feed
 
 import (
-	"html"
 	"net/url"
 	"time"
 
-	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -48,22 +46,6 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 	// create a Post core for each entry
 	var posts []core.Post
 	for _, item := range feed.Items {
-		// check if author is present in the feed else default to title
-		var author string
-		if feed.Author != nil {
-			author = feed.Author.Name
-		} else {
-			author = feed.Title
-		}
-
-		// check for in-feed body and strip HTML
-		body := item.Content
-		if body != "" {
-			p := bluemonday.StripTagsPolicy()
-			body = p.Sanitize(body)
-			body = html.UnescapeString(body)
-		}
-
 		// try Updated then Published to obtain a timestamp
 		var updated time.Time
 		if item.UpdatedParsed != nil {
@@ -78,8 +60,6 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 		post := core.Post{
 			URL:     item.Link,
 			Title:   item.Title,
-			Author:  author,
-			Body:    body,
 			Updated: updated,
 			Blog:    blog,
 		}

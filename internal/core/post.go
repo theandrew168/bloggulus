@@ -9,15 +9,13 @@ type Post struct {
 	PostID  int
 	URL     string
 	Title   string
-	Author  string
-	Body    string
 	Updated time.Time
 
 	Blog Blog
 }
 
 type PostStorage interface {
-	Create(ctx context.Context, post *Post) error
+	Create(ctx context.Context, post *Post, body string) error
 	Read(ctx context.Context, postID int) (Post, error)
 	ReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
 	ReadRecent(ctx context.Context, n int) ([]Post, error)
@@ -26,6 +24,6 @@ type PostStorage interface {
 
 	// select ...
 	// from post
-	// where body_index @@ websearch_to_tsquery('english',  $1);
+	// where content_index @@ websearch_to_tsquery('english',  $1);
 	//	Search(ctx context.Context, query string) ([]Post, error)
 }

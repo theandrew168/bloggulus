@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -30,13 +29,16 @@ func (s *accountStorage) Create(ctx context.Context, account *core.Account) erro
 		VALUES
 			($1, $2, $3, $4)
 		RETURNING account_id`
-	err := pgxscan.Get(ctx, s.conn, account, stmt,
+	row := s.conn.QueryRow(ctx, stmt,
 		account.Username,
 		account.Password,
 		account.Email,
 		account.Verified)
+
+	err := row.Scan(&account.AccountID)
 	if err != nil {
 		// https://github.com/jackc/pgx/wiki/Error-Handling
+		// https://github.com/jackc/pgx/issues/474
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {

@@ -28,6 +28,11 @@ func SyncBlogs(blog core.BlogStorage, post core.PostStorage) Task {
 }
 
 func (t *syncBlogsTask) Run(interval time.Duration) {
+	err := t.RunNow()
+	if err != nil {
+		log.Println(err)
+	}
+
 	c := time.Tick(interval)
 	for {
 		<-c

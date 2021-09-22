@@ -19,6 +19,11 @@ func PruneSessions(session core.SessionStorage) Task {
 }
 
 func (t *pruneSessionsTask) Run(interval time.Duration) {
+	err := t.RunNow()
+	if err != nil {
+		log.Println(err)
+	}
+
 	c := time.Tick(interval)
 	for {
 		<-c

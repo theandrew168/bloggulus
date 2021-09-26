@@ -1,9 +1,14 @@
 package feed
 
 import (
+	"fmt"
+	"html"
+	"io"
+	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -67,4 +72,24 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func ReadPostBody(post core.Post) (string, error) {
+	resp, err := http.Get(post.URL)
+	if err != nil {
+		return "", fmt.Errorf("%v: %v", post.URL, err)
+	}
+	defer resp.Body.Close()
+
+	buf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("%v: %v", post.URL, err)
+	}
+
+	p := bluemonday.StripTagsPolicy()
+	body := string(buf)
+	body = p.Sanitize(body)
+	body = html.UnescapeString(body)
+
+	return body, nil
 }

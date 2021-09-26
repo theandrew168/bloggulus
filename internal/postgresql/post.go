@@ -3,12 +3,14 @@ package postgresql
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus/internal/feed"
 )
 
 type postStorage struct {
@@ -22,7 +24,13 @@ func NewPostStorage(conn *pgxpool.Pool) core.PostStorage {
 	return &s
 }
 
-func (s *postStorage) Create(ctx context.Context, post *core.Post, body string) error {
+func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
+	// attempt to read post body, log and ignore any errors
+	body, err := feed.ReadPostBody(*post)
+	if err != nil {
+		log.Println(err)
+	}
+
 	stmt := `
 		INSERT INTO post
 			(url, title, updated, body, blog_id)
@@ -36,7 +44,7 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post, body string) 
 		body,
 		post.Blog.BlogID)
 
-	err := row.Scan(&post.PostID)
+	err = row.Scan(&post.PostID)
 	if err != nil {
 		// https://github.com/jackc/pgx/wiki/Error-Handling
 		// https://github.com/jackc/pgx/issues/474

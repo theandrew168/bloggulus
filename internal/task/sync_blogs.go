@@ -2,14 +2,9 @@ package task
 
 import (
 	"context"
-	"html"
-	"io"
 	"log"
-	"net/http"
 	"sync"
 	"time"
-
-	"github.com/microcosm-cc/bluemonday"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
@@ -99,28 +94,10 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 
 	// sync each post with the database
 	for _, post := range newPosts {
-		resp, err := http.Get(post.URL)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		defer resp.Body.Close()
-
-		buf, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		p := bluemonday.StripTagsPolicy()
-		body := string(buf)
-		body = p.Sanitize(body)
-		body = html.UnescapeString(body)
-
-		err = t.post.Create(context.Background(), &post, body)
+		err = t.post.Create(context.Background(), &post)
 		if err != nil {
 			if err != core.ErrExist {
-				log.Println(err)
+				log.Printf("sync: %v: %v\n", post.URL, err)
 			}
 		}
 	}

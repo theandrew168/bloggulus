@@ -15,7 +15,7 @@ type Post struct {
 }
 
 type PostStorage interface {
-	Create(ctx context.Context, post *Post, body string) error
+	Create(ctx context.Context, post *Post) error
 	Read(ctx context.Context, postID int) (Post, error)
 	ReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
 	ReadRecent(ctx context.Context, n int) ([]Post, error)

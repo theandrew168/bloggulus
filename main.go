@@ -29,6 +29,8 @@ var staticFS embed.FS
 var templatesFS embed.FS
 
 func main() {
+	log.SetFlags(0)
+
 	env := os.Getenv("ENV")
 	port := os.Getenv("PORT")
 	if port == "" {

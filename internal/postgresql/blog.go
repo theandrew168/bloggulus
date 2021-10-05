@@ -67,23 +67,6 @@ func (s *blogStorage) Read(ctx context.Context, blogID int) (core.Blog, error) {
 	return blog, nil
 }
 
-func (s *blogStorage) ReadByURL(ctx context.Context, feedURL string) (core.Blog, error) {
-	stmt := "SELECT * FROM blog WHERE feed_url = $1"
-	row := s.conn.QueryRow(ctx, stmt, feedURL)
-
-	var blog core.Blog
-	err := row.Scan(
-		&blog.BlogID,
-		&blog.FeedURL,
-		&blog.SiteURL,
-		&blog.Title)
-	if err != nil {
-		return core.Blog{}, err
-	}
-
-	return blog, nil
-}
-
 func (s *blogStorage) ReadAll(ctx context.Context) ([]core.Blog, error) {
 	stmt := "SELECT * FROM blog"
 	rows, err := s.conn.Query(ctx, stmt)
@@ -108,77 +91,4 @@ func (s *blogStorage) ReadAll(ctx context.Context) ([]core.Blog, error) {
 	}
 
 	return blogs, nil
-}
-
-func (s *blogStorage) ReadFollowedByAccount(ctx context.Context, accountID int) ([]core.Blog, error) {
-	stmt := `
-		SELECT
-			blog.*
-		FROM blog
-		INNER JOIN follow
-			ON follow.blog_id = blog.blog_id
-		WHERE follow.account_id = $1`
-	rows, err := s.conn.Query(ctx, stmt, accountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var blogs []core.Blog
-	for rows.Next() {
-		var blog core.Blog
-		err := rows.Scan(
-			&blog.BlogID,
-			&blog.FeedURL,
-			&blog.SiteURL,
-			&blog.Title)
-		if err != nil {
-			return nil, err
-		}
-
-		blogs = append(blogs, blog)
-	}
-
-	return blogs, nil
-}
-
-func (s *blogStorage) ReadUnfollowedByAccount(ctx context.Context, accountID int) ([]core.Blog, error) {
-	stmt := `
-		SELECT
-			blog.*
-		FROM blog
-		WHERE NOT EXISTS (
-			SELECT 1
-			FROM follow
-			WHERE follow.blog_id = blog.blog_id
-			AND follow.account_id = $1
-		)`
-	rows, err := s.conn.Query(ctx, stmt, accountID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var blogs []core.Blog
-	for rows.Next() {
-		var blog core.Blog
-		err := rows.Scan(
-			&blog.BlogID,
-			&blog.FeedURL,
-			&blog.SiteURL,
-			&blog.Title)
-		if err != nil {
-			return nil, err
-		}
-
-		blogs = append(blogs, blog)
-	}
-
-	return blogs, nil
-}
-
-func (s *blogStorage) Delete(ctx context.Context, blogID int) error {
-	stmt := "DELETE FROM blog WHERE blog_id = $1"
-	_, err := s.conn.Exec(ctx, stmt, blogID)
-	return err
 }

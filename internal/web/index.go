@@ -16,41 +16,20 @@ type indexData struct {
 }
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFS(app.TemplatesFS, "index.html.tmpl", "base.html.tmpl")
+	ts, err := template.ParseFS(app.TemplatesFS, "index.html.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	account, err := app.CheckAccount(w, r)
+	// read the recent posts
+	posts, err := app.Post.ReadRecent(r.Context(), 10)
 	if err != nil {
-		if err != core.ErrNotExist {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	}
-
-	authed := err == nil
-
-	var posts []core.Post
-	if authed {
-		// read the recent posts that the user follows
-		posts, err = app.Post.ReadRecentByAccount(r.Context(), account.AccountID, 10)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	} else {
-		// read the recent posts
-		posts, err = app.Post.ReadRecent(r.Context(), 10)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+		http.Error(w, err.Error(), 500)
+		return
 	}
 
 	data := &indexData{
-		Authed: authed,
 		Posts:  posts,
 	}
 

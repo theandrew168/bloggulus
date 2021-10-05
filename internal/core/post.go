@@ -19,8 +19,6 @@ type PostStorage interface {
 	Read(ctx context.Context, postID int) (Post, error)
 	ReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
 	ReadRecent(ctx context.Context, n int) ([]Post, error)
-	ReadRecentByAccount(ctx context.Context, accountID int, n int) ([]Post, error)
-	Delete(ctx context.Context, postID int) error
 
 	// select ...
 	// from post

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/task"
@@ -40,22 +39,22 @@ func main() {
 
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {
-		log.Fatal("Missing required env var: BLOGGULUS_DATABASE_URL")
+		log.Fatalln("Missing required env var: BLOGGULUS_DATABASE_URL")
 	}
 
 	conn, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer conn.Close()
 
 	if err = conn.Ping(context.Background()); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	migrations, _ := fs.Sub(migrationsFS, "migrations")
 	if err = postgresql.Migrate(conn, context.Background(), migrations); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	// reload templates from filesystem if ENV starts with "dev"
@@ -72,26 +71,14 @@ func main() {
 		StaticFS:    static,
 		TemplatesFS: templates,
 
-		Account: postgresql.NewAccountStorage(conn),
 		Blog:    postgresql.NewBlogStorage(conn),
-		Follow:  postgresql.NewFollowStorage(conn),
 		Post:    postgresql.NewPostStorage(conn),
-		Session: postgresql.NewSessionStorage(conn),
 	}
 
 	// kick off blog sync task
 	syncBlogs := task.SyncBlogs(app.Blog, app.Post)
 	go syncBlogs.Run(1 * time.Hour)
 
-	// kick off session prune task
-	pruneSessions := task.PruneSessions(app.Session)
-	go pruneSessions.Run(5 * time.Minute)
-
-	// kick off prometheus metrics handler
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe("127.0.0.1:2112", mux)
-
 	log.Printf("listening on %s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, app.Router()))
+	log.Fatalln(http.ListenAndServe(addr, app.Router()))
 }

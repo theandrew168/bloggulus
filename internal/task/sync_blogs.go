@@ -97,7 +97,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 		err = t.post.Create(context.Background(), &post)
 		if err != nil {
 			if err != core.ErrExist {
-				log.Printf("sync: %v: %v\n", post.URL, err)
+				log.Printf("sync %v %v\n", post.URL, err)
 			}
 		}
 	}

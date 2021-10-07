@@ -30,7 +30,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := &indexData{
-		Posts:  posts,
+		Posts: posts,
 	}
 
 	err = ts.Execute(w, data)

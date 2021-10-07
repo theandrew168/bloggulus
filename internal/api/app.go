@@ -5,6 +5,6 @@ import (
 )
 
 type Application struct {
-	Blog    core.BlogStorage
-	Post    core.PostStorage
+	Blog core.BlogStorage
+	Post core.PostStorage
 }

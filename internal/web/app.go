@@ -14,8 +14,8 @@ type Application struct {
 	StaticFS    fs.FS
 	TemplatesFS fs.FS
 
-	Blog    core.BlogStorage
-	Post    core.PostStorage
+	Blog core.BlogStorage
+	Post core.PostStorage
 }
 
 func (app *Application) Router() http.Handler {

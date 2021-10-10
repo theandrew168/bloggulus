@@ -30,12 +30,7 @@ func ReadBlog(feedURL string) (core.Blog, error) {
 	}
 
 	// create a Blog core for the feed
-	blog := core.Blog{
-		FeedURL: feedURL,
-		SiteURL: feed.Link,
-		Title:   feed.Title,
-	}
-
+	blog := core.NewBlog(feedURL, feed.Link, feed.Title)
 	return blog, nil
 }
 
@@ -62,12 +57,7 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 			updated = time.Now().AddDate(0, -1, 0)
 		}
 
-		post := core.Post{
-			URL:     item.Link,
-			Title:   item.Title,
-			Updated: updated,
-			Blog:    blog,
-		}
+		post := core.NewPost(item.Link, item.Title, updated, blog)
 		posts = append(posts, post)
 	}
 

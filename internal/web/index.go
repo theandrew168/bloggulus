@@ -40,13 +40,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p * PageSize)
+		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-	// else just read recent
+		// else just read recent
 	} else {
 		count, err = app.Post.CountRecent(r.Context())
 		if err != nil {
@@ -54,7 +54,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p * PageSize)
+		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -67,7 +67,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		Search    string
 		Posts     []core.Post
 	}{
-		MorePages: (p + 1) * PageSize < count,
+		MorePages: (p+1)*PageSize < count,
 		NextPage:  p + 1,
 		Search:    q,
 		Posts:     posts,

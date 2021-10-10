@@ -10,8 +10,19 @@ type Post struct {
 	URL     string
 	Title   string
 	Updated time.Time
+	Tags    []string
 
 	Blog Blog
+}
+
+func NewPost(url, title string, updated time.Time, blog Blog) Post {
+	post := Post{
+		URL:     url,
+		Title:   title,
+		Updated: updated,
+		Blog:    blog,
+	}
+	return post
 }
 
 type PostStorage interface {

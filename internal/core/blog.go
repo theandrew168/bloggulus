@@ -11,6 +11,15 @@ type Blog struct {
 	Title   string
 }
 
+func NewBlog(feedURL, siteURL, title string) Blog {
+	blog := Blog{
+		FeedURL: feedURL,
+		SiteURL: siteURL,
+		Title:   title,
+	}
+	return blog
+}
+
 type BlogStorage interface {
 	Create(ctx context.Context, blog *Blog) error
 	Read(ctx context.Context, blogID int) (Blog, error)

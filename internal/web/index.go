@@ -4,16 +4,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-type indexData struct {
-	Authed  bool
-	Success string
-	Error   string
-	Posts   []core.Post
-}
+const (
+	PageSize = 15
+)
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFS(app.TemplatesFS, "index.html.tmpl")
@@ -22,15 +20,40 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// read the recent posts
-	posts, err := app.Post.ReadRecent(r.Context(), 10)
+	// check page param
+	p, err := strconv.Atoi(r.URL.Query().Get("p"))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+		p = 0
 	}
 
-	data := &indexData{
-		Posts: posts,
+	// check search param
+	q := r.URL.Query().Get("q")
+
+	var posts []core.Post
+	if q != "" {
+		// search if requested
+		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	} else {
+		// else just read recent
+		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	}
+
+	data := struct {
+		NextPage int
+		Search   string
+		Posts    []core.Post
+	}{
+		NextPage: p + 1,
+		Search:   q,
+		Posts:    posts,
 	}
 
 	err = ts.Execute(w, data)

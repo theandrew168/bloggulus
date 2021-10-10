@@ -139,7 +139,7 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 	return posts, nil
 }
 
-func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]core.Post, error) {
+func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		SELECT
 			post.post_id,
@@ -154,8 +154,57 @@ func (s *postStorage) ReadRecent(ctx context.Context, n int) ([]core.Post, error
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
 		ORDER BY post.updated DESC
-		LIMIT $1`
-	rows, err := s.conn.Query(ctx, stmt, n)
+		LIMIT $1
+		OFFSET $2`
+	rows, err := s.conn.Query(ctx, stmt, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []core.Post
+	for rows.Next() {
+		var post core.Post
+		err := rows.Scan(
+			&post.PostID,
+			&post.URL,
+			&post.Title,
+			&post.Updated,
+			&post.Blog.BlogID,
+			&post.Blog.FeedURL,
+			&post.Blog.SiteURL,
+			&post.Blog.Title,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
+	stmt := `
+		SELECT
+			post.post_id,
+			post.url,
+			post.title,
+			post.updated,
+			blog.blog_id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
+		FROM post
+		INNER JOIN blog
+			ON blog.blog_id = post.blog_id
+		WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
+		ORDER BY
+			ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
+		LIMIT $2
+		OFFSET $3`
+	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}

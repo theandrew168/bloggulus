@@ -20,7 +20,7 @@
 
 	<!-- nav bar -->
 	<nav class="bg-white shadow">
-		<div class="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center">
+		<div class="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center gap-x-2">
 
 			<!-- brand -->
 			<a class="text-gray-800 text-xl md:text-2xl hover:text-gray-600" href="/">Bloggulus</a>
@@ -33,7 +33,7 @@
 					</svg>
 				</span>
 
-				<input name="q" type="text" placeholder="Search" class="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" />
+				<input name="q" type="text" placeholder="Search" value="{{ .Search }}" class="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" />
 			</form>
 
 		</div>
@@ -41,10 +41,12 @@
 
 	<!-- main content -->
 	<main class="flex-grow">
+		<!-- posts heading -->
 		<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
 			<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Posts</h1>
 		</div>
 		
+		<!-- posts -->
 		<div class="px-6 md:px-0">
 			{{range .Posts}}
 			<div class="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6">
@@ -61,6 +63,11 @@
 				<a class="text-gray-700 font-bold hover:underline block" href="{{.Blog.SiteURL}}">{{.Blog.Title}}</a>
 			</div>
 			{{end}}
+		</div>
+
+		<!-- pagination -->
+		<div class="mx-auto mb-6 px-16 md:px-0 flex justify-center items-center gap-x-4">
+			<a href="/?p={{ .NextPage }}&q={{ .Search }}" class="bg-white text-gray-700 font-bold shadow hover:shadow-md rounded px-6 py-2">See More</a>
 		</div>
 	</main>
 

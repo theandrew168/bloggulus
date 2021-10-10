@@ -67,6 +67,13 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 			post.url,
 			post.title,
 			post.updated,
+			array(
+				SELECT name
+				FROM tag
+				WHERE to_tsquery(name) @@ post.content_index
+				ORDER BY ts_rank(post.content_index, to_tsquery(name)) DESC
+				LIMIT 3
+			) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,
@@ -83,6 +90,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 		&post.URL,
 		&post.Title,
 		&post.Updated,
+		&post.Tags,
 		&post.Blog.BlogID,
 		&post.Blog.FeedURL,
 		&post.Blog.SiteURL,

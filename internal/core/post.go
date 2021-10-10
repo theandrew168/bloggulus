@@ -20,4 +20,6 @@ type PostStorage interface {
 	ReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
 	ReadRecent(ctx context.Context, limit, offset int) ([]Post, error)
 	ReadSearch(ctx context.Context, query string, limit, offset int) ([]Post, error)
+	CountRecent(ctx context.Context) (int, error)
+	CountSearch(ctx context.Context, query string) (int, error)
 }

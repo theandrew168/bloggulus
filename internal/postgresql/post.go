@@ -232,3 +232,36 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 
 	return posts, nil
 }
+
+func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
+	stmt := `
+		SELECT
+			count(*)
+		FROM post`
+	row := s.conn.QueryRow(ctx, stmt)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s *postStorage) CountSearch(ctx context.Context, query string) (int, error) {
+	stmt := `
+		SELECT
+			count(*)
+		FROM post
+		WHERE content_index @@ websearch_to_tsquery('english',  $1)`
+	row := s.conn.QueryRow(ctx, stmt, query)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

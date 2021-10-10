@@ -29,17 +29,32 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	// check search param
 	q := r.URL.Query().Get("q")
 
+	var count int
 	var posts []core.Post
+
+	// search if requested
 	if q != "" {
-		// search if requested
-		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p)
+		count, err = app.Post.CountSearch(r.Context(), q)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+
+		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p * PageSize)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+	// else just read recent
 	} else {
-		// else just read recent
-		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p)
+		count, err = app.Post.CountRecent(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p * PageSize)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -47,13 +62,15 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		NextPage int
-		Search   string
-		Posts    []core.Post
+		MorePages bool
+		NextPage  int
+		Search    string
+		Posts     []core.Post
 	}{
-		NextPage: p + 1,
-		Search:   q,
-		Posts:    posts,
+		MorePages: (p + 1) * PageSize < count,
+		NextPage:  p + 1,
+		Search:    q,
+		Posts:     posts,
 	}
 
 	err = ts.Execute(w, data)

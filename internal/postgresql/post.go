@@ -28,6 +28,7 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
 	// attempt to read post body, log and ignore any errors
 	body, err := feed.ReadPostBody(*post)
 	if err != nil {
+		body = ""
 		log.Println(err)
 	}
 
@@ -67,13 +68,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 			post.url,
 			post.title,
 			post.updated,
-			array(
-				SELECT name
-				FROM tag
-				WHERE to_tsquery(name) @@ post.content_index
-				ORDER BY ts_rank(post.content_index, to_tsquery(name)) DESC
-				LIMIT 3
-			) as tags,
+			(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC)) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,
@@ -81,7 +76,10 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
-		WHERE post.post_id = $1`
+		INNER JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
+		WHERE post.post_id = $1
+		GROUP BY 1,2,3,4,6,7,8,9`
 	row := s.conn.QueryRow(ctx, stmt, postID)
 
 	var post core.Post
@@ -110,6 +108,7 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 			post.url,
 			post.title,
 			post.updated,
+			array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,
@@ -117,7 +116,11 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
-		WHERE blog.blog_id = $1`
+		INNER JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
+		WHERE blog.blog_id = $1
+		GROUP BY 1,2,3,4,6,7,8,9
+		ORDER BY post.updated DESC`
 	rows, err := s.conn.Query(ctx, stmt, blogID)
 	if err != nil {
 		return nil, err
@@ -132,6 +135,7 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 			&post.URL,
 			&post.Title,
 			&post.Updated,
+			&post.Tags,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
@@ -154,6 +158,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 			post.url,
 			post.title,
 			post.updated,
+			array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,
@@ -161,6 +166,9 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
+		INNER JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
+		GROUP BY 1,2,3,4,6,7,8,9
 		ORDER BY post.updated DESC
 		LIMIT $1
 		OFFSET $2`
@@ -178,6 +186,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 			&post.URL,
 			&post.Title,
 			&post.Updated,
+			&post.Tags,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
@@ -200,6 +209,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			post.url,
 			post.title,
 			post.updated,
+			array_agg(tag.name ORDER BY ts_rank(post.content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,
@@ -207,7 +217,10 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 		FROM post
 		INNER JOIN blog
 			ON blog.blog_id = post.blog_id
+		INNER JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
 		WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
+		GROUP BY 1,2,3,4,6,7,8,9
 		ORDER BY
 			ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
 		LIMIT $2
@@ -226,6 +239,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			&post.URL,
 			&post.Title,
 			&post.Updated,
+			&post.Tags,
 			&post.Blog.BlogID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,

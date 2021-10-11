@@ -61,6 +61,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// limit each post to 3 tags
+	for i := 0; i < len(posts); i++ {
+		if len(posts[i].Tags) > 3 {
+			posts[i].Tags = posts[i].Tags[:3]
+		}
+	}
+
 	data := struct {
 		MorePages bool
 		NextPage  int

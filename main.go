@@ -81,11 +81,6 @@ func main() {
 		Post: postgresql.NewPostStorage(conn),
 	}
 
-//	post, err := app.Post.Read(context.Background(), 1)
-//	if err == nil {
-//		log.Printf("%v %v\n", post.Title, post.Tags)
-//	}
-
 	if *addblog {
 		feedURL := os.Args[2]
 		log.Printf("adding blog: %s\n", feedURL)

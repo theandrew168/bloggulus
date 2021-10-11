@@ -5,7 +5,7 @@
 	<title>Bloggulus - A community for bloggers and readers</title>
 
 	<meta charset="utf-8" />
-	<meta name="description" content="Bloggulus - A community for bloggers and readers" />
+	<meta name="description" content="Bloggulus - A website for avid blog readers" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 	<link rel="icon" href="/static/img/bloggulus_logo.png" />
@@ -23,7 +23,7 @@
 		<div class="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center gap-x-2">
 
 			<!-- brand -->
-			<a class="text-gray-800 text-xl md:text-2xl hover:text-gray-600" href="/">Bloggulus</a>
+			<a href="/" class="text-gray-800 text-xl md:text-2xl hover:text-gray-600">Bloggulus</a>
 
 			<!-- search -->
 			<form method="GET" action="/" class="block relative">
@@ -53,14 +53,18 @@
 				<!-- date and tags -->
 				<div class="flex justify-between items-center mb-2">
 					<span class="text-sm font-light text-gray-600">{{.Updated.Format "Jan 2, 2006"}}</span>
-					<a class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500" href="#">Blog</a>
+					<div class="flex items-center gap-x-2">
+						{{range .Tags}}
+						<a href="/?q={{.}}" class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500">{{.}}</a>
+						{{end}}
+					</div>
 				</div>
 		
 				<!-- post title -->
-				<a class="text-2xl text-gray-700 font-bold hover:underline block mb-2" href="{{.URL}}">{{.Title}}</a>
+				<a href="{{.URL}}" class="text-2xl text-gray-700 font-bold hover:underline block mb-2">{{.Title}}</a>
 		
 				<!-- blog title -->
-				<a class="text-gray-700 font-bold hover:underline block" href="{{.Blog.SiteURL}}">{{.Blog.Title}}</a>
+				<a href="{{.Blog.SiteURL}}" class="text-gray-700 font-bold hover:underline block">{{.Blog.Title}}</a>
 			</div>
 			{{end}}
 		</div>
@@ -77,8 +81,8 @@
 	<footer class="text-gray-100 bg-gray-800">
 		<div class="max-w-3xl mx-auto py-4">
 			<div class="flex flex-col items-center justify-between md:flex-row space-y-1 md:space-y-0">
-				<a class="text-xl font-bold text-gray-100 hover:text-gray-400" href="/">Bloggulus</a>
-				<a class="text-gray-100 hover:text-gray-400" href="https://shallowbrooksoftware.com">Shallow Brook Software</a>
+				<a href="/" class="text-xl font-bold text-gray-100 hover:text-gray-400">Bloggulus</a>
+				<a href="https://shallowbrooksoftware.com" class="text-gray-100 hover:text-gray-400">Shallow Brook Software</a>
 			</div>
 		</div>
 	</footer>

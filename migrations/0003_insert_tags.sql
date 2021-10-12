@@ -4,7 +4,10 @@ VALUES
     -- extra tags
     ('CentOS'),
     ('Clang'),
+    ('Django'),
     ('Dlang'),
+    ('FastAPI'),
+    ('Flask'),
     ('FreeBSD'),
     ('Golang'),
     ('GraphQL'),

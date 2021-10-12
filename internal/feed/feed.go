@@ -39,7 +39,7 @@ func ReadBlog(feedURL string) (core.Blog, error) {
 		return core.Blog{}, err
 	}
 
-	// create a Blog core for the feed
+	// create a core.Blog for the feed
 	blog := core.NewBlog(feedURL, feed.Link, feed.Title)
 	return blog, nil
 }
@@ -53,7 +53,7 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 		return nil, err
 	}
 
-	// create a Post core for each entry
+	// create a core.Post for each entry
 	var posts []core.Post
 	for _, item := range feed.Items {
 		// try Updated then Published to obtain a timestamp
@@ -63,8 +63,8 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 		} else if item.PublishedParsed != nil {
 			updated = *item.PublishedParsed
 		} else {
-			// else default to a month ago
-			updated = time.Now().AddDate(0, -1, 0)
+			// else default to now
+			updated = time.Now()
 		}
 
 		post := core.NewPost(item.Link, item.Title, updated, blog)

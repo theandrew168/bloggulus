@@ -221,8 +221,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			ON to_tsquery(tag.name) @@ post.content_index
 		WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
 		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY
-			ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
+		ORDER BY ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
 		LIMIT $2
 		OFFSET $3`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)

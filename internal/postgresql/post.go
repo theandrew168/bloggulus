@@ -167,6 +167,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 			FROM post
 			INNER JOIN blog
 				ON blog.blog_id = post.blog_id
+			ORDER BY post.updated DESC
 			LIMIT $1
 			OFFSET $2
 		)
@@ -232,6 +233,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			INNER JOIN blog
 				ON blog.blog_id = post.blog_id
 			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
+			ORDER BY ts_rank_cd(post.content_index, websearch_to_tsquery('english',  $1)) DESC
 			LIMIT $2
 			OFFSET $3
 		)
@@ -249,7 +251,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ content_index
 		GROUP BY 1,2,3,4,6,7,8,9,content_index
-		ORDER BY ts_rank(content_index, websearch_to_tsquery('english',  $1)) DESC`
+		ORDER BY ts_rank_cd(content_index, websearch_to_tsquery('english',  $1)) DESC`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err

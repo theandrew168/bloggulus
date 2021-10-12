@@ -257,8 +257,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 
 func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
 	stmt := `
-		SELECT
-			count(*)
+		SELECT count(*)
 		FROM post`
 	row := s.conn.QueryRow(ctx, stmt)
 
@@ -273,8 +272,7 @@ func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
 
 func (s *postStorage) CountSearch(ctx context.Context, query string) (int, error) {
 	stmt := `
-		SELECT
-			count(*)
+		SELECT count(*)
 		FROM post
 		WHERE content_index @@ websearch_to_tsquery('english',  $1)`
 	row := s.conn.QueryRow(ctx, stmt, query)

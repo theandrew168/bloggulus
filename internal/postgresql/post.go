@@ -68,7 +68,7 @@ func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
 			post.url,
 			post.title,
 			post.updated,
-			(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC)) as tags,
+			array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog.blog_id,
 			blog.feed_url,
 			blog.site_url,

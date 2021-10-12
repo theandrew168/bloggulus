@@ -36,7 +36,6 @@ VALUES
     ('Clojure'),
     ('CommonLisp'),
     ('Coq'),
-    ('D'),
     ('Dart'),
     ('Delphi'),
     ('Drupal'),

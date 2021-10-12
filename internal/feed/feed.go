@@ -6,12 +6,22 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/internal/core"
+)
+
+// I know...
+var (
+	codePattern = regexp.MustCompile(`(?s)<code>.*?</code>`)
+	footerPattern = regexp.MustCompile(`(?s)<footer>.*?</footer>`)
+	headerPattern = regexp.MustCompile(`(?s)<header>.*?</header>`)
+	navPattern = regexp.MustCompile(`(?s)<nav>.*?</nav>`)
+	prePattern = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
 
 // TODO: consume an io.Reader?
@@ -76,7 +86,14 @@ func ReadPostBody(post core.Post) (string, error) {
 		return "", fmt.Errorf("%v: %v", post.URL, err)
 	}
 
-	p := bluemonday.StripTagsPolicy()
+	// please PR a better way :(
+	buf = codePattern.ReplaceAll(buf, nil)
+	buf = footerPattern.ReplaceAll(buf, nil)
+	buf = headerPattern.ReplaceAll(buf, nil)
+	buf = navPattern.ReplaceAll(buf, nil)
+	buf = prePattern.ReplaceAll(buf, nil)
+
+	p := bluemonday.StrictPolicy()
 	body := string(buf)
 	body = p.Sanitize(body)
 	body = html.UnescapeString(body)

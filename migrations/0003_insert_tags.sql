@@ -33,8 +33,6 @@ VALUES
     ('AppEngine'),
     ('Autotools'),
     ('C'),
-    ('C++'),
-    ('CFWheels'),
     ('CMake'),
     ('CUDA'),
     ('CakePHP'),

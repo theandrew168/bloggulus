@@ -153,25 +153,38 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 
 func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core.Post, error) {
 	stmt := `
+		WITH posts AS (
+			SELECT
+				post.post_id,
+				post.url,
+				post.title,
+				post.updated,
+				post.content_index,
+				blog.blog_id AS blog_blog_id,
+				blog.feed_url AS blog_feed_url,
+				blog.site_url AS blog_site_url,
+				blog.title AS blog_title
+			FROM post
+			INNER JOIN blog
+				ON blog.blog_id = post.blog_id
+			LIMIT $1
+			OFFSET $2
+		)
 		SELECT
-			post.post_id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.blog_id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
-		FROM post
-		INNER JOIN blog
-			ON blog.blog_id = post.blog_id
+			post_id,
+			url,
+			title,
+			updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			blog_blog_id,
+			blog_feed_url,
+			blog_site_url,
+			blog_title
+		FROM posts
 		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
+			ON to_tsquery(tag.name) @@ posts.content_index
 		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY post.updated DESC
-		LIMIT $1
-		OFFSET $2`
+		ORDER BY updated DESC`
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
@@ -204,26 +217,39 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 
 func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
 	stmt := `
+		WITH posts AS (
+			SELECT
+				post.post_id,
+				post.url,
+				post.title,
+				post.updated,
+				post.content_index,
+				blog.blog_id AS blog_blog_id,
+				blog.feed_url AS blog_feed_url,
+				blog.site_url AS blog_site_url,
+				blog.title AS blog_title
+			FROM post
+			INNER JOIN blog
+				ON blog.blog_id = post.blog_id
+			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
+			LIMIT $2
+			OFFSET $3
+		)
 		SELECT
-			post.post_id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.blog_id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
-		FROM post
-		INNER JOIN blog
-			ON blog.blog_id = post.blog_id
+			post_id,
+			url,
+			title,
+			updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			blog_blog_id,
+			blog_feed_url,
+			blog_site_url,
+			blog_title
+		FROM posts
 		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
-		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
-		LIMIT $2
-		OFFSET $3`
+			ON to_tsquery(tag.name) @@ content_index
+		GROUP BY 1,2,3,4,6,7,8,9,content_index
+		ORDER BY ts_rank(content_index, websearch_to_tsquery('english',  $1)) DESC`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err

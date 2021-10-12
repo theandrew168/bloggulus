@@ -14,6 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
+//	"github.com/theandrew168/bloggulus/internal/cache"
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
@@ -107,6 +108,10 @@ func main() {
 	syncBlogs := task.SyncBlogs(app.Blog, app.Post)
 	go syncBlogs.Run(1 * time.Hour)
 
+//	cacheHandler := cache.NewMemory(15 * time.Minute)
+	router := app.Router()
+//	router = cacheHandler(router)
+
 	log.Printf("listening on %s\n", addr)
-	log.Fatalln(http.ListenAndServe(addr, app.Router()))
+	log.Fatalln(http.ListenAndServe(addr, router))
 }

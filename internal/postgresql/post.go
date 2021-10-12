@@ -247,8 +247,8 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			blog_title
 		FROM posts
 		INNER JOIN tag
-			ON to_tsquery(tag.name) @@ posts.content_index
-		GROUP BY 1,2,3,4,6,7,8,9
+			ON to_tsquery(tag.name) @@ content_index
+		GROUP BY 1,2,3,4,6,7,8,9,content_index
 		ORDER BY
 			ts_rank(content_index, websearch_to_tsquery('english',  $1)) DESC`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)

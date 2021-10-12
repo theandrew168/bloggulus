@@ -8,7 +8,7 @@ CREATE TABLE post (
     content_index TSVECTOR
         GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
 
-    blog_id INTEGER NOT NULL REFERENCES blog(blog_id)
+    blog_id INTEGER NOT NULL REFERENCES blog(blog_id) ON DELETE CASCADE
 );
 
 CREATE INDEX post_content_index_idx ON post USING GIN(content_index);

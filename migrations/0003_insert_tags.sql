@@ -16,6 +16,7 @@ VALUES
     ('OpenBSD'),
     ('OpenZFS'),
     ('PostgreSQL'),
+    ('Rails'),
     ('RISC-V'),
     ('SQLite'),
     ('Ubuntu'),

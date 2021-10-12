@@ -17,11 +17,11 @@ import (
 
 // I know...
 var (
-	codePattern = regexp.MustCompile(`(?s)<code>.*?</code>`)
+	codePattern   = regexp.MustCompile(`(?s)<code>.*?</code>`)
 	footerPattern = regexp.MustCompile(`(?s)<footer>.*?</footer>`)
 	headerPattern = regexp.MustCompile(`(?s)<header>.*?</header>`)
-	navPattern = regexp.MustCompile(`(?s)<nav>.*?</nav>`)
-	prePattern = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
+	navPattern    = regexp.MustCompile(`(?s)<nav>.*?</nav>`)
+	prePattern    = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
 
 // TODO: consume an io.Reader?

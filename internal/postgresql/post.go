@@ -167,7 +167,6 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 			FROM post
 			INNER JOIN blog
 				ON blog.blog_id = post.blog_id
-			ORDER BY post.updated DESC
 			LIMIT $1
 			OFFSET $2
 		)
@@ -176,7 +175,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 			url,
 			title,
 			updated,
-			array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC) as tags,
+			array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog_blog_id,
 			blog_feed_url,
 			blog_site_url,
@@ -184,7 +183,8 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 		FROM posts
 		INNER JOIN tag
 			ON to_tsquery(tag.name) @@ posts.content_index
-		GROUP BY 1,2,3,4,6,7,8,9`
+		GROUP BY 1,2,3,4,6,7,8,9
+		ORDER BY updated DESC`
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
@@ -232,8 +232,6 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			INNER JOIN blog
 				ON blog.blog_id = post.blog_id
 			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
-			ORDER BY
-				ts_rank(post.content_index, websearch_to_tsquery('english',  $1)) DESC
 			LIMIT $2
 			OFFSET $3
 		)
@@ -242,7 +240,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 			url,
 			title,
 			updated,
-			array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC) as tags,
+			array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC) as tags,
 			blog_blog_id,
 			blog_feed_url,
 			blog_site_url,
@@ -250,7 +248,9 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 		FROM posts
 		INNER JOIN tag
 			ON to_tsquery(tag.name) @@ posts.content_index
-		GROUP BY 1,2,3,4,6,7,8,9`
+		GROUP BY 1,2,3,4,6,7,8,9
+		ORDER BY
+			ts_rank(content_index, websearch_to_tsquery('english',  $1)) DESC`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err

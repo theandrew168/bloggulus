@@ -1,5 +1,5 @@
 # bloggulus
-A community for bloggers and readers
+A website for avid blog readers
 
 ## Database
 This project uses [PostgreSQL](https://www.postgresql.org/) for persistent storage.

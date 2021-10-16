@@ -12,8 +12,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/theandrew168/bloggulus/internal/api"
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
@@ -63,24 +66,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// reload templates from filesystem if ENV starts with "dev"
-	var templates fs.FS
-	if strings.HasPrefix(env, "dev") {
-		templates = os.DirFS("templates")
-	} else {
-		templates, _ = fs.Sub(templatesFS, "templates")
-	}
+	// instantiate storage interfaces
+	blogStorage := postgresql.NewBlogStorage(conn)
+	postStorage := postgresql.NewPostStorage(conn)
 
-	static, _ := fs.Sub(staticFS, "static")
-
-	app := &web.Application{
-		StaticFS:    static,
-		TemplatesFS: templates,
-
-		Blog: postgresql.NewBlogStorage(conn),
-		Post: postgresql.NewPostStorage(conn),
-	}
-
+	// add a blog and exit now if requested
 	if *addblog {
 		feedURL := os.Args[2]
 		log.Printf("adding blog: %s\n", feedURL)
@@ -91,7 +81,7 @@ func main() {
 		}
 		log.Printf("  found: %s\n", blog.Title)
 
-		err = app.Blog.Create(context.Background(), &blog)
+		err = blogStorage.Create(context.Background(), &blog)
 		if err != nil {
 			if err == core.ErrExist {
 				log.Println("  already exists")
@@ -104,9 +94,43 @@ func main() {
 	}
 
 	// kick off blog sync task
-	syncBlogs := task.SyncBlogs(app.Blog, app.Post)
+	syncBlogs := task.SyncBlogs(blogStorage, postStorage)
 	go syncBlogs.Run(1 * time.Hour)
 
+	// reload templates from filesystem if ENV starts with "dev"
+	var templates fs.FS
+	if strings.HasPrefix(env, "dev") {
+		templates = os.DirFS("templates")
+	} else {
+		templates, _ = fs.Sub(templatesFS, "templates")
+	}
+
+	// init web application struct
+	webApp := &web.Application{
+		TemplatesFS: templates,
+
+		Blog: blogStorage,
+		Post: postStorage,
+	}
+
+	// init api application struct
+	apiApp := &api.Application{
+		Blog: blogStorage,
+		Post: postStorage,
+	}
+
+	// setup http.Handler for static files
+	static, _ := fs.Sub(staticFS, "static")
+	staticServer := http.FileServer(http.FS(static))
+
+	// construct the top-level router
+	r := chi.NewRouter()
+	r.Mount("/", webApp.Router())
+	r.Mount("/api", apiApp.Router())
+	r.Handle("/metrics", promhttp.Handler())
+	r.Handle("/static/*", http.StripPrefix("/static", staticServer))
+
+	// lets go!
 	log.Printf("listening on %s\n", addr)
-	log.Fatalln(http.ListenAndServe(addr, app.Router()))
+	log.Fatalln(http.ListenAndServe(addr, r))
 }

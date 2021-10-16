@@ -34,8 +34,10 @@ var staticFS embed.FS
 var templatesFS embed.FS
 
 func main() {
+	// silence timestamp and log level
 	log.SetFlags(0)
 
+	// check for general config vars
 	env := os.Getenv("ENV")
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -43,24 +45,29 @@ func main() {
 	}
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
+	// check for flags
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
 	flag.Parse()
 
+	// check for database connection url var
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatalln("Missing required env var: BLOGGULUS_DATABASE_URL")
 	}
 
+	// open a database connection pool
 	conn, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer conn.Close()
 
+	// test connection to ensure all is well
 	if err = conn.Ping(context.Background()); err != nil {
 		log.Fatalln(err)
 	}
 
+	// apply database migrations
 	migrations, _ := fs.Sub(migrationsFS, "migrations")
 	if err = postgresql.Migrate(conn, context.Background(), migrations); err != nil {
 		log.Fatalln(err)

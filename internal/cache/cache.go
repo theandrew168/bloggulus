@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// TODO: drop headers / status, add created time, rename to entry?
 type response struct {
 	statusCode int
 	header     http.Header
@@ -90,11 +91,12 @@ func (c *memoryCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewMemory(ttl time.Duration) func(http.Handler) http.Handler {
 	fn := func(next http.Handler) http.Handler {
-		return &memoryCache{
+		cache := memoryCache{
 			data: make(map[string]response),
 			ttl:  ttl,
 			next: next,
 		}
+		return &cache
 	}
 	return fn
 }

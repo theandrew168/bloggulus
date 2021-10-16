@@ -4,7 +4,7 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -19,9 +19,9 @@ type Application struct {
 }
 
 func (app *Application) Router() http.Handler {
-	router := httprouter.New()
-	router.HandlerFunc("GET", "/", app.HandleIndex)
-	router.Handler("GET", "/metrics", promhttp.Handler())
-	router.ServeFiles("/static/*filepath", http.FS(app.StaticFS))
-	return router
+	r := chi.NewRouter()
+	r.Get("/", app.HandleIndex)
+	r.Handle("/metrics", promhttp.Handler())
+	r.Handle("/static/*", http.StripPrefix("/static", http.FileServer(http.FS(app.StaticFS))))
+	return r
 }

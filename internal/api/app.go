@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
@@ -14,9 +14,9 @@ type Application struct {
 }
 
 func (app *Application) Router() http.Handler {
-	router := httprouter.New()
-	router.HandlerFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+	r := chi.NewRouter()
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello API!"))
 	})
-	return router
+	return r
 }

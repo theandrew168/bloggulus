@@ -28,8 +28,8 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
 	// attempt to read post body, log and ignore any errors
 	body, err := feed.ReadPostBody(*post)
 	if err != nil {
-		body = ""
 		log.Println(err)
+		body = ""
 	}
 
 	stmt := `
@@ -38,12 +38,14 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
 		VALUES
 			($1, $2, $3, $4, $5)
 		RETURNING post_id`
-	row := s.conn.QueryRow(ctx, stmt,
+	args := []interface{}{
 		post.URL,
 		post.Title,
 		post.Updated,
 		body,
-		post.Blog.BlogID)
+		post.Blog.BlogID,
+	}
+	row := s.conn.QueryRow(ctx, stmt, args...)
 
 	err = row.Scan(&post.PostID)
 	if err != nil {
@@ -291,6 +293,13 @@ func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			// retry on stale connections
+			if pgErr.Code == pgerrcode.AdminShutdown {
+				return s.CountRecent(ctx)
+			}
+		}
 		return 0, err
 	}
 
@@ -307,6 +316,13 @@ func (s *postStorage) CountSearch(ctx context.Context, query string) (int, error
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			// retry on stale connections
+			if pgErr.Code == pgerrcode.AdminShutdown {
+				return s.CountSearch(ctx, query)
+			}
+		}
 		return 0, err
 	}
 

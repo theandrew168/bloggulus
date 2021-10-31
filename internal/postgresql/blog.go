@@ -29,10 +29,12 @@ func (s *blogStorage) Create(ctx context.Context, blog *core.Blog) error {
 		VALUES
 			($1, $2, $3)
 		RETURNING blog_id`
-	row := s.conn.QueryRow(ctx, stmt,
+	args := []interface{}{
 		blog.FeedURL,
 		blog.SiteURL,
-		blog.Title)
+		blog.Title,
+	}
+	row := s.conn.QueryRow(ctx, stmt, args...)
 
 	err := row.Scan(&blog.BlogID)
 	if err != nil {

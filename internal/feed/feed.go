@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -97,6 +98,7 @@ func ReadPostBody(post core.Post) (string, error) {
 	body := string(buf)
 	body = p.Sanitize(body)
 	body = html.UnescapeString(body)
+	body = strings.ToValidUTF8(body, "")
 
 	return body, nil
 }

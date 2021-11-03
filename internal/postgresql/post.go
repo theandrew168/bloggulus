@@ -63,46 +63,6 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
 	return nil
 }
 
-func (s *postStorage) Read(ctx context.Context, postID int) (core.Post, error) {
-	stmt := `
-		SELECT
-			post.post_id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.blog_id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
-		FROM post
-		INNER JOIN blog
-			ON blog.blog_id = post.blog_id
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE post.post_id = $1
-		GROUP BY 1,2,3,4,6,7,8,9`
-	row := s.conn.QueryRow(ctx, stmt, postID)
-
-	var post core.Post
-	err := row.Scan(
-		&post.PostID,
-		&post.URL,
-		&post.Title,
-		&post.Updated,
-		&post.Tags,
-		&post.Blog.BlogID,
-		&post.Blog.FeedURL,
-		&post.Blog.SiteURL,
-		&post.Blog.Title,
-	)
-	if err != nil {
-		return core.Post{}, err
-	}
-
-	return post, nil
-}
-
 func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
 	stmt := `
 		SELECT

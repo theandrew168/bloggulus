@@ -52,23 +52,6 @@ func (s *blogStorage) Create(ctx context.Context, blog *core.Blog) error {
 	return nil
 }
 
-func (s *blogStorage) Read(ctx context.Context, blogID int) (core.Blog, error) {
-	stmt := "SELECT * FROM blog WHERE blog_id = $1"
-	row := s.conn.QueryRow(ctx, stmt, blogID)
-
-	var blog core.Blog
-	err := row.Scan(
-		&blog.BlogID,
-		&blog.FeedURL,
-		&blog.SiteURL,
-		&blog.Title)
-	if err != nil {
-		return core.Blog{}, err
-	}
-
-	return blog, nil
-}
-
 func (s *blogStorage) ReadAll(ctx context.Context) ([]core.Blog, error) {
 	stmt := "SELECT * FROM blog"
 	rows, err := s.conn.Query(ctx, stmt)

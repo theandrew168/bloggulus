@@ -10,6 +10,7 @@ build:
 
 .PHONY: test
 test:
+	go run main.go -migrate
 	go test -count=1 -v ./...
 
 .PHONY: format

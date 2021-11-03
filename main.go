@@ -46,6 +46,7 @@ func main() {
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
 	// check for flags
+	migrate := flag.Bool("migrate", false, "-migrate")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
 	flag.Parse()
 
@@ -76,6 +77,11 @@ func main() {
 	// instantiate storage interfaces
 	blogStorage := postgresql.NewBlogStorage(conn)
 	postStorage := postgresql.NewPostStorage(conn)
+
+	// just apply migrations (happens earlier) and exit
+	if *migrate {
+		return
+	}
 
 	// add a blog and exit now if requested
 	if *addblog {

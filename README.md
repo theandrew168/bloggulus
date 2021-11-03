@@ -22,3 +22,15 @@ Assuming a recent version of Go is [installed](https://golang.org/dl/), simply r
 ```
 go run main.go
 ```
+
+## Testing
+Tests can be ran after starting the necessary containers and applying database migrations:
+```
+go run main.go -migrate
+go test -v ./...
+```
+
+Note that the tests will leave random test in the database so feel free to flush it out by restarting the containers:
+```
+docker compose restart
+```

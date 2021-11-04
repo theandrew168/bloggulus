@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/NYTimes/gziphandler"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/internal/api"
@@ -135,13 +136,14 @@ func main() {
 	// setup http.Handler for static files
 	static, _ := fs.Sub(staticFS, "static")
 	staticServer := http.FileServer(http.FS(static))
+	gzipStaticServer := gziphandler.GzipHandler(staticServer)
 
 	// construct the top-level router
 	r := chi.NewRouter()
 	r.Mount("/", webApp.Router())
 	r.Mount("/api", apiApp.Router())
 	r.Handle("/metrics", promhttp.Handler())
-	r.Handle("/static/*", http.StripPrefix("/static", staticServer))
+	r.Handle("/static/*", http.StripPrefix("/static", gzipStaticServer))
 
 	// lets go!
 	log.Printf("listening on %s\n", addr)

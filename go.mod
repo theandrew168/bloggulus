@@ -13,8 +13,8 @@ require (
 )
 
 require (
-	github.com/NYTimes/gziphandler v1.1.1
 	github.com/go-chi/chi/v5 v5.0.5
+	github.com/klauspost/compress v1.13.6
 )
 
 require (

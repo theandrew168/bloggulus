@@ -1,31 +1,21 @@
-package core_test
+package main_test
 
 import (
 	"context"
+	"embed"
+	"io/fs"
 	"os"
-	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/theandrew168/bloggulus/internal/postgresql"
 )
 
-func init() {
-    rand.Seed(time.Now().UnixNano())
-}
+//go:embed migrations
+var migrationsFS embed.FS
 
-func randomString(n int) string {
-	validRunes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
-
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = validRunes[rand.Intn(len(validRunes))]
-	}
-
-	return string(b)
-}
-
-func connectDB(t *testing.T) *pgxpool.Pool {
+func TestMigrate(t *testing.T) {
 	// check for database connection url var
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {
@@ -37,11 +27,17 @@ func connectDB(t *testing.T) *pgxpool.Pool {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer conn.Close()
 
 	// test connection to ensure all is well
 	if err = conn.Ping(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 
-	return conn
+	// apply database migrations
+	migrations, _ := fs.Sub(migrationsFS, "migrations")
+	err = postgresql.Migrate(conn, context.Background(), migrations)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

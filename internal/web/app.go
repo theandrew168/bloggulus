@@ -2,6 +2,7 @@ package web
 
 import (
 	"io/fs"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,6 +11,8 @@ import (
 )
 
 type Application struct {
+	Logger *log.Logger
+
 	TemplatesFS fs.FS
 
 	Blog core.BlogStorage

@@ -32,5 +32,6 @@ go test -v ./...
 
 Note that the tests will leave random test in the database so feel free to flush it out by restarting the containers:
 ```
-docker compose restart
+docker compose down
+docker compose up -d
 ```

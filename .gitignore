@@ -2,6 +2,7 @@ bloggulus
 bloggulus-*
 *.sqlite3
 *.pyz
+*.out
 build/
 dist/
 ./static/

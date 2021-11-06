@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -9,6 +10,8 @@ import (
 )
 
 type Application struct {
+	Logger *log.Logger
+
 	Blog core.BlogStorage
 	Post core.PostStorage
 }

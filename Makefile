@@ -13,10 +13,15 @@ test:
 	go run main.go -migrate
 	go test -count=1 -v ./...
 
+.PHONY: cover
+cover:
+	go test -coverprofile=c.out -coverpkg=./... -count=1 ./...
+	go tool cover -html=c.out
+
 .PHONY: format
 format:
 	go fmt ./...
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus
+	rm -fr bloggulus c.out

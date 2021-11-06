@@ -16,6 +16,9 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
+// TODO: should this functionality be behind an interface of some sort?
+// TODO: might help make testing simpler / less noisy / mockable?
+
 // I know...
 var (
 	codePattern   = regexp.MustCompile(`(?s)<code>.*?</code>`)

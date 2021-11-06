@@ -26,6 +26,9 @@ func NewPost(url, title string, updated time.Time, blog Blog) Post {
 }
 
 type PostStorage interface {
+	// TODO: pass an http.Client or something here for reading post body?
+	// TODO: or just pass it to postgresql?
+	// TODO: or just pass postgresql a *log.Logger?
 	Create(ctx context.Context, post *Post) error
 	ReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
 	ReadRecent(ctx context.Context, limit, offset int) ([]Post, error)

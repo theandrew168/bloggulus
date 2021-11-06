@@ -13,10 +13,10 @@ func TestBlogCreate(t *testing.T) {
 	conn := connectDB(t)
 	defer conn.Close()
 
-	// instantiate storage interface
+	// instantiate storage interfaces
 	blogStorage := postgresql.NewBlogStorage(conn)
 
-	// generate some random data
+	// generate some random blog data
 	feedURL := "https://" + randomString(32)
 	siteURL := "https://" + randomString(32)
 	title := randomString(32)
@@ -46,27 +46,20 @@ func TestBlogCreateExists(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// instantiate storage interface
+	// instantiate storage interfaces
 	blogStorage := postgresql.NewBlogStorage(conn)
 
-	// generate some random data
+	// generate some random blog data
 	feedURL := "https://" + randomString(32)
 	siteURL := "https://" + randomString(32)
 	title := randomString(32)
 
 	blog := core.NewBlog(feedURL, siteURL, title)
-	if blog.BlogID != 0 {
-		t.Fatal("blog id before creation should be zero")
-	}
 
 	// create an example blog
 	err := blogStorage.Create(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	if blog.BlogID == 0 {
-		t.Fatal("blog id after creation should be nonzero")
 	}
 
 	// attempt to create the same blog again
@@ -80,7 +73,7 @@ func TestBlogReadAll(t *testing.T) {
 	conn := connectDB(t)
 	defer conn.Close()
 
-	// instantiate storage interface
+	// instantiate storage interfaces
 	blogStorage := postgresql.NewBlogStorage(conn)
 
 	_, err := blogStorage.ReadAll(context.Background())

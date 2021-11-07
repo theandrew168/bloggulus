@@ -2,8 +2,8 @@ package core_test
 
 import (
 	"context"
-	"os"
 	"math/rand"
+	"os"
 	"testing"
 	"time"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-    rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 }
 
 func randomString(n int) string {

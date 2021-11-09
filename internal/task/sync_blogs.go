@@ -11,21 +11,25 @@ import (
 )
 
 type syncBlogsTask struct {
-	blog core.BlogStorage
-	post core.PostStorage
+	blogStorage core.BlogStorage
+	postStorage core.PostStorage
+	reader      feed.Reader
+	logger      *log.Logger
 }
 
-func SyncBlogs(blog core.BlogStorage, post core.PostStorage) Task {
+func SyncBlogs(blogStorage core.BlogStorage, postStorage core.PostStorage, reader feed.Reader, logger *log.Logger) Task {
 	return &syncBlogsTask{
-		blog: blog,
-		post: post,
+		blogStorage: blogStorage,
+		postStorage: postStorage,
+		reader:      reader,
+		logger:      logger,
 	}
 }
 
 func (t *syncBlogsTask) Run(interval time.Duration) {
 	err := t.RunNow()
 	if err != nil {
-		log.Println(err)
+		t.logger.Println(err)
 	}
 
 	c := time.Tick(interval)
@@ -34,7 +38,7 @@ func (t *syncBlogsTask) Run(interval time.Duration) {
 
 		err := t.syncBlogs()
 		if err != nil {
-			log.Println(err)
+			t.logger.Println(err)
 		}
 	}
 }
@@ -44,7 +48,7 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	blogs, err := t.blog.ReadAll(context.Background())
+	blogs, err := t.blogStorage.ReadAll(context.Background())
 	if err != nil {
 		return err
 	}
@@ -64,9 +68,9 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
 	// read posts currently in storage
-	knownPosts, err := t.post.ReadAllByBlog(context.Background(), blog.BlogID)
+	knownPosts, err := t.postStorage.ReadAllByBlog(context.Background(), blog.BlogID)
 	if err != nil {
-		log.Println(err)
+		t.logger.Println(err)
 		return
 	}
 
@@ -77,9 +81,9 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	}
 
 	// read posts from feed
-	feedPosts, err := feed.ReadPosts(blog)
+	feedPosts, err := t.reader.ReadBlogPosts(blog)
 	if err != nil {
-		log.Println(err)
+		t.logger.Println(err)
 		return
 	}
 
@@ -92,13 +96,21 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 		newPosts = append(newPosts, post)
 	}
 
+	// attempt to read the content for each new post
+	for i, _ := range newPosts {
+		body, err := t.reader.ReadPostBody(newPosts[i])
+		if err != nil {
+			t.logger.Println(err)
+			continue
+		}
+		newPosts[i].Body = body
+	}
+
 	// sync each post with the database
 	for _, post := range newPosts {
-		err = t.post.Create(context.Background(), &post)
+		err = t.postStorage.Create(context.Background(), &post)
 		if err != nil {
-			if err != core.ErrExist {
-				log.Printf("sync %v %v\n", post.URL, err)
-			}
+			t.logger.Printf("sync %v %v\n", post.URL, err)
 		}
 	}
 }

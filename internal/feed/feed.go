@@ -16,8 +16,13 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-// TODO: should this functionality be behind an interface of some sort?
-// TODO: might help make testing simpler / less noisy / mockable?
+type Reader interface {
+	ReadBlog(feedURL string) (core.Blog, error)
+	ReadBlogPosts(blog core.Blog) ([]core.Post, error)
+	ReadPostBody(post core.Post) (string, error)
+}
+
+// TODO: pull CleanHTML into pure func
 
 // I know...
 var (
@@ -28,8 +33,14 @@ var (
 	prePattern    = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
 
-// TODO: consume an io.Reader?
-func ReadBlog(feedURL string) (core.Blog, error) {
+type reader struct {}
+
+func NewReader() Reader {
+	r := reader{}
+	return &r
+}
+
+func (r *reader) ReadBlog(feedURL string) (core.Blog, error) {
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
@@ -48,8 +59,7 @@ func ReadBlog(feedURL string) (core.Blog, error) {
 	return blog, nil
 }
 
-// TODO: consume an io.Reader?
-func ReadPosts(blog core.Blog) ([]core.Post, error) {
+func (r *reader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(blog.FeedURL)
@@ -78,7 +88,7 @@ func ReadPosts(blog core.Blog) ([]core.Post, error) {
 	return posts, nil
 }
 
-func ReadPostBody(post core.Post) (string, error) {
+func (r *reader) ReadPostBody(post core.Post) (string, error) {
 	resp, err := http.Get(post.URL)
 	if err != nil {
 		return "", fmt.Errorf("%v: %v", post.URL, err)
@@ -104,4 +114,29 @@ func ReadPostBody(post core.Post) (string, error) {
 	body = strings.ToValidUTF8(body, "")
 
 	return body, nil
+}
+
+type mockReader struct {
+	blog  core.Blog
+	posts []core.Post
+}
+
+func NewMockReader(blog core.Blog, posts []core.Post) Reader {
+	r := mockReader{
+		blog:  blog,
+		posts: posts,
+	}
+	return &r
+}
+
+func (r *mockReader) ReadBlog(feedURL string) (core.Blog, error) {
+	return r.blog, nil
+}
+
+func (r *mockReader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
+	return r.posts, nil
+}
+
+func (r *mockReader) ReadPostBody(post core.Post) (string, error) {
+	return "mock post body", nil
 }

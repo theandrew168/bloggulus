@@ -11,12 +11,12 @@ import (
 )
 
 type Application struct {
-	Logger *log.Logger
-
 	TemplatesFS fs.FS
 
 	Blog core.BlogStorage
 	Post core.PostStorage
+
+	logger *log.Logger
 }
 
 func (app *Application) Router() http.Handler {

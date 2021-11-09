@@ -37,7 +37,6 @@ var templatesFS embed.FS
 
 func main() {
 	// silence timestamp and log level
-	log.SetFlags(0)
 	logger := log.New(os.Stdout, "", 0)
 
 	// check for general config vars

@@ -16,14 +16,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-type Reader interface {
-	ReadBlog(feedURL string) (core.Blog, error)
-	ReadBlogPosts(blog core.Blog) ([]core.Post, error)
-	ReadPostBody(post core.Post) (string, error)
-}
-
-// TODO: pull CleanHTML into pure func
-
 // I know...
 var (
 	codePattern   = regexp.MustCompile(`(?s)<code>.*?</code>`)
@@ -32,6 +24,28 @@ var (
 	navPattern    = regexp.MustCompile(`(?s)<nav>.*?</nav>`)
 	prePattern    = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
+
+// please PR a better way :(
+func CleanHTML(buf []byte) string {
+	buf = codePattern.ReplaceAll(buf, nil)
+	buf = footerPattern.ReplaceAll(buf, nil)
+	buf = headerPattern.ReplaceAll(buf, nil)
+	buf = navPattern.ReplaceAll(buf, nil)
+	buf = prePattern.ReplaceAll(buf, nil)
+
+	body := string(buf)
+	body = bluemonday.StrictPolicy().Sanitize(body)
+	body = html.UnescapeString(body)
+	body = strings.ToValidUTF8(body, "")
+
+	return body
+}
+
+type Reader interface {
+	ReadBlog(feedURL string) (core.Blog, error)
+	ReadBlogPosts(blog core.Blog) ([]core.Post, error)
+	ReadPostBody(post core.Post) (string, error)
+}
 
 type reader struct{}
 
@@ -100,19 +114,7 @@ func (r *reader) ReadPostBody(post core.Post) (string, error) {
 		return "", fmt.Errorf("%v: %v", post.URL, err)
 	}
 
-	// please PR a better way :(
-	buf = codePattern.ReplaceAll(buf, nil)
-	buf = footerPattern.ReplaceAll(buf, nil)
-	buf = headerPattern.ReplaceAll(buf, nil)
-	buf = navPattern.ReplaceAll(buf, nil)
-	buf = prePattern.ReplaceAll(buf, nil)
-
-	p := bluemonday.StrictPolicy()
-	body := string(buf)
-	body = p.Sanitize(body)
-	body = html.UnescapeString(body)
-	body = strings.ToValidUTF8(body, "")
-
+	body := CleanHTML(buf)
 	return body, nil
 }
 

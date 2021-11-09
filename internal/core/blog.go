@@ -10,7 +10,7 @@ type Blog struct {
 	Title   string
 
 	// readonly (from database, after creation)
-	BlogID  int
+	BlogID int
 }
 
 func NewBlog(feedURL, siteURL, title string) Blog {

@@ -2,7 +2,6 @@ package web
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -14,7 +13,7 @@ const (
 )
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFS(app.TemplatesFS, "index.html.tmpl")
+	ts, err := template.ParseFS(app.templates, "index.html.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -34,13 +33,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	// search if requested
 	if q != "" {
-		count, err = app.Post.CountSearch(r.Context(), q)
+		count, err = app.postStorage.CountSearch(r.Context(), q)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		posts, err = app.Post.ReadSearch(r.Context(), q, PageSize, p*PageSize)
+		posts, err = app.postStorage.ReadSearch(r.Context(), q, PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -48,13 +47,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 		// else just read recent
 	} else {
-		count, err = app.Post.CountRecent(r.Context())
+		count, err = app.postStorage.CountRecent(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		posts, err = app.Post.ReadRecent(r.Context(), PageSize, p*PageSize)
+		posts, err = app.postStorage.ReadRecent(r.Context(), PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -82,7 +81,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	err = ts.Execute(w, data)
 	if err != nil {
-		log.Println(err)
+		app.logger.Println(err)
 		return
 	}
 }

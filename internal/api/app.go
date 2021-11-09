@@ -10,10 +10,18 @@ import (
 )
 
 type Application struct {
-	Blog core.BlogStorage
-	Post core.PostStorage
+	blogStorage core.BlogStorage
+	postStorage core.PostStorage
+	logger      *log.Logger
+}
 
-	logger *log.Logger
+func NewApplication(blogStorage core.BlogStorage, postStorage core.PostStorage, logger *log.Logger) *Application {
+	app := Application{
+		blogStorage: blogStorage,
+		postStorage: postStorage,
+		logger:      logger,
+	}
+	return &app
 }
 
 func (app *Application) Router() http.Handler {

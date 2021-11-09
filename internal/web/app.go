@@ -11,12 +11,20 @@ import (
 )
 
 type Application struct {
-	TemplatesFS fs.FS
+	templates   fs.FS
+	blogStorage core.BlogStorage
+	postStorage core.PostStorage
+	logger      *log.Logger
+}
 
-	Blog core.BlogStorage
-	Post core.PostStorage
-
-	logger *log.Logger
+func NewApplication(templates fs.FS, blogStorage core.BlogStorage, postStorage core.PostStorage, logger *log.Logger) *Application {
+	app := Application{
+		templates:   templates,
+		blogStorage: blogStorage,
+		postStorage: postStorage,
+		logger:      logger,
+	}
+	return &app
 }
 
 func (app *Application) Router() http.Handler {

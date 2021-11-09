@@ -124,19 +124,20 @@ func main() {
 		templates, _ = fs.Sub(templatesFS, "templates")
 	}
 
-	// init web application struct
-	webApp := &web.Application{
-		TemplatesFS: templates,
-
-		Blog: blogStorage,
-		Post: postStorage,
-	}
+	// init web application
+	webApp := web.NewApplication(
+		templates,
+		blogStorage,
+		postStorage,
+		logger,
+	)
 
 	// init api application struct
-	apiApp := &api.Application{
-		Blog: blogStorage,
-		Post: postStorage,
-	}
+	apiApp := api.NewApplication(
+		blogStorage,
+		postStorage,
+		logger,
+	)
 
 	// setup http.Handler for static files
 	static, _ := fs.Sub(staticFS, "static")

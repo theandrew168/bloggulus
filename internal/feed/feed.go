@@ -33,7 +33,7 @@ var (
 	prePattern    = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
 
-type reader struct {}
+type reader struct{}
 
 func NewReader() Reader {
 	r := reader{}
@@ -119,12 +119,14 @@ func (r *reader) ReadPostBody(post core.Post) (string, error) {
 type mockReader struct {
 	blog  core.Blog
 	posts []core.Post
+	body  string
 }
 
-func NewMockReader(blog core.Blog, posts []core.Post) Reader {
+func NewMockReader(blog core.Blog, posts []core.Post, body string) Reader {
 	r := mockReader{
 		blog:  blog,
 		posts: posts,
+		body:  body,
 	}
 	return &r
 }
@@ -138,5 +140,5 @@ func (r *mockReader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
 }
 
 func (r *mockReader) ReadPostBody(post core.Post) (string, error) {
-	return "mock post body", nil
+	return r.body, nil
 }

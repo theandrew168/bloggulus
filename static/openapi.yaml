@@ -1,0 +1,64 @@
+# Hand-written OpenAPI (v3) spec for our REST server.
+openapi: 3.0.1
+info:
+  title: Bloggulus REST API
+  description: Programmatic access to blogs and posts
+  version: 1.0.0
+servers:
+- url: https://bloggulus.com/api/
+paths:
+  /blog:
+    get:
+      summary: Returns a list of all blogs
+      responses:
+        '200':
+          description: A JSON array of blogs
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Blog'
+  /post:
+    get:
+      summary: Returns a list of all posts
+      responses:
+        '200':
+          description: A JSON array of posts
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Post'
+components:
+  schemas:
+    Blog:
+      type: object
+      properties:
+        blog_id:
+          type: integer
+        feed_url:
+          type: string
+        site_url:
+          type: string
+        title:
+          type: string
+    Post:
+      type: object
+      properties:
+        post_id:
+          type: integer
+        url:
+          type: string
+        title:
+          type: string
+        updated:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        blog:
+          $ref: '#/components/schemas/Blog'

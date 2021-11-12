@@ -7,19 +7,20 @@ import (
 
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
+	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestBlogCreate(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
 	blogStorage := postgresql.NewBlogStorage(conn)
 
 	// generate some random blog data
-	feedURL := "https://" + randomString(32)
-	siteURL := "https://" + randomString(32)
-	title := randomString(32)
+	feedURL := "https://" + test.RandomString(32)
+	siteURL := "https://" + test.RandomString(32)
+	title := test.RandomString(32)
 
 	blog := core.NewBlog(feedURL, siteURL, title)
 	if blog.BlogID != 0 {
@@ -38,7 +39,7 @@ func TestBlogCreate(t *testing.T) {
 }
 
 func TestBlogCreateExists(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// test connection to ensure all is well
@@ -50,9 +51,9 @@ func TestBlogCreateExists(t *testing.T) {
 	blogStorage := postgresql.NewBlogStorage(conn)
 
 	// generate some random blog data
-	feedURL := "https://" + randomString(32)
-	siteURL := "https://" + randomString(32)
-	title := randomString(32)
+	feedURL := "https://" + test.RandomString(32)
+	siteURL := "https://" + test.RandomString(32)
+	title := test.RandomString(32)
 
 	blog := core.NewBlog(feedURL, siteURL, title)
 
@@ -70,7 +71,7 @@ func TestBlogCreateExists(t *testing.T) {
 }
 
 func TestBlogReadAll(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces

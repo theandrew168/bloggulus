@@ -26,19 +26,18 @@ var (
 )
 
 // please PR a better way :(
-func CleanHTML(buf []byte) string {
-	buf = codePattern.ReplaceAll(buf, nil)
-	buf = footerPattern.ReplaceAll(buf, nil)
-	buf = headerPattern.ReplaceAll(buf, nil)
-	buf = navPattern.ReplaceAll(buf, nil)
-	buf = prePattern.ReplaceAll(buf, nil)
+func CleanHTML(dirty string) string {
+	dirty = codePattern.ReplaceAllString(dirty, "")
+	dirty = footerPattern.ReplaceAllString(dirty, "")
+	dirty = headerPattern.ReplaceAllString(dirty, "")
+	dirty = navPattern.ReplaceAllString(dirty, "")
+	dirty = prePattern.ReplaceAllString(dirty, "")
 
-	body := string(buf)
-	body = bluemonday.StrictPolicy().Sanitize(body)
-	body = html.UnescapeString(body)
-	body = strings.ToValidUTF8(body, "")
+	clean := bluemonday.StrictPolicy().Sanitize(dirty)
+	clean = html.UnescapeString(clean)
+	clean = strings.ToValidUTF8(clean, "")
 
-	return body
+	return clean
 }
 
 type Reader interface {
@@ -114,33 +113,7 @@ func (r *reader) ReadPostBody(post core.Post) (string, error) {
 		return "", fmt.Errorf("%v: %v", post.URL, err)
 	}
 
-	body := CleanHTML(buf)
+	body := string(buf)
+	body = CleanHTML(body)
 	return body, nil
-}
-
-type mockReader struct {
-	blog  core.Blog
-	posts []core.Post
-	body  string
-}
-
-func NewMockReader(blog core.Blog, posts []core.Post, body string) Reader {
-	r := mockReader{
-		blog:  blog,
-		posts: posts,
-		body:  body,
-	}
-	return &r
-}
-
-func (r *mockReader) ReadBlog(feedURL string) (core.Blog, error) {
-	return r.blog, nil
-}
-
-func (r *mockReader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
-	return r.posts, nil
-}
-
-func (r *mockReader) ReadPostBody(post core.Post) (string, error) {
-	return r.body, nil
 }

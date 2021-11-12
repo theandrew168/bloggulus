@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
+	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestPostCreate(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -19,11 +19,7 @@ func TestPostCreate(t *testing.T) {
 	postStorage := postgresql.NewPostStorage(conn)
 
 	// generate some random blog data
-	feedURL := "https://" + randomString(32)
-	siteURL := "https://" + randomString(32)
-	blogTitle := randomString(32)
-
-	blog := core.NewBlog(feedURL, siteURL, blogTitle)
+	blog := test.NewMockBlog()
 
 	// create an example blog
 	err := blogStorage.Create(context.Background(), &blog)
@@ -32,11 +28,7 @@ func TestPostCreate(t *testing.T) {
 	}
 
 	// generate some random post data
-	url := "https://" + randomString(32)
-	title := randomString(32)
-	updated := time.Now()
-
-	post := core.NewPost(url, title, updated, blog)
+	post := test.NewMockPost(blog)
 	if post.PostID != 0 {
 		t.Fatal("post id before creation should be zero")
 	}
@@ -53,7 +45,7 @@ func TestPostCreate(t *testing.T) {
 }
 
 func TestPostCreateExists(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -61,11 +53,7 @@ func TestPostCreateExists(t *testing.T) {
 	postStorage := postgresql.NewPostStorage(conn)
 
 	// generate some random blog data
-	feedURL := "https://" + randomString(32)
-	siteURL := "https://" + randomString(32)
-	blogTitle := randomString(32)
-
-	blog := core.NewBlog(feedURL, siteURL, blogTitle)
+	blog := test.NewMockBlog()
 
 	// create an example blog
 	err := blogStorage.Create(context.Background(), &blog)
@@ -74,11 +62,7 @@ func TestPostCreateExists(t *testing.T) {
 	}
 
 	// generate some random post data
-	url := "https://" + randomString(32)
-	title := randomString(32)
-	updated := time.Now()
-
-	post := core.NewPost(url, title, updated, blog)
+	post := test.NewMockPost(blog)
 
 	// create an example post
 	err = postStorage.Create(context.Background(), &post)
@@ -94,7 +78,7 @@ func TestPostCreateExists(t *testing.T) {
 }
 
 func TestPostReadAllByBlog(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -102,11 +86,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 	postStorage := postgresql.NewPostStorage(conn)
 
 	// generate some random blog data
-	feedURL := "https://" + randomString(32)
-	siteURL := "https://" + randomString(32)
-	blogTitle := randomString(32)
-
-	blog := core.NewBlog(feedURL, siteURL, blogTitle)
+	blog := test.NewMockBlog()
 
 	// create an example blog
 	err := blogStorage.Create(context.Background(), &blog)
@@ -115,11 +95,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 	}
 
 	// generate some random post data
-	url := "https://" + randomString(32)
-	title := randomString(32)
-	updated := time.Now()
-
-	post := core.NewPost(url, title, updated, blog)
+	post := test.NewMockPost(blog)
 
 	// create an example post
 	err = postStorage.Create(context.Background(), &post)
@@ -138,7 +114,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 }
 
 func TestPostReadRecent(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -151,7 +127,7 @@ func TestPostReadRecent(t *testing.T) {
 }
 
 func TestPostReadSearch(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -164,7 +140,7 @@ func TestPostReadSearch(t *testing.T) {
 }
 
 func TestPostCountRecent(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces
@@ -177,7 +153,7 @@ func TestPostCountRecent(t *testing.T) {
 }
 
 func TestPostCountSearch(t *testing.T) {
-	conn := connectDB(t)
+	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	// instantiate storage interfaces

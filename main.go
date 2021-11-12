@@ -72,7 +72,7 @@ func main() {
 
 	// apply database migrations
 	migrations, _ := fs.Sub(migrationsFS, "migrations")
-	if err = applyMigrations(conn, migrations, logger); err != nil {
+	if err = migrateDB(conn, migrations, logger); err != nil {
 		log.Fatalln(err)
 	}
 
@@ -155,7 +155,7 @@ func main() {
 	log.Fatalln(http.ListenAndServe(addr, r))
 }
 
-func applyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {
+func migrateDB(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {
 	ctx := context.Background()
 
 	// create migrations table if it doesn't exist

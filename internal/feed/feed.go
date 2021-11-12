@@ -26,18 +26,18 @@ var (
 )
 
 // please PR a better way :(
-func CleanHTML(dirty string) string {
-	dirty = codePattern.ReplaceAllString(dirty, "")
-	dirty = footerPattern.ReplaceAllString(dirty, "")
-	dirty = headerPattern.ReplaceAllString(dirty, "")
-	dirty = navPattern.ReplaceAllString(dirty, "")
-	dirty = prePattern.ReplaceAllString(dirty, "")
+func CleanHTML(s string) string {
+	s = codePattern.ReplaceAllString(s, "")
+	s = footerPattern.ReplaceAllString(s, "")
+	s = headerPattern.ReplaceAllString(s, "")
+	s = navPattern.ReplaceAllString(s, "")
+	s = prePattern.ReplaceAllString(s, "")
 
-	clean := bluemonday.StrictPolicy().Sanitize(dirty)
-	clean = html.UnescapeString(clean)
-	clean = strings.ToValidUTF8(clean, "")
+	s = bluemonday.StrictPolicy().Sanitize(s)
+	s = html.UnescapeString(s)
+	s = strings.ToValidUTF8(s, "")
 
-	return clean
+	return s
 }
 
 type Reader interface {

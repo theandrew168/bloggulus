@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func PostCreate(t *testing.T, storage core.Storage) {
+func PostCreate(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -35,7 +35,7 @@ func PostCreate(t *testing.T, storage core.Storage) {
 	}
 }
 
-func PostCreateExists(t *testing.T, storage core.Storage) {
+func PostCreateExists(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -61,7 +61,7 @@ func PostCreateExists(t *testing.T, storage core.Storage) {
 	}
 }
 
-func PostReadAllByBlog(t *testing.T, storage core.Storage) {
+func PostReadAllByBlog(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -90,28 +90,28 @@ func PostReadAllByBlog(t *testing.T, storage core.Storage) {
 	}
 }
 
-func PostReadRecent(t *testing.T, storage core.Storage) {
+func PostReadRecent(storage core.Storage, t *testing.T) {
 	_, err := storage.PostReadRecent(context.Background(), 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func PostReadSearch(t *testing.T, storage core.Storage) {
+func PostReadSearch(storage core.Storage, t *testing.T) {
 	_, err := storage.PostReadSearch(context.Background(), "", 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func PostCountRecent(t *testing.T, storage core.Storage) {
+func PostCountRecent(storage core.Storage, t *testing.T) {
 	_, err := storage.PostCountRecent(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func PostCountSearch(t *testing.T, storage core.Storage) {
+func PostCountSearch(storage core.Storage, t *testing.T) {
 	_, err := storage.PostCountSearch(context.Background(), "")
 	if err != nil {
 		t.Fatal(err)

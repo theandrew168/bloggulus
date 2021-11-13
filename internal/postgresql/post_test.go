@@ -12,7 +12,7 @@ func TestPostCreate(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCreate(t, storage)
+	test.PostCreate(storage, t)
 }
 
 func TestPostCreateExists(t *testing.T) {
@@ -20,7 +20,7 @@ func TestPostCreateExists(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCreateExists(t, storage)
+	test.PostCreateExists(storage, t)
 }
 
 func TestPostReadAllByBlog(t *testing.T) {
@@ -28,7 +28,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadAllByBlog(t, storage)
+	test.PostReadAllByBlog(storage, t)
 }
 
 func TestPostReadRecent(t *testing.T) {
@@ -36,7 +36,7 @@ func TestPostReadRecent(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadRecent(t, storage)
+	test.PostReadRecent(storage, t)
 }
 
 func TestPostReadSearch(t *testing.T) {
@@ -44,7 +44,7 @@ func TestPostReadSearch(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadSearch(t, storage)
+	test.PostReadSearch(storage, t)
 }
 
 func TestPostCountRecent(t *testing.T) {
@@ -52,7 +52,7 @@ func TestPostCountRecent(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCountRecent(t, storage)
+	test.PostCountRecent(storage, t)
 }
 
 func TestPostCountSearch(t *testing.T) {
@@ -60,5 +60,5 @@ func TestPostCountSearch(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCountSearch(t, storage)
+	test.PostCountSearch(storage, t)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func BlogCreate(t *testing.T, storage core.Storage) {
+func BlogCreate(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 	if blog.BlogID != 0 {
@@ -27,7 +27,7 @@ func BlogCreate(t *testing.T, storage core.Storage) {
 	}
 }
 
-func BlogCreateExists(t *testing.T, storage core.Storage) {
+func BlogCreateExists(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -44,7 +44,7 @@ func BlogCreateExists(t *testing.T, storage core.Storage) {
 	}
 }
 
-func BlogReadAll(t *testing.T, storage core.Storage) {
+func BlogReadAll(storage core.Storage, t *testing.T) {
 	_, err := storage.BlogReadAll(context.Background())
 	if err != nil {
 		t.Fatal(err)

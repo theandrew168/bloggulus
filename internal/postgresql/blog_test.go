@@ -12,7 +12,7 @@ func TestBlogCreate(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogCreate(t, storage)
+	test.BlogCreate(storage, t)
 }
 
 func TestBlogCreateExists(t *testing.T) {
@@ -20,7 +20,7 @@ func TestBlogCreateExists(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogCreateExists(t, storage)
+	test.BlogCreateExists(storage, t)
 }
 
 func TestBlogReadAll(t *testing.T) {
@@ -28,5 +28,5 @@ func TestBlogReadAll(t *testing.T) {
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogReadAll(t, storage)
+	test.BlogReadAll(storage, t)
 }

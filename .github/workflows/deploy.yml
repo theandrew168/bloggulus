@@ -30,7 +30,7 @@ jobs:
       run: >
         purgecss
         -c scripts/purgecss.config.js
-        -con templates/*.tmpl
+        -con internal/web/templates/*.tmpl
         -css static/css/*
         -o static/css/
     - name: Run tests

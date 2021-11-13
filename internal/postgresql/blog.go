@@ -6,23 +6,11 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-type blogStorage struct {
-	conn *pgxpool.Pool
-}
-
-func NewBlogStorage(conn *pgxpool.Pool) core.BlogStorage {
-	s := blogStorage{
-		conn: conn,
-	}
-	return &s
-}
-
-func (s *blogStorage) Create(ctx context.Context, blog *core.Blog) error {
+func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(feed_url, site_url, title)
@@ -52,7 +40,7 @@ func (s *blogStorage) Create(ctx context.Context, blog *core.Blog) error {
 	return nil
 }
 
-func (s *blogStorage) ReadAll(ctx context.Context) ([]core.Blog, error) {
+func (s *storage) BlogReadAll(ctx context.Context) ([]core.Blog, error) {
 	stmt := "SELECT * FROM blog"
 	rows, err := s.conn.Query(ctx, stmt)
 	if err != nil {

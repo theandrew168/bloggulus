@@ -6,23 +6,11 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-type postStorage struct {
-	conn *pgxpool.Pool
-}
-
-func NewPostStorage(conn *pgxpool.Pool) core.PostStorage {
-	s := postStorage{
-		conn: conn,
-	}
-	return &s
-}
-
-func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
+func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
 	stmt := `
 		INSERT INTO post
 			(url, title, updated, body, blog_id)
@@ -54,7 +42,7 @@ func (s *postStorage) Create(ctx context.Context, post *core.Post) error {
 	return nil
 }
 
-func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
+func (s *storage) PostReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
 	stmt := `
 		SELECT
 			post.post_id,
@@ -104,7 +92,7 @@ func (s *postStorage) ReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 	return posts, nil
 }
 
-func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core.Post, error) {
+func (s *storage) PostReadRecent(ctx context.Context, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -169,7 +157,7 @@ func (s *postStorage) ReadRecent(ctx context.Context, limit, offset int) ([]core
 	return posts, nil
 }
 
-func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
+func (s *storage) PostReadSearch(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -235,7 +223,7 @@ func (s *postStorage) ReadSearch(ctx context.Context, query string, limit, offse
 	return posts, nil
 }
 
-func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
+func (s *storage) PostCountRecent(ctx context.Context) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -248,7 +236,7 @@ func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
 		if errors.As(err, &pgErr) {
 			// retry on stale connections
 			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.CountRecent(ctx)
+				return s.PostCountRecent(ctx)
 			}
 		}
 		return 0, err
@@ -257,7 +245,7 @@ func (s *postStorage) CountRecent(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (s *postStorage) CountSearch(ctx context.Context, query string) (int, error) {
+func (s *storage) PostCountSearch(ctx context.Context, query string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -271,7 +259,7 @@ func (s *postStorage) CountSearch(ctx context.Context, query string) (int, error
 		if errors.As(err, &pgErr) {
 			// retry on stale connections
 			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.CountSearch(ctx, query)
+				return s.PostCountSearch(ctx, query)
 			}
 		}
 		return 0, err

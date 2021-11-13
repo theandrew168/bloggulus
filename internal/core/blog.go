@@ -23,6 +23,6 @@ func NewBlog(feedURL, siteURL, title string) Blog {
 }
 
 type BlogStorage interface {
-	Create(ctx context.Context, blog *Blog) error
-	ReadAll(ctx context.Context) ([]Blog, error)
+	BlogCreate(ctx context.Context, blog *Blog) error
+	BlogReadAll(ctx context.Context) ([]Blog, error)
 }

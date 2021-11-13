@@ -11,18 +11,16 @@ import (
 )
 
 type syncBlogsTask struct {
-	blogStorage core.BlogStorage
-	postStorage core.PostStorage
-	reader      feed.Reader
-	logger      *log.Logger
+	storage core.Storage
+	reader  feed.Reader
+	logger  *log.Logger
 }
 
-func SyncBlogs(blogStorage core.BlogStorage, postStorage core.PostStorage, reader feed.Reader, logger *log.Logger) Task {
+func SyncBlogs(storage core.Storage, reader feed.Reader, logger *log.Logger) Task {
 	return &syncBlogsTask{
-		blogStorage: blogStorage,
-		postStorage: postStorage,
-		reader:      reader,
-		logger:      logger,
+		storage: storage,
+		reader:  reader,
+		logger:  logger,
 	}
 }
 
@@ -48,7 +46,7 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	blogs, err := t.blogStorage.ReadAll(context.Background())
+	blogs, err := t.storage.BlogReadAll(context.Background())
 	if err != nil {
 		return err
 	}
@@ -68,7 +66,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
 	// read posts currently in storage
-	knownPosts, err := t.postStorage.ReadAllByBlog(context.Background(), blog.BlogID)
+	knownPosts, err := t.storage.PostReadAllByBlog(context.Background(), blog.BlogID)
 	if err != nil {
 		t.logger.Println(err)
 		return
@@ -108,7 +106,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 
 	// sync each post with the database
 	for _, post := range newPosts {
-		err = t.postStorage.Create(context.Background(), &post)
+		err = t.storage.PostCreate(context.Background(), &post)
 		if err != nil {
 			t.logger.Printf("sync %v %v\n", post.URL, err)
 		}

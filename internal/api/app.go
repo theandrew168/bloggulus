@@ -10,16 +10,14 @@ import (
 )
 
 type Application struct {
-	blogStorage core.BlogStorage
-	postStorage core.PostStorage
-	logger      *log.Logger
+	storage core.Storage
+	logger  *log.Logger
 }
 
-func NewApplication(blogStorage core.BlogStorage, postStorage core.PostStorage, logger *log.Logger) *Application {
+func NewApplication(storage core.Storage, logger *log.Logger) *Application {
 	app := Application{
-		blogStorage: blogStorage,
-		postStorage: postStorage,
-		logger:      logger,
+		storage: storage,
+		logger:  logger,
 	}
 	return &app
 }

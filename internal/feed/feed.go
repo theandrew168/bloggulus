@@ -117,3 +117,30 @@ func (r *reader) ReadPostBody(post core.Post) (string, error) {
 	body = CleanHTML(body)
 	return body, nil
 }
+
+type mockReader struct {
+	blog  core.Blog
+	posts []core.Post
+	body  string
+}
+
+func NewMockReader(blog core.Blog, posts []core.Post, body string) Reader {
+	r := mockReader{
+		blog:  blog,
+		posts: posts,
+		body:  body,
+	}
+	return &r
+}
+
+func (r *mockReader) ReadBlog(feedURL string) (core.Blog, error) {
+	return r.blog, nil
+}
+
+func (r *mockReader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
+	return r.posts, nil
+}
+
+func (r *mockReader) ReadPostBody(post core.Post) (string, error) {
+	return r.body, nil
+}

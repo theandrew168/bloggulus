@@ -81,9 +81,8 @@ func main() {
 		return
 	}
 
-	// init storage interfaces
-	blogStorage := postgresql.NewBlogStorage(conn)
-	postStorage := postgresql.NewPostStorage(conn)
+	// init storage interface
+	storage := postgresql.NewStorage(conn)
 
 	// init default feed reader
 	reader := feed.NewReader()
@@ -99,7 +98,7 @@ func main() {
 		}
 		log.Printf("  found: %s\n", blog.Title)
 
-		err = blogStorage.Create(context.Background(), &blog)
+		err = storage.BlogCreate(context.Background(), &blog)
 		if err != nil {
 			if err == core.ErrExist {
 				log.Println("  already exists")
@@ -112,7 +111,7 @@ func main() {
 	}
 
 	// kick off blog sync task
-	syncBlogs := task.SyncBlogs(blogStorage, postStorage, reader, logger)
+	syncBlogs := task.SyncBlogs(storage, reader, logger)
 	go syncBlogs.Run(1 * time.Hour)
 
 	// reload templates from filesystem if ENV starts with "dev"
@@ -126,15 +125,13 @@ func main() {
 	// init web application
 	webApp := web.NewApplication(
 		templates,
-		blogStorage,
-		postStorage,
+		storage,
 		logger,
 	)
 
 	// init api application struct
 	apiApp := api.NewApplication(
-		blogStorage,
-		postStorage,
+		storage,
 		logger,
 	)
 

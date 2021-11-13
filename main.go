@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -32,15 +31,11 @@ var migrationsFS embed.FS
 //go:embed static
 var staticFS embed.FS
 
-//go:embed templates
-var templatesFS embed.FS
-
 func main() {
 	// silence timestamp and log level
 	logger := log.New(os.Stdout, "", 0)
 
 	// check for general config vars
-	env := os.Getenv("ENV")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
@@ -114,17 +109,8 @@ func main() {
 	syncBlogs := task.SyncBlogs(storage, reader, logger)
 	go syncBlogs.Run(1 * time.Hour)
 
-	// reload templates from filesystem if ENV starts with "dev"
-	var templates fs.FS
-	if strings.HasPrefix(env, "dev") {
-		templates = os.DirFS("templates")
-	} else {
-		templates, _ = fs.Sub(templatesFS, "templates")
-	}
-
 	// init web application
 	webApp := web.NewApplication(
-		templates,
 		storage,
 		logger,
 	)

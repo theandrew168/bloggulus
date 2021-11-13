@@ -110,16 +110,10 @@ func main() {
 	go syncBlogs.Run(1 * time.Hour)
 
 	// init web application
-	webApp := web.NewApplication(
-		storage,
-		logger,
-	)
+	webApp := web.NewApplication(storage, logger)
 
 	// init api application struct
-	apiApp := api.NewApplication(
-		storage,
-		logger,
-	)
+	apiApp := api.NewApplication(storage, logger)
 
 	// setup http.Handler for static files
 	static, _ := fs.Sub(staticFS, "static")

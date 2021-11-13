@@ -2,8 +2,6 @@ package task_test
 
 import (
 	"context"
-	"io"
-	"log"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -37,7 +35,7 @@ func TestSyncBlogs(t *testing.T) {
 
 	// create a feed reader for the mocked blog / post data
 	reader := feed.NewMockReader(blog, posts, body)
-	logger := log.New(io.Discard, "", 0)
+	logger := test.NewLogger()
 
 	// run the sync blogs task
 	syncBlogs := task.SyncBlogs(storage, reader, logger)
@@ -54,6 +52,6 @@ func TestSyncBlogs(t *testing.T) {
 
 	// ensure that the posts were synced
 	if len(synced) != len(posts) {
-		t.Fatalf("want %v, got %v", len(posts), len(synced))
+		t.Fatalf("want %v, got %v\n", len(posts), len(synced))
 	}
 }

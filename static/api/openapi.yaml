@@ -9,10 +9,10 @@ servers:
 paths:
   /blog:
     get:
-      summary: Returns a list of all blogs
+      summary: Read all blogs
       responses:
         '200':
-          description: A JSON array of blogs
+          description: JSON array of blogs
           content:
             application/json:
               schema: 
@@ -21,10 +21,10 @@ paths:
                   $ref: '#/components/schemas/Blog'
   /post:
     get:
-      summary: Returns a list of all posts
+      summary: Read all posts
       responses:
         '200':
-          description: A JSON array of posts
+          description: JSON array of posts
           content:
             application/json:
               schema: 

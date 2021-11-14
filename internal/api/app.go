@@ -1,6 +1,8 @@
 package api
 
 import (
+	"embed"
+	"io/fs"
 	"log"
 	"net/http"
 
@@ -9,23 +11,28 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
+//go:embed templates
+var templatesFS embed.FS
+
 type Application struct {
-	storage core.Storage
-	logger  *log.Logger
+	templates fs.FS
+	storage   core.Storage
+	logger    *log.Logger
 }
 
 func NewApplication(storage core.Storage, logger *log.Logger) *Application {
+	templates, _ := fs.Sub(templatesFS, "templates")
+
 	app := Application{
-		storage: storage,
-		logger:  logger,
+		templates: templates,
+		storage:   storage,
+		logger:    logger,
 	}
 	return &app
 }
 
 func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello API!"))
-	})
+	r.Get("/", app.HandleIndex)
 	return r
 }

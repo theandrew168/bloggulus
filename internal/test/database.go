@@ -9,6 +9,8 @@ import (
 )
 
 func ConnectDB(t *testing.T) *pgxpool.Pool {
+	t.Helper()
+
 	// check for database connection url var
 	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
 	if databaseURL == "" {

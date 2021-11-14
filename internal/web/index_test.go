@@ -22,7 +22,6 @@ func TestHandleIndex(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
 
-	// TODO: test the handler independent of its route?
 	router := app.Router()
 	router.ServeHTTP(w, r)
 
@@ -35,7 +34,4 @@ func TestHandleIndex(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Fatalf("want %v, got %v\n", 200, resp.StatusCode)
 	}
-
-	// TODO: test particular elements within body?
-	// TODO: how to do this without writing flaky tests that depend on design?
 }

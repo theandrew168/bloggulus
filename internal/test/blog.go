@@ -9,17 +9,7 @@ import (
 )
 
 func BlogCreate(storage core.Storage, t *testing.T) {
-	// generate some random blog data
-	blog := NewMockBlog()
-	if blog.BlogID != 0 {
-		t.Fatal("blog id before creation should be zero")
-	}
-
-	// create an example blog
-	err := storage.BlogCreate(context.Background(), &blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	blog := createMockBlog(storage, t)
 
 	// blog should have an ID after creation
 	if blog.BlogID == 0 {
@@ -28,6 +18,31 @@ func BlogCreate(storage core.Storage, t *testing.T) {
 }
 
 func BlogCreateExists(storage core.Storage, t *testing.T) {
+	blog := createMockBlog(storage, t)
+
+	// attempt to create the same blog again
+	err := storage.BlogCreate(context.Background(), &blog)
+	if !errors.Is(err, core.ErrExist) {
+		t.Fatal("duplicate blog should return an error")
+	}
+}
+
+func BlogReadAll(storage core.Storage, t *testing.T) {
+	createMockBlog(storage, t)
+
+	blogs, err := storage.BlogReadAll(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(blogs) < 1 {
+		t.Fatalf("want >= 1, got %v\n", len(blogs))
+	}
+}
+
+func createMockBlog(storage core.Storage, t *testing.T) core.Blog {
+	t.Helper()
+
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -37,16 +52,5 @@ func BlogCreateExists(storage core.Storage, t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// attempt to create the same blog again
-	err = storage.BlogCreate(context.Background(), &blog)
-	if !errors.Is(err, core.ErrExist) {
-		t.Fatal("duplicate blog should return an error")
-	}
-}
-
-func BlogReadAll(storage core.Storage, t *testing.T) {
-	_, err := storage.BlogReadAll(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
+	return blog
 }

@@ -13,8 +13,8 @@ type Post struct {
 	Blog    Blog
 
 	// readonly (from database, after creation)
-	PostID int
-	Tags   []string
+	ID   int
+	Tags []string
 
 	// used in sync process
 	Body string

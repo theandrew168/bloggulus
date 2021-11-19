@@ -66,7 +66,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
 	// read posts currently in storage
-	knownPosts, err := t.storage.PostReadAllByBlog(context.Background(), blog.BlogID)
+	knownPosts, err := t.storage.PostReadAllByBlog(context.Background(), blog.ID)
 	if err != nil {
 		t.logger.Println(err)
 		return

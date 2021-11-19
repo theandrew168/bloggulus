@@ -12,7 +12,7 @@ func BlogCreate(storage core.Storage, t *testing.T) {
 	blog := createMockBlog(storage, t)
 
 	// blog should have an ID after creation
-	if blog.BlogID == 0 {
+	if blog.ID == 0 {
 		t.Fatal("blog id after creation should be nonzero")
 	}
 }

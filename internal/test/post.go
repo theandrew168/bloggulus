@@ -11,7 +11,7 @@ import (
 func PostCreate(storage core.Storage, t *testing.T) {
 	_, post := createMockBlogAndPost(storage, t)
 
-	if post.PostID == 0 {
+	if post.ID == 0 {
 		t.Fatal("post id after creation should be nonzero")
 	}
 }
@@ -29,7 +29,7 @@ func PostCreateExists(storage core.Storage, t *testing.T) {
 func PostReadAllByBlog(storage core.Storage, t *testing.T) {
 	blog, _ := createMockBlogAndPost(storage, t)
 
-	posts, err := storage.PostReadAllByBlog(context.Background(), blog.BlogID)
+	posts, err := storage.PostReadAllByBlog(context.Background(), blog.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,8 +48,8 @@ func PostReadRecent(storage core.Storage, t *testing.T) {
 	}
 
 	// most recent post should be the one just added
-	if posts[0].PostID != post.PostID {
-		t.Fatalf("want %v, got %v\n", post.PostID, posts[0].PostID)
+	if posts[0].ID != post.ID {
+		t.Fatalf("want %v, got %v\n", post.ID, posts[0].ID)
 	}
 }
 

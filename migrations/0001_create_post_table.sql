@@ -1,5 +1,5 @@
 CREATE TABLE post (
-    post_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     url TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
     updated TIMESTAMPTZ NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE post (
     content_index TSVECTOR
         GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
 
-    blog_id INTEGER NOT NULL REFERENCES blog(blog_id) ON DELETE CASCADE
+    blog_id INTEGER NOT NULL REFERENCES blog(id) ON DELETE CASCADE
 );
 
 CREATE INDEX post_content_index_idx ON post USING GIN(content_index);

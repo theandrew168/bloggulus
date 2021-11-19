@@ -138,7 +138,7 @@ func migrateDB(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error
 	// create migrations table if it doesn't exist
 	_, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
-			migration_id SERIAL PRIMARY KEY,
+			id SERIAL PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE
 		)`)
 	if err != nil {

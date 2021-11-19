@@ -1,4 +1,4 @@
 CREATE TABLE tag (
-    tag_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE
 );

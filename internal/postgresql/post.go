@@ -16,17 +16,17 @@ func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
 			(url, title, updated, body, blog_id)
 		VALUES
 			($1, $2, $3, $4, $5)
-		RETURNING post_id`
+		RETURNING id`
 	args := []interface{}{
 		post.URL,
 		post.Title,
 		post.Updated,
 		post.Body,
-		post.Blog.BlogID,
+		post.Blog.ID,
 	}
 	row := s.conn.QueryRow(ctx, stmt, args...)
 
-	err := row.Scan(&post.PostID)
+	err := row.Scan(&post.ID)
 	if err != nil {
 		// https://github.com/jackc/pgx/wiki/Error-Handling
 		// https://github.com/jackc/pgx/issues/474
@@ -45,21 +45,21 @@ func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
 func (s *storage) PostReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
 	stmt := `
 		SELECT
-			post.post_id,
+			post.id,
 			post.url,
 			post.title,
 			post.updated,
 			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.blog_id,
+			blog.id,
 			blog.feed_url,
 			blog.site_url,
 			blog.title
 		FROM post
 		INNER JOIN blog
-			ON blog.blog_id = post.blog_id
+			ON blog.id = post.blog_id
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE blog.blog_id = $1
+		WHERE blog.id = $1
 		GROUP BY 1,2,3,4,6,7,8,9
 		ORDER BY post.updated DESC`
 	rows, err := s.conn.Query(ctx, stmt, blogID)
@@ -72,12 +72,12 @@ func (s *storage) PostReadAllByBlog(ctx context.Context, blogID int) ([]core.Pos
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
-			&post.PostID,
+			&post.ID,
 			&post.URL,
 			&post.Title,
 			&post.Updated,
 			&post.Tags,
-			&post.Blog.BlogID,
+			&post.Blog.ID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,
@@ -96,37 +96,37 @@ func (s *storage) PostReadRecent(ctx context.Context, limit, offset int) ([]core
 	stmt := `
 		WITH posts AS (
 			SELECT
-				post.post_id,
+				post.id,
 				post.url,
 				post.title,
 				post.updated,
 				post.content_index,
-				blog.blog_id AS blog_blog_id,
+				blog.id AS blog_id,
 				blog.feed_url AS blog_feed_url,
 				blog.site_url AS blog_site_url,
 				blog.title AS blog_title
 			FROM post
 			INNER JOIN blog
-				ON blog.blog_id = post.blog_id
+				ON blog.id = post.blog_id
 			ORDER BY post.updated DESC
 			LIMIT $1
 			OFFSET $2
 		)
 		SELECT
-			post_id,
-			url,
-			title,
-			updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog_blog_id,
-			blog_feed_url,
-			blog_site_url,
-			blog_title
+			posts.id,
+			posts.url,
+			posts.title,
+			posts.updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			posts.blog_id,
+			posts.blog_feed_url,
+			posts.blog_site_url,
+			posts.blog_title
 		FROM posts
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ posts.content_index
 		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY updated DESC`
+		ORDER BY posts.updated DESC`
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
@@ -137,12 +137,12 @@ func (s *storage) PostReadRecent(ctx context.Context, limit, offset int) ([]core
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
-			&post.PostID,
+			&post.ID,
 			&post.URL,
 			&post.Title,
 			&post.Updated,
 			&post.Tags,
-			&post.Blog.BlogID,
+			&post.Blog.ID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,
@@ -161,38 +161,38 @@ func (s *storage) PostReadSearch(ctx context.Context, query string, limit, offse
 	stmt := `
 		WITH posts AS (
 			SELECT
-				post.post_id,
+				post.id,
 				post.url,
 				post.title,
 				post.updated,
 				post.content_index,
-				blog.blog_id AS blog_blog_id,
+				blog.id AS blog_id,
 				blog.feed_url AS blog_feed_url,
 				blog.site_url AS blog_site_url,
 				blog.title AS blog_title
 			FROM post
 			INNER JOIN blog
-				ON blog.blog_id = post.blog_id
+				ON blog.id = post.blog_id
 			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
 			ORDER BY ts_rank_cd(post.content_index, websearch_to_tsquery('english',  $1)) DESC
 			LIMIT $2
 			OFFSET $3
 		)
 		SELECT
-			post_id,
-			url,
-			title,
-			updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog_blog_id,
-			blog_feed_url,
-			blog_site_url,
-			blog_title
+			posts.id,
+			posts.url,
+			posts.title,
+			posts.updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			posts.blog_id,
+			posts.blog_feed_url,
+			posts.blog_site_url,
+			posts.blog_title
 		FROM posts
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ content_index
-		GROUP BY 1,2,3,4,6,7,8,9,content_index
-		ORDER BY ts_rank_cd(content_index, websearch_to_tsquery('english',  $1)) DESC`
+		GROUP BY 1,2,3,4,6,7,8,9,posts.content_index
+		ORDER BY ts_rank_cd(posts.content_index, websearch_to_tsquery('english',  $1)) DESC`
 	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -203,12 +203,12 @@ func (s *storage) PostReadSearch(ctx context.Context, query string, limit, offse
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
-			&post.PostID,
+			&post.ID,
 			&post.URL,
 			&post.Title,
 			&post.Updated,
 			&post.Tags,
-			&post.Blog.BlogID,
+			&post.Blog.ID,
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,

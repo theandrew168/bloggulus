@@ -16,7 +16,7 @@ func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
 			(feed_url, site_url, title)
 		VALUES
 			($1, $2, $3)
-		RETURNING blog_id`
+		RETURNING id`
 	args := []interface{}{
 		blog.FeedURL,
 		blog.SiteURL,
@@ -24,7 +24,7 @@ func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
 	}
 	row := s.conn.QueryRow(ctx, stmt, args...)
 
-	err := row.Scan(&blog.BlogID)
+	err := row.Scan(&blog.ID)
 	if err != nil {
 		// https://github.com/jackc/pgx/wiki/Error-Handling
 		// https://github.com/jackc/pgx/issues/474
@@ -52,7 +52,7 @@ func (s *storage) BlogReadAll(ctx context.Context) ([]core.Blog, error) {
 	for rows.Next() {
 		var blog core.Blog
 		err := rows.Scan(
-			&blog.BlogID,
+			&blog.ID,
 			&blog.FeedURL,
 			&blog.SiteURL,
 			&blog.Title)

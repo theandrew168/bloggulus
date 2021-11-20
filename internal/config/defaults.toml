@@ -1,0 +1,5 @@
+# file perms:
+# 0640 root bloggulus /etc/bloggulus.toml
+env = "dev"
+port = "5000"
+database_url = "postgresql://postgres:postgres@localhost:5432/postgres"

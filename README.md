@@ -6,10 +6,9 @@ This project uses [PostgreSQL](https://www.postgresql.org/) for persistent stora
 To develop locally, you'll an instance of the database running somehow or another.
 I find [Docker](https://www.docker.com/) to be a nice tool for this but you can do whatever works best.
 
-The following commands start the necessary containers and define environment variables that the app will look for:
+The following command starts the necessary containers:
 ```
 docker compose up -d
-export BLOGGULUS_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
 These containers can be stopped via:

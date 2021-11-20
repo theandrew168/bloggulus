@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v0.4.1
 	github.com/go-chi/chi/v5 v5.0.5
 	github.com/klauspost/compress v1.13.6
 )

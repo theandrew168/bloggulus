@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
@@ -20,18 +21,17 @@ type Application struct {
 	templates fs.FS
 	storage   core.Storage
 	logger    *log.Logger
+	cfg       config.Config
 }
 
-func NewApplication(storage core.Storage, logger *log.Logger) *Application {
-	env := os.Getenv("ENV")
-
-	// mild hack to enable quicker local template development
+func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config) *Application {
 	var templates fs.FS
-	if strings.HasPrefix(env, "dev") {
-		// reload templates from filesystem if ENV starts with "dev"
+	if strings.HasPrefix(cfg.Env, "dev") {
+		// reload templates from filesystem if Config.Env starts with "dev"
 		// NOTE: os.DirFS is rooted from where the app is ran, not this file
 		templates = os.DirFS("./internal/web/templates/")
 	} else {
+		// else use the embedded templates dir
 		templates, _ = fs.Sub(templatesFS, "templates")
 	}
 
@@ -39,6 +39,7 @@ func NewApplication(storage core.Storage, logger *log.Logger) *Application {
 		templates: templates,
 		storage:   storage,
 		logger:    logger,
+		cfg:       cfg,
 	}
 	return &app
 }

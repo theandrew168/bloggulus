@@ -18,6 +18,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/internal/api"
+	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
 	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
@@ -35,26 +36,28 @@ func main() {
 	// silence timestamp and log level
 	logger := log.New(os.Stdout, "", 0)
 
-	// check for general config vars
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "5000"
-	}
-	addr := fmt.Sprintf("127.0.0.1:%s", port)
+	// check for config file flag
+	conf := flag.String("conf", "", "app config file")
 
-	// check for flags
+	// check for action flags
 	migrate := flag.Bool("migrate", false, "-migrate")
 	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
 	flag.Parse()
 
-	// check for database connection url var
-	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
-	if databaseURL == "" {
-		log.Fatalln("Missing required env var: BLOGGULUS_DATABASE_URL")
+	// load user-defined config (if specified), else use defaults
+	var cfg config.Config
+	if *conf != "" {
+		var err error
+		cfg, err = config.FromFile(*conf)
+		if err != nil {
+			logger.Fatalln(err)
+		}
+	} else {
+		cfg = config.Defaults()
 	}
 
 	// open a database connection pool
-	conn, err := pgxpool.Connect(context.Background(), databaseURL)
+	conn, err := pgxpool.Connect(context.Background(), cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -110,10 +113,10 @@ func main() {
 	go syncBlogs.Run(1 * time.Hour)
 
 	// init web application
-	webApp := web.NewApplication(storage, logger)
+	webApp := web.NewApplication(storage, logger, cfg)
 
 	// init api application struct
-	apiApp := api.NewApplication(storage, logger)
+	apiApp := api.NewApplication(storage, logger, cfg)
 
 	// setup http.Handler for static files
 	static, _ := fs.Sub(staticFS, "static")
@@ -127,9 +130,19 @@ func main() {
 	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/static/*", http.StripPrefix("/static", gzipStaticServer))
 
+	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
+	server := &http.Server{
+		Addr:    addr,
+		Handler: r,
+
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+
 	// lets go!
 	log.Printf("listening on %s\n", addr)
-	log.Fatalln(http.ListenAndServe(addr, r))
+	log.Fatalln(server.ListenAndServe())
 }
 
 func migrateDB(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {

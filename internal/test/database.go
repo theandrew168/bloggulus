@@ -2,23 +2,21 @@ package test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/theandrew168/bloggulus/internal/config"
 )
 
 func ConnectDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 
-	// check for database connection url var
-	databaseURL := os.Getenv("BLOGGULUS_DATABASE_URL")
-	if databaseURL == "" {
-		t.Fatal("Missing required env var: BLOGGULUS_DATABASE_URL")
-	}
+	// use config defaults for tests
+	appConfig := config.Defaults()
 
 	// open a database connection pool
-	conn, err := pgxpool.Connect(context.Background(), databaseURL)
+	conn, err := pgxpool.Connect(context.Background(), appConfig.DatabaseURL)
 	if err != nil {
 		t.Fatal(err)
 	}

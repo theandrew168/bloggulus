@@ -13,10 +13,11 @@ func ConnectDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 
 	// use config defaults for tests
-	appConfig := config.Defaults()
+	cfg := config.Defaults()
+	cfg.Env = "test"
 
 	// open a database connection pool
-	conn, err := pgxpool.Connect(context.Background(), appConfig.DatabaseURL)
+	conn, err := pgxpool.Connect(context.Background(), cfg.DatabaseURL)
 	if err != nil {
 		t.Fatal(err)
 	}

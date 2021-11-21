@@ -12,7 +12,7 @@ var defaults string
 type Config struct {
 	Env         string `toml:"env"`
 	Port        string `toml:"port"`
-	DatabaseURL string `toml:"database_url"`
+	DatabaseURI string `toml:"database_uri"`
 }
 
 func Defaults() Config {
@@ -44,8 +44,8 @@ func FromFile(path string) (Config, error) {
 	if cfg.Port == "" {
 		cfg.Port = defaults.Port
 	}
-	if cfg.DatabaseURL == "" {
-		cfg.DatabaseURL = defaults.DatabaseURL
+	if cfg.DatabaseURI == "" {
+		cfg.DatabaseURI = defaults.DatabaseURI
 	}
 
 	return cfg, nil

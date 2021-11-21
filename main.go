@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// open a database connection pool
-	conn, err := pgxpool.Connect(context.Background(), cfg.DatabaseURL)
+	conn, err := pgxpool.Connect(context.Background(), cfg.DatabaseURI)
 	if err != nil {
 		log.Fatalln(err)
 	}

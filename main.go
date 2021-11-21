@@ -41,7 +41,7 @@ func main() {
 
 	// check for action flags
 	migrate := flag.Bool("migrate", false, "-migrate")
-	addblog := flag.Bool("addblog", false, "-addblog <feed_url>")
+	addblog := flag.String("addblog", "", "rss / atom feed url")
 	flag.Parse()
 
 	// load user-defined config (if specified), else use defaults
@@ -86,8 +86,8 @@ func main() {
 	reader := feed.NewReader()
 
 	// add a blog and exit now if requested
-	if *addblog {
-		feedURL := os.Args[2]
+	if *addblog != "" {
+		feedURL := *addblog
 		log.Printf("adding blog: %s\n", feedURL)
 
 		blog, err := reader.ReadBlog(feedURL)

@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+    - name: Setup NodeJS
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+    - name: Install PurgeCSS
+      run: |
+        npm install -g purgecss
+    # intentionally absent from the Makefile due to destructive behavior
+    - name: Strip unused CSS
+      run: >
+        purgecss
+        -c scripts/purgecss.config.js
+        -con internal/api/templates/*.tmpl
+        -con internal/web/templates/*.tmpl
+        -css static/css/*
+        -o static/css/
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v2
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release --rm-dist
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

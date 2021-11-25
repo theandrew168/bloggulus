@@ -5,7 +5,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/test"
 	"github.com/theandrew168/bloggulus/internal/web"
@@ -17,8 +16,7 @@ func TestHandleIndex(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-	cfg := config.Defaults()
-	cfg.Env = "test"
+	cfg := test.Config(t)
 
 	app := web.NewApplication(storage, logger, cfg)
 
@@ -45,8 +43,7 @@ func TestHandleIndexSearch(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-	cfg := config.Defaults()
-	cfg.Env = "test"
+	cfg := test.Config(t)
 
 	app := web.NewApplication(storage, logger, cfg)
 

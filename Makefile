@@ -10,7 +10,7 @@ build:
 
 .PHONY: test
 test:
-	go run main.go -migrate
+	go run main.go -conf internal/test/bloggulus.conf -migrate
 	go test -count=1 -v ./...
 
 .PHONY: cover
@@ -24,4 +24,4 @@ format:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus c.out
+	rm -fr bloggulus c.out dist/

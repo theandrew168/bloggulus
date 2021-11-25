@@ -2,51 +2,66 @@ package config
 
 import (
 	_ "embed"
+	"fmt"
+	"os"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
 
-//go:embed defaults.toml
-var defaults string
+var (
+	defaultPort = "5000"
+)
 
 type Config struct {
-	Env         string `toml:"env"`
-	Port        string `toml:"port"`
 	DatabaseURI string `toml:"database_uri"`
+	Port        string `toml:"port"`
 }
 
-func Defaults() Config {
+func Read(data string) (Config, error) {
 	var cfg Config
-	_, err := toml.Decode(defaults, &cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	return cfg
-}
-
-func FromFile(path string) (Config, error) {
-	// start with defaults
-	defaults := Defaults()
-
-	// attempt to read user-defined config file
-	var cfg Config
-	_, err := toml.DecodeFile(path, &cfg)
+	meta, err := toml.Decode(data, &cfg)
 	if err != nil {
 		return Config{}, err
 	}
 
-	// merge the results
-	// TODO: is there a way to do this automatically? with reflect?
-	if cfg.Env == "" {
-		cfg.Env = defaults.Env
+	// build set of present config keys
+	present := make(map[string]bool)
+	for _, keys := range meta.Keys() {
+		key := keys[0]
+		present[key] = true
 	}
+
+	required := []string{
+		"database_uri",
+	}
+
+	// ensure required keys are present
+	missing := []string{}
+	for _, key := range required {
+		if _, ok := present[key]; !ok {
+			missing = append(missing, key)
+		}
+	}
+
+	if len(missing) > 0 {
+		msg := strings.Join(missing, ", ")
+		return Config{}, fmt.Errorf("missing config values: %s", msg)
+	}
+
+	// handle defaults
 	if cfg.Port == "" {
-		cfg.Port = defaults.Port
-	}
-	if cfg.DatabaseURI == "" {
-		cfg.DatabaseURI = defaults.DatabaseURI
+		cfg.Port = defaultPort
 	}
 
 	return cfg, nil
+}
+
+func ReadFile(path string) (Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return Read(string(data))
 }

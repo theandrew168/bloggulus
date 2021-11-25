@@ -37,7 +37,7 @@ func main() {
 	logger := log.New(os.Stdout, "", 0)
 
 	// check for config file flag
-	conf := flag.String("conf", "", "app config file")
+	conf := flag.String("conf", "bloggulus.conf", "app config file")
 
 	// check for action flags
 	migrate := flag.Bool("migrate", false, "-migrate")
@@ -45,15 +45,9 @@ func main() {
 	flag.Parse()
 
 	// load user-defined config (if specified), else use defaults
-	var cfg config.Config
-	if *conf != "" {
-		var err error
-		cfg, err = config.FromFile(*conf)
-		if err != nil {
-			logger.Fatalln(err)
-		}
-	} else {
-		cfg = config.Defaults()
+	cfg, err := config.ReadFile(*conf)
+	if err != nil {
+		logger.Fatalln(err)
 	}
 
 	// open a database connection pool

@@ -19,13 +19,13 @@ docker compose down
 ## Running
 Assuming a recent version of Go is [installed](https://golang.org/dl/), simply run:
 ```
-go run main.go
+go run main.go -conf internal/test/bloggulus.conf
 ```
 
 ## Testing
 Tests can be ran after starting the necessary containers and applying database migrations:
 ```
-go run main.go -migrate
+go run main.go -migrate -conf internal/test/bloggulus.conf
 go test -v ./...
 ```
 

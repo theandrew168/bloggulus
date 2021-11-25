@@ -26,8 +26,8 @@ type Application struct {
 
 func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config) *Application {
 	var templates fs.FS
-	if strings.HasPrefix(cfg.Env, "dev") {
-		// reload templates from filesystem if Config.Env starts with "dev"
+	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
+		// reload templates from filesystem if var ENV starts with "dev"
 		// NOTE: os.DirFS is rooted from where the app is ran, not this file
 		templates = os.DirFS("./internal/web/templates/")
 	} else {

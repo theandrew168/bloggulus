@@ -1,0 +1,16 @@
+[Unit]
+Description=bloggulus
+Documentation=https://github.com/theandrew168/bloggulus
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5
+User=bloggulus
+Group=bloggulus
+ExecStart=bloggulus -conf /etc/bloggulus.conf
+
+[Install]
+WantedBy=multi-user.target

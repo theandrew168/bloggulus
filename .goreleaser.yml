@@ -1,0 +1,52 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+archives:
+  - files:
+      - none*
+    format_overrides:
+      - goos: windows
+        format: zip
+
+nfpms:
+  - package_name: bloggulus
+    homepage: https://github.com/theandrew168/bloggulus
+    maintainer: Andrew Dailey <andrew@shallowbrooksoftware.com>
+    description: A website for avid blog readers 
+    license: MIT
+    formats:
+      - deb
+    bindir: /usr/bin
+    contents:
+      - src: scripts/bloggulus.service
+        dst: /lib/systemd/system/bloggulus.service
+      - src: bloggulus.conf
+        dst: /etc/bloggulus.conf
+        type: config
+    scripts:
+      postinstall: scripts/postinstall.sh
+      preremove: scripts/preremove.sh
+      postremove: scripts/postremove.sh
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

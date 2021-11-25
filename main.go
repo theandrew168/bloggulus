@@ -64,7 +64,7 @@ func main() {
 
 	// apply database migrations
 	migrations, _ := fs.Sub(migrationsFS, "migrations")
-	if err = migrateDB(conn, migrations, logger); err != nil {
+	if err = compareAndApplyMigrations(conn, migrations, logger); err != nil {
 		log.Fatalln(err)
 	}
 
@@ -139,7 +139,7 @@ func main() {
 	log.Fatalln(server.ListenAndServe())
 }
 
-func migrateDB(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {
+func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {
 	ctx := context.Background()
 
 	// create migrations table if it doesn't exist

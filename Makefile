@@ -15,6 +15,7 @@ test:
 
 .PHONY: cover
 cover:
+	go run main.go -conf internal/test/bloggulus.conf -migrate
 	go test -coverprofile=c.out -coverpkg=./... -count=1 ./...
 	go tool cover -html=c.out
 

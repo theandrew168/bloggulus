@@ -127,7 +127,7 @@ func main() {
 	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/static/*", http.StripPrefix("/static", gzipStaticServer))
 	r.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "image/webp")
+		w.Header().Set("Content-Type", "image/webp")
 		w.Write(logo)
 	})
 

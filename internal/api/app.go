@@ -37,5 +37,6 @@ func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config)
 func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", app.HandleIndex)
-	return r
+	r.Get("/blog", app.HandleBlog)
+	return app.enableCORS(r)
 }

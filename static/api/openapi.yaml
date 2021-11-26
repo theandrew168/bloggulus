@@ -5,7 +5,7 @@ info:
   description: Programmatic access to blogs and posts
   version: 1.0.0
 servers:
-- url: https://bloggulus.com/api/
+- url: /api
 paths:
   /blog:
     get:

@@ -32,6 +32,9 @@ var migrationsFS embed.FS
 //go:embed static
 var staticFS embed.FS
 
+//go:embed static/img/logo.webp
+var logo []byte
+
 func main() {
 	// silence timestamp and log level
 	logger := log.New(os.Stdout, "", 0)
@@ -123,6 +126,10 @@ func main() {
 	r.Mount("/api", apiApp.Router())
 	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/static/*", http.StripPrefix("/static", gzipStaticServer))
+	r.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "image/webp")
+		w.Write(logo)
+	})
 
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
 	server := &http.Server{

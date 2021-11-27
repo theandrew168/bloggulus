@@ -17,6 +17,7 @@ paths:
           schema:
             type: integer
             default: 20
+            maximum: 50
         - name: offset
           required: false
           in: query
@@ -69,6 +70,7 @@ paths:
           schema:
             type: integer
             default: 20
+            maximum: 50
         - name: offset
           required: false
           in: query

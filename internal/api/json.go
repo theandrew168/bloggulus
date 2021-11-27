@@ -5,9 +5,11 @@ import (
 	"net/http"
 )
 
-func writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
+type envelope map[string]interface{}
+
+func writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	// attempt to encode data into JSON
-	js, err := json.Marshal(data)
+	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}

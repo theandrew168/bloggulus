@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
@@ -40,6 +41,27 @@ func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
 	return nil
 }
 
+func (s *storage) BlogRead(ctx context.Context, id int) (core.Blog, error) {
+	stmt := "SELECT * FROM blog WHERE id = $1"
+	row := s.conn.QueryRow(ctx, stmt, id)
+
+	var blog core.Blog
+	err := row.Scan(
+		&blog.ID,
+		&blog.FeedURL,
+		&blog.SiteURL,
+		&blog.Title,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return core.Blog{}, core.ErrNotExist
+		}
+		return core.Blog{}, err
+	}
+
+	return blog, nil
+}
+
 func (s *storage) BlogReadAll(ctx context.Context) ([]core.Blog, error) {
 	stmt := "SELECT * FROM blog"
 	rows, err := s.conn.Query(ctx, stmt)
@@ -55,7 +77,8 @@ func (s *storage) BlogReadAll(ctx context.Context) ([]core.Blog, error) {
 			&blog.ID,
 			&blog.FeedURL,
 			&blog.SiteURL,
-			&blog.Title)
+			&blog.Title,
+		)
 		if err != nil {
 			return nil, err
 		}

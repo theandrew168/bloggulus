@@ -25,4 +25,5 @@ func NewBlog(feedURL, siteURL, title string) Blog {
 type BlogStorage interface {
 	BlogCreate(ctx context.Context, blog *Blog) error
 	BlogReadAll(ctx context.Context) ([]Blog, error)
+	BlogRead(ctx context.Context, id int) (Blog, error)
 }

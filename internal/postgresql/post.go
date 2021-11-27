@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/theandrew168/bloggulus/internal/core"
 )
@@ -40,6 +41,49 @@ func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
 	}
 
 	return nil
+}
+
+func (s *storage) PostRead(ctx context.Context, id int) (core.Post, error) {
+	stmt := `
+		SELECT
+			post.id,
+			post.url,
+			post.title,
+			post.updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		LEFT JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
+		WHERE post.id = $1
+		GROUP BY 1,2,3,4,6,7,8,9`
+	row := s.conn.QueryRow(ctx, stmt, id)
+
+	var post core.Post
+	err := row.Scan(
+		&post.ID,
+		&post.URL,
+		&post.Title,
+		&post.Updated,
+		&post.Tags,
+		&post.Blog.ID,
+		&post.Blog.FeedURL,
+		&post.Blog.SiteURL,
+		&post.Blog.Title,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return core.Post{}, core.ErrNotExist
+		}
+		return core.Post{}, err
+	}
+
+	return post, nil
 }
 
 func (s *storage) PostReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {

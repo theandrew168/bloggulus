@@ -130,6 +130,9 @@ func main() {
 		w.Header().Set("Content-Type", "image/webp")
 		w.Write(logo)
 	})
+	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
 
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
 	server := &http.Server{

@@ -8,6 +8,10 @@ default: build
 build:
 	go build -o bloggulus main.go
 
+.PHONY: run
+run:
+	go run main.go -conf internal/test/bloggulus.conf
+
 .PHONY: test
 test:
 	go run main.go -conf internal/test/bloggulus.conf -migrate

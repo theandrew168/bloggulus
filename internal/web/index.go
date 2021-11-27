@@ -15,7 +15,7 @@ const (
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFS(app.templates, "index.html.tmpl")
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, "Internal server error", 500)
 		return
 	}
 
@@ -35,13 +35,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	if q != "" {
 		count, err = app.storage.PostCountSearch(r.Context(), q)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, "Internal server error", 500)
 			return
 		}
 
 		posts, err = app.storage.PostReadSearch(r.Context(), q, PageSize, p*PageSize)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, "Internal server error", 500)
 			return
 		}
 
@@ -49,13 +49,13 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	} else {
 		count, err = app.storage.PostCountRecent(r.Context())
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, "Internal server error", 500)
 			return
 		}
 
 		posts, err = app.storage.PostReadRecent(r.Context(), PageSize, p*PageSize)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, "Internal server error", 500)
 			return
 		}
 	}

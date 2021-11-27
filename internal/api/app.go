@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -36,8 +37,13 @@ func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config)
 
 func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
+	r.Use(enableCORS)
+	r.Use(middleware.Recoverer)
+
 	r.Get("/", app.HandleIndex)
-	r.Get("/blog", app.HandleBlog)
-	r.Get("/post", app.HandlePost)
-	return enableCORS(r)
+	r.Get("/blog", app.HandleReadBlogs)
+	r.Get("/blog/{id}", app.HandleReadBlog)
+	r.Get("/post", app.HandleReadPosts)
+	r.Get("/post/{id}", app.HandleReadPost)
+	return r
 }

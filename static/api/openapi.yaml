@@ -11,26 +11,74 @@ paths:
     get:
       summary: Read all blogs
       responses:
-        '200':
+        "200":
           description: JSON array of blogs
           content:
             application/json:
               schema: 
-                type: array
-                items: 
-                  $ref: '#/components/schemas/Blog'
+                type: object
+                properties:
+                  blogs:
+                    type: array
+                    items: 
+                      $ref: "#/components/schemas/Blog"
+  /blog/{id}:
+    get:
+      summary: Read blog by id
+      parameters:
+        - name: id
+          description: Blog id
+          required: true
+          in: path
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        "200":
+          description: Blog with given id
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  blog:
+                    $ref: "#/components/schemas/Blog"
   /post:
     get:
       summary: Read all posts
       responses:
-        '200':
+        "200":
           description: JSON array of posts
           content:
             application/json:
               schema: 
-                type: array
-                items: 
-                  $ref: '#/components/schemas/Post'
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: 
+                      $ref: "#/components/schemas/Post"
+  /post/{id}:
+    get:
+      summary: Read post by id
+      parameters:
+        - name: id
+          description: Post id
+          required: true
+          in: path
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        "200":
+          description: Post with given id
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  post:
+                    $ref: "#/components/schemas/Post"
 components:
   schemas:
     Blog:
@@ -61,4 +109,4 @@ components:
           items:
             type: string
         blog:
-          $ref: '#/components/schemas/Blog'
+          $ref: "#/components/schemas/Blog"

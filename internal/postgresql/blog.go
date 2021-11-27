@@ -65,14 +65,14 @@ func (s *storage) ReadBlog(ctx context.Context, id int) (core.Blog, error) {
 
 // TODO: select col names
 func (s *storage) ReadBlogs(ctx context.Context, limit, offset int) ([]core.Blog, error) {
-	stmt := "SELECT * FROM blog LIMIT $1 OFFSET $2"
+	stmt := "SELECT * FROM blog ORDER BY title ASC LIMIT $1 OFFSET $2"
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var blogs []core.Blog
+	blogs := make([]core.Blog, 0)
 	for rows.Next() {
 		var blog core.Blog
 		err := rows.Scan(

@@ -37,9 +37,18 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO: pagination
 func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) {
-	blogs, err := app.storage.ReadBlogs(context.Background(), 20, 0)
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		limit = 20
+	}
+
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		offset = 0
+	}
+
+	blogs, err := app.storage.ReadBlogs(context.Background(), limit, offset)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "Internal server error", 500)

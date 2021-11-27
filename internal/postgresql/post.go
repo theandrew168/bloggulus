@@ -126,7 +126,7 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 	}
 	defer rows.Close()
 
-	var posts []core.Post
+	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
@@ -177,7 +177,7 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 	}
 	defer rows.Close()
 
-	var posts []core.Post
+	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(
@@ -242,7 +242,7 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 	}
 	defer rows.Close()
 
-	var posts []core.Post
+	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
 		err := rows.Scan(

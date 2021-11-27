@@ -10,6 +10,17 @@ paths:
   /blog:
     get:
       summary: Read blogs
+      parameters:
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          required: false
+          in: query
+          schema:
+            type: integer
       responses:
         "200":
           description: JSON array of blogs
@@ -50,6 +61,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          required: false
+          in: query
+          schema:
+            type: integer
       responses:
         "200":
           description: JSON array of posts

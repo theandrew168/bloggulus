@@ -21,7 +21,7 @@ func BlogCreateExists(storage core.Storage, t *testing.T) {
 	blog := createMockBlog(storage, t)
 
 	// attempt to create the same blog again
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if !errors.Is(err, core.ErrExist) {
 		t.Fatal("duplicate blog should return an error")
 	}
@@ -30,7 +30,7 @@ func BlogCreateExists(storage core.Storage, t *testing.T) {
 func BlogReadAll(storage core.Storage, t *testing.T) {
 	createMockBlog(storage, t)
 
-	blogs, err := storage.BlogReadAll(context.Background())
+	blogs, err := storage.ReadBlogs(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func createMockBlog(storage core.Storage, t *testing.T) core.Blog {
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
 	}

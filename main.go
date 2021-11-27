@@ -26,6 +26,15 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
+// TODO: pagination for /blog (title asc) and /post (updated desc)
+// TODO: impl /post/search
+// TODO: error handling helpers (log + 500)
+// TODO: handlers for 404 and 405
+// TODO: consider renaming handlers
+// TODO: consider renaming storage funcs
+// TODO: SQL query timeouts
+// TODO: graceful shutdown?
+
 //go:embed migrations
 var migrationsFS embed.FS
 
@@ -93,7 +102,7 @@ func main() {
 		}
 		log.Printf("  found: %s\n", blog.Title)
 
-		err = storage.BlogCreate(context.Background(), &blog)
+		err = storage.CreateBlog(context.Background(), &blog)
 		if err != nil {
 			if err == core.ErrExist {
 				log.Println("  already exists")

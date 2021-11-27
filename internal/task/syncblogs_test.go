@@ -20,7 +20,7 @@ func TestSyncBlogs(t *testing.T) {
 
 	// mock and create a blog
 	blog := test.NewMockBlog()
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
 	}

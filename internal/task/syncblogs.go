@@ -46,7 +46,7 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	blogs, err := t.storage.BlogReadAll(context.Background())
+	blogs, err := t.storage.ReadBlogs(context.Background())
 	if err != nil {
 		return err
 	}

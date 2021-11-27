@@ -11,7 +11,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
+func (s *storage) CreateBlog(ctx context.Context, blog *core.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(feed_url, site_url, title)
@@ -41,7 +41,7 @@ func (s *storage) BlogCreate(ctx context.Context, blog *core.Blog) error {
 	return nil
 }
 
-func (s *storage) BlogRead(ctx context.Context, id int) (core.Blog, error) {
+func (s *storage) ReadBlog(ctx context.Context, id int) (core.Blog, error) {
 	stmt := "SELECT * FROM blog WHERE id = $1"
 	row := s.conn.QueryRow(ctx, stmt, id)
 
@@ -62,7 +62,7 @@ func (s *storage) BlogRead(ctx context.Context, id int) (core.Blog, error) {
 	return blog, nil
 }
 
-func (s *storage) BlogReadAll(ctx context.Context) ([]core.Blog, error) {
+func (s *storage) ReadBlogs(ctx context.Context) ([]core.Blog, error) {
 	stmt := "SELECT * FROM blog"
 	rows, err := s.conn.Query(ctx, stmt)
 	if err != nil {

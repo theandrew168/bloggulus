@@ -58,7 +58,7 @@ func PostReadSearch(storage core.Storage, t *testing.T) {
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func PostCountSearch(storage core.Storage, t *testing.T) {
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func createMockBlogAndPost(storage core.Storage, t *testing.T) (core.Blog, core.
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.BlogCreate(context.Background(), &blog)
+	err := storage.CreateBlog(context.Background(), &blog)
 	if err != nil {
 		t.Fatal(err)
 	}

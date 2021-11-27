@@ -12,7 +12,7 @@ import (
 )
 
 func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) {
-	blogs, err := app.storage.BlogReadAll(context.Background())
+	blogs, err := app.storage.ReadBlogs(context.Background())
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "Internal server error", 500)
@@ -34,7 +34,7 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blog, err := app.storage.BlogRead(context.Background(), id)
+	blog, err := app.storage.ReadBlog(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
 			http.Error(w, "Not found", 404)

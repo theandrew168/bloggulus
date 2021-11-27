@@ -26,7 +26,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
-// TODO: pagination for /blog (title asc) and /post (updated desc)
 // TODO: error handling helpers (log + 500)
 // TODO: SQL query timeouts
 // TODO: graceful shutdown?

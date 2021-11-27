@@ -9,7 +9,7 @@ servers:
 paths:
   /blog:
     get:
-      summary: Read all blogs
+      summary: Read blogs
       responses:
         "200":
           description: JSON array of blogs
@@ -27,12 +27,10 @@ paths:
       summary: Read blog by id
       parameters:
         - name: id
-          description: Blog id
           required: true
           in: path
           schema:
             type: integer
-            minimum: 0
       responses:
         "200":
           description: Blog with given id
@@ -45,7 +43,13 @@ paths:
                     $ref: "#/components/schemas/Blog"
   /post:
     get:
-      summary: Read all posts
+      summary: Read posts
+      parameters:
+        - name: q
+          description: Post search expression
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: JSON array of posts
@@ -63,12 +67,10 @@ paths:
       summary: Read post by id
       parameters:
         - name: id
-          description: Post id
           required: true
           in: path
           schema:
             type: integer
-            minimum: 0
       responses:
         "200":
           description: Post with given id

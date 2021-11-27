@@ -43,7 +43,7 @@ func ReadPosts(storage core.Storage, t *testing.T) {
 func ReadPostsByBlog(storage core.Storage, t *testing.T) {
 	blog, _ := createMockBlogAndPost(storage, t)
 
-	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID)
+	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID, 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

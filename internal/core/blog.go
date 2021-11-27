@@ -25,6 +25,5 @@ func NewBlog(feedURL, siteURL, title string) Blog {
 type BlogStorage interface {
 	CreateBlog(ctx context.Context, blog *Blog) error
 	ReadBlog(ctx context.Context, id int) (Blog, error)
-	// TODO: limit and offset
-	ReadBlogs(ctx context.Context) ([]Blog, error)
+	ReadBlogs(ctx context.Context, limit, offset int) ([]Blog, error)
 }

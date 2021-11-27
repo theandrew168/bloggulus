@@ -45,7 +45,7 @@ func TestSyncBlogs(t *testing.T) {
 	}
 
 	// grab all posts associated with the mock blog
-	synced, err := storage.ReadPostsByBlog(context.Background(), blog.ID)
+	synced, err := storage.ReadPostsByBlog(context.Background(), blog.ID, 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

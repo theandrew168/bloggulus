@@ -46,16 +46,31 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	blogs, err := t.storage.ReadBlogs(context.Background())
+	limit := 50
+	offset := 0
+
+	// read initial batch of blogs
+	blogs, err := t.storage.ReadBlogs(context.Background(), limit, offset)
 	if err != nil {
 		return err
 	}
 
-	// sync each blog in parallel
+	// kick off blog syncs in batches
 	var wg sync.WaitGroup
-	for _, blog := range blogs {
-		wg.Add(1)
-		go t.syncBlog(&wg, blog)
+	for len(blogs) > 0 {
+		// sync each blog in parallel
+		for _, blog := range blogs {
+			wg.Add(1)
+			go t.syncBlog(&wg, blog)
+		}
+
+		// read the next batch
+		offset += limit
+		blogs, err = t.storage.ReadBlogs(context.Background(), limit, offset)
+		if err != nil {
+			wg.Wait()
+			return err
+		}
 	}
 
 	wg.Wait()
@@ -65,17 +80,32 @@ func (t *syncBlogsTask) syncBlogs() error {
 func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	defer wg.Done()
 
-	// read posts currently in storage
-	knownPosts, err := t.storage.ReadPostsByBlog(context.Background(), blog.ID)
+	limit := 50
+	offset := 0
+
+	// build a set of known post URLs
+	knownPostURLs := make(map[string]bool)
+
+	// read initial batch of posts
+	knownPosts, err := t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
 	if err != nil {
 		t.logger.Println(err)
 		return
 	}
 
-	// build a set of known post URLs
-	knownPostURLs := make(map[string]bool)
-	for _, post := range knownPosts {
-		knownPostURLs[post.URL] = true
+	for len(knownPosts) > 0 {
+		// add each post URL to the set
+		for _, post := range knownPosts {
+			knownPostURLs[post.URL] = true
+		}
+
+		// read the next batch
+		offset += limit
+		knownPosts, err = t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
+		if err != nil {
+			t.logger.Println(err)
+			return
+		}
 	}
 
 	// read posts from feed

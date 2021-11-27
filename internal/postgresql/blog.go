@@ -41,6 +41,7 @@ func (s *storage) CreateBlog(ctx context.Context, blog *core.Blog) error {
 	return nil
 }
 
+// TODO: select col names
 func (s *storage) ReadBlog(ctx context.Context, id int) (core.Blog, error) {
 	stmt := "SELECT * FROM blog WHERE id = $1"
 	row := s.conn.QueryRow(ctx, stmt, id)
@@ -62,9 +63,10 @@ func (s *storage) ReadBlog(ctx context.Context, id int) (core.Blog, error) {
 	return blog, nil
 }
 
-func (s *storage) ReadBlogs(ctx context.Context) ([]core.Blog, error) {
-	stmt := "SELECT * FROM blog"
-	rows, err := s.conn.Query(ctx, stmt)
+// TODO: select col names
+func (s *storage) ReadBlogs(ctx context.Context, limit, offset int) ([]core.Blog, error) {
+	stmt := "SELECT * FROM blog LIMIT $1 OFFSET $2"
+	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}

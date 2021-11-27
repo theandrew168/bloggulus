@@ -27,9 +27,7 @@ import (
 )
 
 // TODO: pagination for /blog (title asc) and /post (updated desc)
-// TODO: impl /post/search
 // TODO: error handling helpers (log + 500)
-// TODO: consider renaming handlers
 // TODO: SQL query timeouts
 // TODO: graceful shutdown?
 // TODO: helpers for common DB retries / error handling?

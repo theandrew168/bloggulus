@@ -11,20 +11,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) {
-	posts, err := app.storage.ReadPosts(context.Background(), 20, 0)
-	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
-	}
-
-	err = writeJSON(w, 200, envelope{"posts": posts}, nil)
-	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
-	}
-}
-
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -44,6 +30,39 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = writeJSON(w, 200, envelope{"post": post}, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+}
+
+// TODO: pagination
+func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+
+	var posts []core.Post
+	if q != "" {
+		// search if requested
+		var err error
+		posts, err = app.storage.SearchPosts(context.Background(), q, 20, 0)
+		if err != nil {
+			app.logger.Println(err)
+			http.Error(w, "Internal server error", 500)
+			return
+		}
+	} else {
+		// else just read recent
+		var err error
+		posts, err = app.storage.ReadPosts(context.Background(), 20, 0)
+		if err != nil {
+			app.logger.Println(err)
+			http.Error(w, "Internal server error", 500)
+			return
+		}
+	}
+
+	err := writeJSON(w, 200, envelope{"posts": posts}, nil)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "Internal server error", 500)

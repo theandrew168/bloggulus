@@ -103,8 +103,7 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 			INNER JOIN blog
 				ON blog.id = post.blog_id
 			ORDER BY post.updated DESC
-			LIMIT $1
-			OFFSET $2
+			LIMIT $1 OFFSET $2
 		)
 		SELECT
 			posts.id,
@@ -151,7 +150,7 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 	return posts, nil
 }
 
-func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
+func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -170,8 +169,9 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int) ([]core.Post,
 			ON to_tsquery(tag.name) @@ post.content_index
 		WHERE blog.id = $1
 		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY post.updated DESC`
-	rows, err := s.conn.Query(ctx, stmt, blogID)
+		ORDER BY post.updated DESC
+		LIMIT $2 OFFSET $3`
+	rows, err := s.conn.Query(ctx, stmt, blogID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +219,7 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 				ON blog.id = post.blog_id
 			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
 			ORDER BY ts_rank_cd(post.content_index, websearch_to_tsquery('english',  $1)) DESC
-			LIMIT $2
-			OFFSET $3
+			LIMIT $2 OFFSET $3
 		)
 		SELECT
 			posts.id,

@@ -30,7 +30,7 @@ func CreateBlogAlreadyExists(storage core.Storage, t *testing.T) {
 func ReadBlogs(storage core.Storage, t *testing.T) {
 	createMockBlog(storage, t)
 
-	blogs, err := storage.ReadBlogs(context.Background())
+	blogs, err := storage.ReadBlogs(context.Background(), 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

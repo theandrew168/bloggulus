@@ -11,22 +11,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) {
-	blogs, err := app.storage.ReadBlogs(context.Background())
-	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
-		return
-	}
-
-	err = writeJSON(w, 200, envelope{"blogs": blogs}, nil)
-	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
-		return
-	}
-}
-
 func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -46,6 +30,23 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = writeJSON(w, 200, envelope{"blog": blog}, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+}
+
+// TODO: pagination
+func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) {
+	blogs, err := app.storage.ReadBlogs(context.Background(), 20, 0)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+
+	err = writeJSON(w, 200, envelope{"blogs": blogs}, nil)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "Internal server error", 500)

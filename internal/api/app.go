@@ -38,5 +38,6 @@ func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", app.HandleIndex)
 	r.Get("/blog", app.HandleBlog)
-	return app.enableCORS(r)
+	r.Get("/post", app.HandlePost)
+	return enableCORS(r)
 }

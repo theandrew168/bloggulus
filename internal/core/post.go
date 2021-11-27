@@ -7,17 +7,17 @@ import (
 
 type Post struct {
 	// fields known upfront
-	URL     string
-	Title   string
-	Updated time.Time
-	Blog    Blog
+	URL     string    `json:"url"`
+	Title   string    `json:"title"`
+	Updated time.Time `json:"updated"`
+	Blog    Blog      `json:"blog"`
 
 	// readonly (from database, after creation)
-	ID   int
-	Tags []string
+	ID   int      `json:"id"`
+	Tags []string `json:"tags"`
 
 	// used in sync process
-	Body string
+	Body string `json:"-"`
 }
 
 func NewPost(url, title string, updated time.Time, blog Blog) Post {

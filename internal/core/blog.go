@@ -5,12 +5,12 @@ import (
 )
 
 type Blog struct {
-	FeedURL string
-	SiteURL string
-	Title   string
+	FeedURL string `json:"feed_url"`
+	SiteURL string `json:"site_url"`
+	Title   string `json:"title"`
 
 	// readonly (from database, after creation)
-	ID int
+	ID int `json:"id"`
 }
 
 func NewBlog(feedURL, siteURL, title string) Blog {

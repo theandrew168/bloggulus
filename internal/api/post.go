@@ -42,6 +42,9 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		limit = 20
 	}
+	if limit > 50 {
+		limit = 50
+	}
 
 	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
 	if err != nil {

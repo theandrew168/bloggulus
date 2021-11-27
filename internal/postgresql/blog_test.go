@@ -7,26 +7,28 @@ import (
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
-func TestBlogCreate(t *testing.T) {
+func TestCreateBlog(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogCreate(storage, t)
+	test.CreateBlog(storage, t)
 }
 
-func TestBlogCreateExists(t *testing.T) {
+func TestCreateBlogAlreadyExists(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogCreateExists(storage, t)
+	test.CreateBlogAlreadyExists(storage, t)
 }
 
-func TestBlogReadAll(t *testing.T) {
+// TODO: TestReadBlog
+
+func TestReadBlogs(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.BlogReadAll(storage, t)
+	test.ReadBlogs(storage, t)
 }

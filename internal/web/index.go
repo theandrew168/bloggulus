@@ -31,29 +31,28 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	var count int
 	var posts []core.Post
 
-	// search if requested
 	if q != "" {
-		count, err = app.storage.PostCountSearch(r.Context(), q)
+		// search if requested
+		count, err = app.storage.CountSearchPosts(r.Context(), q)
 		if err != nil {
 			http.Error(w, "Internal server error", 500)
 			return
 		}
 
-		posts, err = app.storage.PostReadSearch(r.Context(), q, PageSize, p*PageSize)
+		posts, err = app.storage.SearchPosts(r.Context(), q, PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, "Internal server error", 500)
 			return
 		}
-
-		// else just read recent
 	} else {
-		count, err = app.storage.PostCountRecent(r.Context())
+		// else just read recent
+		count, err = app.storage.CountPosts(r.Context())
 		if err != nil {
 			http.Error(w, "Internal server error", 500)
 			return
 		}
 
-		posts, err = app.storage.PostReadRecent(r.Context(), PageSize, p*PageSize)
+		posts, err = app.storage.ReadPosts(r.Context(), PageSize, p*PageSize)
 		if err != nil {
 			http.Error(w, "Internal server error", 500)
 			return

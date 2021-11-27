@@ -31,11 +31,12 @@ func NewPost(url, title string, updated time.Time, blog Blog) Post {
 }
 
 type PostStorage interface {
-	PostCreate(ctx context.Context, post *Post) error
-	PostRead(ctx context.Context, id int) (Post, error)
-	PostReadAllByBlog(ctx context.Context, blogID int) ([]Post, error)
-	PostReadRecent(ctx context.Context, limit, offset int) ([]Post, error)
-	PostReadSearch(ctx context.Context, query string, limit, offset int) ([]Post, error)
-	PostCountRecent(ctx context.Context) (int, error)
-	PostCountSearch(ctx context.Context, query string) (int, error)
+	CreatePost(ctx context.Context, post *Post) error
+	ReadPost(ctx context.Context, id int) (Post, error)
+	ReadPosts(ctx context.Context, limit, offset int) ([]Post, error)
+	// TODO: limit and offset
+	ReadPostsByBlog(ctx context.Context, blogID int) ([]Post, error)
+	SearchPosts(ctx context.Context, query string, limit, offset int) ([]Post, error)
+	CountPosts(ctx context.Context) (int, error)
+	CountSearchPosts(ctx context.Context, query string) (int, error)
 }

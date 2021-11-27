@@ -7,58 +7,60 @@ import (
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
-func TestPostCreate(t *testing.T) {
+func TestCreatePost(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCreate(storage, t)
+	test.CreatePost(storage, t)
 }
 
-func TestPostCreateExists(t *testing.T) {
+func TestCreatePostAlreadyExists(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCreateExists(storage, t)
+	test.CreatePostAlreadyExists(storage, t)
 }
 
-func TestPostReadAllByBlog(t *testing.T) {
+// TODO: TestReadPost
+
+func TestReadPosts(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadAllByBlog(storage, t)
+	test.ReadPosts(storage, t)
 }
 
-func TestPostReadRecent(t *testing.T) {
+func TestReadPostsByBlog(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadRecent(storage, t)
+	test.ReadPostsByBlog(storage, t)
 }
 
-func TestPostReadSearch(t *testing.T) {
+func TestSearchPosts(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostReadSearch(storage, t)
+	test.SearchPosts(storage, t)
 }
 
-func TestPostCountRecent(t *testing.T) {
+func TestCountPosts(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCountRecent(storage, t)
+	test.CountPosts(storage, t)
 }
 
-func TestPostCountSearch(t *testing.T) {
+func TestCountSearchPosts(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()
 
 	storage := postgresql.NewStorage(conn)
-	test.PostCountSearch(storage, t)
+	test.CountSearchPosts(storage, t)
 }

@@ -29,11 +29,10 @@ import (
 // TODO: pagination for /blog (title asc) and /post (updated desc)
 // TODO: impl /post/search
 // TODO: error handling helpers (log + 500)
-// TODO: handlers for 404 and 405
 // TODO: consider renaming handlers
-// TODO: consider renaming storage funcs
 // TODO: SQL query timeouts
 // TODO: graceful shutdown?
+// TODO: helpers for common DB retries / error handling?
 
 //go:embed migrations
 var migrationsFS embed.FS

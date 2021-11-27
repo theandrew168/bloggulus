@@ -12,7 +12,7 @@ import (
 )
 
 func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) {
-	posts, err := app.storage.PostReadRecent(context.Background(), 20, 0)
+	posts, err := app.storage.ReadPosts(context.Background(), 20, 0)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "Internal server error", 500)
@@ -32,7 +32,7 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := app.storage.PostRead(context.Background(), id)
+	post, err := app.storage.ReadPost(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
 			http.Error(w, "Not found", 404)

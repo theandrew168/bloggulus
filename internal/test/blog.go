@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func BlogCreate(storage core.Storage, t *testing.T) {
+func CreateBlog(storage core.Storage, t *testing.T) {
 	blog := createMockBlog(storage, t)
 
 	// blog should have an ID after creation
@@ -17,7 +17,7 @@ func BlogCreate(storage core.Storage, t *testing.T) {
 	}
 }
 
-func BlogCreateExists(storage core.Storage, t *testing.T) {
+func CreateBlogAlreadyExists(storage core.Storage, t *testing.T) {
 	blog := createMockBlog(storage, t)
 
 	// attempt to create the same blog again
@@ -27,7 +27,7 @@ func BlogCreateExists(storage core.Storage, t *testing.T) {
 	}
 }
 
-func BlogReadAll(storage core.Storage, t *testing.T) {
+func ReadBlogs(storage core.Storage, t *testing.T) {
 	createMockBlog(storage, t)
 
 	blogs, err := storage.ReadBlogs(context.Background())

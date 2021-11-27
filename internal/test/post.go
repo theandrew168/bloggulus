@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func PostCreate(storage core.Storage, t *testing.T) {
+func CreatePost(storage core.Storage, t *testing.T) {
 	_, post := createMockBlogAndPost(storage, t)
 
 	if post.ID == 0 {
@@ -16,33 +16,20 @@ func PostCreate(storage core.Storage, t *testing.T) {
 	}
 }
 
-func PostCreateExists(storage core.Storage, t *testing.T) {
+func CreatePostAlreadyExists(storage core.Storage, t *testing.T) {
 	_, post := createMockBlogAndPost(storage, t)
 
 	// attempt to create the same post again
-	err := storage.PostCreate(context.Background(), &post)
+	err := storage.CreatePost(context.Background(), &post)
 	if !errors.Is(err, core.ErrExist) {
 		t.Fatal("duplicate post should return an error")
 	}
 }
 
-func PostReadAllByBlog(storage core.Storage, t *testing.T) {
-	blog, _ := createMockBlogAndPost(storage, t)
-
-	posts, err := storage.PostReadAllByBlog(context.Background(), blog.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(posts) != 1 {
-		t.Fatal("expected one post linked to blog")
-	}
-}
-
-func PostReadRecent(storage core.Storage, t *testing.T) {
+func ReadPosts(storage core.Storage, t *testing.T) {
 	_, post := createMockBlogAndPost(storage, t)
 
-	posts, err := storage.PostReadRecent(context.Background(), 20, 0)
+	posts, err := storage.ReadPosts(context.Background(), 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +40,20 @@ func PostReadRecent(storage core.Storage, t *testing.T) {
 	}
 }
 
-func PostReadSearch(storage core.Storage, t *testing.T) {
+func ReadPostsByBlog(storage core.Storage, t *testing.T) {
+	blog, _ := createMockBlogAndPost(storage, t)
+
+	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(posts) != 1 {
+		t.Fatal("expected one post linked to blog")
+	}
+}
+
+func SearchPosts(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -72,12 +72,12 @@ func PostReadSearch(storage core.Storage, t *testing.T) {
 	)
 
 	// create a searchable post
-	err = storage.PostCreate(context.Background(), &post)
+	err = storage.CreatePost(context.Background(), &post)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	posts, err := storage.PostReadSearch(context.Background(), "python rust", 20, 0)
+	posts, err := storage.SearchPosts(context.Background(), "python rust", 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,10 +89,10 @@ func PostReadSearch(storage core.Storage, t *testing.T) {
 	}
 }
 
-func PostCountRecent(storage core.Storage, t *testing.T) {
+func CountPosts(storage core.Storage, t *testing.T) {
 	createMockBlogAndPost(storage, t)
 
-	count, err := storage.PostCountRecent(context.Background())
+	count, err := storage.CountPosts(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func PostCountRecent(storage core.Storage, t *testing.T) {
 	}
 }
 
-func PostCountSearch(storage core.Storage, t *testing.T) {
+func CountSearchPosts(storage core.Storage, t *testing.T) {
 	// generate some random blog data
 	blog := NewMockBlog()
 
@@ -122,12 +122,12 @@ func PostCountSearch(storage core.Storage, t *testing.T) {
 	)
 
 	// create a searchable post
-	err = storage.PostCreate(context.Background(), &post)
+	err = storage.CreatePost(context.Background(), &post)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := storage.PostCountSearch(context.Background(), "python rust")
+	count, err := storage.CountSearchPosts(context.Background(), "python rust")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +154,7 @@ func createMockBlogAndPost(storage core.Storage, t *testing.T) (core.Blog, core.
 	post := NewMockPost(blog)
 
 	// create an example post
-	err = storage.PostCreate(context.Background(), &post)
+	err = storage.CreatePost(context.Background(), &post)
 	if err != nil {
 		t.Fatal(err)
 	}

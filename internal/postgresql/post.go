@@ -11,7 +11,7 @@ import (
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
+func (s *storage) CreatePost(ctx context.Context, post *core.Post) error {
 	stmt := `
 		INSERT INTO post
 			(url, title, updated, body, blog_id)
@@ -43,7 +43,7 @@ func (s *storage) PostCreate(ctx context.Context, post *core.Post) error {
 	return nil
 }
 
-func (s *storage) PostRead(ctx context.Context, id int) (core.Post, error) {
+func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -86,57 +86,7 @@ func (s *storage) PostRead(ctx context.Context, id int) (core.Post, error) {
 	return post, nil
 }
 
-func (s *storage) PostReadAllByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
-	stmt := `
-		SELECT
-			post.id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
-		FROM post
-		INNER JOIN blog
-			ON blog.id = post.blog_id
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE blog.id = $1
-		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY post.updated DESC`
-	rows, err := s.conn.Query(ctx, stmt, blogID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var posts []core.Post
-	for rows.Next() {
-		var post core.Post
-		err := rows.Scan(
-			&post.ID,
-			&post.URL,
-			&post.Title,
-			&post.Updated,
-			&post.Tags,
-			&post.Blog.ID,
-			&post.Blog.FeedURL,
-			&post.Blog.SiteURL,
-			&post.Blog.Title,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, post)
-	}
-
-	return posts, nil
-}
-
-func (s *storage) PostReadRecent(ctx context.Context, limit, offset int) ([]core.Post, error) {
+func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -201,7 +151,57 @@ func (s *storage) PostReadRecent(ctx context.Context, limit, offset int) ([]core
 	return posts, nil
 }
 
-func (s *storage) PostReadSearch(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
+func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int) ([]core.Post, error) {
+	stmt := `
+		SELECT
+			post.id,
+			post.url,
+			post.title,
+			post.updated,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		LEFT JOIN tag
+			ON to_tsquery(tag.name) @@ post.content_index
+		WHERE blog.id = $1
+		GROUP BY 1,2,3,4,6,7,8,9
+		ORDER BY post.updated DESC`
+	rows, err := s.conn.Query(ctx, stmt, blogID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []core.Post
+	for rows.Next() {
+		var post core.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.URL,
+			&post.Title,
+			&post.Updated,
+			&post.Tags,
+			&post.Blog.ID,
+			&post.Blog.FeedURL,
+			&post.Blog.SiteURL,
+			&post.Blog.Title,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -267,7 +267,7 @@ func (s *storage) PostReadSearch(ctx context.Context, query string, limit, offse
 	return posts, nil
 }
 
-func (s *storage) PostCountRecent(ctx context.Context) (int, error) {
+func (s *storage) CountPosts(ctx context.Context) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -280,7 +280,7 @@ func (s *storage) PostCountRecent(ctx context.Context) (int, error) {
 		if errors.As(err, &pgErr) {
 			// retry on stale connections
 			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.PostCountRecent(ctx)
+				return s.CountPosts(ctx)
 			}
 		}
 		return 0, err
@@ -289,7 +289,7 @@ func (s *storage) PostCountRecent(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (s *storage) PostCountSearch(ctx context.Context, query string) (int, error) {
+func (s *storage) CountSearchPosts(ctx context.Context, query string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -303,7 +303,7 @@ func (s *storage) PostCountSearch(ctx context.Context, query string) (int, error
 		if errors.As(err, &pgErr) {
 			// retry on stale connections
 			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.PostCountSearch(ctx, query)
+				return s.CountSearchPosts(ctx, query)
 			}
 		}
 		return 0, err

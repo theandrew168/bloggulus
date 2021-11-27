@@ -59,7 +59,7 @@ paths:
       summary: Read posts
       parameters:
         - name: q
-          description: Post search expression
+          description: Search expression
           in: query
           schema:
             type: string

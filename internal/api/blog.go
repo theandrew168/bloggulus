@@ -14,25 +14,23 @@ import (
 func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "Not found", 404)
+		app.notFoundResponse(w, r)
 		return
 	}
 
 	blog, err := app.storage.ReadBlog(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
-			http.Error(w, "Not found", 404)
+			app.notFoundResponse(w, r)
 			return
 		}
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	err = writeJSON(w, 200, envelope{"blog": blog}, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
@@ -53,15 +51,13 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 
 	blogs, err := app.storage.ReadBlogs(context.Background(), limit, offset)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	err = writeJSON(w, 200, envelope{"blogs": blogs}, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }

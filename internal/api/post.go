@@ -14,25 +14,23 @@ import (
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "Not found", 404)
+		app.notFoundResponse(w, r)
 		return
 	}
 
 	post, err := app.storage.ReadPost(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
-			http.Error(w, "Not found", 404)
+			app.notFoundResponse(w, r)
 			return
 		}
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	err = writeJSON(w, 200, envelope{"post": post}, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
@@ -59,8 +57,7 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		var err error
 		posts, err = app.storage.SearchPosts(context.Background(), q, limit, offset)
 		if err != nil {
-			app.logger.Println(err)
-			http.Error(w, "Internal server error", 500)
+			app.serverErrorResponse(w, r, err)
 			return
 		}
 	} else {
@@ -68,16 +65,14 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		var err error
 		posts, err = app.storage.ReadPosts(context.Background(), limit, offset)
 		if err != nil {
-			app.logger.Println(err)
-			http.Error(w, "Internal server error", 500)
+			app.serverErrorResponse(w, r, err)
 			return
 		}
 	}
 
 	err = writeJSON(w, 200, envelope{"posts": posts}, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Internal server error", 500)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }

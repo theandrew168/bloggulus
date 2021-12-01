@@ -26,10 +26,11 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
-// TODO: error handling helpers (log + 500)
+// TODO: error handling helpers for internal/web (log + 500)
 // TODO: helpers for common DB retries / error handling?
 // TODO: SQL query timeouts (build into helpers?)
 // TODO: graceful shutdown?
+// TODO: updated tests for new features (internal/api, etc)
 
 //go:embed migrations
 var migrationsFS embed.FS

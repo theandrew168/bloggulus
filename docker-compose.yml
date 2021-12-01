@@ -11,7 +11,3 @@ services:
     image: redis
     ports:
       - 6379:6379
-#  adminer:
-#    image: adminer
-#    ports:
-#      - 8080:8080

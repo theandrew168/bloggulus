@@ -27,9 +27,9 @@ import (
 )
 
 // TODO: error handling helpers (log + 500)
-// TODO: SQL query timeouts
-// TODO: graceful shutdown?
 // TODO: helpers for common DB retries / error handling?
+// TODO: SQL query timeouts (build into helpers?)
+// TODO: graceful shutdown?
 
 //go:embed migrations
 var migrationsFS embed.FS

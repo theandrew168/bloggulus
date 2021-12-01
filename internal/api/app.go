@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 
 	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -37,7 +38,7 @@ func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config)
 
 func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
-	r.Use(enableCORS)
+	r.Use(cors.Handler(cors.Options{}))
 	r.Use(middleware.Recoverer)
 
 	r.Get("/", app.HandleIndex)

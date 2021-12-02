@@ -126,6 +126,7 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 	}
 	defer rows.Close()
 
+	// use make here to JSON encode as an empty array instead of null
 	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post

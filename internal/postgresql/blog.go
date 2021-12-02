@@ -85,6 +85,7 @@ func (s *storage) ReadBlogs(ctx context.Context, limit, offset int) ([]core.Blog
 	}
 	defer rows.Close()
 
+	// use make here to JSON encode as an empty array instead of null
 	blogs := make([]core.Blog, 0)
 	for rows.Next() {
 		var blog core.Blog

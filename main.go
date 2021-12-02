@@ -26,7 +26,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
-// TODO: error handling helpers for internal/web (log + 500)
 // TODO: helpers for common DB retries / error handling?
 // TODO: SQL query timeouts (build into helpers?)
 // TODO: graceful shutdown?
@@ -42,15 +41,15 @@ var staticFS embed.FS
 var logo []byte
 
 func main() {
-	// silence timestamp and log level
-	logger := log.New(os.Stdout, "", 0)
+	// log everything to stdout, include file name and line number
+	logger := log.New(os.Stdout, "", log.Lshortfile)
 
 	// check for config file flag
-	conf := flag.String("conf", "bloggulus.conf", "app config file")
+	conf := flag.String("conf", "/etc/bloggulus.conf", "app config file")
 
 	// check for action flags
-	migrate := flag.Bool("migrate", false, "-migrate")
-	addblog := flag.String("addblog", "", "rss / atom feed url")
+	migrate := flag.Bool("migrate", false, "apply migrations and exit")
+	addblog := flag.String("addblog", "", "rss / atom feed to add")
 	flag.Parse()
 
 	// load user-defined config (if specified), else use defaults
@@ -62,19 +61,19 @@ func main() {
 	// open a database connection pool
 	conn, err := pgxpool.Connect(context.Background(), cfg.DatabaseURI)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 	defer conn.Close()
 
 	// test connection to ensure all is well
 	if err = conn.Ping(context.Background()); err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 
 	// apply database migrations
 	migrations, _ := fs.Sub(migrationsFS, "migrations")
 	if err = compareAndApplyMigrations(conn, migrations, logger); err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 
 	// exit now if just applying migrations
@@ -91,20 +90,20 @@ func main() {
 	// add a blog and exit now if requested
 	if *addblog != "" {
 		feedURL := *addblog
-		log.Printf("adding blog: %s\n", feedURL)
+		logger.Printf("adding blog: %s\n", feedURL)
 
 		blog, err := reader.ReadBlog(feedURL)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatalln(err)
 		}
-		log.Printf("  found: %s\n", blog.Title)
+		logger.Printf("  found: %s\n", blog.Title)
 
 		err = storage.CreateBlog(context.Background(), &blog)
 		if err != nil {
 			if err == core.ErrExist {
-				log.Println("  already exists")
+				logger.Println("  already exists")
 			} else {
-				log.Fatal(err)
+				logger.Fatal(err)
 			}
 		}
 
@@ -151,8 +150,8 @@ func main() {
 	}
 
 	// lets go!
-	log.Printf("listening on %s\n", addr)
-	log.Fatalln(server.ListenAndServe())
+	logger.Printf("listening on %s\n", addr)
+	logger.Fatalln(server.ListenAndServe())
 }
 
 func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {

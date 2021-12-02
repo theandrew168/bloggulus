@@ -49,6 +49,9 @@ func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 
+	r.NotFound(app.notFoundResponse)
+	r.MethodNotAllowed(app.methodNotAllowedResponse)
+
 	r.Get("/", app.HandleIndex)
 
 	return r

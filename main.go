@@ -167,6 +167,7 @@ func main() {
 		defer cancel()
 
 		// shutdown the web server and track any errors
+		srv.SetKeepAlivesEnabled(false)
 		shutdownError <- srv.Shutdown(ctx)
 	}()
 

@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"sort"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -28,7 +31,6 @@ import (
 
 // TODO: helpers for common DB retries / error handling?
 // TODO: SQL query timeouts (build into helpers?)
-// TODO: graceful shutdown?
 // TODO: updated tests for new features (internal/api, etc)
 
 //go:embed migrations
@@ -140,7 +142,7 @@ func main() {
 	})
 
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	server := &http.Server{
+	srv := &http.Server{
 		Addr:    addr,
 		Handler: r,
 
@@ -149,9 +151,41 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	shutdownError := make(chan error)
+
+	// kick off a goroutine to listen for SIGINT and SIGTERM
+	go func() {
+		// idle until a signal is caught
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		<-quit
+
+		logger.Println("stopping server")
+
+		// give the web server 5 seconds to shutdown gracefully
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// shutdown the web server and track any errors
+		shutdownError <- srv.Shutdown(ctx)
+	}()
+
 	// lets go!
-	logger.Printf("listening on %s\n", addr)
-	logger.Fatalln(server.ListenAndServe())
+	logger.Printf("starting server on %s\n", addr)
+
+	// serve the app, check for ErrServerClosed (expected after shutdown)
+	err = srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		logger.Fatalln(err)
+	}
+
+	// check for shutdown errors
+	err = <-shutdownError
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	logger.Println("stopped server")
 }
 
 func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {

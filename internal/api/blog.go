@@ -28,7 +28,7 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = writeJSON(w, 200, envelope{"blog": blog}, nil)
+	err = writeJSON(w, 200, envelope{"blog": blog})
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -55,7 +55,7 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = writeJSON(w, 200, envelope{"blogs": blogs}, nil)
+	err = writeJSON(w, 200, envelope{"blogs": blogs})
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

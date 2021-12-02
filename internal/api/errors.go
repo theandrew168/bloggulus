@@ -10,8 +10,7 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 
 	err := writeJSON(w, status, env, nil)
 	if err != nil {
-		// skip 3 frames to identify original caller
-		app.logger.Output(3, err.Error())
+		app.logger.Println(err)
 		w.WriteHeader(500)
 		return
 	}

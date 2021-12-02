@@ -8,16 +8,14 @@ import (
 func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, status int, tmpl string) {
 	ts, err := template.ParseFS(app.templates, tmpl)
 	if err != nil {
-		// skip 3 frames to identify original caller
-		app.logger.Output(3, err.Error())
+		app.logger.Println(err)
 		w.WriteHeader(500)
 		return
 	}
 
 	err = ts.Execute(w, nil)
 	if err != nil {
-		// skip 3 frames to identify original caller
-		app.logger.Output(3, err.Error())
+		app.logger.Println(err)
 		w.WriteHeader(500)
 		return
 	}

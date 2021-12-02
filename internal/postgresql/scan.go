@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-
+	"github.com/jackc/pgx/v4"
 )
 
 func scan(row pgx.Row, dest ...interface{}) error {

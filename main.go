@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/klauspost/compress/gzhttp"
@@ -171,11 +173,18 @@ func main() {
 		shutdownError <- srv.Shutdown(ctx)
 	}()
 
-	// lets go!
-	logger.Printf("starting server on %s\n", addr)
+	// open up the socket listener
+	l, err := net.Listen("tcp", addr)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	// let systemd know that we are good to go (no-op if not using systemd)
+	daemon.SdNotify(false, daemon.SdNotifyReady)
+	logger.Printf("started server on %s\n", addr)
 
 	// serve the app, check for ErrServerClosed (expected after shutdown)
-	err = srv.ListenAndServe()
+	err = srv.Serve(l)
 	if !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatalln(err)
 	}

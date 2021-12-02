@@ -14,6 +14,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v0.4.1
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
 	github.com/klauspost/compress v1.13.6

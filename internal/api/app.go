@@ -41,10 +41,14 @@ func (app *Application) Router() http.Handler {
 	r.Use(cors.Handler(cors.Options{}))
 	r.Use(middleware.Recoverer)
 
+	r.NotFound(app.notFoundResponse)
+	r.MethodNotAllowed(app.methodNotAllowedResponse)
+
 	r.Get("/", app.HandleIndex)
 	r.Get("/blog", app.HandleReadBlogs)
 	r.Get("/blog/{id}", app.HandleReadBlog)
 	r.Get("/post", app.HandleReadPosts)
 	r.Get("/post/{id}", app.HandleReadPost)
+
 	return r
 }

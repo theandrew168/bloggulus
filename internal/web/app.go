@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
@@ -46,6 +47,9 @@ func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config)
 
 func (app *Application) Router() http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
+
 	r.Get("/", app.HandleIndex)
+
 	return r
 }

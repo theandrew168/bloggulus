@@ -27,6 +27,19 @@ func CreateBlogAlreadyExists(storage core.Storage, t *testing.T) {
 	}
 }
 
+func ReadBlog(storage core.Storage, t *testing.T) {
+	blog := createMockBlog(storage, t)
+
+	got, err := storage.ReadBlog(context.Background(), blog.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got.ID != blog.ID {
+		t.Fatalf("want %v, got %v\n", blog.ID, got.ID)
+	}
+}
+
 func ReadBlogs(storage core.Storage, t *testing.T) {
 	createMockBlog(storage, t)
 

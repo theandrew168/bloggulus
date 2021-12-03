@@ -23,7 +23,13 @@ func TestCreateBlogAlreadyExists(t *testing.T) {
 	test.CreateBlogAlreadyExists(storage, t)
 }
 
-// TODO: TestReadBlog
+func TestReadBlog(t *testing.T) {
+	conn := test.ConnectDB(t)
+	defer conn.Close()
+
+	storage := postgresql.NewStorage(conn)
+	test.ReadBlog(storage, t)
+}
 
 func TestReadBlogs(t *testing.T) {
 	conn := test.ConnectDB(t)

@@ -26,6 +26,19 @@ func CreatePostAlreadyExists(storage core.Storage, t *testing.T) {
 	}
 }
 
+func ReadPost(storage core.Storage, t *testing.T) {
+	_, post := createMockBlogAndPost(storage, t)
+
+	got, err := storage.ReadPost(context.Background(), post.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got.ID != post.ID {
+		t.Fatalf("want %v, got %v\n", post.ID, got.ID)
+	}
+}
+
 func ReadPosts(storage core.Storage, t *testing.T) {
 	_, post := createMockBlogAndPost(storage, t)
 

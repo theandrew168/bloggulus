@@ -17,6 +17,11 @@ test:
 	go run main.go -conf internal/test/bloggulus.conf -migrate
 	go test -count=1 -v ./...
 
+.PHONY: race
+race:
+	go run main.go -conf internal/test/bloggulus.conf -migrate
+	go test -race -count=1 ./...
+
 .PHONY: cover
 cover:
 	go run main.go -conf internal/test/bloggulus.conf -migrate

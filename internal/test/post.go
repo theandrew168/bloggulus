@@ -39,6 +39,7 @@ func ReadPost(storage core.Storage, t *testing.T) {
 	}
 }
 
+// TODO: test pagination
 func ReadPosts(storage core.Storage, t *testing.T) {
 	post := CreateMockPost(storage, t)
 
@@ -53,6 +54,7 @@ func ReadPosts(storage core.Storage, t *testing.T) {
 	}
 }
 
+// TODO: test pagination
 func ReadPostsByBlog(storage core.Storage, t *testing.T) {
 	post := CreateMockPost(storage, t)
 	blog := post.Blog
@@ -67,6 +69,7 @@ func ReadPostsByBlog(storage core.Storage, t *testing.T) {
 	}
 }
 
+// TODO: test pagination
 func SearchPosts(storage core.Storage, t *testing.T) {
 	blog := CreateMockBlog(storage, t)
 

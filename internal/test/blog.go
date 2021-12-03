@@ -40,6 +40,7 @@ func ReadBlog(storage core.Storage, t *testing.T) {
 	}
 }
 
+// TODO: test pagination
 func ReadBlogs(storage core.Storage, t *testing.T) {
 	CreateMockBlog(storage, t)
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/internal/api"
@@ -113,34 +112,24 @@ func TestHandleReadPostsPagination(t *testing.T) {
 	app := api.NewApplication(storage, logger)
 
 	// create 5 posts to test with
-	posts := []core.Post{
-		test.CreateMockPost(storage, t),
-		test.CreateMockPost(storage, t),
-		test.CreateMockPost(storage, t),
-		test.CreateMockPost(storage, t),
-		test.CreateMockPost(storage, t),
-	}
-
-	var postIDs []int
-	for _, post := range posts {
-		postIDs = append(postIDs, post.ID)
-	}
+	test.CreateMockPost(storage, t)
+	test.CreateMockPost(storage, t)
+	test.CreateMockPost(storage, t)
+	test.CreateMockPost(storage, t)
+	test.CreateMockPost(storage, t)
 
 	tests := []struct{
-		limit  int
-		offset int
-		want   []int
+		limit int
+		want  int
 	}{
-		{0, 0, []int{}},
-		{1, 0, []int{postIDs[4]}},
-		{1, 1, []int{postIDs[3]}},
-		{1, 3, []int{postIDs[1]}},
-		{3, 0, []int{postIDs[4], postIDs[3], postIDs[2]}},
-		{3, 1, []int{postIDs[3], postIDs[2], postIDs[1]}},
+		{0, 0},
+		{1, 1},
+		{3, 3},
+		{5, 5},
 	}
 
 	for _, test := range tests {
-		url := fmt.Sprintf("/post?limit=%d&offset=%d", test.limit, test.offset)
+		url := fmt.Sprintf("/post?limit=%d", test.limit)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 
@@ -168,13 +157,8 @@ func TestHandleReadPostsPagination(t *testing.T) {
 			t.Fatalf("response missing key: %v", "posts")
 		}
 
-		gotIDs := make([]int, 0)
-		for _, post := range got {
-			gotIDs = append(gotIDs, post.ID)
-		}
-
-		if !reflect.DeepEqual(gotIDs, test.want) {
-			t.Errorf("want %v, got %v", test.want, gotIDs)
+		if len(got) != test.want {
+			t.Errorf("want %v, got %v", test.want, len(got))
 		}
 	}
 }

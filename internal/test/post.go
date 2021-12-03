@@ -9,25 +9,25 @@ import (
 )
 
 func CreatePost(storage core.Storage, t *testing.T) {
-	_, post := createMockBlogAndPost(storage, t)
+	post := CreateMockPost(storage, t)
 
 	if post.ID == 0 {
-		t.Fatal("post id after creation should be nonzero")
+		t.Error("post id after creation should be nonzero")
 	}
 }
 
 func CreatePostAlreadyExists(storage core.Storage, t *testing.T) {
-	_, post := createMockBlogAndPost(storage, t)
+	post := CreateMockPost(storage, t)
 
 	// attempt to create the same post again
 	err := storage.CreatePost(context.Background(), &post)
 	if !errors.Is(err, core.ErrExist) {
-		t.Fatal("duplicate post should return an error")
+		t.Error("duplicate post should return an error")
 	}
 }
 
 func ReadPost(storage core.Storage, t *testing.T) {
-	_, post := createMockBlogAndPost(storage, t)
+	post := CreateMockPost(storage, t)
 
 	got, err := storage.ReadPost(context.Background(), post.ID)
 	if err != nil {
@@ -35,12 +35,12 @@ func ReadPost(storage core.Storage, t *testing.T) {
 	}
 
 	if got.ID != post.ID {
-		t.Fatalf("want %v, got %v\n", post.ID, got.ID)
+		t.Errorf("want %v, got %v", post.ID, got.ID)
 	}
 }
 
 func ReadPosts(storage core.Storage, t *testing.T) {
-	_, post := createMockBlogAndPost(storage, t)
+	post := CreateMockPost(storage, t)
 
 	posts, err := storage.ReadPosts(context.Background(), 20, 0)
 	if err != nil {
@@ -49,12 +49,13 @@ func ReadPosts(storage core.Storage, t *testing.T) {
 
 	// most recent post should be the one just added
 	if posts[0].ID != post.ID {
-		t.Fatalf("want %v, got %v\n", post.ID, posts[0].ID)
+		t.Errorf("want %v, got %v", post.ID, posts[0].ID)
 	}
 }
 
 func ReadPostsByBlog(storage core.Storage, t *testing.T) {
-	blog, _ := createMockBlogAndPost(storage, t)
+	post := CreateMockPost(storage, t)
+	blog := post.Blog
 
 	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID, 20, 0)
 	if err != nil {
@@ -62,19 +63,12 @@ func ReadPostsByBlog(storage core.Storage, t *testing.T) {
 	}
 
 	if len(posts) != 1 {
-		t.Fatal("expected one post linked to blog")
+		t.Error("expected one post linked to blog")
 	}
 }
 
 func SearchPosts(storage core.Storage, t *testing.T) {
-	// generate some random blog data
-	blog := NewMockBlog()
-
-	// create an example blog
-	err := storage.CreateBlog(context.Background(), &blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	blog := CreateMockBlog(storage, t)
 
 	// generate some searchable post data
 	post := core.NewPost(
@@ -85,7 +79,7 @@ func SearchPosts(storage core.Storage, t *testing.T) {
 	)
 
 	// create a searchable post
-	err = storage.CreatePost(context.Background(), &post)
+	err := storage.CreatePost(context.Background(), &post)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,12 +92,12 @@ func SearchPosts(storage core.Storage, t *testing.T) {
 	// tags will always come back sorted desc
 	tags := []string{"Python", "Rust"}
 	if !subset(tags, posts[0].Tags) {
-		t.Fatalf("want superset of %v, got %v\n", tags, posts[0].Tags)
+		t.Errorf("want superset of %v, got %v", tags, posts[0].Tags)
 	}
 }
 
 func CountPosts(storage core.Storage, t *testing.T) {
-	createMockBlogAndPost(storage, t)
+	CreateMockPost(storage, t)
 
 	count, err := storage.CountPosts(context.Background())
 	if err != nil {
@@ -112,19 +106,12 @@ func CountPosts(storage core.Storage, t *testing.T) {
 
 	// ensure count is at least one
 	if count < 1 {
-		t.Fatalf("want >= 1, got %v\n", count)
+		t.Errorf("want >= 1, got %v", count)
 	}
 }
 
 func CountSearchPosts(storage core.Storage, t *testing.T) {
-	// generate some random blog data
-	blog := NewMockBlog()
-
-	// create an example blog
-	err := storage.CreateBlog(context.Background(), &blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	blog := CreateMockBlog(storage, t)
 
 	// generate some searchable post data
 	post := core.NewPost(
@@ -135,7 +122,7 @@ func CountSearchPosts(storage core.Storage, t *testing.T) {
 	)
 
 	// create a searchable post
-	err = storage.CreatePost(context.Background(), &post)
+	err := storage.CreatePost(context.Background(), &post)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,11 +134,11 @@ func CountSearchPosts(storage core.Storage, t *testing.T) {
 
 	// ensure count is at least one
 	if count < 1 {
-		t.Fatalf("want >= 1, got %v\n", count)
+		t.Errorf("want >= 1, got %v", count)
 	}
 }
 
-func createMockBlogAndPost(storage core.Storage, t *testing.T) (core.Blog, core.Post) {
+func CreateMockPost(storage core.Storage, t *testing.T) core.Post {
 	t.Helper()
 
 	// generate some random blog data
@@ -172,7 +159,7 @@ func createMockBlogAndPost(storage core.Storage, t *testing.T) (core.Blog, core.
 		t.Fatal(err)
 	}
 
-	return blog, post
+	return post
 }
 
 func subset(a, b []string) bool {

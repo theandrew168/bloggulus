@@ -33,7 +33,7 @@ func TestNotFound(t *testing.T) {
 	}
 
 	if resp.StatusCode != 404 {
-		t.Errorf("want %v, got %v\n", 404, resp.StatusCode)
+		t.Errorf("want %v, got %v", 404, resp.StatusCode)
 	}
 
 	page := string(body)
@@ -64,7 +64,7 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 
 	if resp.StatusCode != 405 {
-		t.Fatalf("want %v, got %v\n", 405, resp.StatusCode)
+		t.Errorf("want %v, got %v", 405, resp.StatusCode)
 	}
 
 	page := string(body)

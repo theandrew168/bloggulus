@@ -1,24 +1,32 @@
 package web
 
 import (
+	"bytes"
 	"html/template"
 	"net/http"
 )
 
 func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, status int, tmpl string) {
+	// attempt to parse error template
 	ts, err := template.ParseFS(app.templates, tmpl)
 	if err != nil {
 		app.logger.Println(err)
-		w.WriteHeader(500)
+		http.Error(w, "Internal server error", 500)
 		return
 	}
 
-	err = ts.Execute(w, nil)
+	// render template to a temp buffer
+	var buf bytes.Buffer
+	err = ts.Execute(&buf, nil)
 	if err != nil {
 		app.logger.Println(err)
-		w.WriteHeader(500)
+		http.Error(w, "Internal server error", 500)
 		return
 	}
+
+	// write the status and error page
+	w.WriteHeader(status)
+	w.Write(buf.Bytes())
 }
 
 func (app *Application) notFoundResponse(w http.ResponseWriter, r *http.Request) {

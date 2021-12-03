@@ -115,15 +115,18 @@ func main() {
 		return
 	}
 
+	// init task worker
+	worker := task.NewWorker(logger)
+
 	// kick off blog sync task
-	syncBlogs := task.SyncBlogs(storage, reader, logger)
+	syncBlogs := worker.SyncBlogs(storage, reader)
 	go syncBlogs.Run(1 * time.Hour)
 
 	// init web application
-	webApp := web.NewApplication(storage, logger, cfg)
+	webApp := web.NewApplication(storage, logger)
 
 	// init api application struct
-	apiApp := api.NewApplication(storage, logger, cfg)
+	apiApp := api.NewApplication(storage, logger)
 
 	// setup http.Handler for static files
 	static, _ := fs.Sub(staticFS, "static")
@@ -154,9 +157,18 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	shutdownError := make(chan error)
+	// open up the socket listener
+	l, err := net.Listen("tcp", addr)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	// let systemd know that we are good to go (no-op if not using systemd)
+	daemon.SdNotify(false, daemon.SdNotifyReady)
+	logger.Printf("started server on %s\n", addr)
 
 	// kick off a goroutine to listen for SIGINT and SIGTERM
+	shutdownError := make(chan error)
 	go func() {
 		// idle until a signal is caught
 		quit := make(chan os.Signal, 1)
@@ -171,18 +183,18 @@ func main() {
 
 		// shutdown the web server and track any errors
 		srv.SetKeepAlivesEnabled(false)
-		shutdownError <- srv.Shutdown(ctx)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			shutdownError <- err
+		}
+
+		// wait for background tasks to finish (no timeout here)
+		logger.Println("stopping worker")
+		worker.Wait()
+		logger.Println("stopped worker")
+
+		shutdownError <- nil
 	}()
-
-	// open up the socket listener
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		logger.Fatalln(err)
-	}
-
-	// let systemd know that we are good to go (no-op if not using systemd)
-	daemon.SdNotify(false, daemon.SdNotifyReady)
-	logger.Printf("started server on %s\n", addr)
 
 	// serve the app, check for ErrServerClosed (expected after shutdown)
 	err = srv.Serve(l)

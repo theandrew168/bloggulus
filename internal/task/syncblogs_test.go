@@ -38,7 +38,8 @@ func TestSyncBlogs(t *testing.T) {
 	logger := test.NewLogger()
 
 	// run the sync blogs task
-	syncBlogs := task.SyncBlogs(storage, reader, logger)
+	worker := task.NewWorker(logger)
+	syncBlogs := worker.SyncBlogs(storage, reader)
 	err = syncBlogs.RunNow()
 	if err != nil {
 		t.Fatal(err)

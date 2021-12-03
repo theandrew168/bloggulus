@@ -2,7 +2,7 @@ package task
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"sync"
 	"time"
 
@@ -11,23 +11,24 @@ import (
 )
 
 type syncBlogsTask struct {
+	worker  *Worker
 	storage core.Storage
 	reader  feed.Reader
-	logger  *log.Logger
 }
 
-func SyncBlogs(storage core.Storage, reader feed.Reader, logger *log.Logger) Task {
-	return &syncBlogsTask{
+func (w *Worker) SyncBlogs(storage core.Storage, reader feed.Reader) Task {
+	task := syncBlogsTask{
+		worker:  w,
 		storage: storage,
 		reader:  reader,
-		logger:  logger,
 	}
+	return &task
 }
 
 func (t *syncBlogsTask) Run(interval time.Duration) {
 	err := t.RunNow()
 	if err != nil {
-		t.logger.Println(err)
+		t.worker.logError(err)
 	}
 
 	c := time.Tick(interval)
@@ -36,7 +37,7 @@ func (t *syncBlogsTask) Run(interval time.Duration) {
 
 		err := t.syncBlogs()
 		if err != nil {
-			t.logger.Println(err)
+			t.worker.logError(err)
 		}
 	}
 }
@@ -46,6 +47,9 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
+	t.worker.Add(1)
+	defer t.worker.Done()
+
 	limit := 50
 	offset := 0
 
@@ -89,7 +93,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	// read initial batch of posts
 	knownPosts, err := t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
 	if err != nil {
-		t.logger.Println(err)
+		t.worker.logError(err)
 		return
 	}
 
@@ -103,7 +107,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 		offset += limit
 		knownPosts, err = t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
 		if err != nil {
-			t.logger.Println(err)
+			t.worker.logError(err)
 			return
 		}
 	}
@@ -111,7 +115,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	// read posts from feed
 	feedPosts, err := t.reader.ReadBlogPosts(blog)
 	if err != nil {
-		t.logger.Println(err)
+		t.worker.logError(err)
 		return
 	}
 
@@ -128,7 +132,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	for i, _ := range newPosts {
 		body, err := t.reader.ReadPostBody(newPosts[i])
 		if err != nil {
-			t.logger.Println(err)
+			t.worker.logError(err)
 			continue
 		}
 		newPosts[i].Body = body
@@ -138,7 +142,8 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	for _, post := range newPosts {
 		err = t.storage.CreatePost(context.Background(), &post)
 		if err != nil {
-			t.logger.Printf("sync %v %v\n", post.URL, err)
+			msg := fmt.Sprintf("sync %v %v\n", post.URL, err)
+			t.worker.log(msg)
 		}
 	}
 }

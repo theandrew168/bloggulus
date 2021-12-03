@@ -16,9 +16,8 @@ func TestHandleIndex(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-	cfg := test.Config(t)
 
-	app := web.NewApplication(storage, logger, cfg)
+	app := web.NewApplication(storage, logger)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -43,9 +42,8 @@ func TestHandleIndexSearch(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-	cfg := test.Config(t)
 
-	app := web.NewApplication(storage, logger, cfg)
+	app := web.NewApplication(storage, logger)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/?q=foo", nil)

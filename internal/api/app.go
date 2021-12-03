@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
-	"github.com/theandrew168/bloggulus/internal/config"
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
@@ -21,17 +20,15 @@ type Application struct {
 	templates fs.FS
 	storage   core.Storage
 	logger    *log.Logger
-	cfg       config.Config
 }
 
-func NewApplication(storage core.Storage, logger *log.Logger, cfg config.Config) *Application {
+func NewApplication(storage core.Storage, logger *log.Logger) *Application {
 	templates, _ := fs.Sub(templatesFS, "templates")
 
 	app := Application{
 		templates: templates,
 		storage:   storage,
 		logger:    logger,
-		cfg:       cfg,
 	}
 	return &app
 }

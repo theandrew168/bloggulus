@@ -33,7 +33,6 @@ import (
 
 // TODO: helpers for common DB retries / error handling?
 // TODO: SQL query timeouts (build into helpers?)
-// TODO: graceful shutdown of tasks (sep binary here would split the deadlines)
 // TODO: updated tests for new features (internal/api, etc)
 
 //go:embed migrations

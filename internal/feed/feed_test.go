@@ -17,6 +17,7 @@ func TestCleanHTML(t *testing.T) {
 		{"<nav>hello world</nav>", ""},
 		{"<pre>hello world</pre>", ""},
 
+		{"hello world", "hello world"},
 		{"<p>hello world</p>", "hello world"},
 		{"<code><p>hello world</p></code>", ""},
 

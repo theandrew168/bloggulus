@@ -17,7 +17,6 @@ func TestNotFound(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-
 	app := web.NewApplication(storage, logger)
 
 	w := httptest.NewRecorder()
@@ -48,7 +47,6 @@ func TestMethodNotAllowed(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-
 	app := web.NewApplication(storage, logger)
 
 	w := httptest.NewRecorder()

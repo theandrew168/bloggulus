@@ -16,7 +16,6 @@ func TestHandleIndex(t *testing.T) {
 
 	storage := postgresql.NewStorage(conn)
 	logger := test.NewLogger()
-
 	app := api.NewApplication(storage, logger)
 
 	w := httptest.NewRecorder()

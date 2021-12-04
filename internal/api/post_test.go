@@ -1,10 +1,12 @@
 package api_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/internal/api"
@@ -37,7 +39,7 @@ func TestHandleReadPost(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	var env map[string]core.Post
@@ -52,7 +54,7 @@ func TestHandleReadPost(t *testing.T) {
 	}
 
 	if got.ID != post.ID {
-		t.Errorf("want %v, got %v", post.ID, got.ID)
+		t.Fatalf("want %v, got %v", post.ID, got.ID)
 	}
 }
 
@@ -79,7 +81,7 @@ func TestHandleReadPosts(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	var env map[string][]core.Post
@@ -94,13 +96,8 @@ func TestHandleReadPosts(t *testing.T) {
 	}
 
 	if len(got) < 1 {
-		t.Errorf("expected at least one blog")
+		t.Fatalf("expected at least one blog")
 	}
-}
-
-// TODO: post search
-func TestHandleReadPostsSearch(t *testing.T) {
-
 }
 
 func TestHandleReadPostsPagination(t *testing.T) {
@@ -118,7 +115,7 @@ func TestHandleReadPostsPagination(t *testing.T) {
 	test.CreateMockPost(storage, t)
 	test.CreateMockPost(storage, t)
 
-	tests := []struct{
+	tests := []struct {
 		limit int
 		want  int
 	}{
@@ -143,7 +140,7 @@ func TestHandleReadPostsPagination(t *testing.T) {
 		}
 
 		if resp.StatusCode != 200 {
-			t.Errorf("want %v, got %v", 200, resp.StatusCode)
+			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
 		var env map[string][]core.Post
@@ -158,7 +155,58 @@ func TestHandleReadPostsPagination(t *testing.T) {
 		}
 
 		if len(got) != test.want {
-			t.Errorf("want %v, got %v", test.want, len(got))
+			t.Fatalf("want %v, got %v", test.want, len(got))
 		}
+	}
+}
+
+func TestHandleReadPostsSearch(t *testing.T) {
+	conn := test.ConnectDB(t)
+	defer conn.Close()
+
+	storage := postgresql.NewStorage(conn)
+	logger := test.NewLogger()
+	app := api.NewApplication(storage, logger)
+
+	blog := test.CreateMockBlog(storage, t)
+	q := "python rust"
+
+	// create searchable post
+	post := core.NewPost(test.RandomURL(32), q, test.RandomTime(), blog)
+	err := storage.CreatePost(context.Background(), &post)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	url := fmt.Sprintf("/post?q=%s", url.QueryEscape(q))
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", url, nil)
+
+	router := app.Router()
+	router.ServeHTTP(w, r)
+
+	resp := w.Result()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+	}
+
+	var env map[string][]core.Post
+	err = json.Unmarshal(body, &env)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := env["posts"]
+	if !ok {
+		t.Fatalf("response missing key: %v", "posts")
+	}
+
+	if len(got) < 1 {
+		t.Fatalf("expected at least one matching post")
 	}
 }

@@ -37,7 +37,7 @@ func TestHandleReadBlog(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	var env map[string]core.Blog
@@ -52,7 +52,7 @@ func TestHandleReadBlog(t *testing.T) {
 	}
 
 	if got.ID != blog.ID {
-		t.Errorf("want %v, got %v", blog.ID, got.ID)
+		t.Fatalf("want %v, got %v", blog.ID, got.ID)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestHandleReadBlogs(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	var env map[string][]core.Blog
@@ -94,7 +94,7 @@ func TestHandleReadBlogs(t *testing.T) {
 	}
 
 	if len(got) < 1 {
-		t.Errorf("expected at least one blog")
+		t.Fatalf("expected at least one blog")
 	}
 }
 
@@ -113,7 +113,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 	test.CreateMockBlog(storage, t)
 	test.CreateMockBlog(storage, t)
 
-	tests := []struct{
+	tests := []struct {
 		limit int
 		want  int
 	}{
@@ -138,7 +138,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 		}
 
 		if resp.StatusCode != 200 {
-			t.Errorf("want %v, got %v", 200, resp.StatusCode)
+			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
 		var env map[string][]core.Blog
@@ -153,7 +153,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 		}
 
 		if len(got) != test.want {
-			t.Errorf("want %v, got %v", test.want, len(got))
+			t.Fatalf("want %v, got %v", test.want, len(got))
 		}
 	}
 }

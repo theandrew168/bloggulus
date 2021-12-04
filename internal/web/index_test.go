@@ -36,12 +36,12 @@ func TestHandleIndex(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	page := string(body)
 	if !strings.Contains(strings.ToLower(page), strings.ToLower(post.Title)) {
-		t.Errorf("expected recent post title on page")
+		t.Fatalf("expected recent post title on page")
 	}
 }
 
@@ -83,11 +83,11 @@ func TestHandleIndexSearch(t *testing.T) {
 	}
 
 	if resp.StatusCode != 200 {
-		t.Errorf("want %v, got %v", 200, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
 	page := string(body)
 	if !strings.Contains(strings.ToLower(page), strings.ToLower(post.Title)) {
-		t.Errorf("expected searched post title on page")
+		t.Fatalf("expected searched post title on page")
 	}
 }

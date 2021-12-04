@@ -12,7 +12,7 @@ func CreatePost(storage core.Storage, t *testing.T) {
 	post := CreateMockPost(storage, t)
 
 	if post.ID == 0 {
-		t.Error("post id after creation should be nonzero")
+		t.Fatal("post id after creation should be nonzero")
 	}
 }
 
@@ -22,7 +22,7 @@ func CreatePostAlreadyExists(storage core.Storage, t *testing.T) {
 	// attempt to create the same post again
 	err := storage.CreatePost(context.Background(), &post)
 	if !errors.Is(err, core.ErrExist) {
-		t.Error("duplicate post should return an error")
+		t.Fatal("duplicate post should return an error")
 	}
 }
 
@@ -35,67 +35,93 @@ func ReadPost(storage core.Storage, t *testing.T) {
 	}
 
 	if got.ID != post.ID {
-		t.Errorf("want %v, got %v", post.ID, got.ID)
+		t.Fatalf("want %v, got %v", post.ID, got.ID)
 	}
 }
 
-// TODO: test pagination
 func ReadPosts(storage core.Storage, t *testing.T) {
+	CreateMockPost(storage, t)
+	CreateMockPost(storage, t)
+	CreateMockPost(storage, t)
+	CreateMockPost(storage, t)
 	post := CreateMockPost(storage, t)
 
-	posts, err := storage.ReadPosts(context.Background(), 20, 0)
+	limit := 3
+	offset := 0
+	posts, err := storage.ReadPosts(context.Background(), limit, offset)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if len(posts) != limit {
+		t.Fatalf("want %v, got %v", limit, len(posts))
 	}
 
 	// most recent post should be the one just added
 	if posts[0].ID != post.ID {
-		t.Errorf("want %v, got %v", post.ID, posts[0].ID)
+		t.Fatalf("want %v, got %v", post.ID, posts[0].ID)
 	}
 }
 
-// TODO: test pagination
 func ReadPostsByBlog(storage core.Storage, t *testing.T) {
-	post := CreateMockPost(storage, t)
-	blog := post.Blog
-
-	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID, 20, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(posts) != 1 {
-		t.Error("expected one post linked to blog")
-	}
-}
-
-// TODO: test pagination
-func SearchPosts(storage core.Storage, t *testing.T) {
 	blog := CreateMockBlog(storage, t)
 
-	// generate some searchable post data
-	post := core.NewPost(
-		RandomURL(32),
-		"python rust",
-		RandomTime(),
-		blog,
-	)
+	// create 5 posts leaving the most recent one in "post"
+	var post core.Post
+	for i := 0; i < 5; i++ {
+		post = core.NewPost(RandomURL(32), RandomString(32), RandomTime(), blog)
+		err := storage.CreatePost(context.Background(), &post)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 
-	// create a searchable post
-	err := storage.CreatePost(context.Background(), &post)
+	limit := 3
+	offset := 0
+	posts, err := storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	posts, err := storage.SearchPosts(context.Background(), "python rust", 20, 0)
+	if len(posts) != limit {
+		t.Fatalf("want %v, got %v", limit, len(posts))
+	}
+
+	// most recent post should be the one just added
+	if posts[0].ID != post.ID {
+		t.Fatalf("want %v, got %v", post.ID, posts[0].ID)
+	}
+}
+
+func SearchPosts(storage core.Storage, t *testing.T) {
+	blog := CreateMockBlog(storage, t)
+	q := "python rust"
+
+	// create 5 searchable posts leaving the most recent one in "post"
+	var post core.Post
+	for i := 0; i < 5; i++ {
+		post = core.NewPost(RandomURL(32), q, RandomTime(), blog)
+		err := storage.CreatePost(context.Background(), &post)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	limit := 3
+	offset := 0
+	posts, err := storage.SearchPosts(context.Background(), q, limit, offset)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if len(posts) != limit {
+		t.Fatalf("want %v, got %v", limit, len(posts))
 	}
 
 	// tags will always come back sorted desc
 	tags := []string{"Python", "Rust"}
 	if !subset(tags, posts[0].Tags) {
-		t.Errorf("want superset of %v, got %v", tags, posts[0].Tags)
+		t.Fatalf("want superset of %v, got %v", tags, posts[0].Tags)
 	}
 }
 
@@ -109,7 +135,7 @@ func CountPosts(storage core.Storage, t *testing.T) {
 
 	// ensure count is at least one
 	if count < 1 {
-		t.Errorf("want >= 1, got %v", count)
+		t.Fatalf("want >= 1, got %v", count)
 	}
 }
 
@@ -137,7 +163,7 @@ func CountSearchPosts(storage core.Storage, t *testing.T) {
 
 	// ensure count is at least one
 	if count < 1 {
-		t.Errorf("want >= 1, got %v", count)
+		t.Fatalf("want >= 1, got %v", count)
 	}
 }
 

@@ -32,12 +32,12 @@ func TestNotFound(t *testing.T) {
 	}
 
 	if resp.StatusCode != 404 {
-		t.Errorf("want %v, got %v", 404, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 404, resp.StatusCode)
 	}
 
 	page := string(body)
 	if !strings.Contains(strings.ToLower(page), "not found") {
-		t.Errorf("error page missing 'not found'")
+		t.Fatalf("error page missing 'not found'")
 	}
 }
 
@@ -62,11 +62,11 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 
 	if resp.StatusCode != 405 {
-		t.Errorf("want %v, got %v", 405, resp.StatusCode)
+		t.Fatalf("want %v, got %v", 405, resp.StatusCode)
 	}
 
 	page := string(body)
 	if !strings.Contains(strings.ToLower(page), "method not allowed") {
-		t.Errorf("error page missing 'method not allowed'")
+		t.Fatalf("error page missing 'method not allowed'")
 	}
 }

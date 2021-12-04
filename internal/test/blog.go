@@ -13,7 +13,7 @@ func CreateBlog(storage core.Storage, t *testing.T) {
 
 	// blog should have an ID after creation
 	if blog.ID == 0 {
-		t.Error("blog id after creation should be nonzero")
+		t.Fatal("blog id after creation should be nonzero")
 	}
 }
 
@@ -23,7 +23,7 @@ func CreateBlogAlreadyExists(storage core.Storage, t *testing.T) {
 	// attempt to create the same blog again
 	err := storage.CreateBlog(context.Background(), &blog)
 	if !errors.Is(err, core.ErrExist) {
-		t.Error("duplicate blog should return an error")
+		t.Fatal("duplicate blog should return an error")
 	}
 }
 
@@ -36,21 +36,26 @@ func ReadBlog(storage core.Storage, t *testing.T) {
 	}
 
 	if got.ID != blog.ID {
-		t.Errorf("want %v, got %v", blog.ID, got.ID)
+		t.Fatalf("want %v, got %v", blog.ID, got.ID)
 	}
 }
 
-// TODO: test pagination
 func ReadBlogs(storage core.Storage, t *testing.T) {
 	CreateMockBlog(storage, t)
+	CreateMockBlog(storage, t)
+	CreateMockBlog(storage, t)
+	CreateMockBlog(storage, t)
+	CreateMockBlog(storage, t)
 
-	blogs, err := storage.ReadBlogs(context.Background(), 20, 0)
+	limit := 3
+	offset := 0
+	blogs, err := storage.ReadBlogs(context.Background(), limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(blogs) < 1 {
-		t.Errorf("want >= 1, got %v", len(blogs))
+	if len(blogs) != limit {
+		t.Fatalf("want %v, got %v", limit, len(blogs))
 	}
 }
 

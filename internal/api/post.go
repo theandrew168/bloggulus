@@ -9,13 +9,22 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus/internal/validator"
 )
 
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
-	// TODO: validator
+	v := validator.New()
+
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		app.notFoundResponse(w, r)
+		v.AddError("id", "must be an integer")
+		app.badRequestResponse(w, r, v.Errors)
+		return
+	}
+
+	v.Check(id >= 0, "id", "must be positive")
+	if !v.Valid() {
+		app.badRequestResponse(w, r, v.Errors)
 		return
 	}
 
@@ -40,23 +49,22 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) {
-	// TODO: validator
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-	if err != nil {
-		limit = 20
-	}
-	if limit > 50 {
-		limit = 50
-	}
+	v := validator.New()
+	qs := r.URL.Query()
 
-	// TODO: validator
-	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
-	if err != nil {
-		offset = 0
-	}
+	limit := readInt(qs, "limit", 20, v)
+	v.Check(limit >= 0, "limit", "must be positive")
+	v.Check(limit <= 50, "limit", "must be less than or equal to 50")
 
-	// TODO: validator
-	q := r.URL.Query().Get("q")
+	offset := readInt(qs, "offset", 0, v)
+	v.Check(offset >= 0, "offset", "must be positive")
+
+	q := qs.Get("q")
+
+	if !v.Valid() {
+		app.badRequestResponse(w, r, v.Errors)
+		return
+	}
 
 	var posts []core.Post
 	if q != "" {
@@ -83,7 +91,7 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	err = writeJSON(w, 200, envelope{"posts": posts})
+	err := writeJSON(w, 200, envelope{"posts": posts})
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

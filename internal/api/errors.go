@@ -15,6 +15,11 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 	}
 }
 
+func (app *Application) badRequestResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, 400, errors)
+}
+
+
 func (app *Application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
 	message := "not found"
 	app.errorResponse(w, r, 404, message)

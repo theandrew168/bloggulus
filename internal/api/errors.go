@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -17,12 +16,12 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 }
 
 func (app *Application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
-	message := "the requested resource could not be found"
+	message := "not found"
 	app.errorResponse(w, r, 404, message)
 }
 
 func (app *Application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
+	message := "method not allowed"
 	app.errorResponse(w, r, 405, message)
 }
 
@@ -30,6 +29,6 @@ func (app *Application) serverErrorResponse(w http.ResponseWriter, r *http.Reque
 	// skip 2 frames to identify original caller
 	app.logger.Output(2, err.Error())
 
-	message := "the server encountered a problem and could not process your request"
+	message := "internal server error"
 	app.errorResponse(w, r, 500, message)
 }

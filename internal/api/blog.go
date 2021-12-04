@@ -12,6 +12,7 @@ import (
 )
 
 func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
+	// TODO: validator
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		app.notFoundResponse(w, r)
@@ -39,6 +40,7 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) {
+	// TODO: validator
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil {
 		limit = 20
@@ -47,6 +49,7 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 		limit = 50
 	}
 
+	// TODO: validator
 	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
 	if err != nil {
 		offset = 0

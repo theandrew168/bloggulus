@@ -58,6 +58,26 @@ func TestHandleReadPost(t *testing.T) {
 	}
 }
 
+func TestHandleReadPostNotFound(t *testing.T) {
+	conn := test.ConnectDB(t)
+	defer conn.Close()
+
+	storage := postgresql.NewStorage(conn)
+	logger := test.NewLogger()
+	app := api.NewApplication(storage, logger)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/post/999999999", nil)
+
+	router := app.Router()
+	router.ServeHTTP(w, r)
+
+	resp := w.Result()
+	if resp.StatusCode != 404 {
+		t.Fatalf("want %v, got %v", 404 , resp.StatusCode)
+	}
+}
+
 func TestHandleReadPosts(t *testing.T) {
 	conn := test.ConnectDB(t)
 	defer conn.Close()

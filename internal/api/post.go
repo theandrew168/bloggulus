@@ -12,6 +12,7 @@ import (
 )
 
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
+	// TODO: validator
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		app.notFoundResponse(w, r)
@@ -39,6 +40,7 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) {
+	// TODO: validator
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil {
 		limit = 20
@@ -47,11 +49,13 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		limit = 50
 	}
 
+	// TODO: validator
 	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
 	if err != nil {
 		offset = 0
 	}
 
+	// TODO: validator
 	q := r.URL.Query().Get("q")
 
 	var posts []core.Post

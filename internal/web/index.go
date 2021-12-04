@@ -1,15 +1,12 @@
 package web
 
 import (
+	"context"
 	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/theandrew168/bloggulus/internal/core"
-)
-
-const (
-	PageSize = 15
 )
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -32,27 +29,39 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	var posts []core.Post
 
 	if q != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
 		// search if requested
-		count, err = app.storage.CountSearchPosts(r.Context(), q)
+		count, err = app.storage.CountSearchPosts(ctx, q)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 
-		posts, err = app.storage.SearchPosts(r.Context(), q, PageSize, p*PageSize)
+		ctx, cancel = context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
+		posts, err = app.storage.SearchPosts(ctx, q, pageSize, p*pageSize)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
 		// else just read recent
-		count, err = app.storage.CountPosts(r.Context())
+		count, err = app.storage.CountPosts(ctx)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 
-		posts, err = app.storage.ReadPosts(r.Context(), PageSize, p*PageSize)
+		ctx, cancel = context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
+		posts, err = app.storage.ReadPosts(ctx, pageSize, p*pageSize)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
@@ -72,7 +81,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		Search    string
 		Posts     []core.Post
 	}{
-		MorePages: (p+1)*PageSize < count,
+		MorePages: (p+1)*pageSize < count,
 		NextPage:  p + 1,
 		Search:    q,
 		Posts:     posts,

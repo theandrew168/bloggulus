@@ -31,9 +31,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
-// TODO: helpers for common DB retries / error handling? errRetry
-// TODO: SQL query timeouts ctx.WithDeadline, var for default
-
 //go:embed migrations
 var migrationsFS embed.FS
 

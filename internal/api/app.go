@@ -5,12 +5,17 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
 	"github.com/theandrew168/bloggulus/internal/core"
+)
+
+var (
+	queryTimeout = 3 * time.Second
 )
 
 //go:embed templates

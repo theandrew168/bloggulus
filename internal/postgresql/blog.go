@@ -4,10 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v4"
-
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
@@ -25,15 +21,10 @@ func (s *storage) CreateBlog(ctx context.Context, blog *core.Blog) error {
 	}
 	row := s.conn.QueryRow(ctx, stmt, args...)
 
-	err := row.Scan(&blog.ID)
+	err := scan(row, &blog.ID)
 	if err != nil {
-		// https://github.com/jackc/pgx/wiki/Error-Handling
-		// https://github.com/jackc/pgx/issues/474
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrcode.UniqueViolation {
-				return core.ErrExist
-			}
+		if errors.Is(err, core.ErrRetry) {
+			return s.CreateBlog(ctx, blog)
 		}
 		return err
 	}
@@ -53,15 +44,16 @@ func (s *storage) ReadBlog(ctx context.Context, id int) (core.Blog, error) {
 	row := s.conn.QueryRow(ctx, stmt, id)
 
 	var blog core.Blog
-	err := row.Scan(
+	err := scan(
+		row,
 		&blog.ID,
 		&blog.FeedURL,
 		&blog.SiteURL,
 		&blog.Title,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return core.Blog{}, core.ErrNotExist
+		if errors.Is(err, core.ErrRetry) {
+			return s.ReadBlog(ctx, id)
 		}
 		return core.Blog{}, err
 	}
@@ -89,13 +81,17 @@ func (s *storage) ReadBlogs(ctx context.Context, limit, offset int) ([]core.Blog
 	blogs := make([]core.Blog, 0)
 	for rows.Next() {
 		var blog core.Blog
-		err := rows.Scan(
+		err := scan(
+			rows,
 			&blog.ID,
 			&blog.FeedURL,
 			&blog.SiteURL,
 			&blog.Title,
 		)
 		if err != nil {
+			if errors.Is(err, core.ErrRetry) {
+				return s.ReadBlogs(ctx, limit, offset)
+			}
 			return nil, err
 		}
 

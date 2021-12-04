@@ -4,10 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v4"
-
 	"github.com/theandrew168/bloggulus/internal/core"
 )
 
@@ -27,15 +23,10 @@ func (s *storage) CreatePost(ctx context.Context, post *core.Post) error {
 	}
 	row := s.conn.QueryRow(ctx, stmt, args...)
 
-	err := row.Scan(&post.ID)
+	err := scan(row, &post.ID)
 	if err != nil {
-		// https://github.com/jackc/pgx/wiki/Error-Handling
-		// https://github.com/jackc/pgx/issues/474
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrcode.UniqueViolation {
-				return core.ErrExist
-			}
+		if errors.Is(err, core.ErrRetry) {
+			return s.CreatePost(ctx, post)
 		}
 		return err
 	}
@@ -65,7 +56,8 @@ func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
 	row := s.conn.QueryRow(ctx, stmt, id)
 
 	var post core.Post
-	err := row.Scan(
+	err := scan(
+		row,
 		&post.ID,
 		&post.URL,
 		&post.Title,
@@ -77,8 +69,8 @@ func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
 		&post.Blog.Title,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return core.Post{}, core.ErrNotExist
+		if errors.Is(err, core.ErrRetry) {
+			return s.ReadPost(ctx, id)
 		}
 		return core.Post{}, err
 	}
@@ -130,7 +122,8 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
-		err := rows.Scan(
+		err := scan(
+			rows,
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -142,6 +135,9 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 			&post.Blog.Title,
 		)
 		if err != nil {
+			if errors.Is(err, core.ErrRetry) {
+				return s.ReadPosts(ctx, limit, offset)
+			}
 			return nil, err
 		}
 
@@ -181,7 +177,8 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
-		err := rows.Scan(
+		err := scan(
+			rows,
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -193,6 +190,9 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 			&post.Blog.Title,
 		)
 		if err != nil {
+			if errors.Is(err, core.ErrRetry) {
+				return s.ReadPostsByBlog(ctx, blogID, limit, offset)
+			}
 			return nil, err
 		}
 
@@ -246,7 +246,8 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 	posts := make([]core.Post, 0)
 	for rows.Next() {
 		var post core.Post
-		err := rows.Scan(
+		err := scan(
+			rows,
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -258,6 +259,9 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 			&post.Blog.Title,
 		)
 		if err != nil {
+			if errors.Is(err, core.ErrRetry) {
+				return s.SearchPosts(ctx, query, limit, offset)
+			}
 			return nil, err
 		}
 
@@ -274,14 +278,10 @@ func (s *storage) CountPosts(ctx context.Context) (int, error) {
 	row := s.conn.QueryRow(ctx, stmt)
 
 	var count int
-	err := row.Scan(&count)
+	err := scan(row, &count)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			// retry on stale connections
-			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.CountPosts(ctx)
-			}
+		if errors.Is(err, core.ErrRetry) {
+			return s.CountPosts(ctx)
 		}
 		return 0, err
 	}
@@ -297,14 +297,10 @@ func (s *storage) CountSearchPosts(ctx context.Context, query string) (int, erro
 	row := s.conn.QueryRow(ctx, stmt, query)
 
 	var count int
-	err := row.Scan(&count)
+	err := scan(row, &count)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			// retry on stale connections
-			if pgErr.Code == pgerrcode.AdminShutdown {
-				return s.CountSearchPosts(ctx, query)
-			}
+		if errors.Is(err, core.ErrRetry) {
+			return s.CountSearchPosts(ctx, query)
 		}
 		return 0, err
 	}

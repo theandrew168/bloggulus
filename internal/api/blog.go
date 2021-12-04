@@ -18,7 +18,10 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	blog, err := app.storage.ReadBlog(context.Background(), id)
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	blog, err := app.storage.ReadBlog(ctx, id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
 			app.notFoundResponse(w, r)
@@ -49,7 +52,10 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 		offset = 0
 	}
 
-	blogs, err := app.storage.ReadBlogs(context.Background(), limit, offset)
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	blogs, err := app.storage.ReadBlogs(ctx, limit, offset)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

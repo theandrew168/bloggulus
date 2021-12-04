@@ -18,7 +18,10 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := app.storage.ReadPost(context.Background(), id)
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	post, err := app.storage.ReadPost(ctx, id)
 	if err != nil {
 		if errors.Is(err, core.ErrNotExist) {
 			app.notFoundResponse(w, r)
@@ -53,17 +56,23 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 
 	var posts []core.Post
 	if q != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
 		// search if requested
 		var err error
-		posts, err = app.storage.SearchPosts(context.Background(), q, limit, offset)
+		posts, err = app.storage.SearchPosts(ctx, q, limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+		defer cancel()
+
 		// else just read recent
 		var err error
-		posts, err = app.storage.ReadPosts(context.Background(), limit, offset)
+		posts, err = app.storage.ReadPosts(ctx, limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

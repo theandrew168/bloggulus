@@ -7,11 +7,17 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/theandrew168/bloggulus/internal/core"
+)
+
+var (
+	pageSize     = 15
+	queryTimeout = 3 * time.Second
 )
 
 //go:embed templates

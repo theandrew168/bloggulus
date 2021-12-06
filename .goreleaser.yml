@@ -22,7 +22,7 @@ nfpms:
   - package_name: bloggulus
     homepage: https://github.com/theandrew168/bloggulus
     maintainer: Andrew Dailey <andrew@shallowbrooksoftware.com>
-    description: A website for avid blog readers 
+    description: A website for avid blog readers
     license: MIT
     formats:
       - deb

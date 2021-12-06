@@ -170,23 +170,22 @@ func main() {
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
 
-		logger.Println("stopping server")
+		// wait for background tasks to finish (no timeout here)
+		logger.Println("stopping worker")
+		worker.Wait()
+		logger.Println("stopped worker")
 
 		// give the web server 5 seconds to shutdown gracefully
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		// shutdown the web server and track any errors
+		logger.Println("stopping server")
 		srv.SetKeepAlivesEnabled(false)
 		err := srv.Shutdown(ctx)
 		if err != nil {
 			shutdownError <- err
 		}
-
-		// wait for background tasks to finish (no timeout here)
-		logger.Println("stopping worker")
-		worker.Wait()
-		logger.Println("stopped worker")
 
 		shutdownError <- nil
 	}()

@@ -1,7 +1,6 @@
 package config
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
 	"strings"

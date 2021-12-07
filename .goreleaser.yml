@@ -12,7 +12,8 @@ builds:
       - amd64
 
 archives:
-  - files:
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    files:
       - none*
     format_overrides:
       - goos: windows
@@ -20,6 +21,7 @@ archives:
 
 nfpms:
   - package_name: bloggulus
+    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     homepage: https://github.com/theandrew168/bloggulus
     maintainer: Andrew Dailey <andrew@shallowbrooksoftware.com>
     description: A website for avid blog readers

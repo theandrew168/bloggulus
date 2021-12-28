@@ -21,22 +21,13 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
-    - name: Setup NodeJS
-      uses: actions/setup-node@v2
-      with:
-        node-version: 14
-    - name: Install PurgeCSS
+    - name: Setup TailwindCSS
       run: |
-        npm install -g purgecss
-    # intentionally absent from the Makefile due to destructive behavior
-    - name: Strip unused CSS
-      run: >
-        purgecss
-        -c scripts/purgecss.config.js
-        -con internal/api/templates/*.tmpl
-        -con internal/web/templates/*.tmpl
-        -css static/css/*
-        -o static/css/
+        curl -L https://github.com/tailwindlabs/tailwindcss/releases/download/v3.0.7/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss
+        chmod +x /usr/local/bin/tailwindcss
+    - name: Build css
+      run: |
+        make css
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v2
       with:

@@ -4,12 +4,17 @@
 .PHONY: default
 default: build
 
+.PHONY: css
+css:
+	tailwindcss -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
+
 .PHONY: build
-build:
+build: css
 	go build -o bloggulus main.go
 
 .PHONY: run
 run:
+	tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css &
 	go run main.go -conf internal/test/bloggulus.conf
 
 .PHONY: test

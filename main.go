@@ -45,7 +45,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.Lshortfile)
 
 	// check for config file flag
-	conf := flag.String("conf", "/etc/bloggulus.conf", "app config file")
+	conf := flag.String("conf", "bloggulus.conf", "app config file")
 
 	// check for action flags
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")

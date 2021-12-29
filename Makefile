@@ -14,8 +14,8 @@ build: css
 
 .PHONY: run
 run:
-	tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css &
-	go run main.go -conf internal/test/bloggulus.conf
+	go run main.go -conf internal/test/bloggulus.conf &
+	tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
 
 .PHONY: test
 test:

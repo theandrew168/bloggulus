@@ -25,9 +25,8 @@ jobs:
       run: |
         curl -L https://github.com/tailwindlabs/tailwindcss/releases/download/v3.0.7/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss
         chmod +x /usr/local/bin/tailwindcss
-    - name: Build css
-      run: |
-        make css
+    - name: Build project
+      run: make
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v2
       with:

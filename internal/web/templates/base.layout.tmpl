@@ -1,3 +1,4 @@
+{{define "base"}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,9 +11,39 @@
 
 	<link rel="stylesheet" href="/static/css/tailwind.min.css" />
 	<script data-goatcounter="https://bloggulus.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
 	<style>
-		@import url('https://fonts.googleapis.com/css?family=Karla:400,700&display=swap');
-		.font-family-karla { font-family: karla; }
+		@font-face {
+			font-family: "Karla";
+			font-weight: normal;
+			font-style: normal;
+			src: url("/static/font/karla/Karla-Regular.ttf") format("truetype");
+		}
+		
+		@font-face {
+			font-family: "Karla";
+			font-weight: bold;
+			font-style: normal;
+			src: url("/static/font/karla/Karla-Bold.ttf") format("truetype");
+		}
+		
+		@font-face {
+			font-family: "Karla";
+			font-weight: normal;
+			font-style: italic;
+			src: url("/static/font/karla/Karla-Italic.ttf") format("truetype");
+		}
+		
+		@font-face {
+			font-family: "Karla";
+			font-weight: bold;
+			font-style: italic;
+			src: url("/static/font/karla/Karla-BoldItalic.ttf") format("truetype");
+		}
+
+		.font-family-karla {
+			font-family: "Karla", sans-serif;
+		}
 	</style>
 </head>
 
@@ -41,11 +72,7 @@
 
 	<!-- main content -->
 	<main class="flex-grow">
-		<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
-			<h1 class="text-xl font-bold text-gray-700 md:text-2xl">
-				Not found
-			</h1>
-		</div>
+		{{template "main" .}}
 	</main>
 
 	<!-- footer -->
@@ -61,3 +88,4 @@
 </body>
 
 </html>
+{{end}}

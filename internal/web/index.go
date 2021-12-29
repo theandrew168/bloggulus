@@ -10,7 +10,12 @@ import (
 )
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	ts, err := template.ParseFS(app.templates, "index.html.tmpl")
+	files := []string{
+		"index.page.tmpl",
+		"base.layout.tmpl",
+	}
+
+	ts, err := template.ParseFS(app.templates, files...)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

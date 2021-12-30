@@ -24,6 +24,19 @@ func Read(data string) (Config, error) {
 		return Config{}, err
 	}
 
+	// gather extra values
+	extra := []string{}
+	for _, keys := range meta.Undecoded() {
+		key := keys[0]
+		extra = append(extra, key)
+	}
+
+	// error upon extra values
+	if len(extra) > 0 {
+		msg := strings.Join(extra, ", ")
+		return Config{}, fmt.Errorf("extra config values: %s", msg)
+	}
+
 	// build set of present config keys
 	present := make(map[string]bool)
 	for _, keys := range meta.Keys() {
@@ -35,7 +48,7 @@ func Read(data string) (Config, error) {
 		"database_uri",
 	}
 
-	// ensure required keys are present
+	// gather missing values
 	missing := []string{}
 	for _, key := range required {
 		if _, ok := present[key]; !ok {
@@ -43,6 +56,7 @@ func Read(data string) (Config, error) {
 		}
 	}
 
+	// error upon missing values
 	if len(missing) > 0 {
 		msg := strings.Join(missing, ", ")
 		return Config{}, fmt.Errorf("missing config values: %s", msg)

@@ -14,7 +14,7 @@ build: css
 
 .PHONY: run
 run:
-	go run main.go -conf internal/test/bloggulus.conf &
+	ENV=dev go run main.go -conf internal/test/bloggulus.conf &
 	tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
 
 .PHONY: test

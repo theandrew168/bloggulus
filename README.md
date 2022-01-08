@@ -25,7 +25,7 @@ Run the web server (in a background process) and let Tailwind watch for CSS chan
 ```bash
 # make run
 ENV=dev go run main.go &
-tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
+tailwindcss --watch -m -i tailwind.input.css -o static/css/tailwind.min.css
 ```
 
 ## Testing

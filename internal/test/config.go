@@ -7,13 +7,11 @@ import (
 	"github.com/theandrew168/bloggulus/internal/config"
 )
 
-//go:embed bloggulus.conf
-var testConfig string
-
 func Config(t *testing.T) config.Config {
 	t.Helper()
 
-	cfg, err := config.Read(testConfig)
+	// read the local development config file
+	cfg, err := config.ReadFile("../../bloggulus.conf")
 	if err != nil {
 		t.Fatal(err)
 	}

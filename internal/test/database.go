@@ -10,7 +10,6 @@ import (
 func ConnectDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 
-	// use config defaults for tests
 	cfg := Config(t)
 
 	// open a database connection pool

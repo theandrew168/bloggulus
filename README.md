@@ -24,7 +24,7 @@ If actively working on frontend templates, set `ENV=dev` to tell the server to r
 Run the web server (in a background process) and let Tailwind watch for CSS changes:
 ```bash
 # make run
-ENV=dev go run main.go -conf internal/test/bloggulus.conf &
+ENV=dev go run main.go &
 tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
 ```
 
@@ -32,7 +32,7 @@ tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.m
 Tests can be ran after starting the necessary containers and applying database migrations:
 ```bash
 # make test
-go run main.go -migrate -conf internal/test/bloggulus.conf
+go run main.go -migrate
 go test -v ./...
 ```
 

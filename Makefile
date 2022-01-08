@@ -14,22 +14,22 @@ build: css
 
 .PHONY: run
 run:
-	ENV=dev go run main.go -conf internal/test/bloggulus.conf &
+	ENV=dev go run main.go &
 	tailwindcss --watch -m -i static/css/tailwind.input.css -o static/css/tailwind.min.css
 
 .PHONY: test
 test:
-	go run main.go -conf internal/test/bloggulus.conf -migrate
+	go run main.go -migrate
 	go test -count=1 -v ./...
 
 .PHONY: race
 race:
-	go run main.go -conf internal/test/bloggulus.conf -migrate
+	go run main.go -migrate
 	go test -race -count=1 ./...
 
 .PHONY: cover
 cover:
-	go run main.go -conf internal/test/bloggulus.conf -migrate
+	go run main.go -migrate
 	go test -coverprofile=c.out -coverpkg=./... -count=1 ./...
 	go tool cover -html=c.out
 

@@ -19,7 +19,6 @@ func (app *Application) badRequestResponse(w http.ResponseWriter, r *http.Reques
 	app.errorResponse(w, r, 400, errors)
 }
 
-
 func (app *Application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
 	message := "not found"
 	app.errorResponse(w, r, 404, message)

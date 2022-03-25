@@ -72,7 +72,7 @@ func TestHandleReadBlogNotFound(t *testing.T) {
 
 	resp := w.Result()
 	if resp.StatusCode != 404 {
-		t.Fatalf("want %v, got %v", 404 , resp.StatusCode)
+		t.Fatalf("want %v, got %v", 404, resp.StatusCode)
 	}
 }
 

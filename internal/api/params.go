@@ -7,8 +7,6 @@ import (
 	"github.com/theandrew168/bloggulus/internal/validator"
 )
 
-
-
 func readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
 	s := qs.Get(key)
 	if s == "" {

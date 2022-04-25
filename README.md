@@ -1,4 +1,6 @@
 # bloggulus
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ftheandrew168%2Fbloggulus.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Ftheandrew168%2Fbloggulus?ref=badge_shield)
+
 A website for avid blog readers
 
 ## Setup
@@ -41,3 +43,7 @@ Note that the tests will leave random test in the database so feel free to flush
 docker compose down
 docker compose up -d
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ftheandrew168%2Fbloggulus.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Ftheandrew168%2Fbloggulus?ref=badge_large)

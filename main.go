@@ -31,8 +31,8 @@ import (
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
-//go:embed migrations
-var migrationsFS embed.FS
+//go:embed migration
+var migrationFS embed.FS
 
 //go:embed static
 var staticFS embed.FS
@@ -71,7 +71,7 @@ func main() {
 	}
 
 	// apply database migrations
-	migrations, _ := fs.Sub(migrationsFS, "migrations")
+	migrations, _ := fs.Sub(migrationFS, "migration")
 	if err = compareAndApplyMigrations(conn, migrations, logger); err != nil {
 		logger.Fatalln(err)
 	}
@@ -205,7 +205,7 @@ func main() {
 	logger.Println("stopped server")
 }
 
-func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *log.Logger) error {
+func compareAndApplyMigrations(conn *pgxpool.Pool, migrationFS fs.FS, logger *log.Logger) error {
 	ctx := context.Background()
 
 	// create migrations table if it doesn't exist
@@ -235,8 +235,8 @@ func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *l
 		applied[name] = true
 	}
 
-	// get migrations that should be applied (from migrations/ dir)
-	migrations, err := fs.ReadDir(migrationsFS, ".")
+	// get migrations that should be applied (from migration/ dir)
+	migrations, err := fs.ReadDir(migrationFS, ".")
 	if err != nil {
 		return err
 	}
@@ -256,7 +256,7 @@ func compareAndApplyMigrations(conn *pgxpool.Pool, migrationsFS fs.FS, logger *l
 		logger.Printf("applying: %s\n", name)
 
 		// apply the missing ones
-		sql, err := fs.ReadFile(migrationsFS, name)
+		sql, err := fs.ReadFile(migrationFS, name)
 		if err != nil {
 			return err
 		}

@@ -30,15 +30,15 @@ nfpms:
       - deb
     bindir: /usr/bin
     contents:
-      - src: scripts/bloggulus.service
+      - src: script/bloggulus.service
         dst: /lib/systemd/system/bloggulus.service
-      - src: scripts/bloggulus.conf
+      - src: script/bloggulus.conf
         dst: /etc/bloggulus.conf
         type: config
     scripts:
-      postinstall: scripts/postinstall.sh
-      preremove: scripts/preremove.sh
-      postremove: scripts/postremove.sh
+      postinstall: script/postinstall.sh
+      preremove: script/preremove.sh
+      postremove: script/postremove.sh
 
 checksum:
   name_template: checksums.txt

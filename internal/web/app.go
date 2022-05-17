@@ -20,8 +20,8 @@ var (
 	queryTimeout = 3 * time.Second
 )
 
-//go:embed templates
-var templatesFS embed.FS
+//go:embed template
+var templateFS embed.FS
 
 type Application struct {
 	templates fs.FS
@@ -34,10 +34,10 @@ func NewApplication(storage core.Storage, logger *log.Logger) *Application {
 	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
 		// reload templates from filesystem if var ENV starts with "dev"
 		// NOTE: os.DirFS is rooted from where the app is ran, not this file
-		templates = os.DirFS("./internal/web/templates/")
+		templates = os.DirFS("./internal/web/template/")
 	} else {
-		// else use the embedded templates dir
-		templates, _ = fs.Sub(templatesFS, "templates")
+		// else use the embedded template dir
+		templates, _ = fs.Sub(templateFS, "template")
 	}
 
 	app := Application{

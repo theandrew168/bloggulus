@@ -42,7 +42,7 @@ var logo []byte
 
 func main() {
 	// log everything to stdout, include file name and line number
-	logger := log.New(os.Stdout, "", log.Lshortfile)
+	logger := log.New(os.Stdout, "", 0)
 
 	// check for config file flag
 	conf := flag.String("conf", "bloggulus.conf", "app config file")

@@ -32,7 +32,11 @@
 <!-- pagination -->
 {{if .MorePages}}
 <div class="mx-auto mb-6 px-16 md:px-0 flex justify-center items-center gap-x-4">
+	{{if .Search}}
 	<a href="/?p={{.NextPage}}&q={{.Search}}" class="bg-white text-gray-700 font-bold shadow hover:shadow-md rounded px-6 py-2">See More</a>
+	{{else}}
+	<a href="/?p={{.NextPage}}" class="bg-white text-gray-700 font-bold shadow hover:shadow-md rounded px-6 py-2">See More</a>
+	{{end}}
 </div>
 {{end}}
 

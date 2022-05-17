@@ -23,7 +23,7 @@ migrate:
 
 .PHONY: test
 test: migrate
-	go test -count=1 -v ./...
+	go test -count=1 ./...
 
 .PHONY: race
 race: migrate

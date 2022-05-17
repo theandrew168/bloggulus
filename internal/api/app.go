@@ -18,8 +18,8 @@ var (
 	queryTimeout = 3 * time.Second
 )
 
-//go:embed templates
-var templatesFS embed.FS
+//go:embed template
+var templateFS embed.FS
 
 type Application struct {
 	templates fs.FS
@@ -28,7 +28,7 @@ type Application struct {
 }
 
 func NewApplication(storage core.Storage, logger *log.Logger) *Application {
-	templates, _ := fs.Sub(templatesFS, "templates")
+	templates, _ := fs.Sub(templateFS, "template")
 
 	app := Application{
 		templates: templates,

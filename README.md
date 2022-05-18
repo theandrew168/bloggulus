@@ -1,5 +1,5 @@
 # bloggulus
-A website for avid blog readers
+A collective index of my favorite blogs
 
 ## Setup
 This project depends on the [Go programming language](https://golang.org/dl/) and the [TailwindCSS CLI](https://tailwindcss.com/blog/standalone-cli).

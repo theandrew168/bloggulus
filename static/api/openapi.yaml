@@ -5,7 +5,7 @@ info:
   description: Programmatic access to blogs and posts
   version: 1.0.0
 servers:
-- url: /api
+- url: /api/v1
 paths:
   /blog:
     get:

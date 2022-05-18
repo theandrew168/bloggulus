@@ -131,7 +131,7 @@ func main() {
 	// construct the top-level router
 	r := chi.NewRouter()
 	r.Mount("/", webApp.Router())
-	r.Mount("/api", apiApp.Router())
+	r.Mount("/api/v1", apiApp.Router())
 	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/static/*", http.StripPrefix("/static", gzipStaticServer))
 	r.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {

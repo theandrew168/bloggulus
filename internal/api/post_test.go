@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,21 +8,19 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/api"
-	"github.com/theandrew168/bloggulus/internal/core"
-	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestHandleReadPost(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
-	post := test.CreateMockPost(storage, t)
+	post := test.CreateMockPost(t, storage)
 
 	url := fmt.Sprintf("/post/%d", post.ID)
 	w := httptest.NewRecorder()
@@ -42,7 +39,7 @@ func TestHandleReadPost(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string]core.Post
+	var env map[string]bloggulus.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -59,12 +56,11 @@ func TestHandleReadPost(t *testing.T) {
 }
 
 func TestHandleReadPostNotFound(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/post/999999999", nil)
@@ -79,14 +75,13 @@ func TestHandleReadPostNotFound(t *testing.T) {
 }
 
 func TestHandleReadPosts(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
-	test.CreateMockPost(storage, t)
+	test.CreateMockPost(t, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/post", nil)
@@ -104,7 +99,7 @@ func TestHandleReadPosts(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]core.Post
+	var env map[string][]bloggulus.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -121,19 +116,18 @@ func TestHandleReadPosts(t *testing.T) {
 }
 
 func TestHandleReadPostsPagination(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	// create 5 posts to test with
-	test.CreateMockPost(storage, t)
-	test.CreateMockPost(storage, t)
-	test.CreateMockPost(storage, t)
-	test.CreateMockPost(storage, t)
-	test.CreateMockPost(storage, t)
+	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, storage)
 
 	tests := []struct {
 		limit int
@@ -163,7 +157,7 @@ func TestHandleReadPostsPagination(t *testing.T) {
 			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
-		var env map[string][]core.Post
+		var env map[string][]bloggulus.Post
 		err = json.Unmarshal(body, &env)
 		if err != nil {
 			t.Fatal(err)
@@ -181,19 +175,18 @@ func TestHandleReadPostsPagination(t *testing.T) {
 }
 
 func TestHandleReadPostsSearch(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
-	blog := test.CreateMockBlog(storage, t)
+	blog := test.CreateMockBlog(t, storage)
 	q := "python rust"
 
 	// create searchable post
-	post := core.NewPost(test.RandomURL(32), q, test.RandomTime(), blog)
-	err := storage.CreatePost(context.Background(), &post)
+	post := bloggulus.NewPost(test.RandomURL(32), q, test.RandomTime(), blog)
+	err := storage.Post.Create(&post)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +208,7 @@ func TestHandleReadPostsSearch(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]core.Post
+	var env map[string][]bloggulus.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)

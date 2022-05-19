@@ -7,17 +7,15 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/internal/api"
-	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestBadRequest(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	tests := []struct {
 		url  string
@@ -64,12 +62,11 @@ func TestBadRequest(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/missing", nil)
@@ -94,12 +91,11 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/", nil)

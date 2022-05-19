@@ -16,11 +16,3 @@ func NewWorker(logger *log.Logger) *Worker {
 	}
 	return &worker
 }
-
-func (w *Worker) log(msg string) {
-	w.logger.Output(2, msg)
-}
-
-func (w *Worker) logError(err error) {
-	w.logger.Output(2, err.Error())
-}

@@ -1,32 +1,28 @@
 package task_test
 
 import (
-	"context"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/feed"
-	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/task"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestSyncBlogs(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
-
-	// instantiate storage interface
-	storage := postgresql.NewStorage(conn)
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
 	// mock and create a blog
 	blog := test.NewMockBlog()
-	err := storage.CreateBlog(context.Background(), &blog)
+	err := storage.Blog.Create(&blog)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// mock some posts onto the blog
-	posts := []core.Post{
+	posts := []bloggulus.Post{
 		test.NewMockPost(blog),
 		test.NewMockPost(blog),
 		test.NewMockPost(blog),
@@ -35,7 +31,6 @@ func TestSyncBlogs(t *testing.T) {
 
 	// create a feed reader for the mocked blog / post data
 	reader := feed.NewMockReader(blog, posts, body)
-	logger := test.NewLogger()
 
 	// run the sync blogs task
 	worker := task.NewWorker(logger)
@@ -46,7 +41,7 @@ func TestSyncBlogs(t *testing.T) {
 	}
 
 	// grab all posts associated with the mock blog
-	synced, err := storage.ReadPostsByBlog(context.Background(), blog.ID, 20, 0)
+	synced, err := storage.Post.ReadAllByBlog(blog, 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

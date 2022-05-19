@@ -6,18 +6,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/test"
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
 func TestNotFound(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := web.NewApplication(storage, logger)
+	app := web.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/missing", nil)
@@ -42,12 +40,11 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := web.NewApplication(storage, logger)
+	app := web.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/", nil)

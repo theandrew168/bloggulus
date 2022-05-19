@@ -7,21 +7,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/api"
-	"github.com/theandrew168/bloggulus/internal/core"
-	"github.com/theandrew168/bloggulus/internal/postgresql"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
 func TestHandleReadBlog(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
-	blog := test.CreateMockBlog(storage, t)
+	blog := test.CreateMockBlog(t, storage)
 
 	url := fmt.Sprintf("/blog/%d", blog.ID)
 	w := httptest.NewRecorder()
@@ -40,7 +38,7 @@ func TestHandleReadBlog(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string]core.Blog
+	var env map[string]bloggulus.Blog
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -57,12 +55,11 @@ func TestHandleReadBlog(t *testing.T) {
 }
 
 func TestHandleReadBlogNotFound(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/blog/999999999", nil)
@@ -77,14 +74,13 @@ func TestHandleReadBlogNotFound(t *testing.T) {
 }
 
 func TestHandleReadBlogs(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
-	test.CreateMockBlog(storage, t)
+	test.CreateMockBlog(t, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/blog", nil)
@@ -102,7 +98,7 @@ func TestHandleReadBlogs(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]core.Blog
+	var env map[string][]bloggulus.Blog
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -119,19 +115,18 @@ func TestHandleReadBlogs(t *testing.T) {
 }
 
 func TestHandleReadBlogsPagination(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := api.NewApplication(storage, logger)
+	app := api.NewApplication(logger, storage)
 
 	// create 5 blogs to test with
-	test.CreateMockBlog(storage, t)
-	test.CreateMockBlog(storage, t)
-	test.CreateMockBlog(storage, t)
-	test.CreateMockBlog(storage, t)
-	test.CreateMockBlog(storage, t)
+	test.CreateMockBlog(t, storage)
+	test.CreateMockBlog(t, storage)
+	test.CreateMockBlog(t, storage)
+	test.CreateMockBlog(t, storage)
+	test.CreateMockBlog(t, storage)
 
 	tests := []struct {
 		limit int
@@ -161,7 +156,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
-		var env map[string][]core.Blog
+		var env map[string][]bloggulus.Blog
 		err = json.Unmarshal(body, &env)
 		if err != nil {
 			t.Fatal(err)

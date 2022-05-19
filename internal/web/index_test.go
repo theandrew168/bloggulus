@@ -1,27 +1,24 @@
 package web_test
 
 import (
-	"context"
 	"io"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/internal/core"
-	"github.com/theandrew168/bloggulus/internal/postgresql"
+	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/test"
 	"github.com/theandrew168/bloggulus/internal/web"
 )
 
 func TestHandleIndex(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-	app := web.NewApplication(storage, logger)
+	app := web.NewApplication(logger, storage)
 
-	post := test.CreateMockPost(storage, t)
+	post := test.CreateMockPost(t, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -46,16 +43,14 @@ func TestHandleIndex(t *testing.T) {
 }
 
 func TestHandleIndexSearch(t *testing.T) {
-	conn := test.ConnectDB(t)
-	defer conn.Close()
+	logger := test.NewLogger(t)
+	storage, closer := test.NewStorage(t)
+	defer closer()
 
-	storage := postgresql.NewStorage(conn)
-	logger := test.NewLogger()
-
-	blog := test.CreateMockBlog(storage, t)
+	blog := test.CreateMockBlog(t, storage)
 
 	// generate some searchable post data
-	post := core.NewPost(
+	post := bloggulus.NewPost(
 		test.RandomURL(32),
 		"python rust",
 		test.RandomTime(),
@@ -63,12 +58,12 @@ func TestHandleIndexSearch(t *testing.T) {
 	)
 
 	// create a searchable post
-	err := storage.CreatePost(context.Background(), &post)
+	err := storage.Post.Create(&post)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	app := web.NewApplication(storage, logger)
+	app := web.NewApplication(logger, storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/?q=python+rust", nil)

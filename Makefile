@@ -6,7 +6,7 @@ default: build
 
 .PHONY: css
 css:
-	tailwindcss -m -i tailwind.input.css -o static/css/tailwind.min.css
+	tailwindcss -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
 
 .PHONY: build
 build: css
@@ -15,7 +15,7 @@ build: css
 .PHONY: run
 run:
 	ENV=dev go run cmd/web/main.go &
-	tailwindcss --watch -m -i tailwind.input.css -o static/css/tailwind.min.css
+	tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
 
 .PHONY: migrate
 migrate:

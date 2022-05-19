@@ -24,15 +24,15 @@ If actively working on frontend templates, set `ENV=dev` to tell the server to r
 Run the web server (in a background process) and let Tailwind watch for CSS changes:
 ```bash
 # make run
-ENV=dev go run main.go &
-tailwindcss --watch -m -i tailwind.input.css -o static/css/tailwind.min.css
+ENV=dev go run cmd/web/main.go &
+tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
 ```
 
 ## Testing
 Tests can be ran after starting the necessary containers and applying database migrations:
 ```bash
 # make test
-go run main.go -migrate
+go run cmd/web/main.go -migrate
 go test -v ./...
 ```
 

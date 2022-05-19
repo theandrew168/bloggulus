@@ -1,24 +1,23 @@
 package task
 
 import (
-	"context"
-	"fmt"
 	"sync"
 	"time"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/feed"
+	"github.com/theandrew168/bloggulus/internal/storage"
 )
 
 type syncBlogsTask struct {
-	worker  *Worker
-	storage core.Storage
+	w       *Worker
+	storage *storage.Storage
 	reader  feed.Reader
 }
 
-func (w *Worker) SyncBlogs(storage core.Storage, reader feed.Reader) Task {
+func (w *Worker) SyncBlogs(storage *storage.Storage, reader feed.Reader) Task {
 	task := syncBlogsTask{
-		worker:  w,
+		w:       w,
 		storage: storage,
 		reader:  reader,
 	}
@@ -28,7 +27,7 @@ func (w *Worker) SyncBlogs(storage core.Storage, reader feed.Reader) Task {
 func (t *syncBlogsTask) Run(interval time.Duration) {
 	err := t.RunNow()
 	if err != nil {
-		t.worker.logError(err)
+		t.w.logger.Println(err)
 	}
 
 	c := time.Tick(interval)
@@ -37,7 +36,7 @@ func (t *syncBlogsTask) Run(interval time.Duration) {
 
 		err := t.syncBlogs()
 		if err != nil {
-			t.worker.logError(err)
+			t.w.logger.Println(err)
 		}
 	}
 }
@@ -47,14 +46,14 @@ func (t *syncBlogsTask) RunNow() error {
 }
 
 func (t *syncBlogsTask) syncBlogs() error {
-	t.worker.Add(1)
-	defer t.worker.Done()
+	t.w.Add(1)
+	defer t.w.Done()
 
 	limit := 50
 	offset := 0
 
 	// read initial batch of blogs
-	blogs, err := t.storage.ReadBlogs(context.Background(), limit, offset)
+	blogs, err := t.storage.Blog.ReadAll(limit, offset)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 
 		// read the next batch
 		offset += limit
-		blogs, err = t.storage.ReadBlogs(context.Background(), limit, offset)
+		blogs, err = t.storage.Blog.ReadAll(limit, offset)
 		if err != nil {
 			wg.Wait()
 			return err
@@ -81,7 +80,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 	return nil
 }
 
-func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
+func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 	defer wg.Done()
 
 	limit := 50
@@ -91,9 +90,9 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	knownPostURLs := make(map[string]bool)
 
 	// read initial batch of posts
-	knownPosts, err := t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
+	knownPosts, err := t.storage.Post.ReadAllByBlog(blog, limit, offset)
 	if err != nil {
-		t.worker.logError(err)
+		t.w.logger.Println(err)
 		return
 	}
 
@@ -105,9 +104,9 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 
 		// read the next batch
 		offset += limit
-		knownPosts, err = t.storage.ReadPostsByBlog(context.Background(), blog.ID, limit, offset)
+		knownPosts, err = t.storage.Post.ReadAllByBlog(blog, limit, offset)
 		if err != nil {
-			t.worker.logError(err)
+			t.w.logger.Println(err)
 			return
 		}
 	}
@@ -115,12 +114,12 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	// read posts from feed
 	feedPosts, err := t.reader.ReadBlogPosts(blog)
 	if err != nil {
-		t.worker.logError(err)
+		t.w.logger.Println(err)
 		return
 	}
 
 	// newPosts = feedPosts - knownPosts
-	var newPosts []core.Post
+	var newPosts []bloggulus.Post
 	for _, post := range feedPosts {
 		if _, ok := knownPostURLs[post.URL]; ok {
 			continue
@@ -132,7 +131,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 	for i, _ := range newPosts {
 		body, err := t.reader.ReadPostBody(newPosts[i])
 		if err != nil {
-			t.worker.logError(err)
+			t.w.logger.Println(err)
 			continue
 		}
 		newPosts[i].Body = body
@@ -140,10 +139,9 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog core.Blog) {
 
 	// sync each post with the database
 	for _, post := range newPosts {
-		err = t.storage.CreatePost(context.Background(), &post)
+		err = t.storage.Post.Create(&post)
 		if err != nil {
-			msg := fmt.Sprintf("sync %v %v\n", post.URL, err)
-			t.worker.log(msg)
+			t.w.logger.Printf("sync %v %v\n", post.URL, err)
 		}
 	}
 }

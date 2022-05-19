@@ -1,12 +1,11 @@
 package web
 
 import (
-	"context"
 	"html/template"
 	"net/http"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
 )
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -31,42 +30,30 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 
 	var count int
-	var posts []core.Post
+	var posts []bloggulus.Post
 
 	if q != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
 		// search if requested
-		count, err = app.storage.CountSearchPosts(ctx, q)
+		count, err = app.storage.Post.CountSearch(q)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 
-		ctx, cancel = context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
-		posts, err = app.storage.SearchPosts(ctx, q, pageSize, p*pageSize)
+		posts, err = app.storage.Post.Search(q, pageSize, p*pageSize)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
 		// else just read recent
-		count, err = app.storage.CountPosts(ctx)
+		count, err = app.storage.Post.Count()
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 
-		ctx, cancel = context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
-		posts, err = app.storage.ReadPosts(ctx, pageSize, p*pageSize)
+		posts, err = app.storage.Post.ReadAll(pageSize, p*pageSize)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
@@ -84,7 +71,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		MorePages bool
 		NextPage  int
 		Search    string
-		Posts     []core.Post
+		Posts     []bloggulus.Post
 	}{
 		MorePages: (p+1)*pageSize < count,
 		NextPage:  p + 1,

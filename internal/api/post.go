@@ -1,14 +1,14 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/database"
 	"github.com/theandrew168/bloggulus/internal/validator"
 )
 
@@ -28,12 +28,9 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-	defer cancel()
-
-	post, err := app.storage.ReadPost(ctx, id)
+	post, err := app.storage.Post.Read(id)
 	if err != nil {
-		if errors.Is(err, core.ErrNotExist) {
+		if errors.Is(err, database.ErrNotExist) {
 			app.notFoundResponse(w, r)
 			return
 		}
@@ -66,25 +63,19 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var posts []core.Post
+	var posts []bloggulus.Post
 	if q != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
 		// search if requested
 		var err error
-		posts, err = app.storage.SearchPosts(ctx, q, limit, offset)
+		posts, err = app.storage.Post.Search(q, limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
 	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-		defer cancel()
-
 		// else just read recent
 		var err error
-		posts, err = app.storage.ReadPosts(ctx, limit, offset)
+		posts, err = app.storage.Post.ReadAll(limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

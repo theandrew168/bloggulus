@@ -1,14 +1,13 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus/internal/database"
 	"github.com/theandrew168/bloggulus/internal/validator"
 )
 
@@ -28,12 +27,9 @@ func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-	defer cancel()
-
-	blog, err := app.storage.ReadBlog(ctx, id)
+	blog, err := app.storage.Blog.Read(id)
 	if err != nil {
-		if errors.Is(err, core.ErrNotExist) {
+		if errors.Is(err, database.ErrNotExist) {
 			app.notFoundResponse(w, r)
 			return
 		}
@@ -64,10 +60,7 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-	defer cancel()
-
-	blogs, err := app.storage.ReadBlogs(ctx, limit, offset)
+	blogs, err := app.storage.Blog.ReadAll(limit, offset)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

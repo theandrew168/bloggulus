@@ -1,8 +1,4 @@
-package core
-
-import (
-	"context"
-)
+package bloggulus
 
 type Blog struct {
 	FeedURL string `json:"feed_url"`
@@ -20,10 +16,4 @@ func NewBlog(feedURL, siteURL, title string) Blog {
 		Title:   title,
 	}
 	return blog
-}
-
-type BlogStorage interface {
-	CreateBlog(ctx context.Context, blog *Blog) error
-	ReadBlog(ctx context.Context, id int) (Blog, error)
-	ReadBlogs(ctx context.Context, limit, offset int) ([]Blog, error)
 }

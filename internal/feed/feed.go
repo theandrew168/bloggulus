@@ -13,7 +13,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
 )
 
 // I know...
@@ -41,9 +41,9 @@ func CleanHTML(s string) string {
 }
 
 type Reader interface {
-	ReadBlog(feedURL string) (core.Blog, error)
-	ReadBlogPosts(blog core.Blog) ([]core.Post, error)
-	ReadPostBody(post core.Post) (string, error)
+	ReadBlog(feedURL string) (bloggulus.Blog, error)
+	ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error)
+	ReadPostBody(post bloggulus.Post) (string, error)
 }
 
 type reader struct{}
@@ -53,26 +53,26 @@ func NewReader() Reader {
 	return &r
 }
 
-func (r *reader) ReadBlog(feedURL string) (core.Blog, error) {
+func (r *reader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
-		return core.Blog{}, err
+		return bloggulus.Blog{}, err
 	}
 
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(feedURL)
 	if err != nil {
-		return core.Blog{}, err
+		return bloggulus.Blog{}, err
 	}
 
-	// create a core.Blog for the feed
-	blog := core.NewBlog(feedURL, feed.Link, feed.Title)
+	// create a bloggulus.Blog for the feed
+	blog := bloggulus.NewBlog(feedURL, feed.Link, feed.Title)
 	return blog, nil
 }
 
-func (r *reader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
+func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(blog.FeedURL)
@@ -80,8 +80,8 @@ func (r *reader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
 		return nil, err
 	}
 
-	// create a core.Post for each entry
-	var posts []core.Post
+	// create a bloggulus.Post for each entry
+	var posts []bloggulus.Post
 	for _, item := range feed.Items {
 		// try Updated then Published to obtain a timestamp
 		var updated time.Time
@@ -94,14 +94,14 @@ func (r *reader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
 			updated = time.Now()
 		}
 
-		post := core.NewPost(item.Link, item.Title, updated, blog)
+		post := bloggulus.NewPost(item.Link, item.Title, updated, blog)
 		posts = append(posts, post)
 	}
 
 	return posts, nil
 }
 
-func (r *reader) ReadPostBody(post core.Post) (string, error) {
+func (r *reader) ReadPostBody(post bloggulus.Post) (string, error) {
 	resp, err := http.Get(post.URL)
 	if err != nil {
 		return "", fmt.Errorf("%v: %v", post.URL, err)
@@ -119,12 +119,12 @@ func (r *reader) ReadPostBody(post core.Post) (string, error) {
 }
 
 type mockReader struct {
-	blog  core.Blog
-	posts []core.Post
+	blog  bloggulus.Blog
+	posts []bloggulus.Post
 	body  string
 }
 
-func NewMockReader(blog core.Blog, posts []core.Post, body string) Reader {
+func NewMockReader(blog bloggulus.Blog, posts []bloggulus.Post, body string) Reader {
 	r := mockReader{
 		blog:  blog,
 		posts: posts,
@@ -133,14 +133,14 @@ func NewMockReader(blog core.Blog, posts []core.Post, body string) Reader {
 	return &r
 }
 
-func (r *mockReader) ReadBlog(feedURL string) (core.Blog, error) {
+func (r *mockReader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
 	return r.blog, nil
 }
 
-func (r *mockReader) ReadBlogPosts(blog core.Blog) ([]core.Post, error) {
+func (r *mockReader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 	return r.posts, nil
 }
 
-func (r *mockReader) ReadPostBody(post core.Post) (string, error) {
+func (r *mockReader) ReadPostBody(post bloggulus.Post) (string, error) {
 	return r.body, nil
 }

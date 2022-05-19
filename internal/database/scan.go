@@ -1,4 +1,4 @@
-package postgresql
+package database
 
 import (
 	"errors"
@@ -6,16 +6,14 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
-
-	"github.com/theandrew168/bloggulus/internal/core"
 )
 
-func scan(row pgx.Row, dest ...interface{}) error {
+func Scan(row pgx.Row, dest ...interface{}) error {
 	err := row.Scan(dest...)
 	if err != nil {
 		// check for empty result (from QueryRow)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return core.ErrNotExist
+			return ErrNotExist
 		}
 
 		// check for more specific errors
@@ -24,11 +22,11 @@ func scan(row pgx.Row, dest ...interface{}) error {
 		if errors.As(err, &pgErr) {
 			// check for duplicate primary keys
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return core.ErrExist
+				return ErrExist
 			}
 			// check for stale connections (database restarted)
 			if pgErr.Code == pgerrcode.AdminShutdown {
-				return core.ErrRetry
+				return ErrRetry
 			}
 		}
 

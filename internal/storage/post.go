@@ -1,19 +1,32 @@
-package postgresql
+package storage
 
 import (
 	"context"
 	"errors"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/database"
 )
 
-func (s *storage) CreatePost(ctx context.Context, post *core.Post) error {
+type Post struct {
+	db database.Conn
+}
+
+func NewPost(db database.Conn) *Post {
+	s := Post{
+		db: db,
+	}
+	return &s
+}
+
+func (s *Post) Create(post *bloggulus.Post) error {
 	stmt := `
 		INSERT INTO post
 			(url, title, updated, body, blog_id)
 		VALUES
 			($1, $2, $3, $4, $5)
 		RETURNING id`
+
 	args := []interface{}{
 		post.URL,
 		post.Title,
@@ -21,12 +34,15 @@ func (s *storage) CreatePost(ctx context.Context, post *core.Post) error {
 		post.Body,
 		post.Blog.ID,
 	}
-	row := s.conn.QueryRow(ctx, stmt, args...)
 
-	err := scan(row, &post.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	row := s.db.QueryRow(ctx, stmt, args...)
+	err := database.Scan(row, &post.ID)
 	if err != nil {
-		if errors.Is(err, core.ErrRetry) {
-			return s.CreatePost(ctx, post)
+		if errors.Is(err, database.ErrRetry) {
+			return s.Create(post)
 		}
 		return err
 	}
@@ -34,7 +50,7 @@ func (s *storage) CreatePost(ctx context.Context, post *core.Post) error {
 	return nil
 }
 
-func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
+func (s *Post) Read(id int) (bloggulus.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -53,11 +69,9 @@ func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
 			ON to_tsquery(tag.name) @@ post.content_index
 		WHERE post.id = $1
 		GROUP BY 1,2,3,4,6,7,8,9`
-	row := s.conn.QueryRow(ctx, stmt, id)
 
-	var post core.Post
-	err := scan(
-		row,
+	var post bloggulus.Post
+	dest := []interface{}{
 		&post.ID,
 		&post.URL,
 		&post.Title,
@@ -67,18 +81,24 @@ func (s *storage) ReadPost(ctx context.Context, id int) (core.Post, error) {
 		&post.Blog.FeedURL,
 		&post.Blog.SiteURL,
 		&post.Blog.Title,
-	)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	row := s.db.QueryRow(ctx, stmt, id)
+	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, core.ErrRetry) {
-			return s.ReadPost(ctx, id)
+		if errors.Is(err, database.ErrRetry) {
+			return s.Read(id)
 		}
-		return core.Post{}, err
+		return bloggulus.Post{}, err
 	}
 
 	return post, nil
 }
 
-func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post, error) {
+func (s *Post) ReadAll(limit, offset int) ([]bloggulus.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -112,18 +132,21 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 			ON to_tsquery(tag.name) @@ posts.content_index
 		GROUP BY 1,2,3,4,6,7,8,9
 		ORDER BY posts.updated DESC`
-	rows, err := s.conn.Query(ctx, stmt, limit, offset)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	rows, err := s.db.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	// use make here to JSON encode as an empty array instead of null
-	posts := make([]core.Post, 0)
+	// use make here to encode JSON as an empty array instead of null
+	posts := make([]bloggulus.Post, 0)
 	for rows.Next() {
-		var post core.Post
-		err := scan(
-			rows,
+		var post bloggulus.Post
+		dest := []interface{}{
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -133,10 +156,12 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,
-		)
+		}
+
+		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, core.ErrRetry) {
-				return s.ReadPosts(ctx, limit, offset)
+			if errors.Is(err, database.ErrRetry) {
+				return s.ReadAll(limit, offset)
 			}
 			return nil, err
 		}
@@ -144,10 +169,14 @@ func (s *storage) ReadPosts(ctx context.Context, limit, offset int) ([]core.Post
 		posts = append(posts, post)
 	}
 
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
 	return posts, nil
 }
 
-func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset int) ([]core.Post, error) {
+func (s *Post) ReadAllByBlog(blog bloggulus.Blog, limit, offset int) ([]bloggulus.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -168,17 +197,20 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 		GROUP BY 1,2,3,4,6,7,8,9
 		ORDER BY post.updated DESC
 		LIMIT $2 OFFSET $3`
-	rows, err := s.conn.Query(ctx, stmt, blogID, limit, offset)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	rows, err := s.db.Query(ctx, stmt, blog.ID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	posts := make([]core.Post, 0)
+	posts := make([]bloggulus.Post, 0)
 	for rows.Next() {
-		var post core.Post
-		err := scan(
-			rows,
+		var post bloggulus.Post
+		dest := []interface{}{
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -188,10 +220,12 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,
-		)
+		}
+
+		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, core.ErrRetry) {
-				return s.ReadPostsByBlog(ctx, blogID, limit, offset)
+			if errors.Is(err, database.ErrRetry) {
+				return s.ReadAllByBlog(blog, limit, offset)
 			}
 			return nil, err
 		}
@@ -199,10 +233,14 @@ func (s *storage) ReadPostsByBlog(ctx context.Context, blogID int, limit, offset
 		posts = append(posts, post)
 	}
 
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
 	return posts, nil
 }
 
-func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset int) ([]core.Post, error) {
+func (s *Post) Search(query string, limit, offset int) ([]bloggulus.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -237,17 +275,20 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 			ON to_tsquery(tag.name) @@ content_index
 		GROUP BY 1,2,3,4,6,7,8,9,posts.content_index
 		ORDER BY ts_rank_cd(posts.content_index, websearch_to_tsquery('english',  $1)) DESC`
-	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	rows, err := s.db.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	posts := make([]core.Post, 0)
+	posts := make([]bloggulus.Post, 0)
 	for rows.Next() {
-		var post core.Post
-		err := scan(
-			rows,
+		var post bloggulus.Post
+		dest := []interface{}{
 			&post.ID,
 			&post.URL,
 			&post.Title,
@@ -257,10 +298,12 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 			&post.Blog.FeedURL,
 			&post.Blog.SiteURL,
 			&post.Blog.Title,
-		)
+		}
+
+		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, core.ErrRetry) {
-				return s.SearchPosts(ctx, query, limit, offset)
+			if errors.Is(err, database.ErrRetry) {
+				return s.Search(query, limit, offset)
 			}
 			return nil, err
 		}
@@ -271,17 +314,24 @@ func (s *storage) SearchPosts(ctx context.Context, query string, limit, offset i
 	return posts, nil
 }
 
-func (s *storage) CountPosts(ctx context.Context) (int, error) {
+func (s *Post) Count() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
-	row := s.conn.QueryRow(ctx, stmt)
 
 	var count int
-	err := scan(row, &count)
+	dest := []interface{}{
+		&count,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	row := s.db.QueryRow(ctx, stmt)
+	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, core.ErrRetry) {
-			return s.CountPosts(ctx)
+		if errors.Is(err, database.ErrRetry) {
+			return s.Count()
 		}
 		return 0, err
 	}
@@ -289,18 +339,25 @@ func (s *storage) CountPosts(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (s *storage) CountSearchPosts(ctx context.Context, query string) (int, error) {
+func (s *Post) CountSearch(query string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
 		WHERE content_index @@ websearch_to_tsquery('english',  $1)`
-	row := s.conn.QueryRow(ctx, stmt, query)
 
 	var count int
-	err := scan(row, &count)
+	dest := []interface{}{
+		&count,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	row := s.db.QueryRow(ctx, stmt, query)
+	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, core.ErrRetry) {
-			return s.CountSearchPosts(ctx, query)
+		if errors.Is(err, database.ErrRetry) {
+			return s.CountSearch(query)
 		}
 		return 0, err
 	}

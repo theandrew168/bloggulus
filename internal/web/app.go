@@ -7,17 +7,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/theandrew168/bloggulus/internal/core"
+	"github.com/theandrew168/bloggulus/internal/storage"
 )
 
 var (
-	pageSize     = 15
-	queryTimeout = 3 * time.Second
+	pageSize = 15
 )
 
 //go:embed template
@@ -25,11 +23,12 @@ var templateFS embed.FS
 
 type Application struct {
 	templates fs.FS
-	storage   core.Storage
-	logger    *log.Logger
+
+	logger  *log.Logger
+	storage *storage.Storage
 }
 
-func NewApplication(storage core.Storage, logger *log.Logger) *Application {
+func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
 	var templates fs.FS
 	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
 		// reload templates from filesystem if var ENV starts with "dev"
@@ -42,20 +41,21 @@ func NewApplication(storage core.Storage, logger *log.Logger) *Application {
 
 	app := Application{
 		templates: templates,
-		storage:   storage,
-		logger:    logger,
+
+		logger:  logger,
+		storage: storage,
 	}
 	return &app
 }
 
 func (app *Application) Router() http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
+	mux := chi.NewRouter()
+	mux.Use(middleware.Recoverer)
 
-	r.NotFound(app.notFoundResponse)
-	r.MethodNotAllowed(app.methodNotAllowedResponse)
+	mux.NotFound(app.notFoundResponse)
+	mux.MethodNotAllowed(app.methodNotAllowedResponse)
 
-	r.Get("/", app.HandleIndex)
+	mux.Get("/", app.HandleIndex)
 
-	return r
+	return mux
 }

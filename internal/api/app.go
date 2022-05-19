@@ -5,17 +5,14 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"time"
+	"os"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
-	"github.com/theandrew168/bloggulus/internal/core"
-)
-
-var (
-	queryTimeout = 3 * time.Second
+	"github.com/theandrew168/bloggulus/internal/storage"
 )
 
 //go:embed template
@@ -23,34 +20,48 @@ var templateFS embed.FS
 
 type Application struct {
 	templates fs.FS
-	storage   core.Storage
-	logger    *log.Logger
+
+	logger  *log.Logger
+	storage *storage.Storage
 }
 
-func NewApplication(storage core.Storage, logger *log.Logger) *Application {
-	templates, _ := fs.Sub(templateFS, "template")
+func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
+	var templates fs.FS
+	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
+		// reload templates from filesystem if var ENV starts with "dev"
+		// NOTE: os.DirFS is rooted from where the app is ran, not this file
+		templates = os.DirFS("./internal/api/template/")
+	} else {
+		// else use the embedded template FS
+		var err error
+		templates, err = fs.Sub(templateFS, "template")
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	app := Application{
 		templates: templates,
-		storage:   storage,
-		logger:    logger,
+
+		logger:  logger,
+		storage: storage,
 	}
 	return &app
 }
 
 func (app *Application) Router() http.Handler {
-	r := chi.NewRouter()
-	r.Use(cors.Handler(cors.Options{}))
-	r.Use(middleware.Recoverer)
+	mux := chi.NewRouter()
+	mux.Use(cors.Handler(cors.Options{}))
+	mux.Use(middleware.Recoverer)
 
-	r.NotFound(app.notFoundResponse)
-	r.MethodNotAllowed(app.methodNotAllowedResponse)
+	mux.NotFound(app.notFoundResponse)
+	mux.MethodNotAllowed(app.methodNotAllowedResponse)
 
-	r.Get("/", app.HandleIndex)
-	r.Get("/blog", app.HandleReadBlogs)
-	r.Get("/blog/{id}", app.HandleReadBlog)
-	r.Get("/post", app.HandleReadPosts)
-	r.Get("/post/{id}", app.HandleReadPost)
+	mux.Get("/", app.HandleIndex)
+	mux.Get("/blog", app.HandleReadBlogs)
+	mux.Get("/blog/{id}", app.HandleReadBlog)
+	mux.Get("/post", app.HandleReadPosts)
+	mux.Get("/post/{id}", app.HandleReadPost)
 
-	return r
+	return mux
 }

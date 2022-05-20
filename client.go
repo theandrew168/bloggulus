@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// BaseURL points to the publicly accessible Bloggulus API.
 	BaseURL = "https://bloggulus.com/api/v1"
 )
 
@@ -14,6 +15,7 @@ type Client struct {
 	Blog *BlogClient
 }
 
+// NewClient returns a new Bloggulus API client.
 func NewClient(url string) *Client {
 	c := Client{
 		Blog: NewBlogClient(url),
@@ -26,6 +28,7 @@ type BlogClient struct {
 	url    string
 }
 
+// NewBlogClient returns a new Bloggulus blog client.
 func NewBlogClient(url string) *BlogClient {
 	c := BlogClient{
 		client: new(http.Client),
@@ -34,6 +37,7 @@ func NewBlogClient(url string) *BlogClient {
 	return &c
 }
 
+// Read reads a single blog by its ID.
 func (c *BlogClient) Read(id int) (Blog, error) {
 	endpoint := fmt.Sprintf("%s/blog/%d", c.url, id)
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -61,6 +65,7 @@ func (c *BlogClient) Read(id int) (Blog, error) {
 	return msg.Blog, nil
 }
 
+// List lists all blogs in alphabetical order by title.
 func (c *BlogClient) List() ([]Blog, error) {
 	endpoint := fmt.Sprintf("%s/blog", c.url)
 	req, err := http.NewRequest("GET", endpoint, nil)

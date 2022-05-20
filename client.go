@@ -1,1 +1,89 @@
 package bloggulus
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+const (
+	BaseURL = "https://bloggulus.com/api/v1"
+)
+
+type Client struct {
+	Blog *BlogClient
+}
+
+func NewClient(url string) *Client {
+	c := Client{
+		Blog: NewBlogClient(url),
+	}
+	return &c
+}
+
+type BlogClient struct {
+	client *http.Client
+	url    string
+}
+
+func NewBlogClient(url string) *BlogClient {
+	c := BlogClient{
+		client: new(http.Client),
+		url:    url,
+	}
+	return &c
+}
+
+func (c *BlogClient) Read(id int) (Blog, error) {
+	endpoint := fmt.Sprintf("%s/blog/%d", c.url, id)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return Blog{}, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return Blog{}, err
+	}
+	defer resp.Body.Close()
+
+	var msg struct {
+		Blog Blog `json:"blog"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&msg)
+	if err != nil {
+		return Blog{}, err
+	}
+
+	return msg.Blog, nil
+}
+
+func (c *BlogClient) List() ([]Blog, error) {
+	endpoint := fmt.Sprintf("%s/blog", c.url)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var msg struct {
+		Blogs []Blog `json:"blogs"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg.Blogs, nil
+}

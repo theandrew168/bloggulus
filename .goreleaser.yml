@@ -32,6 +32,7 @@ nfpms:
     contents:
       - src: script/bloggulus.service
         dst: /lib/systemd/system/bloggulus.service
+        type: config
       - src: script/bloggulus.conf
         dst: /etc/bloggulus.conf
         type: config

@@ -70,7 +70,7 @@ func run() int {
 	store := storage.New(pool)
 
 	// init default feed reader
-	reader := feed.NewReader()
+	reader := feed.NewReader(logger)
 
 	// add a blog and exit now if requested
 	if *addblog != "" {

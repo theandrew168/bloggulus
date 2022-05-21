@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -46,10 +47,14 @@ type Reader interface {
 	ReadPostBody(post bloggulus.Post) (string, error)
 }
 
-type reader struct{}
+type reader struct{
+	logger *log.Logger
+}
 
-func NewReader() Reader {
-	r := reader{}
+func NewReader(logger *log.Logger) Reader {
+	r := reader{
+		logger: logger,
+	}
 	return &r
 }
 
@@ -94,7 +99,20 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 			updated = time.Now()
 		}
 
-		post := bloggulus.NewPost(item.Link, item.Title, updated, blog)
+		// ensure link is valid
+		link := item.Link
+		u, err := url.Parse(link)
+		if err != nil {
+			r.logger.Println(err)
+			continue
+		}
+
+		// ensure link includes FQDN
+		if u.Hostname() == "" {
+			link = feed.Link + link
+		}
+
+		post := bloggulus.NewPost(link, item.Title, updated, blog)
 		posts = append(posts, post)
 	}
 

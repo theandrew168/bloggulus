@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/alexedwards/flow"
 
 	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
@@ -15,7 +15,7 @@ import (
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	id, err := strconv.Atoi(flow.Param(r.Context(), "id"))
 	if err != nil {
 		v.AddError("id", "must be an integer")
 		app.badRequestResponse(w, r, v.Errors)

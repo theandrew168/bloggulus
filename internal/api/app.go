@@ -8,10 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
+	"github.com/alexedwards/flow"
 
+	"github.com/theandrew168/bloggulus/internal/middleware"
 	"github.com/theandrew168/bloggulus/internal/storage"
 )
 
@@ -50,18 +49,19 @@ func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
 }
 
 func (app *Application) Router() http.Handler {
-	mux := chi.NewRouter()
-	mux.Use(cors.Handler(cors.Options{}))
-	mux.Use(middleware.Recoverer)
+	mux := flow.New()
+	mux.NotFound = http.HandlerFunc(app.notFoundResponse)
+	mux.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	mux.NotFound(app.notFoundResponse)
-	mux.MethodNotAllowed(app.methodNotAllowedResponse)
+	mux.Use(middleware.RecoverPanic)
+	mux.Use(middleware.SecureHeaders)
+	mux.Use(middleware.EnableCORS)
 
-	mux.Get("/", app.HandleIndex)
-	mux.Get("/blog", app.HandleReadBlogs)
-	mux.Get("/blog/{id}", app.HandleReadBlog)
-	mux.Get("/post", app.HandleReadPosts)
-	mux.Get("/post/{id}", app.HandleReadPost)
+	mux.HandleFunc("/", app.HandleIndex, "GET")
+	mux.HandleFunc("/blog", app.HandleReadBlogs, "GET")
+	mux.HandleFunc("/blog/:id", app.HandleReadBlog, "GET")
+	mux.HandleFunc("/post", app.HandleReadPosts, "GET")
+	mux.HandleFunc("/post/:id", app.HandleReadPost, "GET")
 
 	return mux
 }

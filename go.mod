@@ -14,9 +14,8 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.1.0
+	github.com/alexedwards/flow v0.0.0-20220421161004-151985479ec9
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
-	github.com/go-chi/chi/v5 v5.0.7
-	github.com/go-chi/cors v1.2.1
 	github.com/klauspost/compress v1.15.4
 )
 
@@ -44,8 +43,8 @@ require (
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
-	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
-	golang.org/x/sys v0.0.0-20220519141025-dcacdad47464 // indirect
+	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )

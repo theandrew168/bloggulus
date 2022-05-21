@@ -19,6 +19,7 @@ type Post struct {
 	Body string `json:"-"`
 }
 
+// NewPost creates a new Post struct.
 func NewPost(url, title string, updated time.Time, blog Blog) Post {
 	post := Post{
 		URL:     url,

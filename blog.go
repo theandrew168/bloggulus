@@ -9,6 +9,7 @@ type Blog struct {
 	ID int `json:"id"`
 }
 
+// NewBlog creates a new Blog struct.
 func NewBlog(feedURL, siteURL, title string) Blog {
 	blog := Blog{
 		FeedURL: feedURL,

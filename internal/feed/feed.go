@@ -107,9 +107,20 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 			continue
 		}
 
-		// ensure link includes FQDN
+		// ensure link includes hostname
 		if u.Hostname() == "" {
 			link = feed.Link + link
+		}
+
+		// ensure link includes scheme
+		matched, err := regexp.MatchString("^https?://", link)
+		if err != nil {
+			r.logger.Println(err)
+			continue
+		}
+		// assume https if no scheme is present
+		if !matched {
+			link = "https://" + link
 		}
 
 		post := bloggulus.NewPost(link, item.Title, updated, blog)

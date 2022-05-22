@@ -47,7 +47,7 @@ type Reader interface {
 	ReadPostBody(post bloggulus.Post) (string, error)
 }
 
-type reader struct{
+type reader struct {
 	logger *log.Logger
 }
 

@@ -40,7 +40,7 @@ release:
 
 .PHONY: format
 format:
-	go fmt ./...
+	gofmt -l -s -w .
 
 .PHONY: clean
 clean:

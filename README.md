@@ -6,7 +6,7 @@
 
 
 Bloggulus is a web application for aggregating and indexing your favorite blogs.
-I wrote it to serve as a less engaging, more personalized version of sites like Hacker News or Reddit.
+I wrote it to serve as a less engaging and more personalized version of sites like Hacker News or Reddit.
 
 
 ## Client Library
@@ -89,8 +89,9 @@ func main() {
 ```
 
 
-## Self-Hosting
+## Local Development
 While the primary [Bloggulus website](https://bloggulus.com) represents my own personal collection of blogs, it is designed to be easily self-hostable.
+Check out the [releases page](https://github.com/theandrew168/bloggulus/releases) for pre-built binaries and DEBs (for quick installation on Debian-based Linux systems)
 
 
 ### Setup

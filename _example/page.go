@@ -20,8 +20,8 @@ func main() {
 	for {
 		// read the current page
 		posts, err := client.Post.List(
-			bloggulus.Limit(limit),
-			bloggulus.Offset(offset),
+			client.Limit(limit),
+			client.Offset(offset),
 		)
 		if err != nil {
 			log.Fatalln(err)

@@ -26,20 +26,6 @@ type Page struct {
 // PageOption represents a functional option of the Page type.
 type PageOption func(*Page)
 
-// Limit restricts the number of results returned.
-func Limit(limit int) PageOption {
-	return func(p *Page) {
-		p.limit = limit
-	}
-}
-
-// Offset shifts the result set by a specified number of records.
-func Offset(offset int) PageOption {
-	return func(p *Page) {
-		p.offset = offset
-	}
-}
-
 // Client holds the state necessary to communicate with a Bloggulus API.
 type Client struct {
 	client  *http.Client
@@ -76,6 +62,20 @@ func URL(url string) ClientOption {
 	return func(c *Client) error {
 		c.baseURL = url
 		return nil
+	}
+}
+
+// Limit restricts the number of results returned.
+func (c *Client) Limit(limit int) PageOption {
+	return func(p *Page) {
+		p.limit = limit
+	}
+}
+
+// Offset shifts the result set by a specified number of records.
+func (c *Client) Offset(offset int) PageOption {
+	return func(p *Page) {
+		p.offset = offset
 	}
 }
 

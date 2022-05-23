@@ -13,7 +13,7 @@ func main() {
 	}
 
 	// limit posts to 5
-	posts, err := client.Post.List(bloggulus.Limit(5))
+	posts, err := client.Post.List(client.Limit(5))
 	if err != nil {
 		log.Fatalln(err)
 	}

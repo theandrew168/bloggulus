@@ -16,6 +16,7 @@ const (
 	BaseURL = "https://bloggulus.com/api/v1"
 )
 
+// Client holds the state necessary to communicate with a Bloggulus API.
 type Client struct {
 	client  *http.Client
 	baseURL string
@@ -24,8 +25,11 @@ type Client struct {
 	Post *PostClient
 }
 
+// ClientOption represents a functional option of the Client type.
+type ClientOption func(*Client) error
+
 // NewClient returns a new Bloggulus API client.
-func NewClient(options ...func(*Client) error) (*Client, error) {
+func NewClient(options ...ClientOption) (*Client, error) {
 	c := Client{
 		client:  new(http.Client),
 		baseURL: BaseURL,
@@ -44,13 +48,31 @@ func NewClient(options ...func(*Client) error) (*Client, error) {
 }
 
 // URL sets the base URL for this client.
-func URL(url string) func(*Client) error {
+func URL(url string) ClientOption {
 	return func(c *Client) error {
 		c.baseURL = url
 		return nil
 	}
 }
 
+func (c *Client) get(endpoint string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// BlogClient is a Client for Bloggulus blogs.
 type BlogClient struct {
 	Client
 }
@@ -66,15 +88,7 @@ func NewBlogClient(client Client) *BlogClient {
 // Read reads a single blog by its ID.
 func (c *BlogClient) Read(id int) (Blog, error) {
 	endpoint := fmt.Sprintf("%s/blog/%d", c.baseURL, id)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return Blog{}, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(req)
+	resp, err := c.get(endpoint)
 	if err != nil {
 		return Blog{}, err
 	}
@@ -94,15 +108,7 @@ func (c *BlogClient) Read(id int) (Blog, error) {
 // List lists all blogs in alphabetical order by title.
 func (c *BlogClient) List() ([]Blog, error) {
 	endpoint := fmt.Sprintf("%s/blog", c.baseURL)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(req)
+	resp, err := c.get(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +125,7 @@ func (c *BlogClient) List() ([]Blog, error) {
 	return msg.Blogs, nil
 }
 
+// PostClient is a Client for Bloggulus posts.
 type PostClient struct {
 	Client
 }
@@ -134,15 +141,7 @@ func NewPostClient(client Client) *PostClient {
 // Read reads a single post by its ID.
 func (c *PostClient) Read(id int) (Post, error) {
 	endpoint := fmt.Sprintf("%s/post/%d", c.baseURL, id)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return Post{}, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(req)
+	resp, err := c.get(endpoint)
 	if err != nil {
 		return Post{}, err
 	}
@@ -162,15 +161,7 @@ func (c *PostClient) Read(id int) (Post, error) {
 // List lists all posts in reverse chronological orders (newest first).
 func (c *PostClient) List() ([]Post, error) {
 	endpoint := fmt.Sprintf("%s/post", c.baseURL)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(req)
+	resp, err := c.get(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -190,15 +181,7 @@ func (c *PostClient) List() ([]Post, error) {
 // Search searches all posts based on a given query string.
 func (c *PostClient) Search(query string) ([]Post, error) {
 	endpoint := fmt.Sprintf("%s/post?q=%s", c.baseURL, url.QueryEscape(query))
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(req)
+	resp, err := c.get(endpoint)
 	if err != nil {
 		return nil, err
 	}

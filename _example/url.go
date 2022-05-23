@@ -6,8 +6,10 @@ import (
 	"github.com/theandrew168/bloggulus"
 )
 
+const CustomURL = "https://bloggulus.com/api/v1"
+
 func main() {
-	client, err := bloggulus.NewClient()
+	client, err := bloggulus.NewClient(bloggulus.URL(CustomURL))
 	if err != nil {
 		log.Fatalln(err)
 	}

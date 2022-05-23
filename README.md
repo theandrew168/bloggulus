@@ -25,7 +25,10 @@ import (
 )
 
 func main() {
-	client := bloggulus.NewClient(bloggulus.BaseURL)
+	client, err := bloggulus.NewClient()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	blogs, err := client.Blog.List()
 	if err != nil {
@@ -39,7 +42,7 @@ func main() {
 ```
 
 
-### List Posts
+### List Recent Posts
 ```go
 package main
 
@@ -50,7 +53,10 @@ import (
 )
 
 func main() {
-	client := bloggulus.NewClient(bloggulus.BaseURL)
+	client, err := bloggulus.NewClient()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	posts, err := client.Post.List()
 	if err != nil {
@@ -75,7 +81,10 @@ import (
 )
 
 func main() {
-	client := bloggulus.NewClient(bloggulus.BaseURL)
+	client, err := bloggulus.NewClient()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	posts, err := client.Post.Search("python")
 	if err != nil {

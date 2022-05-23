@@ -17,36 +17,55 @@ const (
 )
 
 type Client struct {
+	client  *http.Client
+	baseURL string
+
 	Blog *BlogClient
 	Post *PostClient
 }
 
 // NewClient returns a new Bloggulus API client.
-func NewClient(url string) *Client {
+func NewClient(options ...func(*Client) error) (*Client, error) {
 	c := Client{
-		Blog: NewBlogClient(url),
-		Post: NewPostClient(url),
+		client:  new(http.Client),
+		baseURL: BaseURL,
 	}
-	return &c
+	c.Blog = NewBlogClient(c)
+	c.Post = NewPostClient(c)
+
+	for _, option := range options {
+		err := option(&c)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &c, nil
+}
+
+// URL sets the base URL for this client.
+func URL(url string) func(*Client) error {
+	return func(c *Client) error {
+		c.baseURL = url
+		return nil
+	}
 }
 
 type BlogClient struct {
-	client *http.Client
-	url    string
+	Client
 }
 
 // NewBlogClient returns a new Bloggulus blog client.
-func NewBlogClient(url string) *BlogClient {
+func NewBlogClient(client Client) *BlogClient {
 	c := BlogClient{
-		client: new(http.Client),
-		url:    url,
+		client,
 	}
 	return &c
 }
 
 // Read reads a single blog by its ID.
 func (c *BlogClient) Read(id int) (Blog, error) {
-	endpoint := fmt.Sprintf("%s/blog/%d", c.url, id)
+	endpoint := fmt.Sprintf("%s/blog/%d", c.baseURL, id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return Blog{}, err
@@ -74,7 +93,7 @@ func (c *BlogClient) Read(id int) (Blog, error) {
 
 // List lists all blogs in alphabetical order by title.
 func (c *BlogClient) List() ([]Blog, error) {
-	endpoint := fmt.Sprintf("%s/blog", c.url)
+	endpoint := fmt.Sprintf("%s/blog", c.baseURL)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -101,22 +120,20 @@ func (c *BlogClient) List() ([]Blog, error) {
 }
 
 type PostClient struct {
-	client *http.Client
-	url    string
+	Client
 }
 
 // NewPostClient returns a new Bloggulus post client.
-func NewPostClient(url string) *PostClient {
+func NewPostClient(client Client) *PostClient {
 	c := PostClient{
-		client: new(http.Client),
-		url:    url,
+		client,
 	}
 	return &c
 }
 
 // Read reads a single post by its ID.
 func (c *PostClient) Read(id int) (Post, error) {
-	endpoint := fmt.Sprintf("%s/post/%d", c.url, id)
+	endpoint := fmt.Sprintf("%s/post/%d", c.baseURL, id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return Post{}, err
@@ -144,7 +161,7 @@ func (c *PostClient) Read(id int) (Post, error) {
 
 // List lists all posts in reverse chronological orders (newest first).
 func (c *PostClient) List() ([]Post, error) {
-	endpoint := fmt.Sprintf("%s/post", c.url)
+	endpoint := fmt.Sprintf("%s/post", c.baseURL)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -172,7 +189,7 @@ func (c *PostClient) List() ([]Post, error) {
 
 // Search searches all posts based on a given query string.
 func (c *PostClient) Search(query string) ([]Post, error) {
-	endpoint := fmt.Sprintf("%s/post?q=%s", c.url, url.QueryEscape(query))
+	endpoint := fmt.Sprintf("%s/post?q=%s", c.baseURL, url.QueryEscape(query))
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err

@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
-	client := bloggulus.NewClient(bloggulus.BaseURL)
+	client, err := bloggulus.NewClient()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	posts, err := client.Post.Search("python")
 	if err != nil {

@@ -9,12 +9,36 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
 	// BaseURL points to the publicly accessible Bloggulus API.
 	BaseURL = "https://bloggulus.com/api/v1"
 )
+
+// Page represents an individual page of API results.
+type Page struct {
+	limit  int
+	offset int
+}
+
+// PageOption represents a functional option of the Page type.
+type PageOption func(*Page)
+
+// Limit restricts the number of results returned.
+func Limit(limit int) PageOption {
+	return func(p *Page) {
+		p.limit = limit
+	}
+}
+
+// Offset shifts the result set by a specified number of records.
+func Offset(offset int) PageOption {
+	return func(p *Page) {
+		p.offset = offset
+	}
+}
 
 // Client holds the state necessary to communicate with a Bloggulus API.
 type Client struct {
@@ -55,15 +79,39 @@ func URL(url string) ClientOption {
 	}
 }
 
-func (c *Client) get(endpoint string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", endpoint, nil)
+func (c *Client) get(endpoint string, options ...PageOption) (*http.Response, error) {
+	// assume default page
+	page := Page{
+		limit:  20,
+		offset: 0,
+	}
+	for _, option := range options {
+		option(&page)
+	}
+
+	// https://www.alexedwards.net/blog/change-url-query-params-in-go
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
 
+	// update pagination query params (limit and offset)
+	values := u.Query()
+	values.Set("limit", strconv.Itoa(page.limit))
+	values.Set("offset", strconv.Itoa(page.offset))
+	u.RawQuery = values.Encode()
+
+	// create the base request
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// update JSON-related headers
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
+	// actually do the request
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -106,9 +154,9 @@ func (c *BlogClient) Read(id int) (Blog, error) {
 }
 
 // List lists all blogs in alphabetical order by title.
-func (c *BlogClient) List() ([]Blog, error) {
+func (c *BlogClient) List(options ...PageOption) ([]Blog, error) {
 	endpoint := fmt.Sprintf("%s/blog", c.baseURL)
-	resp, err := c.get(endpoint)
+	resp, err := c.get(endpoint, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,9 +207,9 @@ func (c *PostClient) Read(id int) (Post, error) {
 }
 
 // List lists all posts in reverse chronological orders (newest first).
-func (c *PostClient) List() ([]Post, error) {
+func (c *PostClient) List(options ...PageOption) ([]Post, error) {
 	endpoint := fmt.Sprintf("%s/post", c.baseURL)
-	resp, err := c.get(endpoint)
+	resp, err := c.get(endpoint, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +227,9 @@ func (c *PostClient) List() ([]Post, error) {
 }
 
 // Search searches all posts based on a given query string.
-func (c *PostClient) Search(query string) ([]Post, error) {
+func (c *PostClient) Search(query string, options ...PageOption) ([]Post, error) {
 	endpoint := fmt.Sprintf("%s/post?q=%s", c.baseURL, url.QueryEscape(query))
-	resp, err := c.get(endpoint)
+	resp, err := c.get(endpoint, options...)
 	if err != nil {
 		return nil, err
 	}

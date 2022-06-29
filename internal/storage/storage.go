@@ -7,7 +7,7 @@ import (
 )
 
 // default query timeout
-const timeout = 3 * time.Second
+const timeout = 10 * time.Second
 
 type Storage struct {
 	db database.Conn

@@ -129,6 +129,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 
 	// attempt to read the content for each new post
 	for i := range newPosts {
+		t.w.logger.Printf("sync %v\n", newPosts[i].URL)
 		body, err := t.reader.ReadPostBody(newPosts[i])
 		if err != nil {
 			t.w.logger.Println(err)

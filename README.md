@@ -147,7 +147,7 @@ docker compose down
 If actively working on frontend templates, set `ENV=dev` to tell the server to reload templates from the filesystem on every page load.
 Run the web server (in a background process) and let Tailwind watch for CSS changes:
 ```bash
-# make run
+# make web
 ENV=dev go run cmd/web/main.go &
 tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
 ```

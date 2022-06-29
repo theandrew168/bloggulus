@@ -12,8 +12,8 @@ css:
 build: css
 	go build -o bloggulus cmd/web/main.go
 
-.PHONY: run
-run:
+.PHONY: web
+web:
 	ENV=dev go run cmd/web/main.go &
 	tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
 

@@ -12,10 +12,16 @@ css:
 build: css
 	go build -o bloggulus cmd/web/main.go
 
-.PHONY: web
-web:
-	ENV=dev go run cmd/web/main.go &
+.PHONY: run-web
+run-web:
+	DEBUG=1 go run cmd/web/main.go &
+
+.PHONY: run-css
+run-css:
 	tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
+
+.PHONY: run
+run: run-web run-css
 
 .PHONY: migrate
 migrate:
@@ -27,7 +33,7 @@ test: migrate
 
 .PHONY: release
 release:
-	goreleaser release --snapshot --rm-dist
+	goreleaser release --clean --snapshot
 
 .PHONY: update
 update:

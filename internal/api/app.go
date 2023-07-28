@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/alexedwards/flow"
 
@@ -26,8 +25,8 @@ type Application struct {
 
 func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
 	var templates fs.FS
-	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
-		// reload templates from filesystem if var ENV starts with "dev"
+	if os.Getenv("DEBUG") != "" {
+		// reload templates from filesystem if var DEBUG is set
 		// NOTE: os.DirFS is rooted from where the app is ran, not this file
 		templates = os.DirFS("./internal/api/template/")
 	} else {

@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/klauspost/compress/gzhttp"
 )
@@ -25,8 +24,8 @@ type Application struct {
 
 func NewApplication() *Application {
 	var static fs.FS
-	if strings.HasPrefix(os.Getenv("ENV"), "dev") {
-		// reload static files from filesystem if var ENV starts with "dev"
+	if os.Getenv("DEBUG") != "" {
+		// reload static files from filesystem if var DEBUG is set
 		// NOTE: os.DirFS is rooted from where the app is ran, not this file
 		static = os.DirFS("./internal/static/static/")
 	} else {

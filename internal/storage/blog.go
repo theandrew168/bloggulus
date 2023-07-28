@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 
 	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
@@ -22,15 +21,17 @@ func NewBlog(db database.Conn) *Blog {
 func (s *Blog) Create(blog *bloggulus.Blog) error {
 	stmt := `
 		INSERT INTO blog
-			(feed_url, site_url, title)
+			(feed_url, site_url, title, etag, last_modified)
 		VALUES
-			($1, $2, $3)
+			($1, $2, $3, $4, $5)
 		RETURNING id`
 
 	args := []interface{}{
 		blog.FeedURL,
 		blog.SiteURL,
 		blog.Title,
+		blog.ETag,
+		blog.LastModified,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -39,9 +40,6 @@ func (s *Blog) Create(blog *bloggulus.Blog) error {
 	row := s.db.QueryRow(ctx, stmt, args...)
 	err := database.Scan(row, &blog.ID)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.Create(blog)
-		}
 		return err
 	}
 
@@ -54,7 +52,9 @@ func (s *Blog) Read(id int) (bloggulus.Blog, error) {
 			id,
 			feed_url,
 			site_url,
-			title
+			title,
+			etag,
+			last_modified
 		FROM blog
 		WHERE id = $1`
 
@@ -64,6 +64,8 @@ func (s *Blog) Read(id int) (bloggulus.Blog, error) {
 		&blog.FeedURL,
 		&blog.SiteURL,
 		&blog.Title,
+		&blog.ETag,
+		&blog.LastModified,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -72,9 +74,6 @@ func (s *Blog) Read(id int) (bloggulus.Blog, error) {
 	row := s.db.QueryRow(ctx, stmt, id)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.Read(id)
-		}
 		return bloggulus.Blog{}, err
 	}
 
@@ -87,7 +86,9 @@ func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
 			id,
 			feed_url,
 			site_url,
-			title
+			title,
+			etag,
+			last_modified
 		FROM blog
 		ORDER BY title ASC
 		LIMIT $1 OFFSET $2`
@@ -110,13 +111,12 @@ func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
 			&blog.FeedURL,
 			&blog.SiteURL,
 			&blog.Title,
+			&blog.ETag,
+			&blog.LastModified,
 		}
 
 		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, database.ErrRetry) {
-				return s.ReadAll(limit, offset)
-			}
 			return nil, err
 		}
 
@@ -128,4 +128,35 @@ func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
 	}
 
 	return blogs, nil
+}
+
+func (s *Blog) Update(blog bloggulus.Blog) error {
+	stmt := `
+		UPDATE blog
+		SET
+			feed_url = $2,
+			site_url = $3,
+			title = $4,
+			etag = $5,
+			last_modified = $6
+		WHERE id = $1`
+
+	args := []interface{}{
+		blog.ID,
+		blog.FeedURL,
+		blog.SiteURL,
+		blog.Title,
+		blog.ETag,
+		blog.LastModified,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := s.db.Exec(ctx, stmt, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

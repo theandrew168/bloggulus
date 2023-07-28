@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 
 	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
@@ -41,9 +40,6 @@ func (s *Post) Create(post *bloggulus.Post) error {
 	row := s.db.QueryRow(ctx, stmt, args...)
 	err := database.Scan(row, &post.ID)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.Create(post)
-		}
 		return err
 	}
 
@@ -89,9 +85,6 @@ func (s *Post) Read(id int) (bloggulus.Post, error) {
 	row := s.db.QueryRow(ctx, stmt, id)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.Read(id)
-		}
 		return bloggulus.Post{}, err
 	}
 
@@ -160,9 +153,6 @@ func (s *Post) ReadAll(limit, offset int) ([]bloggulus.Post, error) {
 
 		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, database.ErrRetry) {
-				return s.ReadAll(limit, offset)
-			}
 			return nil, err
 		}
 
@@ -224,9 +214,6 @@ func (s *Post) ReadAllByBlog(blog bloggulus.Blog, limit, offset int) ([]bloggulu
 
 		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, database.ErrRetry) {
-				return s.ReadAllByBlog(blog, limit, offset)
-			}
 			return nil, err
 		}
 
@@ -302,9 +289,6 @@ func (s *Post) Search(query string, limit, offset int) ([]bloggulus.Post, error)
 
 		err := database.Scan(rows, dest...)
 		if err != nil {
-			if errors.Is(err, database.ErrRetry) {
-				return s.Search(query, limit, offset)
-			}
 			return nil, err
 		}
 
@@ -330,9 +314,6 @@ func (s *Post) Count() (int, error) {
 	row := s.db.QueryRow(ctx, stmt)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.Count()
-		}
 		return 0, err
 	}
 
@@ -356,9 +337,6 @@ func (s *Post) CountSearch(query string) (int, error) {
 	row := s.db.QueryRow(ctx, stmt, query)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		if errors.Is(err, database.ErrRetry) {
-			return s.CountSearch(query)
-		}
 		return 0, err
 	}
 

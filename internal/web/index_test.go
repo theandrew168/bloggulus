@@ -54,6 +54,7 @@ func TestHandleIndexSearch(t *testing.T) {
 		test.RandomURL(32),
 		"python rust",
 		test.RandomTime(),
+		"content about python and rust",
 		blog,
 	)
 

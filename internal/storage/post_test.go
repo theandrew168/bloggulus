@@ -81,6 +81,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 			test.RandomURL(32),
 			test.RandomString(32),
 			test.RandomTime(),
+			test.RandomString(32),
 			blog,
 		)
 		err := storage.Post.Create(&post)
@@ -120,6 +121,7 @@ func TestPostSearch(t *testing.T) {
 			test.RandomURL(32),
 			q,
 			test.RandomTime(),
+			test.RandomString(32),
 			blog,
 		)
 		err := storage.Post.Create(&post)
@@ -174,6 +176,7 @@ func TestPostCountSearch(t *testing.T) {
 		test.RandomURL(32),
 		q,
 		test.RandomTime(),
+		test.RandomString(32),
 		blog,
 	)
 

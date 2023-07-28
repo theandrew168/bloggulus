@@ -12,6 +12,8 @@ func NewMockBlog() bloggulus.Blog {
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
+		RandomString(32),
+		RandomString(32),
 	)
 	return blog
 }
@@ -21,6 +23,7 @@ func NewMockPost(blog bloggulus.Blog) bloggulus.Post {
 		RandomURL(32),
 		RandomString(32),
 		RandomTime(),
+		RandomString(32),
 		blog,
 	)
 	return post

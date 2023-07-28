@@ -43,7 +43,7 @@ func CleanHTML(s string) string {
 
 type Reader interface {
 	ReadBlog(feedURL string) (bloggulus.Blog, error)
-	ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error)
+	ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus.Post, error)
 	ReadPostBody(post bloggulus.Post) (string, error)
 }
 
@@ -65,22 +65,31 @@ func (r *reader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
 		return bloggulus.Blog{}, err
 	}
 
+	resp, err := http.Get(feedURL)
+	if err != nil {
+		return bloggulus.Blog{}, err
+	}
+	defer resp.Body.Close()
+
+	etag := resp.Header.Get("ETag")
+	lastModified := resp.Header.Get("Last-Modified")
+
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(feedURL)
+	feed, err := fp.Parse(resp.Body)
 	if err != nil {
 		return bloggulus.Blog{}, err
 	}
 
 	// create a bloggulus.Blog for the feed
-	blog := bloggulus.NewBlog(feedURL, feed.Link, feed.Title)
+	blog := bloggulus.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
 	return blog, nil
 }
 
-func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
+func (r *reader) ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(blog.FeedURL)
+	feed, err := fp.Parse(body)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +132,7 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 			link = "https://" + link
 		}
 
-		post := bloggulus.NewPost(link, item.Title, updated, blog)
+		post := bloggulus.NewPost(link, item.Title, updated, item.Content, blog)
 		posts = append(posts, post)
 	}
 
@@ -131,18 +140,23 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog) ([]bloggulus.Post, error) {
 }
 
 func (r *reader) ReadPostBody(post bloggulus.Post) (string, error) {
-	resp, err := http.Get(post.URL)
-	if err != nil {
-		return "", fmt.Errorf("%v: %v", post.URL, err)
-	}
-	defer resp.Body.Close()
+	// fetch post body if it wasn't included in the feed
+	body := post.Body
+	if body == "" {
+		resp, err := http.Get(post.URL)
+		if err != nil {
+			return "", fmt.Errorf("%v: %v", post.URL, err)
+		}
+		defer resp.Body.Close()
 
-	buf, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("%v: %v", post.URL, err)
+		buf, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("%v: %v", post.URL, err)
+		}
+
+		body = string(buf)
 	}
 
-	body := string(buf)
 	body = CleanHTML(body)
 	return body, nil
 }

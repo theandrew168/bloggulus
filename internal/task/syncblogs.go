@@ -1,6 +1,7 @@
 package task
 
 import (
+	"net/http"
 	"sync"
 	"time"
 
@@ -83,6 +84,53 @@ func (t *syncBlogsTask) syncBlogs() error {
 func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 	defer wg.Done()
 
+	req, err := http.NewRequest("GET", blog.FeedURL, nil)
+	if err != nil {
+		t.w.logger.Printf("%d: %s\n", blog.ID, err)
+		return
+	}
+
+	if blog.ETag != "" {
+		req.Header.Set("If-None-Match", blog.ETag)
+	}
+	if blog.LastModified != "" {
+		req.Header.Set("If-Modified-Since", blog.LastModified)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.w.logger.Printf("%d: %s\n", blog.ID, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	etag := resp.Header.Get("ETag")
+	lastModified := resp.Header.Get("Last-Modified")
+
+	dirty := false
+	if etag != "" && etag != blog.ETag {
+		blog.ETag = etag
+		dirty = true
+	}
+	if lastModified != "" && lastModified != blog.LastModified {
+		blog.LastModified = lastModified
+		dirty = true
+	}
+
+	// update blog if ETag or Last-Modified have changed
+	if dirty {
+		err = t.storage.Blog.Update(blog)
+		if err != nil {
+			t.w.logger.Printf("%d: %s\n", blog.ID, err)
+			return
+		}
+	}
+
+	// early exit for "no new content" or errors
+	if resp.StatusCode >= 300 {
+		return
+	}
+
 	limit := 50
 	offset := 0
 
@@ -92,7 +140,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 	// read initial batch of posts
 	knownPosts, err := t.storage.Post.ReadAllByBlog(blog, limit, offset)
 	if err != nil {
-		t.w.logger.Println(err)
+		t.w.logger.Printf("%d: %s\n", blog.ID, err)
 		return
 	}
 
@@ -106,15 +154,15 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 		offset += limit
 		knownPosts, err = t.storage.Post.ReadAllByBlog(blog, limit, offset)
 		if err != nil {
-			t.w.logger.Println(err)
+			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			return
 		}
 	}
 
 	// read posts from feed
-	feedPosts, err := t.reader.ReadBlogPosts(blog)
+	feedPosts, err := t.reader.ReadBlogPosts(blog, resp.Body)
 	if err != nil {
-		t.w.logger.Println(err)
+		t.w.logger.Printf("%d: %s\n", blog.ID, err)
 		return
 	}
 
@@ -129,10 +177,10 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 
 	// attempt to read the content for each new post
 	for i := range newPosts {
-		t.w.logger.Printf("sync %v\n", newPosts[i].URL)
+		t.w.logger.Printf("%d: sync: %v\n", blog.ID, newPosts[i].URL)
 		body, err := t.reader.ReadPostBody(newPosts[i])
 		if err != nil {
-			t.w.logger.Println(err)
+			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			continue
 		}
 		newPosts[i].Body = body
@@ -142,7 +190,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 	for _, post := range newPosts {
 		err = t.storage.Post.Create(&post)
 		if err != nil {
-			t.w.logger.Printf("sync %v %v\n", post.URL, err)
+			t.w.logger.Printf("%d: sync: %v %v\n", blog.ID, post.URL, err)
 		}
 	}
 }

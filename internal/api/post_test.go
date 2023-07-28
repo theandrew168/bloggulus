@@ -185,7 +185,7 @@ func TestHandleReadPostsSearch(t *testing.T) {
 	q := "python rust"
 
 	// create searchable post
-	post := bloggulus.NewPost(test.RandomURL(32), q, test.RandomTime(), blog)
+	post := bloggulus.NewPost(test.RandomURL(32), q, test.RandomTime(), test.RandomString(32), blog)
 	err := storage.Post.Create(&post)
 	if err != nil {
 		t.Fatal(err)

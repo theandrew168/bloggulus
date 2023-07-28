@@ -128,6 +128,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 
 	// early exit for "no new content" or errors
 	if resp.StatusCode >= 300 {
+		t.w.logger.Printf("%d: skipping: code: %d\n", blog.ID, resp.StatusCode)
 		return
 	}
 

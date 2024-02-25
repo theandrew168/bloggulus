@@ -3,15 +3,19 @@ package database
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func Connect(uri string) (*pgx.Conn, error) {
 	ctx := context.Background()
 
-	// open a database connection pool
-	conn, err := pgx.Connect(ctx, uri)
+	config, err := pgx.ParseConfig(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := pgx.ConnectConfig(ctx, config)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +32,12 @@ func Connect(uri string) (*pgx.Conn, error) {
 func ConnectPool(uri string) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 
-	// open a database connection pool
-	pool, err := pgxpool.Connect(ctx, uri)
+	config, err := pgxpool.ParseConfig(uri)
+	if err != nil {
+		return nil, err
+	}
+
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ build: css
 
 .PHONY: run-web
 run-web:
-	DEBUG=1 go run cmd/web/main.go &
+	DEBUG=1 go run cmd/web/main.go
 
 .PHONY: run-css
 run-css:

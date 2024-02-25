@@ -6,6 +6,9 @@ import (
 
 	"github.com/alexedwards/flow"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
+	metricsMiddleware "github.com/slok/go-http-metrics/middleware"
+	metricsWrapper "github.com/slok/go-http-metrics/middleware/std"
 
 	"github.com/theandrew168/bloggulus/internal/api"
 	"github.com/theandrew168/bloggulus/internal/static"
@@ -14,6 +17,10 @@ import (
 )
 
 func New(logger *log.Logger, storage *storage.Storage) http.Handler {
+	mmw := metricsMiddleware.New(metricsMiddleware.Config{
+		Recorder: metrics.NewRecorder(metrics.Config{}),
+	})
+
 	mux := flow.New()
 
 	// handle top-level special cases
@@ -40,14 +47,14 @@ func New(logger *log.Logger, storage *storage.Storage) http.Handler {
 
 	// rest api app
 	apiApp := api.NewApplication(logger, storage)
-	mux.Handle("/api/v1/...", http.StripPrefix("/api/v1", apiApp.Router()))
+	mux.Handle("/api/v1/...", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
 	mux.HandleFunc("/api/v1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api/v1/", http.StatusMovedPermanently)
 	})
 
 	// primary web app (last due to being a top-level catch-all)
 	webApp := web.NewApplication(logger, storage)
-	mux.Handle("/...", webApp.Router(), "GET")
+	mux.Handle("/...", metricsWrapper.Handler("/", mmw, webApp.Router()), "GET")
 
 	return mux
 }

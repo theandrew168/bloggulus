@@ -15,13 +15,13 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 
-	"github.com/theandrew168/bloggulus/internal/app"
-	"github.com/theandrew168/bloggulus/internal/config"
-	"github.com/theandrew168/bloggulus/internal/database"
-	"github.com/theandrew168/bloggulus/internal/feed"
-	"github.com/theandrew168/bloggulus/internal/migrate"
-	"github.com/theandrew168/bloggulus/internal/storage"
-	"github.com/theandrew168/bloggulus/internal/task"
+	"github.com/theandrew168/bloggulus/backend/app"
+	"github.com/theandrew168/bloggulus/backend/config"
+	"github.com/theandrew168/bloggulus/backend/database"
+	"github.com/theandrew168/bloggulus/backend/feed"
+	"github.com/theandrew168/bloggulus/backend/migrate"
+	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/task"
 )
 
 func main() {

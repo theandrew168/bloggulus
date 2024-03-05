@@ -40,7 +40,7 @@ Run the web server (in one terminal) and let Tailwind watch for CSS changes (in 
 ```bash
 # make -j run
 DEBUG=1 go run cmd/web/main.go
-tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
+tailwindcss --watch -m -i tailwind.input.css -o backend/static/static/css/tailwind.min.css
 ```
 
 ### Testing

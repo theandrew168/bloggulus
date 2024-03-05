@@ -6,7 +6,7 @@ default: build
 
 .PHONY: css
 css:
-	tailwindcss -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
+	tailwindcss -m -i tailwind.input.css -o backend/static/static/css/tailwind.min.css
 
 .PHONY: build
 build: css
@@ -18,7 +18,7 @@ run-web:
 
 .PHONY: run-css
 run-css:
-	tailwindcss --watch -m -i tailwind.input.css -o internal/static/static/css/tailwind.min.css
+	tailwindcss --watch -m -i tailwind.input.css -o backend/static/static/css/tailwind.min.css
 
 .PHONY: run
 run: run-web run-css

@@ -1,7 +1,7 @@
 module.exports = {
 	content: [
-		"internal/api/template/*.tmpl",
-		"internal/web/template/*.tmpl",
+		"backend/api/template/*.tmpl",
+		"backend/web/template/*.tmpl",
 	],
 	theme: {
 		extend: {},

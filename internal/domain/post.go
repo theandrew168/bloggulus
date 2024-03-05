@@ -1,4 +1,4 @@
-package bloggulus
+package domain
 
 import (
 	"time"

@@ -10,11 +10,11 @@ css:
 
 .PHONY: build
 build: css
-	go build -o bloggulus cmd/web/main.go
+	go build -o bloggulus main.go
 
 .PHONY: run-web
 run-web:
-	DEBUG=1 go run cmd/web/main.go
+	DEBUG=1 go run main.go
 
 .PHONY: run-css
 run-css:
@@ -25,7 +25,7 @@ run: run-web run-css
 
 .PHONY: migrate
 migrate:
-	go run cmd/web/main.go -migrate
+	go run main.go -migrate
 
 .PHONY: test
 test: migrate

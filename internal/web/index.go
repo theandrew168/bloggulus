@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 )
 
 func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 
 	var count int
-	var posts []bloggulus.Post
+	var posts []domain.Post
 
 	if q != "" {
 		// search if requested
@@ -71,7 +71,7 @@ func (app *Application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 		MorePages bool
 		NextPage  int
 		Search    string
-		Posts     []bloggulus.Post
+		Posts     []domain.Post
 	}{
 		MorePages: (p+1)*pageSize < count,
 		NextPage:  p + 1,

@@ -3,12 +3,12 @@ package test
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/storage"
 )
 
-func NewMockBlog() bloggulus.Blog {
-	blog := bloggulus.NewBlog(
+func NewMockBlog() domain.Blog {
+	blog := domain.NewBlog(
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
@@ -18,8 +18,8 @@ func NewMockBlog() bloggulus.Blog {
 	return blog
 }
 
-func NewMockPost(blog bloggulus.Blog) bloggulus.Post {
-	post := bloggulus.NewPost(
+func NewMockPost(blog domain.Blog) domain.Post {
+	post := domain.NewPost(
 		RandomURL(32),
 		RandomString(32),
 		RandomTime(),
@@ -30,7 +30,7 @@ func NewMockPost(blog bloggulus.Blog) bloggulus.Post {
 }
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, storage *storage.Storage) bloggulus.Blog {
+func CreateMockBlog(t *testing.T, storage *storage.Storage) domain.Blog {
 	t.Helper()
 
 	// generate some random blog data
@@ -46,7 +46,7 @@ func CreateMockBlog(t *testing.T, storage *storage.Storage) bloggulus.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, storage *storage.Storage) bloggulus.Post {
+func CreateMockPost(t *testing.T, storage *storage.Storage) domain.Post {
 	t.Helper()
 
 	// generate some random blog data

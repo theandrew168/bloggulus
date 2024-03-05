@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/test"
 	"github.com/theandrew168/bloggulus/internal/web"
 )
@@ -50,7 +50,7 @@ func TestHandleIndexSearch(t *testing.T) {
 	blog := test.CreateMockBlog(t, storage)
 
 	// generate some searchable post data
-	post := bloggulus.NewPost(
+	post := domain.NewPost(
 		test.RandomURL(32),
 		"python rust",
 		test.RandomTime(),

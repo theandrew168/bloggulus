@@ -14,8 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          # fetch git history so that goreleasers changelog builds correctly
           fetch-depth: 0
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -28,10 +29,11 @@ jobs:
       - name: Build project
         run: make
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
+          # include --skip-validate because the build process changes what files are present
           args: release --clean --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

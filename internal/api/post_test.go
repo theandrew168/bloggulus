@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/api"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
@@ -39,7 +39,7 @@ func TestHandleReadPost(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string]bloggulus.Post
+	var env map[string]domain.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -99,7 +99,7 @@ func TestHandleReadPosts(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]bloggulus.Post
+	var env map[string][]domain.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -157,7 +157,7 @@ func TestHandleReadPostsPagination(t *testing.T) {
 			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
-		var env map[string][]bloggulus.Post
+		var env map[string][]domain.Post
 		err = json.Unmarshal(body, &env)
 		if err != nil {
 			t.Fatal(err)
@@ -185,7 +185,7 @@ func TestHandleReadPostsSearch(t *testing.T) {
 	q := "python rust"
 
 	// create searchable post
-	post := bloggulus.NewPost(test.RandomURL(32), q, test.RandomTime(), test.RandomString(32), blog)
+	post := domain.NewPost(test.RandomURL(32), q, test.RandomTime(), test.RandomString(32), blog)
 	err := storage.Post.Create(&post)
 	if err != nil {
 		t.Fatal(err)
@@ -208,7 +208,7 @@ func TestHandleReadPostsSearch(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]bloggulus.Post
+	var env map[string][]domain.Post
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)

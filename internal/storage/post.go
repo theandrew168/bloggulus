@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
+	"github.com/theandrew168/bloggulus/internal/domain"
 )
 
 type Post struct {
@@ -18,7 +18,7 @@ func NewPost(db database.Conn) *Post {
 	return &s
 }
 
-func (s *Post) Create(post *bloggulus.Post) error {
+func (s *Post) Create(post *domain.Post) error {
 	stmt := `
 		INSERT INTO post
 			(url, title, updated, body, blog_id)
@@ -46,7 +46,7 @@ func (s *Post) Create(post *bloggulus.Post) error {
 	return nil
 }
 
-func (s *Post) Read(id int) (bloggulus.Post, error) {
+func (s *Post) Read(id int) (domain.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -66,7 +66,7 @@ func (s *Post) Read(id int) (bloggulus.Post, error) {
 		WHERE post.id = $1
 		GROUP BY 1,2,3,4,6,7,8,9`
 
-	var post bloggulus.Post
+	var post domain.Post
 	dest := []interface{}{
 		&post.ID,
 		&post.URL,
@@ -85,13 +85,13 @@ func (s *Post) Read(id int) (bloggulus.Post, error) {
 	row := s.db.QueryRow(ctx, stmt, id)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		return bloggulus.Post{}, err
+		return domain.Post{}, err
 	}
 
 	return post, nil
 }
 
-func (s *Post) ReadAll(limit, offset int) ([]bloggulus.Post, error) {
+func (s *Post) ReadAll(limit, offset int) ([]domain.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -136,9 +136,9 @@ func (s *Post) ReadAll(limit, offset int) ([]bloggulus.Post, error) {
 	defer rows.Close()
 
 	// use make here to encode JSON as an empty array instead of null
-	posts := make([]bloggulus.Post, 0)
+	posts := make([]domain.Post, 0)
 	for rows.Next() {
-		var post bloggulus.Post
+		var post domain.Post
 		dest := []interface{}{
 			&post.ID,
 			&post.URL,
@@ -166,7 +166,7 @@ func (s *Post) ReadAll(limit, offset int) ([]bloggulus.Post, error) {
 	return posts, nil
 }
 
-func (s *Post) ReadAllByBlog(blog bloggulus.Blog, limit, offset int) ([]bloggulus.Post, error) {
+func (s *Post) ReadAllByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -197,9 +197,9 @@ func (s *Post) ReadAllByBlog(blog bloggulus.Blog, limit, offset int) ([]bloggulu
 	}
 	defer rows.Close()
 
-	posts := make([]bloggulus.Post, 0)
+	posts := make([]domain.Post, 0)
 	for rows.Next() {
-		var post bloggulus.Post
+		var post domain.Post
 		dest := []interface{}{
 			&post.ID,
 			&post.URL,
@@ -227,7 +227,7 @@ func (s *Post) ReadAllByBlog(blog bloggulus.Blog, limit, offset int) ([]bloggulu
 	return posts, nil
 }
 
-func (s *Post) Search(query string, limit, offset int) ([]bloggulus.Post, error) {
+func (s *Post) Search(query string, limit, offset int) ([]domain.Post, error) {
 	stmt := `
 		WITH posts AS (
 			SELECT
@@ -272,9 +272,9 @@ func (s *Post) Search(query string, limit, offset int) ([]bloggulus.Post, error)
 	}
 	defer rows.Close()
 
-	posts := make([]bloggulus.Post, 0)
+	posts := make([]domain.Post, 0)
 	for rows.Next() {
-		var post bloggulus.Post
+		var post domain.Post
 		dest := []interface{}{
 			&post.ID,
 			&post.URL,

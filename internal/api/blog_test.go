@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/api"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
@@ -38,7 +38,7 @@ func TestHandleReadBlog(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string]bloggulus.Blog
+	var env map[string]domain.Blog
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -98,7 +98,7 @@ func TestHandleReadBlogs(t *testing.T) {
 		t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 	}
 
-	var env map[string][]bloggulus.Blog
+	var env map[string][]domain.Blog
 	err = json.Unmarshal(body, &env)
 	if err != nil {
 		t.Fatal(err)
@@ -156,7 +156,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
 		}
 
-		var env map[string][]bloggulus.Blog
+		var env map[string][]domain.Blog
 		err = json.Unmarshal(body, &env)
 		if err != nil {
 			t.Fatal(err)

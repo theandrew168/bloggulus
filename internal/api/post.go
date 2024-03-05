@@ -7,8 +7,8 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/validator"
 )
 
@@ -63,7 +63,7 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var posts []bloggulus.Post
+	var posts []domain.Post
 	if q != "" {
 		// search if requested
 		var err error

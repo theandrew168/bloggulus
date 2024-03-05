@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
+	"github.com/theandrew168/bloggulus/internal/domain"
 )
 
 type Blog struct {
@@ -18,7 +18,7 @@ func NewBlog(db database.Conn) *Blog {
 	return &s
 }
 
-func (s *Blog) Create(blog *bloggulus.Blog) error {
+func (s *Blog) Create(blog *domain.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(feed_url, site_url, title, etag, last_modified)
@@ -46,7 +46,7 @@ func (s *Blog) Create(blog *bloggulus.Blog) error {
 	return nil
 }
 
-func (s *Blog) Read(id int) (bloggulus.Blog, error) {
+func (s *Blog) Read(id int) (domain.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -58,7 +58,7 @@ func (s *Blog) Read(id int) (bloggulus.Blog, error) {
 		FROM blog
 		WHERE id = $1`
 
-	var blog bloggulus.Blog
+	var blog domain.Blog
 	dest := []interface{}{
 		&blog.ID,
 		&blog.FeedURL,
@@ -74,13 +74,13 @@ func (s *Blog) Read(id int) (bloggulus.Blog, error) {
 	row := s.db.QueryRow(ctx, stmt, id)
 	err := database.Scan(row, dest...)
 	if err != nil {
-		return bloggulus.Blog{}, err
+		return domain.Blog{}, err
 	}
 
 	return blog, nil
 }
 
-func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
+func (s *Blog) ReadAll(limit, offset int) ([]domain.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -103,9 +103,9 @@ func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
 	defer rows.Close()
 
 	// use "make" here to encode JSON as an empty array instead of null
-	blogs := make([]bloggulus.Blog, 0)
+	blogs := make([]domain.Blog, 0)
 	for rows.Next() {
-		var blog bloggulus.Blog
+		var blog domain.Blog
 		dest := []interface{}{
 			&blog.ID,
 			&blog.FeedURL,
@@ -130,7 +130,7 @@ func (s *Blog) ReadAll(limit, offset int) ([]bloggulus.Blog, error) {
 	return blogs, nil
 }
 
-func (s *Blog) Update(blog bloggulus.Blog) error {
+func (s *Blog) Update(blog domain.Blog) error {
 	stmt := `
 		UPDATE blog
 		SET

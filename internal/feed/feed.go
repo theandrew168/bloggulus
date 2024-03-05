@@ -14,7 +14,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 )
 
 // I know...
@@ -42,9 +42,9 @@ func CleanHTML(s string) string {
 }
 
 type Reader interface {
-	ReadBlog(feedURL string) (bloggulus.Blog, error)
-	ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus.Post, error)
-	ReadPostBody(post bloggulus.Post) (string, error)
+	ReadBlog(feedURL string) (domain.Blog, error)
+	ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post, error)
+	ReadPostBody(post domain.Post) (string, error)
 }
 
 type reader struct {
@@ -58,16 +58,16 @@ func NewReader(logger *log.Logger) Reader {
 	return &r
 }
 
-func (r *reader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
+func (r *reader) ReadBlog(feedURL string) (domain.Blog, error) {
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
-		return bloggulus.Blog{}, err
+		return domain.Blog{}, err
 	}
 
 	resp, err := http.Get(feedURL)
 	if err != nil {
-		return bloggulus.Blog{}, err
+		return domain.Blog{}, err
 	}
 	defer resp.Body.Close()
 
@@ -78,15 +78,15 @@ func (r *reader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(resp.Body)
 	if err != nil {
-		return bloggulus.Blog{}, err
+		return domain.Blog{}, err
 	}
 
-	// create a bloggulus.Blog for the feed
-	blog := bloggulus.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
+	// create a domain.Blog for the feed
+	blog := domain.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
 	return blog, nil
 }
 
-func (r *reader) ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus.Post, error) {
+func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(body)
@@ -94,8 +94,8 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus
 		return nil, err
 	}
 
-	// create a bloggulus.Post for each entry
-	var posts []bloggulus.Post
+	// create a domain.Post for each entry
+	var posts []domain.Post
 	for _, item := range feed.Items {
 		// try Updated then Published to obtain a timestamp
 		var updated time.Time
@@ -132,14 +132,14 @@ func (r *reader) ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus
 			link = "https://" + link
 		}
 
-		post := bloggulus.NewPost(link, item.Title, updated, item.Content, blog)
+		post := domain.NewPost(link, item.Title, updated, item.Content, blog)
 		posts = append(posts, post)
 	}
 
 	return posts, nil
 }
 
-func (r *reader) ReadPostBody(post bloggulus.Post) (string, error) {
+func (r *reader) ReadPostBody(post domain.Post) (string, error) {
 	// fetch post body if it wasn't included in the feed
 	body := post.Body
 	if body == "" {

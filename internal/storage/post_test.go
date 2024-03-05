@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/theandrew168/bloggulus"
 	"github.com/theandrew168/bloggulus/internal/database"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/test"
 )
 
@@ -75,9 +75,9 @@ func TestPostReadAllByBlog(t *testing.T) {
 	blog := test.CreateMockBlog(t, storage)
 
 	// create 5 posts leaving the most recent one in "post"
-	var post bloggulus.Post
+	var post domain.Post
 	for i := 0; i < 5; i++ {
-		post = bloggulus.NewPost(
+		post = domain.NewPost(
 			test.RandomURL(32),
 			test.RandomString(32),
 			test.RandomTime(),
@@ -115,9 +115,9 @@ func TestPostSearch(t *testing.T) {
 	q := "python rust"
 
 	// create 5 posts leaving the most recent one in "post"
-	var post bloggulus.Post
+	var post domain.Post
 	for i := 0; i < 5; i++ {
-		post = bloggulus.NewPost(
+		post = domain.NewPost(
 			test.RandomURL(32),
 			q,
 			test.RandomTime(),
@@ -172,7 +172,7 @@ func TestPostCountSearch(t *testing.T) {
 	// generate some searchable post data
 	q := "python rust"
 	blog := test.CreateMockBlog(t, storage)
-	post := bloggulus.NewPost(
+	post := domain.NewPost(
 		test.RandomURL(32),
 		q,
 		test.RandomTime(),

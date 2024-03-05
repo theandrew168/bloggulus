@@ -3,15 +3,15 @@ package feed
 import (
 	"io"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 )
 
 type mockReader struct {
-	blog  bloggulus.Blog
-	posts []bloggulus.Post
+	blog  domain.Blog
+	posts []domain.Post
 }
 
-func NewMockReader(blog bloggulus.Blog, posts []bloggulus.Post) Reader {
+func NewMockReader(blog domain.Blog, posts []domain.Post) Reader {
 	r := mockReader{
 		blog:  blog,
 		posts: posts,
@@ -19,14 +19,14 @@ func NewMockReader(blog bloggulus.Blog, posts []bloggulus.Post) Reader {
 	return &r
 }
 
-func (r *mockReader) ReadBlog(feedURL string) (bloggulus.Blog, error) {
+func (r *mockReader) ReadBlog(feedURL string) (domain.Blog, error) {
 	return r.blog, nil
 }
 
-func (r *mockReader) ReadBlogPosts(blog bloggulus.Blog, body io.Reader) ([]bloggulus.Post, error) {
+func (r *mockReader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post, error) {
 	return r.posts, nil
 }
 
-func (r *mockReader) ReadPostBody(post bloggulus.Post) (string, error) {
+func (r *mockReader) ReadPostBody(post domain.Post) (string, error) {
 	return post.Body, nil
 }

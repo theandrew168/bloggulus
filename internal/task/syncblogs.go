@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theandrew168/bloggulus"
+	"github.com/theandrew168/bloggulus/internal/domain"
 	"github.com/theandrew168/bloggulus/internal/feed"
 	"github.com/theandrew168/bloggulus/internal/storage"
 )
@@ -81,7 +81,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 	return nil
 }
 
-func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
+func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog domain.Blog) {
 	defer wg.Done()
 
 	req, err := http.NewRequest("GET", blog.FeedURL, nil)
@@ -168,7 +168,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog bloggulus.Blog) {
 	}
 
 	// newPosts = feedPosts - knownPosts
-	var newPosts []bloggulus.Post
+	var newPosts []domain.Post
 	for _, post := range feedPosts {
 		if _, ok := knownPostURLs[post.URL]; ok {
 			continue

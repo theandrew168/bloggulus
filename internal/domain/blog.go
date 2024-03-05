@@ -1,4 +1,4 @@
-package bloggulus
+package domain
 
 type Blog struct {
 	FeedURL      string `json:"feed_url"`

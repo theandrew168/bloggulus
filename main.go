@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -23,6 +24,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/task"
 )
+
+//go:embed all:build
+var buildFS embed.FS
 
 func main() {
 	os.Exit(run())
@@ -106,7 +110,7 @@ func run() int {
 
 	// init main web handler
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	handler := app.New(logger, store)
+	handler := app.New(logger, store, buildFS)
 
 	srv := &http.Server{
 		Addr:    addr,

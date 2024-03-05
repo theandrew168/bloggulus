@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/alexedwards/flow"
 
@@ -24,18 +23,9 @@ type Application struct {
 }
 
 func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
-	var templates fs.FS
-	if os.Getenv("DEBUG") != "" {
-		// reload templates from filesystem if var DEBUG is set
-		// NOTE: os.DirFS is rooted from where the app is ran, not this file
-		templates = os.DirFS("./backend/api/template/")
-	} else {
-		// else use the embedded template FS
-		var err error
-		templates, err = fs.Sub(templateFS, "template")
-		if err != nil {
-			panic(err)
-		}
+	templates, err := fs.Sub(templateFS, "template")
+	if err != nil {
+		panic(err)
 	}
 
 	app := Application{

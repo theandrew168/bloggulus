@@ -12,7 +12,7 @@ Check out the [releases page](https://github.com/theandrew168/bloggulus/releases
 
 ### Setup
 
-This project depends on the [Go programming language](https://golang.org/dl/) and the [TailwindCSS CLI](https://tailwindcss.com/blog/standalone-cli).
+This project depends on [Go](https://golang.org/dl/) and [NodeJS](https://nodejs.org/en).
 
 ### Database
 
@@ -34,28 +34,16 @@ docker compose down
 
 ### Running
 
-If actively working on frontend templates, set `DEBUG=1` to tell the server to reload templates from the filesystem on every page load.
 Run the web server (in one terminal) and let Tailwind watch for CSS changes (in a second terminal):
 
 ```bash
-# make -j run
-DEBUG=1 go run cmd/web/main.go
-tailwindcss --watch -m -i tailwind.input.css -o backend/static/static/css/tailwind.min.css
+make -j run
 ```
 
 ### Testing
 
-Tests can be ran after starting the necessary containers and applying database migrations:
+Tests can be ran after starting the necessary containers:
 
 ```bash
-# make test
-go run cmd/web/main.go -migrate
-go test -v ./...
-```
-
-Note that the tests will leave random test in the database so feel free to flush it out by restarting the containers:
-
-```bash
-docker compose down
-docker compose up -d
+make test
 ```

@@ -18,6 +18,9 @@ jobs:
         with:
           # fetch git history so that goreleasers changelog builds correctly
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "21"
       - name: Setup Go
         uses: actions/setup-go@v4
         with:

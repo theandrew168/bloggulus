@@ -25,6 +25,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/task"
 )
 
+//go:embed migrations
+var migrationsFS embed.FS
+
 //go:embed all:build
 var buildFS embed.FS
 
@@ -60,9 +63,14 @@ func run() int {
 	defer pool.Close()
 
 	// apply database migrations
-	if err = migrate.Migrate(pool, logger); err != nil {
-		logger.Println(err)
+	applied, err := migrate.Migrate(pool, migrationsFS)
+	if err != nil {
+		logger.Println(err.Error())
 		return 1
+	}
+
+	for _, migration := range applied {
+		logger.Printf("applied migration: %s\n", migration)
 	}
 
 	// exit now if just applying migrations

@@ -2,85 +2,94 @@ package migrate
 
 import (
 	"context"
-	"embed"
 	"io/fs"
-	"log"
 	"sort"
 
 	"github.com/theandrew168/bloggulus/backend/database"
 )
 
-//go:embed migration
-var migrationFS embed.FS
-
-func Migrate(db database.Conn, logger *log.Logger) error {
+func Migrate(conn database.Conn, files fs.FS) ([]string, error) {
 	ctx := context.Background()
 
-	// create migrations table if it doesn't exist
-	_, err := db.Exec(ctx, `
+	// create migration table if it doesn't exist
+	_, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
 			id SERIAL PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE
 		)`)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// get migrations that are already applied
-	rows, err := db.Query(ctx, "SELECT name FROM migration")
+	rows, err := conn.Query(ctx, "SELECT name FROM migration")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 
-	applied := make(map[string]bool)
+	existing := make(map[string]bool)
 	for rows.Next() {
 		var name string
 		err = rows.Scan(&name)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		applied[name] = true
+		existing[name] = true
 	}
 
-	// get migrations that should be applied (from migration/ dir)
-	subdir, _ := fs.Sub(migrationFS, "migration")
+	// get migrations that should be applied
+	subdir, _ := fs.Sub(files, "migrations")
 	migrations, err := fs.ReadDir(subdir, ".")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// determine missing migrations
 	var missing []string
 	for _, migration := range migrations {
 		name := migration.Name()
-		if _, ok := applied[name]; !ok {
+		if _, ok := existing[name]; !ok {
 			missing = append(missing, name)
 		}
 	}
 
 	// sort missing migrations to preserve order
 	sort.Strings(missing)
-	for _, name := range missing {
-		logger.Printf("applying: %s\n", name)
 
-		// apply the missing ones
+	// apply each missing migration
+	var applied []string
+	for _, name := range missing {
 		sql, err := fs.ReadFile(subdir, name)
 		if err != nil {
-			return err
-		}
-		_, err = db.Exec(ctx, string(sql))
-		if err != nil {
-			return err
+			return nil, err
 		}
 
-		// update migrations table
-		_, err = db.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", name)
+		// apply each migration in a transaction
+		tx, err := conn.Begin(context.Background())
 		if err != nil {
-			return err
+			return nil, err
 		}
+		defer tx.Rollback(context.Background())
+
+		_, err = tx.Exec(ctx, string(sql))
+		if err != nil {
+			return nil, err
+		}
+
+		// update migration table
+		_, err = tx.Exec(ctx, "INSERT INTO migration (name) VALUES ($1)", name)
+		if err != nil {
+			return nil, err
+		}
+
+		err = tx.Commit(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		applied = append(applied, name)
 	}
 
-	logger.Println("migrations up to date")
-	return nil
+	return applied, nil
 }

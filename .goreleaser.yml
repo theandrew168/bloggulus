@@ -1,7 +1,14 @@
+before:
+  hooks:
+    - make frontend
+    - go mod tidy
+
 builds:
   - main: main.go
     env:
       - CGO_ENABLED=0
+    tags:
+      - embed
     goos:
       - linux
       - windows

@@ -1,7 +1,5 @@
 # bloggulus
 
-[![MIT](https://img.shields.io/github/license/theandrew168/bloggulus)](https://img.shields.io/github/license/theandrew168/bloggulus)
-
 Bloggulus is a web application for aggregating and indexing your favorite blogs.
 I wrote it to serve as a less engaging and more personalized version of sites like Hacker News or Reddit.
 

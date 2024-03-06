@@ -44,6 +44,7 @@ func New(logger *log.Logger, storage *storage.Storage, frontend fs.FS) http.Hand
 	mux.Handle("/index.html", frontendHandler)
 	mux.Handle("/robots.txt", frontendHandler)
 	mux.Handle("/favicon.png", frontendHandler)
+	mux.Handle("/openapi.yaml", frontendHandler)
 	mux.Handle("/_app/...", frontendHandler)
 
 	// all other routes should return the index page

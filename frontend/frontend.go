@@ -9,5 +9,5 @@ var IsEmbedded bool
 // conditional embedding based on:
 // https://github.com/golang/go/issues/44484#issuecomment-948137497
 func init() {
-	IsEmbedded = false
+	Frontend = frontend
 }

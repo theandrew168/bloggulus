@@ -16,7 +16,7 @@ frontend: frontend/node_modules
 
 .PHONY: backend
 backend: frontend
-	go build -o bloggulus main.go
+	go build -tags embed -o bloggulus main.go
 
 # run the backend and frontend concurrently (requires at least "-j2") 
 .PHONY: run

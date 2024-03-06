@@ -34,7 +34,7 @@ docker compose down
 
 ### Running
 
-Run the web server (in one terminal) and let Tailwind watch for CSS changes (in a second terminal):
+Run the backend API and frontend SPA at the same time:
 
 ```bash
 make -j run

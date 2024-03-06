@@ -6,7 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -115,18 +114,8 @@ func run() int {
 	syncBlogs := worker.SyncBlogs(store, reader)
 	go syncBlogs.Run(1 * time.Hour)
 
-	// init main web handler
-	var frontendFS fs.FS
-	if frontend.IsEmbedded {
-		frontendFS, err = fs.Sub(frontend.Frontend, "build")
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		frontendFS = os.DirFS("./frontend/build/")
-	}
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	handler := app.New(logger, store, frontendFS)
+	handler := app.New(logger, store, frontend.Frontend)
 
 	srv := &http.Server{
 		Addr:    addr,

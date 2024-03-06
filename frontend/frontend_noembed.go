@@ -2,10 +2,10 @@
 
 package frontend
 
-import "embed"
-
-var frontend embed.FS
+import (
+	"os"
+)
 
 func init() {
-	IsEmbedded = false
+	Frontend = os.DirFS("./frontend/build")
 }

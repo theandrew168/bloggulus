@@ -2,7 +2,10 @@
 
 package frontend
 
-import "embed"
+import (
+	"embed"
+	"io/fs"
+)
 
 // embed with all:build to pickup _app dir (starts with an underscore)
 
@@ -10,5 +13,9 @@ import "embed"
 var frontend embed.FS
 
 func init() {
-	IsEmbedded = true
+	var err error
+	Frontend, err = fs.Sub(frontend, "build")
+	if err != nil {
+		panic(err)
+	}
 }

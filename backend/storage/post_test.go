@@ -4,39 +4,39 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestPostCreate(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	post := test.CreateMockPost(t, storage)
+	post := test.CreateMockPost(t, store)
 	if post.ID == 0 {
 		t.Fatal("post id after creation should be nonzero")
 	}
 }
 
 func TestPostCreateAlreadyExists(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	post := test.CreateMockPost(t, storage)
+	post := test.CreateMockPost(t, store)
 
-	err := storage.Post.Create(&post)
-	if !errors.Is(err, database.ErrExist) {
+	err := store.Post.Create(&post)
+	if !errors.Is(err, storage.ErrExist) {
 		t.Fatal("duplicate post should return an error")
 	}
 }
 
 func TestPostRead(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	post := test.CreateMockPost(t, storage)
-	got, err := storage.Post.Read(post.ID)
+	post := test.CreateMockPost(t, store)
+	got, err := store.Post.Read(post.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,18 +47,18 @@ func TestPostRead(t *testing.T) {
 }
 
 func TestPostReadAll(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	test.CreateMockPost(t, storage)
-	test.CreateMockPost(t, storage)
-	test.CreateMockPost(t, storage)
-	test.CreateMockPost(t, storage)
-	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, store)
+	test.CreateMockPost(t, store)
+	test.CreateMockPost(t, store)
+	test.CreateMockPost(t, store)
+	test.CreateMockPost(t, store)
 
 	limit := 3
 	offset := 0
-	posts, err := storage.Post.ReadAll(limit, offset)
+	posts, err := store.Post.ReadAll(limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,10 +69,10 @@ func TestPostReadAll(t *testing.T) {
 }
 
 func TestPostReadAllByBlog(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	blog := test.CreateMockBlog(t, storage)
+	blog := test.CreateMockBlog(t, store)
 
 	// create 5 posts leaving the most recent one in "post"
 	var post domain.Post
@@ -84,7 +84,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 			test.RandomString(32),
 			blog,
 		)
-		err := storage.Post.Create(&post)
+		err := store.Post.Create(&post)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -92,7 +92,7 @@ func TestPostReadAllByBlog(t *testing.T) {
 
 	limit := 3
 	offset := 0
-	posts, err := storage.Post.ReadAllByBlog(blog, limit, offset)
+	posts, err := store.Post.ReadAllByBlog(blog, limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,10 +108,10 @@ func TestPostReadAllByBlog(t *testing.T) {
 }
 
 func TestPostSearch(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	blog := test.CreateMockBlog(t, storage)
+	blog := test.CreateMockBlog(t, store)
 	q := "python rust"
 
 	// create 5 posts leaving the most recent one in "post"
@@ -124,7 +124,7 @@ func TestPostSearch(t *testing.T) {
 			test.RandomString(32),
 			blog,
 		)
-		err := storage.Post.Create(&post)
+		err := store.Post.Create(&post)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -132,7 +132,7 @@ func TestPostSearch(t *testing.T) {
 
 	limit := 3
 	offset := 0
-	posts, err := storage.Post.Search(q, limit, offset)
+	posts, err := store.Post.Search(q, limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,12 +149,12 @@ func TestPostSearch(t *testing.T) {
 }
 
 func TestPostCount(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	test.CreateMockPost(t, storage)
+	test.CreateMockPost(t, store)
 
-	count, err := storage.Post.Count()
+	count, err := store.Post.Count()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,12 +166,12 @@ func TestPostCount(t *testing.T) {
 }
 
 func TestPostCountSearch(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
 	// generate some searchable post data
 	q := "python rust"
-	blog := test.CreateMockBlog(t, storage)
+	blog := test.CreateMockBlog(t, store)
 	post := domain.NewPost(
 		test.RandomURL(32),
 		q,
@@ -181,12 +181,12 @@ func TestPostCountSearch(t *testing.T) {
 	)
 
 	// create a searchable post
-	err := storage.Post.Create(&post)
+	err := store.Post.Create(&post)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := storage.Post.CountSearch(q)
+	count, err := store.Post.CountSearch(q)
 	if err != nil {
 		t.Fatal(err)
 	}

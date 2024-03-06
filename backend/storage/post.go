@@ -8,12 +8,12 @@ import (
 )
 
 type Post struct {
-	db database.Conn
+	conn database.Conn
 }
 
-func NewPost(db database.Conn) *Post {
+func NewPost(conn database.Conn) *Post {
 	s := Post{
-		db: db,
+		conn: conn,
 	}
 	return &s
 }
@@ -37,8 +37,8 @@ func (s *Post) Create(post *domain.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt, args...)
-	err := database.Scan(row, &post.ID)
+	row := s.conn.QueryRow(ctx, stmt, args...)
+	err := scan(row, &post.ID)
 	if err != nil {
 		return err
 	}
@@ -82,8 +82,8 @@ func (s *Post) Read(id int) (domain.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt, id)
-	err := database.Scan(row, dest...)
+	row := s.conn.QueryRow(ctx, stmt, id)
+	err := scan(row, dest...)
 	if err != nil {
 		return domain.Post{}, err
 	}
@@ -129,7 +129,7 @@ func (s *Post) ReadAll(limit, offset int) ([]domain.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	rows, err := s.db.Query(ctx, stmt, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (s *Post) ReadAll(limit, offset int) ([]domain.Post, error) {
 			&post.Blog.Title,
 		}
 
-		err := database.Scan(rows, dest...)
+		err := scan(rows, dest...)
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +191,7 @@ func (s *Post) ReadAllByBlog(blog domain.Blog, limit, offset int) ([]domain.Post
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	rows, err := s.db.Query(ctx, stmt, blog.ID, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, blog.ID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (s *Post) ReadAllByBlog(blog domain.Blog, limit, offset int) ([]domain.Post
 			&post.Blog.Title,
 		}
 
-		err := database.Scan(rows, dest...)
+		err := scan(rows, dest...)
 		if err != nil {
 			return nil, err
 		}
@@ -266,7 +266,7 @@ func (s *Post) Search(query string, limit, offset int) ([]domain.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	rows, err := s.db.Query(ctx, stmt, query, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +287,7 @@ func (s *Post) Search(query string, limit, offset int) ([]domain.Post, error) {
 			&post.Blog.Title,
 		}
 
-		err := database.Scan(rows, dest...)
+		err := scan(rows, dest...)
 		if err != nil {
 			return nil, err
 		}
@@ -311,8 +311,8 @@ func (s *Post) Count() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt)
-	err := database.Scan(row, dest...)
+	row := s.conn.QueryRow(ctx, stmt)
+	err := scan(row, dest...)
 	if err != nil {
 		return 0, err
 	}
@@ -334,8 +334,8 @@ func (s *Post) CountSearch(query string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt, query)
-	err := database.Scan(row, dest...)
+	row := s.conn.QueryRow(ctx, stmt, query)
+	err := scan(row, dest...)
 	if err != nil {
 		return 0, err
 	}

@@ -8,12 +8,12 @@ import (
 )
 
 type Blog struct {
-	db database.Conn
+	conn database.Conn
 }
 
-func NewBlog(db database.Conn) *Blog {
+func NewBlog(conn database.Conn) *Blog {
 	s := Blog{
-		db: db,
+		conn: conn,
 	}
 	return &s
 }
@@ -37,8 +37,8 @@ func (s *Blog) Create(blog *domain.Blog) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt, args...)
-	err := database.Scan(row, &blog.ID)
+	row := s.conn.QueryRow(ctx, stmt, args...)
+	err := scan(row, &blog.ID)
 	if err != nil {
 		return err
 	}
@@ -71,8 +71,8 @@ func (s *Blog) Read(id int) (domain.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	row := s.db.QueryRow(ctx, stmt, id)
-	err := database.Scan(row, dest...)
+	row := s.conn.QueryRow(ctx, stmt, id)
+	err := scan(row, dest...)
 	if err != nil {
 		return domain.Blog{}, err
 	}
@@ -96,7 +96,7 @@ func (s *Blog) ReadAll(limit, offset int) ([]domain.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	rows, err := s.db.Query(ctx, stmt, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (s *Blog) ReadAll(limit, offset int) ([]domain.Blog, error) {
 			&blog.LastModified,
 		}
 
-		err := database.Scan(rows, dest...)
+		err := scan(rows, dest...)
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +153,7 @@ func (s *Blog) Update(blog domain.Blog) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	_, err := s.db.Exec(ctx, stmt, args...)
+	_, err := s.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}

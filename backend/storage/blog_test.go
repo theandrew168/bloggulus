@@ -4,39 +4,39 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/database"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestBlogCreate(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	blog := test.CreateMockBlog(t, storage)
+	blog := test.CreateMockBlog(t, store)
 	if blog.ID == 0 {
 		t.Fatal("blog id after creation should be nonzero")
 	}
 }
 
 func TestBlogCreateAlreadyExists(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	blog := test.CreateMockBlog(t, storage)
+	blog := test.CreateMockBlog(t, store)
 
 	// attempt to create the same blog again
-	err := storage.Blog.Create(&blog)
-	if !errors.Is(err, database.ErrExist) {
+	err := store.Blog.Create(&blog)
+	if !errors.Is(err, storage.ErrExist) {
 		t.Fatal("duplicate blog should return an error")
 	}
 }
 
 func TestBlogRead(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	blog := test.CreateMockBlog(t, storage)
-	got, err := storage.Blog.Read(blog.ID)
+	blog := test.CreateMockBlog(t, store)
+	got, err := store.Blog.Read(blog.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,18 +47,18 @@ func TestBlogRead(t *testing.T) {
 }
 
 func TestBlogReadAll(t *testing.T) {
-	storage, closer := test.NewStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	test.CreateMockBlog(t, storage)
-	test.CreateMockBlog(t, storage)
-	test.CreateMockBlog(t, storage)
-	test.CreateMockBlog(t, storage)
-	test.CreateMockBlog(t, storage)
+	test.CreateMockBlog(t, store)
+	test.CreateMockBlog(t, store)
+	test.CreateMockBlog(t, store)
+	test.CreateMockBlog(t, store)
+	test.CreateMockBlog(t, store)
 
 	limit := 3
 	offset := 0
-	blogs, err := storage.Blog.ReadAll(limit, offset)
+	blogs, err := store.Blog.ReadAll(limit, offset)
 	if err != nil {
 		t.Fatal(err)
 	}

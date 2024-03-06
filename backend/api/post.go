@@ -7,8 +7,8 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/validator"
 )
 
@@ -30,7 +30,7 @@ func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := app.storage.Post.Read(id)
 	if err != nil {
-		if errors.Is(err, database.ErrNotExist) {
+		if errors.Is(err, storage.ErrNotExist) {
 			app.notFoundResponse(w, r)
 			return
 		}

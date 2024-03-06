@@ -8,15 +8,6 @@ const config = {
 		adapter: adapter({
 			fallback: 'index.html',
 		}),
-		// override files to look in the frontend dir
-		files: {
-			lib: 'frontend/lib',
-			params: 'frontend/params',
-			routes: 'frontend/routes',
-			serviceWorker: 'frontend/service-worker',
-			appTemplate: 'frontend/app.html',
-			errorTemplate: 'frontend/error.html',
-		},
 	},
 };
 

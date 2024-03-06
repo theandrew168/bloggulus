@@ -4,10 +4,10 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite build --watch",
 		"build": "vite build",
 		"check": "tsc && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"format": "prettier --write frontend/"
+		"format": "prettier --write src/"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.1",

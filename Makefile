@@ -7,12 +7,12 @@ default: build
 .PHONY: build
 build: frontend backend
 
-node_modules:
-	npm install
+frontend/node_modules:
+	cd frontend && npm install
 
 .PHONY: frontend
-frontend: node_modules
-	npm run build
+frontend: frontend/node_modules
+	cd frontend && npm run build
 
 .PHONY: backend
 backend: frontend
@@ -24,7 +24,7 @@ run: run-frontend run-backend
 
 .PHONY: run-frontend
 run-frontend:
-	npm run dev
+	cd frontend && npm run dev
 
 .PHONY: run-backend
 run-backend:
@@ -46,8 +46,8 @@ release:
 format: format-frontend format-backend
 
 .PHONY: format-frontend
-format-frontend: node_modules
-	npm run format
+format-frontend: frontend/node_modules
+	cd frontend && npm run format
 
 .PHONY: format-backend
 format-backend:
@@ -58,7 +58,7 @@ update: update-frontend update-backend
 
 .PHONY: update-frontend
 update-frontend:
-	npm update --save
+	cd frontend && npm update --save
 
 .PHONY: update-backend
 update-backend:

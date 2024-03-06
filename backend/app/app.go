@@ -16,7 +16,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-func New(logger *log.Logger, storage *storage.Storage, buildFS fs.FS) http.Handler {
+func New(logger *log.Logger, storage *storage.Storage, frontend fs.FS) http.Handler {
 	mmw := metricsMiddleware.New(metricsMiddleware.Config{
 		Recorder: metrics.NewRecorder(metrics.Config{}),
 	})
@@ -38,19 +38,18 @@ func New(logger *log.Logger, storage *storage.Storage, buildFS fs.FS) http.Handl
 	})
 
 	// frontend - svelte
-	build, _ := fs.Sub(buildFS, "build")
-	buildHandler := gzhttp.GzipHandler(http.FileServer(http.FS(build)))
+	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(frontend)))
 
-	mux.Handle("/", buildHandler)
-	mux.Handle("/index.html", buildHandler)
-	mux.Handle("/robots.txt", buildHandler)
-	mux.Handle("/favicon.png", buildHandler)
-	mux.Handle("/_app/...", buildHandler)
+	mux.Handle("/", frontendHandler)
+	mux.Handle("/index.html", frontendHandler)
+	mux.Handle("/robots.txt", frontendHandler)
+	mux.Handle("/favicon.png", frontendHandler)
+	mux.Handle("/_app/...", frontendHandler)
 
 	// all other routes should return the index page
 	// so that the frontend router can take over
 	mux.Handle("/...", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		index, err := fs.ReadFile(build, "index.html")
+		index, err := fs.ReadFile(frontend, "index.html")
 		if err != nil {
 			panic(err)
 		}

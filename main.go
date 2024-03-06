@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -23,13 +24,11 @@ import (
 	"github.com/theandrew168/bloggulus/backend/migrate"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/task"
+	"github.com/theandrew168/bloggulus/frontend"
 )
 
 //go:embed migrations
 var migrationsFS embed.FS
-
-//go:embed all:build
-var buildFS embed.FS
 
 func main() {
 	os.Exit(run())
@@ -117,8 +116,17 @@ func run() int {
 	go syncBlogs.Run(1 * time.Hour)
 
 	// init main web handler
+	var frontendFS fs.FS
+	if frontend.IsEmbedded {
+		frontendFS, err = fs.Sub(frontend.Frontend, "build")
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		frontendFS = os.DirFS("./frontend/build/")
+	}
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	handler := app.New(logger, store, buildFS)
+	handler := app.New(logger, store, frontendFS)
 
 	srv := &http.Server{
 		Addr:    addr,

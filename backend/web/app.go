@@ -1,4 +1,4 @@
-package app
+package web
 
 import (
 	"io/fs"
@@ -16,7 +16,22 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-func New(logger *log.Logger, storage *storage.Storage, frontend fs.FS) http.Handler {
+type Application struct {
+	logger   *log.Logger
+	storage  *storage.Storage
+	frontend fs.FS
+}
+
+func NewApplication(logger *log.Logger, storage *storage.Storage, frontend fs.FS) *Application {
+	app := Application{
+		logger:   logger,
+		storage:  storage,
+		frontend: frontend,
+	}
+	return &app
+}
+
+func (app *Application) Router() http.Handler {
 	mmw := metricsMiddleware.New(metricsMiddleware.Config{
 		Recorder: metrics.NewRecorder(metrics.Config{}),
 	})
@@ -31,14 +46,14 @@ func New(logger *log.Logger, storage *storage.Storage, frontend fs.FS) http.Hand
 	}, "GET")
 
 	// backend - rest api
-	apiApp := api.NewApplication(logger, storage)
+	apiApp := api.NewApplication(app.logger, app.storage)
 	mux.Handle("/api/v1/...", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
 	mux.HandleFunc("/api/v1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api/v1/", http.StatusMovedPermanently)
 	})
 
 	// frontend - svelte
-	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(frontend)))
+	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(app.frontend)))
 
 	mux.Handle("/", frontendHandler)
 	mux.Handle("/index.html", frontendHandler)
@@ -50,7 +65,7 @@ func New(logger *log.Logger, storage *storage.Storage, frontend fs.FS) http.Hand
 	// all other routes should return the index page
 	// so that the frontend router can take over
 	mux.Handle("/...", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		index, err := fs.ReadFile(frontend, "index.html")
+		index, err := fs.ReadFile(app.frontend, "index.html")
 		if err != nil {
 			panic(err)
 		}

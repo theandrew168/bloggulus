@@ -16,13 +16,13 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 
-	"github.com/theandrew168/bloggulus/backend/app"
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/migrate"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/task"
+	"github.com/theandrew168/bloggulus/backend/web"
 	"github.com/theandrew168/bloggulus/frontend"
 )
 
@@ -115,11 +115,10 @@ func run() int {
 	go syncBlogs.Run(1 * time.Hour)
 
 	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	handler := app.New(logger, store, frontend.Frontend)
-
+	app := web.NewApplication(logger, store, frontend.Frontend)
 	srv := &http.Server{
 		Addr:    addr,
-		Handler: handler,
+		Handler: app.Router(),
 
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

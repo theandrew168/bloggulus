@@ -12,8 +12,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-//go:embed template
-var templateFS embed.FS
+//go:embed templates
+var templatesFS embed.FS
 
 type Application struct {
 	templates fs.FS
@@ -23,7 +23,7 @@ type Application struct {
 }
 
 func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
-	templates, err := fs.Sub(templateFS, "template")
+	templates, err := fs.Sub(templatesFS, "templates")
 	if err != nil {
 		panic(err)
 	}

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/api"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 func TestBadRequest(t *testing.T) {

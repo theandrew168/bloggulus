@@ -3,15 +3,12 @@ package main
 import (
 	"context"
 	"embed"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-systemd/daemon"
@@ -107,76 +104,57 @@ func run() int {
 		return 0
 	}
 
-	// init task worker
-	worker := task.NewWorker(logger)
-
-	// kick off blog sync task
-	syncBlogs := worker.SyncBlogs(store, reader)
-	go syncBlogs.Run(1 * time.Hour)
-
-	addr := fmt.Sprintf("127.0.0.1:%s", cfg.Port)
-	app := web.NewApplication(logger, store, frontend.Frontend)
-	srv := &http.Server{
-		Addr:    addr,
-		Handler: app.Router(),
-
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-
-	// open up the socket listener
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		logger.Fatalln(err)
-	}
-
 	// let systemd know that we are good to go (no-op if not using systemd)
 	daemon.SdNotify(false, daemon.SdNotifyReady)
-	logger.Printf("started server on %s\n", addr)
 
-	// kick off a goroutine to listen for SIGINT and SIGTERM
-	shutdownError := make(chan error)
+	// create a context that cancels upon receiving an interrupt signal
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	var wg sync.WaitGroup
+
+	app := web.NewApplication(logger, store, frontend.Frontend)
+
+	// let port be overridden by an env var
+	port := cfg.Port
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+
+	addr := fmt.Sprintf("127.0.0.1:%s", port)
+
+	// start the web server in the background
+	wg.Add(1)
 	go func() {
-		// idle until a signal is caught
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		<-quit
+		defer wg.Done()
 
-		// wait for background tasks to finish (no timeout here)
+		err := app.Run(ctx, addr)
+		if err != nil {
+			logger.Println(err.Error())
+		}
+	}()
+
+	// init task worker
+	worker := task.NewWorker(logger)
+	syncBlogs := worker.SyncBlogs(store, reader)
+
+	// start worker in the background (standalone mode by default)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// kick off blog sync task
+		go syncBlogs.Run(1 * time.Hour)
+
+		<-ctx.Done()
+
 		logger.Println("stopping worker")
 		worker.Wait()
 		logger.Println("stopped worker")
-
-		// give the web server 5 seconds to shutdown gracefully
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		// shutdown the web server and track any errors
-		logger.Println("stopping server")
-		srv.SetKeepAlivesEnabled(false)
-		err := srv.Shutdown(ctx)
-		if err != nil {
-			shutdownError <- err
-		}
-
-		shutdownError <- nil
 	}()
 
-	// serve the app, check for ErrServerClosed (expected after shutdown)
-	err = srv.Serve(l)
-	if !errors.Is(err, http.ErrServerClosed) {
-		logger.Println(err)
-		return 1
-	}
+	// wait for the web server and worker to stop
+	wg.Wait()
 
-	// check for shutdown errors
-	err = <-shutdownError
-	if err != nil {
-		logger.Println(err)
-		return 1
-	}
-
-	logger.Println("stopped server")
 	return 0
 }

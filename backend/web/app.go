@@ -12,9 +12,9 @@ import (
 	metricsMiddleware "github.com/slok/go-http-metrics/middleware"
 	metricsWrapper "github.com/slok/go-http-metrics/middleware/std"
 
-	"github.com/theandrew168/bloggulus/backend/api"
-	"github.com/theandrew168/bloggulus/backend/middleware"
 	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/web/api"
+	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type Application struct {

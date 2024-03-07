@@ -11,6 +11,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/validator"
 )
 
+// TODO: Mat Ryer's req / resp closure pattern
+
 func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 

@@ -19,12 +19,11 @@ func NewLogger(t *testing.T) *log.Logger {
 func NewConfig(t *testing.T) config.Config {
 	t.Helper()
 
-	// read the local development config file
-	cfg, err := config.ReadFile("../../bloggulus.conf")
-	if err != nil {
-		t.Fatal(err)
+	// TODO: is there a better way to handle this? trying to read the
+	// conf in the root dir depends on where the reading _file_ is. wacky.
+	cfg := config.Config{
+		DatabaseURI: "postgresql://postgres:postgres@localhost:5432/postgres",
 	}
-
 	return cfg
 }
 

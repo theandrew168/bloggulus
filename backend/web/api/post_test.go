@@ -8,10 +8,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/api"
 	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 func TestHandleReadPost(t *testing.T) {

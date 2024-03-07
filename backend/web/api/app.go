@@ -8,8 +8,8 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	"github.com/theandrew168/bloggulus/backend/middleware"
 	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 //go:embed templates

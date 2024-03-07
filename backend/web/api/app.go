@@ -46,10 +46,10 @@ func (app *Application) Router() http.Handler {
 	mux.Use(middleware.EnableCORS)
 
 	mux.HandleFunc("/", app.HandleIndex, "GET")
-	mux.HandleFunc("/blog", app.HandleReadBlogs, "GET")
-	mux.HandleFunc("/blog/:id", app.HandleReadBlog, "GET")
-	mux.HandleFunc("/post", app.HandleReadPosts, "GET")
-	mux.HandleFunc("/post/:id", app.HandleReadPost, "GET")
+	mux.HandleFunc("/blogs", app.HandleReadBlogs, "GET")
+	mux.HandleFunc("/blogs/:id", app.HandleReadBlog, "GET")
+	mux.HandleFunc("/posts", app.HandleReadPosts, "GET")
+	mux.HandleFunc("/posts/:id", app.HandleReadPost, "GET")
 
 	return mux
 }

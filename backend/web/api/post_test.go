@@ -24,7 +24,7 @@ func TestHandleReadPost(t *testing.T) {
 
 		post := test.CreateMockPost(t, store)
 
-		url := fmt.Sprintf("/post/%d", post.ID)
+		url := fmt.Sprintf("/posts/%d", post.ID)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 
@@ -69,7 +69,7 @@ func TestHandleReadPostNotFound(t *testing.T) {
 		app := api.NewApplication(logger, store)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/post/999999999", nil)
+		r := httptest.NewRequest("GET", "/posts/999999999", nil)
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
@@ -94,7 +94,7 @@ func TestHandleReadPosts(t *testing.T) {
 		test.CreateMockPost(t, store)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/post", nil)
+		r := httptest.NewRequest("GET", "/posts", nil)
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
@@ -154,7 +154,7 @@ func TestHandleReadPostsPagination(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			url := fmt.Sprintf("/post?limit=%d", test.limit)
+			url := fmt.Sprintf("/posts?limit=%d", test.limit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 
@@ -210,7 +210,7 @@ func TestHandleReadPostsSearch(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		url := fmt.Sprintf("/post?q=%s", url.QueryEscape(q))
+		url := fmt.Sprintf("/posts?q=%s", url.QueryEscape(q))
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 

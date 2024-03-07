@@ -23,7 +23,7 @@ func TestHandleReadBlog(t *testing.T) {
 
 		blog := test.CreateMockBlog(t, store)
 
-		url := fmt.Sprintf("/blog/%d", blog.ID)
+		url := fmt.Sprintf("/blogs/%d", blog.ID)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 
@@ -71,7 +71,7 @@ func TestHandleReadBlogNotFound(t *testing.T) {
 	app := api.NewApplication(logger, store)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/blog/999999999", nil)
+	r := httptest.NewRequest("GET", "/blogs/999999999", nil)
 
 	router := app.Router()
 	router.ServeHTTP(w, r)
@@ -93,7 +93,7 @@ func TestHandleReadBlogs(t *testing.T) {
 		test.CreateMockBlog(t, store)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/blog", nil)
+		r := httptest.NewRequest("GET", "/blogs", nil)
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
@@ -153,7 +153,7 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			url := fmt.Sprintf("/blog?limit=%d", test.limit)
+			url := fmt.Sprintf("/blogs?limit=%d", test.limit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 

@@ -21,20 +21,20 @@ func TestBadRequest(t *testing.T) {
 		url  string
 		want string
 	}{
-		{"/blog/invalid", "integer"},
-		{"/blog/-123", "positive"},
-		{"/blog?limit=asdf", "integer"},
-		{"/blog?limit=-123", "positive"},
-		{"/blog?limit=123", "less than"},
-		{"/blog?offset=asdf", "integer"},
-		{"/blog?offset=-123", "positive"},
-		{"/post/invalid", "integer"},
-		{"/post/-123", "positive"},
-		{"/post?limit=asdf", "integer"},
-		{"/post?limit=-123", "positive"},
-		{"/post?limit=123", "less than"},
-		{"/post?offset=asdf", "integer"},
-		{"/post?offset=-123", "positive"},
+		{"/blogs/invalid", "integer"},
+		{"/blogs/-123", "positive"},
+		{"/blogs?limit=asdf", "integer"},
+		{"/blogs?limit=-123", "positive"},
+		{"/blogs?limit=123", "less than"},
+		{"/blogs?offset=asdf", "integer"},
+		{"/blogs?offset=-123", "positive"},
+		{"/posts/invalid", "integer"},
+		{"/posts/-123", "positive"},
+		{"/posts?limit=asdf", "integer"},
+		{"/posts?limit=-123", "positive"},
+		{"/posts?limit=123", "less than"},
+		{"/posts?offset=asdf", "integer"},
+		{"/posts?offset=-123", "positive"},
 	}
 
 	for _, test := range tests {

@@ -42,7 +42,6 @@ func (app *Application) Router() http.Handler {
 	mux.NotFound = http.HandlerFunc(app.notFoundResponse)
 	mux.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	mux.Use(middleware.RecoverPanic)
 	mux.Use(middleware.SecureHeaders)
 	mux.Use(middleware.EnableCORS)
 

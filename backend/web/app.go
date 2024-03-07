@@ -13,6 +13,7 @@ import (
 	metricsWrapper "github.com/slok/go-http-metrics/middleware/std"
 
 	"github.com/theandrew168/bloggulus/backend/api"
+	"github.com/theandrew168/bloggulus/backend/middleware"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
@@ -37,9 +38,12 @@ func (app *Application) Router() http.Handler {
 	})
 
 	mux := flow.New()
+	mux.Use(middleware.RecoverPanic)
 
-	// handle top-level special cases
+	// metrics
 	mux.Handle("/metrics", promhttp.Handler(), "GET")
+
+	// basic health check
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("pong\n"))

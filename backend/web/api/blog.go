@@ -8,7 +8,7 @@ import (
 	"github.com/alexedwards/flow"
 
 	"github.com/theandrew168/bloggulus/backend/storage"
-	"github.com/theandrew168/bloggulus/backend/validator"
+	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 // TODO: Mat Ryer's req / resp closure pattern

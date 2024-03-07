@@ -9,7 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
-	"github.com/theandrew168/bloggulus/backend/validator"
+	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {

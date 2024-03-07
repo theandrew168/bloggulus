@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/theandrew168/bloggulus/backend/validator"
+	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 func readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {

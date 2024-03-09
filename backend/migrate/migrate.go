@@ -14,7 +14,7 @@ func Migrate(conn database.Conn, files fs.FS) ([]string, error) {
 	// create migration table if it doesn't exist
 	_, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS migration (
-			id SERIAL PRIMARY KEY,
+			id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE
 		)`)
 	if err != nil {

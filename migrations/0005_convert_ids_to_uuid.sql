@@ -5,7 +5,7 @@ CREATE TABLE blog_new (
 	site_url TEXT NOT NULL,
 	title TEXT NOT NULL,
 	etag TEXT NOT NULL DEFAULT '',
-	last_modified TEXT NOT NULL DEFAULT '';
+	last_modified TEXT NOT NULL DEFAULT '',
 	old_id INTEGER
 );
 

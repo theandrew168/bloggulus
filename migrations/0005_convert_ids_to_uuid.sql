@@ -6,19 +6,22 @@ CREATE TABLE blog_new (
 	title TEXT NOT NULL,
 	etag TEXT NOT NULL DEFAULT '',
 	last_modified TEXT NOT NULL DEFAULT '',
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	-- temporary
 	old_id INTEGER
 );
 
 CREATE TABLE post_new (
 	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	blog_id UUID NOT NULL,
 	url TEXT NOT NULL UNIQUE,
 	title TEXT NOT NULL,
-	updated TIMESTAMPTZ NOT NULL,
-
+	published_at TIMESTAMPTZ NOT NULL,
 	body TEXT NOT NULL,
-    content_index TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
-
-	blog_id UUID NOT NULL
+	content_index TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 
@@ -27,7 +30,7 @@ INSERT INTO blog_new (feed_url, site_url, title, old_id)
 SELECT blog.feed_url, blog.site_url, blog.title, blog.id
 FROM blog;
 
-INSERT INTO post_new (url, title, updated, body, blog_id)
+INSERT INTO post_new (url, title, published_at, body, blog_id)
 SELECT post.url, post.title, post.updated, post.body, blog_new.id
 FROM post
 INNER JOIN blog_new
@@ -74,3 +77,9 @@ ALTER TABLE migration
 	ALTER COLUMN id DROP DEFAULT, 
 	ALTER COLUMN id SET DATA TYPE UUID USING (gen_random_uuid()), 
 	ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+
+-- add metadata columns to tag table
+ALTER TABLE tag
+	ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+	ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT now();

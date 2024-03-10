@@ -1,23 +1,24 @@
 -- create new tables w/ UUID PKs
 CREATE TABLE blog_new (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    feed_url TEXT NOT NULL UNIQUE,
-    site_url TEXT NOT NULL,
-    title TEXT NOT NULL,
+	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	feed_url TEXT NOT NULL UNIQUE,
+	site_url TEXT NOT NULL,
+	title TEXT NOT NULL,
+	etag TEXT NOT NULL DEFAULT '',
+	last_modified TEXT NOT NULL DEFAULT '';
 	old_id INTEGER
 );
 
 CREATE TABLE post_new (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    url TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    updated TIMESTAMPTZ NOT NULL,
+	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	url TEXT NOT NULL UNIQUE,
+	title TEXT NOT NULL,
+	updated TIMESTAMPTZ NOT NULL,
 
-    body TEXT NOT NULL,
-    content_index TSVECTOR
-        GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
+	body TEXT NOT NULL,
+    content_index TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED,
 
-    blog_id UUID NOT NULL
+	blog_id UUID NOT NULL
 );
 
 

@@ -7,18 +7,20 @@ import (
 )
 
 type Storage struct {
-	db database.Conn
+	conn database.Conn
 
 	Blog *PostgresBlogStorage
 	Post *PostgresPostStorage
+	Tag  *PostgresTagStorage
 }
 
-func New(db database.Conn) *Storage {
+func New(conn database.Conn) *Storage {
 	s := Storage{
-		db: db,
+		conn: conn,
 
-		Blog: NewPostgresBlogStorage(db),
-		Post: NewPostgresPostStorage(db),
+		Blog: NewPostgresBlogStorage(conn),
+		Post: NewPostgresPostStorage(conn),
+		Tag:  NewPostgresTagStorage(conn),
 	}
 	return &s
 }
@@ -28,7 +30,7 @@ func New(db database.Conn) *Storage {
 func (s *Storage) WithTransaction(operation func(store *Storage) error) error {
 	// Calling the Begin() method on the connection creates a new pgx.Tx
 	// object, which represents the in-progress database transaction.
-	tx, err := s.db.Begin(context.Background())
+	tx, err := s.conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}

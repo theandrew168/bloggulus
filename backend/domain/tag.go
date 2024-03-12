@@ -23,13 +23,3 @@ func NewTag(name string) Tag {
 	}
 	return tag
 }
-
-func LoadTag(id uuid.UUID, name string, createdAt, updatedAt time.Time) Tag {
-	tag := Tag{
-		ID:        id,
-		Name:      name,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}
-	return tag
-}

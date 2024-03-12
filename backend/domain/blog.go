@@ -31,26 +31,3 @@ func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
 	}
 	return blog
 }
-
-func LoadBlog(
-	id uuid.UUID,
-	feedURL string,
-	siteURL string,
-	title string,
-	etag string,
-	lastModified string,
-	createdAt time.Time,
-	updatedAt time.Time,
-) Blog {
-	blog := Blog{
-		ID:           id,
-		FeedURL:      feedURL,
-		SiteURL:      siteURL,
-		Title:        title,
-		ETag:         etag,
-		LastModified: lastModified,
-		CreatedAt:    createdAt,
-		UpdatedAt:    updatedAt,
-	}
-	return blog
-}

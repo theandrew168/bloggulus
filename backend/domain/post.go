@@ -31,26 +31,3 @@ func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post 
 	}
 	return post
 }
-
-func LoadPost(
-	id uuid.UUID,
-	blogID uuid.UUID,
-	url string,
-	title string,
-	content string,
-	publishedAt time.Time,
-	createdAt time.Time,
-	updatedAt time.Time,
-) Post {
-	post := Post{
-		ID:          id,
-		BlogID:      blogID,
-		URL:         url,
-		Title:       title,
-		Content:     content,
-		PublishedAt: publishedAt,
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-	}
-	return post
-}

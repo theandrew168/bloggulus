@@ -29,6 +29,13 @@ func NewMockPost(blog domain.Blog) domain.Post {
 	return post
 }
 
+func NewMockTag() domain.Tag {
+	tag := domain.NewTag(
+		RandomString(32),
+	)
+	return tag
+}
+
 // mocks a blog and creates it in the database
 func CreateMockBlog(t *testing.T, store *storage.Storage) domain.Blog {
 	t.Helper()
@@ -68,4 +75,20 @@ func CreateMockPost(t *testing.T, store *storage.Storage) domain.Post {
 	}
 
 	return post
+}
+
+// mocks a tag and creates it in the database
+func CreateMockTag(t *testing.T, store *storage.Storage) domain.Tag {
+	t.Helper()
+
+	// generate some random tag data
+	tag := NewMockTag()
+
+	// create an example blog
+	err := store.Tag.Create(tag)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return tag
 }

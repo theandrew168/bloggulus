@@ -15,7 +15,7 @@ import (
 var _ BlogStorage = (*PostgresBlogStorage)(nil)
 
 type BlogStorage interface {
-	Create(itinerary domain.Blog) error
+	Create(blog domain.Blog) error
 	Read(id uuid.UUID) (domain.Blog, error)
 	List(limit, offset int) ([]domain.Blog, error)
 	Update(blog domain.Blog) error
@@ -58,16 +58,16 @@ func (s *PostgresBlogStorage) marshal(blog domain.Blog) (dbBlog, error) {
 }
 
 func (s *PostgresBlogStorage) unmarshal(row dbBlog) (domain.Blog, error) {
-	blog := domain.LoadBlog(
-		row.ID,
-		row.FeedURL,
-		row.SiteURL,
-		row.Title,
-		row.ETag,
-		row.LastModified,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)
+	blog := domain.Blog{
+		ID:           row.ID,
+		FeedURL:      row.FeedURL,
+		SiteURL:      row.SiteURL,
+		Title:        row.Title,
+		ETag:         row.ETag,
+		LastModified: row.LastModified,
+		CreatedAt:    row.CreatedAt,
+		UpdatedAt:    row.UpdatedAt,
+	}
 	return blog, nil
 }
 

@@ -15,7 +15,7 @@ import (
 var _ PostStorage = (*PostgresPostStorage)(nil)
 
 type PostStorage interface {
-	Create(itinerary domain.Post) error
+	Create(post domain.Post) error
 	Read(id uuid.UUID) (domain.Post, error)
 	List(limit, offset int) ([]domain.Post, error)
 	ListByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error)
@@ -58,16 +58,16 @@ func (s *PostgresPostStorage) marshal(post domain.Post) (dbPost, error) {
 }
 
 func (s *PostgresPostStorage) unmarshal(row dbPost) (domain.Post, error) {
-	post := domain.LoadPost(
-		row.ID,
-		row.BlogID,
-		row.URL,
-		row.Title,
-		row.Content,
-		row.PublishedAt,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)
+	post := domain.Post{
+		ID:          row.ID,
+		BlogID:      row.BlogID,
+		URL:         row.URL,
+		Title:       row.Title,
+		Content:     row.Content,
+		PublishedAt: row.PublishedAt,
+		CreatedAt:   row.CreatedAt,
+		UpdatedAt:   row.UpdatedAt,
+	}
 	return post, nil
 }
 

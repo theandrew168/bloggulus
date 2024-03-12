@@ -2,33 +2,55 @@ package domain
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Post struct {
-	// fields known upfront
-	URL     string    `json:"url"`
-	Title   string    `json:"title"`
-	Updated time.Time `json:"updated"`
-
-	// used in sync process
-	Body string `json:"-"`
-
-	// belongs to a single blog
-	Blog Blog `json:"blog"`
-
-	// readonly (from database, after creation)
-	ID   int      `json:"id"`
-	Tags []string `json:"tags"`
+	ID          uuid.UUID
+	BlogID      uuid.UUID
+	URL         string
+	Title       string
+	Content     string
+	PublishedAt time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
-// NewPost creates a new Post struct.
-func NewPost(url, title string, updated time.Time, body string, blog Blog) Post {
+func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post {
+	now := time.Now()
 	post := Post{
-		URL:     url,
-		Title:   title,
-		Updated: updated,
-		Body:    body,
-		Blog:    blog,
+		ID:          uuid.New(),
+		BlogID:      blog.ID,
+		URL:         url,
+		Title:       title,
+		Content:     content,
+		PublishedAt: publishedAt,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+	return post
+}
+
+func LoadPost(
+	id uuid.UUID,
+	blogID uuid.UUID,
+	url string,
+	title string,
+	content string,
+	publishedAt time.Time,
+	createdAt time.Time,
+	updatedAt time.Time,
+) Post {
+	post := Post{
+		ID:          id,
+		BlogID:      blogID,
+		URL:         url,
+		Title:       title,
+		Content:     content,
+		PublishedAt: publishedAt,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}
 	return post
 }

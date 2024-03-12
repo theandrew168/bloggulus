@@ -2,27 +2,23 @@ package storage
 
 import (
 	"context"
-	"time"
 
 	"github.com/theandrew168/bloggulus/backend/database"
 )
 
-// default query timeout
-const timeout = 10 * time.Second
-
 type Storage struct {
 	db database.Conn
 
-	Blog *Blog
-	Post *Post
+	Blog *PostgresBlogStorage
+	Post *PostgresPostStorage
 }
 
 func New(db database.Conn) *Storage {
 	s := Storage{
 		db: db,
 
-		Blog: NewBlog(db),
-		Post: NewPost(db),
+		Blog: NewPostgresBlogStorage(db),
+		Post: NewPostgresPostStorage(db),
 	}
 	return &s
 }

@@ -54,7 +54,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 	offset := 0
 
 	// read initial batch of blogs
-	blogs, err := t.storage.Blog.ReadAll(limit, offset)
+	blogs, err := t.storage.Blog.List(limit, offset)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 
 		// read the next batch
 		offset += limit
-		blogs, err = t.storage.Blog.ReadAll(limit, offset)
+		blogs, err = t.storage.Blog.List(limit, offset)
 		if err != nil {
 			wg.Wait()
 			return err
@@ -139,7 +139,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog domain.Blog) {
 	knownPostURLs := make(map[string]bool)
 
 	// read initial batch of posts
-	knownPosts, err := t.storage.Post.ReadAllByBlog(blog, limit, offset)
+	knownPosts, err := t.storage.Post.ListByBlog(blog, limit, offset)
 	if err != nil {
 		t.w.logger.Printf("%d: %s\n", blog.ID, err)
 		return
@@ -153,7 +153,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog domain.Blog) {
 
 		// read the next batch
 		offset += limit
-		knownPosts, err = t.storage.Post.ReadAllByBlog(blog, limit, offset)
+		knownPosts, err = t.storage.Post.ListByBlog(blog, limit, offset)
 		if err != nil {
 			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			return
@@ -184,12 +184,12 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog domain.Blog) {
 			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			continue
 		}
-		newPosts[i].Body = body
+		newPosts[i].Content = body
 	}
 
 	// sync each post with the database
 	for _, post := range newPosts {
-		err = t.storage.Post.Create(&post)
+		err = t.storage.Post.Create(post)
 		if err != nil {
 			t.w.logger.Printf("%d: sync: %v %v\n", blog.ID, post.URL, err)
 		}

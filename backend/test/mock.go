@@ -20,24 +20,24 @@ func NewMockBlog() domain.Blog {
 
 func NewMockPost(blog domain.Blog) domain.Post {
 	post := domain.NewPost(
+		blog,
 		RandomURL(32),
 		RandomString(32),
-		RandomTime(),
 		RandomString(32),
-		blog,
+		RandomTime(),
 	)
 	return post
 }
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, storage *storage.Storage) domain.Blog {
+func CreateMockBlog(t *testing.T, store *storage.Storage) domain.Blog {
 	t.Helper()
 
 	// generate some random blog data
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.Blog.Create(&blog)
+	err := store.Blog.Create(blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,14 +46,14 @@ func CreateMockBlog(t *testing.T, storage *storage.Storage) domain.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, storage *storage.Storage) domain.Post {
+func CreateMockPost(t *testing.T, store *storage.Storage) domain.Post {
 	t.Helper()
 
 	// generate some random blog data
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := storage.Blog.Create(&blog)
+	err := store.Blog.Create(blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func CreateMockPost(t *testing.T, storage *storage.Storage) domain.Post {
 	post := NewMockPost(blog)
 
 	// create an example post
-	err = storage.Post.Create(&post)
+	err = store.Post.Create(post)
 	if err != nil {
 		t.Fatal(err)
 	}

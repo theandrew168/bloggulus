@@ -1,24 +1,56 @@
 package domain
 
-type Blog struct {
-	FeedURL      string `json:"feed_url"`
-	SiteURL      string `json:"site_url"`
-	Title        string `json:"title"`
-	ETag         string `json:"etag"`
-	LastModified string `json:"last_modified"`
+import (
+	"time"
 
-	// readonly (from database, after creation)
-	ID int `json:"id"`
+	"github.com/google/uuid"
+)
+
+type Blog struct {
+	ID           uuid.UUID
+	FeedURL      string
+	SiteURL      string
+	Title        string
+	ETag         string
+	LastModified string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
-// NewBlog creates a new Blog struct.
 func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
+	now := time.Now()
 	blog := Blog{
+		ID:           uuid.New(),
 		FeedURL:      feedURL,
 		SiteURL:      siteURL,
 		Title:        title,
 		ETag:         etag,
 		LastModified: lastModified,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+	return blog
+}
+
+func LoadBlog(
+	id uuid.UUID,
+	feedURL string,
+	siteURL string,
+	title string,
+	etag string,
+	lastModified string,
+	createdAt time.Time,
+	updatedAt time.Time,
+) Blog {
+	blog := Blog{
+		ID:           id,
+		FeedURL:      feedURL,
+		SiteURL:      siteURL,
+		Title:        title,
+		ETag:         etag,
+		LastModified: lastModified,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 	return blog
 }

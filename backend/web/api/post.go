@@ -3,9 +3,9 @@ package api
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/alexedwards/flow"
+	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
@@ -15,22 +15,16 @@ import (
 func (app *Application) HandleReadPost(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
-	id, err := strconv.Atoi(flow.Param(r.Context(), "id"))
+	id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 	if err != nil {
-		v.AddError("id", "must be an integer")
-		app.badRequestResponse(w, r, v.Errors)
-		return
-	}
-
-	v.Check(id >= 0, "id", "must be positive")
-	if !v.Valid() {
+		v.AddError("id", "must be a valid UUID")
 		app.badRequestResponse(w, r, v.Errors)
 		return
 	}
 
 	post, err := app.storage.Post.Read(id)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotExist) {
+		if errors.Is(err, storage.ErrNotFound) {
 			app.notFoundResponse(w, r)
 			return
 		}
@@ -66,16 +60,16 @@ func (app *Application) HandleReadPosts(w http.ResponseWriter, r *http.Request) 
 	var posts []domain.Post
 	if q != "" {
 		// search if requested
-		var err error
-		posts, err = app.storage.Post.Search(q, limit, offset)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
-		}
+		// var err error
+		// posts, err = app.storage.Post.Search(q, limit, offset)
+		// if err != nil {
+		// 	app.serverErrorResponse(w, r, err)
+		// 	return
+		// }
 	} else {
 		// else just read recent
 		var err error
-		posts, err = app.storage.Post.ReadAll(limit, offset)
+		posts, err = app.storage.Post.List(limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

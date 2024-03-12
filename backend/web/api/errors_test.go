@@ -21,15 +21,13 @@ func TestBadRequest(t *testing.T) {
 		url  string
 		want string
 	}{
-		{"/blogs/invalid", "integer"},
-		{"/blogs/-123", "positive"},
+		{"/blogs/invalid", "uuid"},
 		{"/blogs?limit=asdf", "integer"},
 		{"/blogs?limit=-123", "positive"},
 		{"/blogs?limit=123", "less than"},
 		{"/blogs?offset=asdf", "integer"},
 		{"/blogs?offset=-123", "positive"},
-		{"/posts/invalid", "integer"},
-		{"/posts/-123", "positive"},
+		{"/posts/invalid", "uuid"},
 		{"/posts?limit=asdf", "integer"},
 		{"/posts?limit=-123", "positive"},
 		{"/posts?limit=123", "less than"},

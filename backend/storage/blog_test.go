@@ -13,9 +13,10 @@ func TestBlogCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateMockBlog(t, store)
-		if blog.ID == 0 {
-			t.Fatal("blog id after creation should be nonzero")
+		blog := test.NewMockBlog()
+		err := store.Blog.Create(blog)
+		if err != nil {
+			t.Fatal(err)
 		}
 
 		return test.ErrSkipCommit
@@ -30,8 +31,8 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 		blog := test.CreateMockBlog(t, store)
 
 		// attempt to create the same blog again
-		err := store.Blog.Create(&blog)
-		if !errors.Is(err, storage.ErrExist) {
+		err := store.Blog.Create(blog)
+		if !errors.Is(err, storage.ErrConflict) {
 			t.Fatal("duplicate blog should return an error")
 		}
 
@@ -58,7 +59,7 @@ func TestBlogRead(t *testing.T) {
 	})
 }
 
-func TestBlogReadAll(t *testing.T) {
+func TestBlogList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
@@ -71,7 +72,7 @@ func TestBlogReadAll(t *testing.T) {
 
 		limit := 3
 		offset := 0
-		blogs, err := store.Blog.ReadAll(limit, offset)
+		blogs, err := store.Blog.List(limit, offset)
 		if err != nil {
 			t.Fatal(err)
 		}

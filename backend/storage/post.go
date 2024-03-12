@@ -2,156 +2,170 @@ package storage
 
 import (
 	"context"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain"
 )
 
-type Post struct {
+// ensure PostStorage interface is satisfied
+var _ PostStorage = (*PostgresPostStorage)(nil)
+
+type PostStorage interface {
+	Create(itinerary domain.Post) error
+	Read(id uuid.UUID) (domain.Post, error)
+	List(limit, offset int) ([]domain.Post, error)
+	ListByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error)
+}
+
+type dbPost struct {
+	ID          uuid.UUID `db:"id"`
+	BlogID      uuid.UUID `db:"blog_id"`
+	URL         string    `db:"url"`
+	Title       string    `db:"title"`
+	Content     string    `db:"content"`
+	PublishedAt time.Time `db:"published_at"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
+}
+
+type PostgresPostStorage struct {
 	conn database.Conn
 }
 
-func NewPost(conn database.Conn) *Post {
-	s := Post{
+func NewPostgresPostStorage(conn database.Conn) *PostgresPostStorage {
+	s := PostgresPostStorage{
 		conn: conn,
 	}
 	return &s
 }
 
-func (s *Post) Create(post *domain.Post) error {
+func (s *PostgresPostStorage) marshal(post domain.Post) (dbPost, error) {
+	row := dbPost{
+		ID:          post.ID,
+		BlogID:      post.BlogID,
+		URL:         post.URL,
+		Title:       post.Title,
+		Content:     post.Content,
+		PublishedAt: post.PublishedAt,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+	}
+	return row, nil
+}
+
+func (s *PostgresPostStorage) unmarshal(row dbPost) (domain.Post, error) {
+	post := domain.LoadPost(
+		row.ID,
+		row.BlogID,
+		row.URL,
+		row.Title,
+		row.Content,
+		row.PublishedAt,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
+	return post, nil
+}
+
+func (s *PostgresPostStorage) Create(post domain.Post) error {
 	stmt := `
 		INSERT INTO post
-			(url, title, updated, body, blog_id)
+			(id, blog_id, url, title, content, published_at, created_at, updated_at)
 		VALUES
-			($1, $2, $3, $4, $5)
-		RETURNING id`
+			($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	args := []interface{}{
-		post.URL,
-		post.Title,
-		post.Updated,
-		post.Body,
-		post.Blog.ID,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	row := s.conn.QueryRow(ctx, stmt, args...)
-	err := scan(row, &post.ID)
+	row, err := s.marshal(post)
 	if err != nil {
 		return err
+	}
+
+	args := []interface{}{
+		row.ID,
+		row.BlogID,
+		row.URL,
+		row.Title,
+		row.Content,
+		row.PublishedAt,
+		row.CreatedAt,
+		row.UpdatedAt,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	defer cancel()
+
+	_, err = s.conn.Exec(ctx, stmt, args...)
+	if err != nil {
+		return checkCreateError(err)
 	}
 
 	return nil
 }
 
-func (s *Post) Read(id int) (domain.Post, error) {
+func (s *PostgresPostStorage) Read(id uuid.UUID) (domain.Post, error) {
 	stmt := `
 		SELECT
-			post.id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
+			id,
+			blog_id,
+			url,
+			title,
+			content,
+			published_at,
+			created_at,
+			updated_at
 		FROM post
-		INNER JOIN blog
-			ON blog.id = post.blog_id
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE post.id = $1
-		GROUP BY 1,2,3,4,6,7,8,9`
+		WHERE id = $1`
 
-	var post domain.Post
-	dest := []interface{}{
-		&post.ID,
-		&post.URL,
-		&post.Title,
-		&post.Updated,
-		&post.Tags,
-		&post.Blog.ID,
-		&post.Blog.FeedURL,
-		&post.Blog.SiteURL,
-		&post.Blog.Title,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
 	defer cancel()
 
-	row := s.conn.QueryRow(ctx, stmt, id)
-	err := scan(row, dest...)
+	rows, err := s.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return domain.Post{}, err
 	}
 
-	return post, nil
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPost])
+	if err != nil {
+		return domain.Post{}, checkReadError(err)
+	}
+
+	return s.unmarshal(row)
 }
 
-func (s *Post) ReadAll(limit, offset int) ([]domain.Post, error) {
+func (s *PostgresPostStorage) List(limit, offset int) ([]domain.Post, error) {
 	stmt := `
-		WITH posts AS (
-			SELECT
-				post.id,
-				post.url,
-				post.title,
-				post.updated,
-				post.content_index,
-				blog.id AS blog_id,
-				blog.feed_url AS blog_feed_url,
-				blog.site_url AS blog_site_url,
-				blog.title AS blog_title
-			FROM post
-			INNER JOIN blog
-				ON blog.id = post.blog_id
-			ORDER BY post.updated DESC
-			LIMIT $1 OFFSET $2
-		)
 		SELECT
-			posts.id,
-			posts.url,
-			posts.title,
-			posts.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			posts.blog_id,
-			posts.blog_feed_url,
-			posts.blog_site_url,
-			posts.blog_title
-		FROM posts
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ posts.content_index
-		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY posts.updated DESC`
+			id,
+			blog_id,
+			url,
+			title,
+			content,
+			published_at,
+			created_at,
+			updated_at
+		FROM post
+		ORDER BY created_at ASC
+		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	// use make here to encode JSON as an empty array instead of null
-	posts := make([]domain.Post, 0)
-	for rows.Next() {
-		var post domain.Post
-		dest := []interface{}{
-			&post.ID,
-			&post.URL,
-			&post.Title,
-			&post.Updated,
-			&post.Tags,
-			&post.Blog.ID,
-			&post.Blog.FeedURL,
-			&post.Blog.SiteURL,
-			&post.Blog.Title,
-		}
+	postRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbPost])
+	if err != nil {
+		return nil, checkListError(err)
+	}
 
-		err := scan(rows, dest...)
+	var posts []domain.Post
+	for _, row := range postRows {
+		post, err := s.unmarshal(row)
 		if err != nil {
 			return nil, err
 		}
@@ -159,135 +173,41 @@ func (s *Post) ReadAll(limit, offset int) ([]domain.Post, error) {
 		posts = append(posts, post)
 	}
 
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-
 	return posts, nil
 }
 
-func (s *Post) ReadAllByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error) {
+func (s *PostgresPostStorage) ListByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error) {
 	stmt := `
 		SELECT
-			post.id,
-			post.url,
-			post.title,
-			post.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			blog.id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title
+			id,
+			blog_id,
+			url,
+			title,
+			content,
+			published_at,
+			created_at,
+			updated_at
 		FROM post
-		INNER JOIN blog
-			ON blog.id = post.blog_id
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ post.content_index
-		WHERE blog.id = $1
-		GROUP BY 1,2,3,4,6,7,8,9
-		ORDER BY post.updated DESC
+		WHERE post.blog_id = $1
+		ORDER BY created_at DESC
 		LIMIT $2 OFFSET $3`
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, blog.ID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	posts := make([]domain.Post, 0)
-	for rows.Next() {
-		var post domain.Post
-		dest := []interface{}{
-			&post.ID,
-			&post.URL,
-			&post.Title,
-			&post.Updated,
-			&post.Tags,
-			&post.Blog.ID,
-			&post.Blog.FeedURL,
-			&post.Blog.SiteURL,
-			&post.Blog.Title,
-		}
-
-		err := scan(rows, dest...)
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, post)
-	}
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-
-	return posts, nil
-}
-
-func (s *Post) Search(query string, limit, offset int) ([]domain.Post, error) {
-	stmt := `
-		WITH posts AS (
-			SELECT
-				post.id,
-				post.url,
-				post.title,
-				post.updated,
-				post.content_index,
-				blog.id AS blog_id,
-				blog.feed_url AS blog_feed_url,
-				blog.site_url AS blog_site_url,
-				blog.title AS blog_title
-			FROM post
-			INNER JOIN blog
-				ON blog.id = post.blog_id
-			WHERE post.content_index @@ websearch_to_tsquery('english',  $1)
-			ORDER BY ts_rank_cd(post.content_index, websearch_to_tsquery('english',  $1)) DESC
-			LIMIT $2 OFFSET $3
-		)
-		SELECT
-			posts.id,
-			posts.url,
-			posts.title,
-			posts.updated,
-			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(posts.content_index, to_tsquery(tag.name)) DESC), NULL) as tags,
-			posts.blog_id,
-			posts.blog_feed_url,
-			posts.blog_site_url,
-			posts.blog_title
-		FROM posts
-		LEFT JOIN tag
-			ON to_tsquery(tag.name) @@ content_index
-		GROUP BY 1,2,3,4,6,7,8,9,posts.content_index
-		ORDER BY ts_rank_cd(posts.content_index, websearch_to_tsquery('english',  $1)) DESC`
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
+	postRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbPost])
 	if err != nil {
-		return nil, err
+		return nil, checkListError(err)
 	}
-	defer rows.Close()
 
-	posts := make([]domain.Post, 0)
-	for rows.Next() {
-		var post domain.Post
-		dest := []interface{}{
-			&post.ID,
-			&post.URL,
-			&post.Title,
-			&post.Updated,
-			&post.Tags,
-			&post.Blog.ID,
-			&post.Blog.FeedURL,
-			&post.Blog.SiteURL,
-			&post.Blog.Title,
-		}
-
-		err := scan(rows, dest...)
+	var posts []domain.Post
+	for _, row := range postRows {
+		post, err := s.unmarshal(row)
 		if err != nil {
 			return nil, err
 		}
@@ -296,49 +216,4 @@ func (s *Post) Search(query string, limit, offset int) ([]domain.Post, error) {
 	}
 
 	return posts, nil
-}
-
-func (s *Post) Count() (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post`
-
-	var count int
-	dest := []interface{}{
-		&count,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	row := s.conn.QueryRow(ctx, stmt)
-	err := scan(row, dest...)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (s *Post) CountSearch(query string) (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post
-		WHERE content_index @@ websearch_to_tsquery('english',  $1)`
-
-	var count int
-	dest := []interface{}{
-		&count,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	row := s.conn.QueryRow(ctx, stmt, query)
-	err := scan(row, dest...)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }

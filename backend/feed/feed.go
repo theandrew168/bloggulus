@@ -97,15 +97,12 @@ func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post,
 	// create a domain.Post for each entry
 	var posts []domain.Post
 	for _, item := range feed.Items {
-		// try Updated then Published to obtain a timestamp
-		var updated time.Time
-		if item.UpdatedParsed != nil {
-			updated = *item.UpdatedParsed
-		} else if item.PublishedParsed != nil {
-			updated = *item.PublishedParsed
+		var publishedAt time.Time
+		if item.PublishedParsed != nil {
+			publishedAt = *item.PublishedParsed
 		} else {
 			// else default to now
-			updated = time.Now()
+			publishedAt = time.Now()
 		}
 
 		// ensure link is valid
@@ -132,7 +129,7 @@ func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post,
 			link = "https://" + link
 		}
 
-		post := domain.NewPost(link, item.Title, updated, item.Content, blog)
+		post := domain.NewPost(blog, link, item.Title, item.Content, publishedAt)
 		posts = append(posts, post)
 	}
 
@@ -141,7 +138,7 @@ func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post,
 
 func (r *reader) ReadPostBody(post domain.Post) (string, error) {
 	// fetch post body if it wasn't included in the feed
-	body := post.Body
+	body := post.Content
 	if body == "" {
 		resp, err := http.Get(post.URL)
 		if err != nil {

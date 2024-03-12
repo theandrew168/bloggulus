@@ -91,9 +91,9 @@ func run() int {
 		}
 		logger.Printf("  found: %s\n", blog.Title)
 
-		err = store.Blog.Create(&blog)
+		err = store.Blog.Create(blog)
 		if err != nil {
-			if err == storage.ErrExist {
+			if err == storage.ErrConflict {
 				logger.Println("  already exists")
 			} else {
 				logger.Println(err)

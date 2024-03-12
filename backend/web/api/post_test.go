@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http/httptest"
-	"net/url"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
@@ -24,7 +25,7 @@ func TestHandleReadPost(t *testing.T) {
 
 		post := test.CreateMockPost(t, store)
 
-		url := fmt.Sprintf("/posts/%d", post.ID)
+		url := fmt.Sprintf("/posts/%s", post.ID)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 
@@ -68,8 +69,9 @@ func TestHandleReadPostNotFound(t *testing.T) {
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
+		path := fmt.Sprintf("/posts/%s", uuid.New())
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/posts/999999999", nil)
+		r := httptest.NewRequest("GET", path, nil)
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
@@ -190,58 +192,4 @@ func TestHandleReadPostsPagination(t *testing.T) {
 		return test.ErrSkipCommit
 	})
 
-}
-
-func TestHandleReadPostsSearch(t *testing.T) {
-	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(logger, store)
-
-		blog := test.CreateMockBlog(t, store)
-		q := "python rust"
-
-		// create searchable post
-		post := domain.NewPost(test.RandomURL(32), q, test.RandomTime(), test.RandomString(32), blog)
-		err := store.Post.Create(&post)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		url := fmt.Sprintf("/posts?q=%s", url.QueryEscape(q))
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", url, nil)
-
-		router := app.Router()
-		router.ServeHTTP(w, r)
-
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if resp.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
-		}
-
-		var env map[string][]domain.Post
-		err = json.Unmarshal(body, &env)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		got, ok := env["posts"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "posts")
-		}
-
-		if len(got) < 1 {
-			t.Fatalf("expected at least one matching post")
-		}
-
-		return test.ErrSkipCommit
-	})
 }

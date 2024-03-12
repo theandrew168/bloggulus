@@ -3,9 +3,9 @@ package api
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/alexedwards/flow"
+	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
@@ -16,22 +16,16 @@ import (
 func (app *Application) HandleReadBlog(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
-	id, err := strconv.Atoi(flow.Param(r.Context(), "id"))
+	id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 	if err != nil {
-		v.AddError("id", "must be an integer")
-		app.badRequestResponse(w, r, v.Errors)
-		return
-	}
-
-	v.Check(id >= 0, "id", "must be positive")
-	if !v.Valid() {
+		v.AddError("id", "must be a valid UUID")
 		app.badRequestResponse(w, r, v.Errors)
 		return
 	}
 
 	blog, err := app.storage.Blog.Read(id)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotExist) {
+		if errors.Is(err, storage.ErrNotFound) {
 			app.notFoundResponse(w, r)
 			return
 		}
@@ -62,7 +56,7 @@ func (app *Application) HandleReadBlogs(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	blogs, err := app.storage.Blog.ReadAll(limit, offset)
+	blogs, err := app.storage.Blog.List(limit, offset)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

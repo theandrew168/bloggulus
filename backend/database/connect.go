@@ -2,11 +2,15 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// default query timeout
+const Timeout = 3 * time.Second
 
 // Common interface for pgx.Conn, pgx.Pool, pgx.Tx, etc
 // https://github.com/jackc/pgx/issues/644

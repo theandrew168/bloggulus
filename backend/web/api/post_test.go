@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
@@ -121,7 +120,7 @@ func TestHandlePostList(t *testing.T) {
 			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 		}
 
-		var resp map[string][]domain.Post
+		var resp map[string][]jsonPost
 		err = json.Unmarshal(body, &resp)
 		if err != nil {
 			t.Fatal(err)
@@ -183,7 +182,7 @@ func TestHandlePostListPagination(t *testing.T) {
 				t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 			}
 
-			var resp map[string][]domain.Post
+			var resp map[string][]jsonPost
 			err = json.Unmarshal(body, &resp)
 			if err != nil {
 				t.Fatal(err)

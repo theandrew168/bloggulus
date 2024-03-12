@@ -9,9 +9,9 @@ import (
 type Storage struct {
 	conn database.Conn
 
-	Blog *PostgresBlogStorage
-	Post *PostgresPostStorage
-	Tag  *PostgresTagStorage
+	Blog BlogStorage
+	Post PostStorage
+	Tag  TagStorage
 }
 
 func New(conn database.Conn) *Storage {

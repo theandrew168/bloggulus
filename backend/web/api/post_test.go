@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -15,7 +16,16 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
-func TestHandleReadPost(t *testing.T) {
+type jsonPost struct {
+	ID          uuid.UUID `json:"id"`
+	BlogID      uuid.UUID `json:"blogID"`
+	URL         string    `json:"url"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	PublishedAt time.Time `json:"publishedAt"`
+}
+
+func TestHandlePostRead(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -32,23 +42,23 @@ func TestHandleReadPost(t *testing.T) {
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
+		rr := w.Result()
+		body, err := io.ReadAll(rr.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+		if rr.StatusCode != 200 {
+			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 		}
 
-		var env map[string]domain.Post
-		err = json.Unmarshal(body, &env)
+		var resp map[string]jsonPost
+		err = json.Unmarshal(body, &resp)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got, ok := env["post"]
+		got, ok := resp["post"]
 		if !ok {
 			t.Fatalf("response missing key: %v", "post")
 		}
@@ -61,7 +71,7 @@ func TestHandleReadPost(t *testing.T) {
 	})
 }
 
-func TestHandleReadPostNotFound(t *testing.T) {
+func TestHandlePostReadNotFound(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -76,16 +86,16 @@ func TestHandleReadPostNotFound(t *testing.T) {
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		if resp.StatusCode != 404 {
-			t.Fatalf("want %v, got %v", 404, resp.StatusCode)
+		rr := w.Result()
+		if rr.StatusCode != 404 {
+			t.Fatalf("want %v, got %v", 404, rr.StatusCode)
 		}
 
 		return test.ErrSkipCommit
 	})
 }
 
-func TestHandleReadPosts(t *testing.T) {
+func TestHandlePostList(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -101,23 +111,23 @@ func TestHandleReadPosts(t *testing.T) {
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
+		rr := w.Result()
+		body, err := io.ReadAll(rr.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+		if rr.StatusCode != 200 {
+			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 		}
 
-		var env map[string][]domain.Post
-		err = json.Unmarshal(body, &env)
+		var resp map[string][]domain.Post
+		err = json.Unmarshal(body, &resp)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got, ok := env["posts"]
+		got, ok := resp["posts"]
 		if !ok {
 			t.Fatalf("response missing key: %v", "posts")
 		}
@@ -130,7 +140,7 @@ func TestHandleReadPosts(t *testing.T) {
 	})
 }
 
-func TestHandleReadPostsPagination(t *testing.T) {
+func TestHandlePostListPagination(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -163,23 +173,23 @@ func TestHandleReadPostsPagination(t *testing.T) {
 			router := app.Router()
 			router.ServeHTTP(w, r)
 
-			resp := w.Result()
-			body, err := io.ReadAll(resp.Body)
+			rr := w.Result()
+			body, err := io.ReadAll(rr.Body)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if resp.StatusCode != 200 {
-				t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+			if rr.StatusCode != 200 {
+				t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 			}
 
-			var env map[string][]domain.Post
-			err = json.Unmarshal(body, &env)
+			var resp map[string][]domain.Post
+			err = json.Unmarshal(body, &resp)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got, ok := env["posts"]
+			got, ok := resp["posts"]
 			if !ok {
 				t.Fatalf("response missing key: %v", "posts")
 			}
@@ -191,5 +201,4 @@ func TestHandleReadPostsPagination(t *testing.T) {
 
 		return test.ErrSkipCommit
 	})
-
 }

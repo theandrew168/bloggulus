@@ -1,8 +1,6 @@
 package api
 
 import (
-	"embed"
-	"io/fs"
 	"log"
 	"net/http"
 
@@ -12,25 +10,13 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
-//go:embed templates
-var templatesFS embed.FS
-
 type Application struct {
-	templates fs.FS
-
 	logger  *log.Logger
 	storage *storage.Storage
 }
 
 func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
-	templates, err := fs.Sub(templatesFS, "templates")
-	if err != nil {
-		panic(err)
-	}
-
 	app := Application{
-		templates: templates,
-
 		logger:  logger,
 		storage: storage,
 	}
@@ -45,11 +31,12 @@ func (app *Application) Router() http.Handler {
 	mux.Use(middleware.SecureHeaders)
 	mux.Use(middleware.EnableCORS)
 
-	mux.HandleFunc("/", app.HandleIndex, "GET")
-	mux.HandleFunc("/blogs", app.HandleReadBlogs, "GET")
-	mux.HandleFunc("/blogs/:id", app.HandleReadBlog, "GET")
-	mux.HandleFunc("/posts", app.HandleReadPosts, "GET")
-	mux.HandleFunc("/posts/:id", app.HandleReadPost, "GET")
+	mux.HandleFunc("/", app.handleIndex(), "GET")
+	mux.HandleFunc("/blogs", app.handleBlogList(), "GET")
+	mux.HandleFunc("/blogs/:id", app.handleBlogRead(), "GET")
+	mux.HandleFunc("/posts", app.handlePostList(), "GET")
+	mux.HandleFunc("/posts/:id", app.handlePostRead(), "GET")
+	mux.HandleFunc("/tags", app.handleTagList(), "GET")
 
 	return mux
 }

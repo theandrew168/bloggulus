@@ -8,13 +8,21 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+
 	"github.com/theandrew168/bloggulus/backend/domain"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
-func TestHandleReadBlog(t *testing.T) {
+type jsonBlog struct {
+	ID      uuid.UUID `json:"id"`
+	FeedURL string    `json:"feedURL"`
+	SiteURL string    `json:"siteURL"`
+	Title   string    `json:"title"`
+}
+
+func TestHandleBlogRead(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -31,23 +39,23 @@ func TestHandleReadBlog(t *testing.T) {
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
+		rr := w.Result()
+		body, err := io.ReadAll(rr.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+		if rr.StatusCode != 200 {
+			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 		}
 
-		var env map[string]domain.Blog
-		err = json.Unmarshal(body, &env)
+		var resp map[string]domain.Blog
+		err = json.Unmarshal(body, &resp)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got, ok := env["blog"]
+		got, ok := resp["blog"]
 		if !ok {
 			t.Fatalf("response missing key: %v", "blog")
 		}
@@ -60,7 +68,7 @@ func TestHandleReadBlog(t *testing.T) {
 	})
 }
 
-func TestHandleReadBlogNotFound(t *testing.T) {
+func TestHandleBlogReadNotFound(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -78,13 +86,13 @@ func TestHandleReadBlogNotFound(t *testing.T) {
 	router := app.Router()
 	router.ServeHTTP(w, r)
 
-	resp := w.Result()
-	if resp.StatusCode != 404 {
-		t.Fatalf("want %v, got %v", 404, resp.StatusCode)
+	rr := w.Result()
+	if rr.StatusCode != 404 {
+		t.Fatalf("want %v, got %v", 404, rr.StatusCode)
 	}
 }
 
-func TestHandleReadBlogs(t *testing.T) {
+func TestHandleBlogList(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -100,23 +108,23 @@ func TestHandleReadBlogs(t *testing.T) {
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
+		rr := w.Result()
+		body, err := io.ReadAll(rr.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+		if rr.StatusCode != 200 {
+			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 		}
 
-		var env map[string][]domain.Blog
-		err = json.Unmarshal(body, &env)
+		var resp map[string][]domain.Blog
+		err = json.Unmarshal(body, &resp)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		got, ok := env["blogs"]
+		got, ok := resp["blogs"]
 		if !ok {
 			t.Fatalf("response missing key: %v", "blogs")
 		}
@@ -129,7 +137,7 @@ func TestHandleReadBlogs(t *testing.T) {
 	})
 }
 
-func TestHandleReadBlogsPagination(t *testing.T) {
+func TestHandleBlogListPagination(t *testing.T) {
 	logger := test.NewLogger(t)
 	store, closer := test.NewStorage(t)
 	defer closer()
@@ -162,23 +170,23 @@ func TestHandleReadBlogsPagination(t *testing.T) {
 			router := app.Router()
 			router.ServeHTTP(w, r)
 
-			resp := w.Result()
-			body, err := io.ReadAll(resp.Body)
+			rr := w.Result()
+			body, err := io.ReadAll(rr.Body)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if resp.StatusCode != 200 {
-				t.Fatalf("want %v, got %v", 200, resp.StatusCode)
+			if rr.StatusCode != 200 {
+				t.Fatalf("want %v, got %v", 200, rr.StatusCode)
 			}
 
-			var env map[string][]domain.Blog
-			err = json.Unmarshal(body, &env)
+			var resp map[string][]domain.Blog
+			err = json.Unmarshal(body, &resp)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got, ok := env["blogs"]
+			got, ok := resp["blogs"]
 			if !ok {
 				t.Fatalf("response missing key: %v", "blogs")
 			}

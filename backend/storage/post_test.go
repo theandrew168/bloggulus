@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
@@ -90,9 +90,9 @@ func TestPostListByBlog(t *testing.T) {
 		blog := test.CreateMockBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
-		var post domain.Post
+		var post admin.Post
 		for i := 0; i < 5; i++ {
-			post = domain.NewPost(
+			post = admin.NewPost(
 				blog,
 				test.RandomURL(32),
 				test.RandomString(32),

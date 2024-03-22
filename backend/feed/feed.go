@@ -14,7 +14,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 )
 
 // I know...
@@ -42,9 +42,9 @@ func CleanHTML(s string) string {
 }
 
 type Reader interface {
-	ReadBlog(feedURL string) (domain.Blog, error)
-	ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post, error)
-	ReadPostBody(post domain.Post) (string, error)
+	ReadBlog(feedURL string) (admin.Blog, error)
+	ReadBlogPosts(blog admin.Blog, body io.Reader) ([]admin.Post, error)
+	ReadPostBody(post admin.Post) (string, error)
 }
 
 type reader struct {
@@ -58,16 +58,16 @@ func NewReader(logger *log.Logger) Reader {
 	return &r
 }
 
-func (r *reader) ReadBlog(feedURL string) (domain.Blog, error) {
+func (r *reader) ReadBlog(feedURL string) (admin.Blog, error) {
 	// early check to ensure the URL is valid
 	_, err := url.Parse(feedURL)
 	if err != nil {
-		return domain.Blog{}, err
+		return admin.Blog{}, err
 	}
 
 	resp, err := http.Get(feedURL)
 	if err != nil {
-		return domain.Blog{}, err
+		return admin.Blog{}, err
 	}
 	defer resp.Body.Close()
 
@@ -78,15 +78,15 @@ func (r *reader) ReadBlog(feedURL string) (domain.Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(resp.Body)
 	if err != nil {
-		return domain.Blog{}, err
+		return admin.Blog{}, err
 	}
 
-	// create a domain.Blog for the feed
-	blog := domain.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
+	// create a admin.Blog for the feed
+	blog := admin.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
 	return blog, nil
 }
 
-func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post, error) {
+func (r *reader) ReadBlogPosts(blog admin.Blog, body io.Reader) ([]admin.Post, error) {
 	// attempt to parse the feed via gofeed
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(body)
@@ -94,8 +94,8 @@ func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post,
 		return nil, err
 	}
 
-	// create a domain.Post for each entry
-	var posts []domain.Post
+	// create a admin.Post for each entry
+	var posts []admin.Post
 	for _, item := range feed.Items {
 		var publishedAt time.Time
 		if item.PublishedParsed != nil {
@@ -129,14 +129,14 @@ func (r *reader) ReadBlogPosts(blog domain.Blog, body io.Reader) ([]domain.Post,
 			link = "https://" + link
 		}
 
-		post := domain.NewPost(blog, link, item.Title, item.Content, publishedAt)
+		post := admin.NewPost(blog, link, item.Title, item.Content, publishedAt)
 		posts = append(posts, post)
 	}
 
 	return posts, nil
 }
 
-func (r *reader) ReadPostBody(post domain.Post) (string, error) {
+func (r *reader) ReadPostBody(post admin.Post) (string, error) {
 	// fetch post body if it wasn't included in the feed
 	body := post.Content
 	if body == "" {

@@ -8,17 +8,17 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/database"
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 )
 
 // ensure PostStorage interface is satisfied
 var _ PostStorage = (*PostgresPostStorage)(nil)
 
 type PostStorage interface {
-	Create(post domain.Post) error
-	Read(id uuid.UUID) (domain.Post, error)
-	List(limit, offset int) ([]domain.Post, error)
-	ListByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error)
+	Create(post admin.Post) error
+	Read(id uuid.UUID) (admin.Post, error)
+	List(limit, offset int) ([]admin.Post, error)
+	ListByBlog(blog admin.Blog, limit, offset int) ([]admin.Post, error)
 }
 
 type dbPost struct {
@@ -43,7 +43,7 @@ func NewPostgresPostStorage(conn database.Conn) *PostgresPostStorage {
 	return &s
 }
 
-func (s *PostgresPostStorage) marshal(post domain.Post) (dbPost, error) {
+func (s *PostgresPostStorage) marshal(post admin.Post) (dbPost, error) {
 	row := dbPost{
 		ID:          post.ID,
 		BlogID:      post.BlogID,
@@ -57,8 +57,8 @@ func (s *PostgresPostStorage) marshal(post domain.Post) (dbPost, error) {
 	return row, nil
 }
 
-func (s *PostgresPostStorage) unmarshal(row dbPost) (domain.Post, error) {
-	post := domain.Post{
+func (s *PostgresPostStorage) unmarshal(row dbPost) (admin.Post, error) {
+	post := admin.Post{
 		ID:          row.ID,
 		BlogID:      row.BlogID,
 		URL:         row.URL,
@@ -71,7 +71,7 @@ func (s *PostgresPostStorage) unmarshal(row dbPost) (domain.Post, error) {
 	return post, nil
 }
 
-func (s *PostgresPostStorage) Create(post domain.Post) error {
+func (s *PostgresPostStorage) Create(post admin.Post) error {
 	stmt := `
 		INSERT INTO post
 			(id, blog_id, url, title, content, published_at, created_at, updated_at)
@@ -105,7 +105,7 @@ func (s *PostgresPostStorage) Create(post domain.Post) error {
 	return nil
 }
 
-func (s *PostgresPostStorage) Read(id uuid.UUID) (domain.Post, error) {
+func (s *PostgresPostStorage) Read(id uuid.UUID) (admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -124,18 +124,18 @@ func (s *PostgresPostStorage) Read(id uuid.UUID) (domain.Post, error) {
 
 	rows, err := s.conn.Query(ctx, stmt, id)
 	if err != nil {
-		return domain.Post{}, err
+		return admin.Post{}, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPost])
 	if err != nil {
-		return domain.Post{}, checkReadError(err)
+		return admin.Post{}, checkReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresPostStorage) List(limit, offset int) ([]domain.Post, error) {
+func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -163,7 +163,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]domain.Post, error) {
 		return nil, checkListError(err)
 	}
 
-	var posts []domain.Post
+	var posts []admin.Post
 	for _, row := range postRows {
 		post, err := s.unmarshal(row)
 		if err != nil {
@@ -176,7 +176,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]domain.Post, error) {
 	return posts, nil
 }
 
-func (s *PostgresPostStorage) ListByBlog(blog domain.Blog, limit, offset int) ([]domain.Post, error) {
+func (s *PostgresPostStorage) ListByBlog(blog admin.Blog, limit, offset int) ([]admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -205,7 +205,7 @@ func (s *PostgresPostStorage) ListByBlog(blog domain.Blog, limit, offset int) ([
 		return nil, checkListError(err)
 	}
 
-	var posts []domain.Post
+	var posts []admin.Post
 	for _, row := range postRows {
 		post, err := s.unmarshal(row)
 		if err != nil {

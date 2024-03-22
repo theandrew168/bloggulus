@@ -8,17 +8,17 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/database"
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 )
 
 // ensure BlogStorage interface is satisfied
 var _ BlogStorage = (*PostgresBlogStorage)(nil)
 
 type BlogStorage interface {
-	Create(blog domain.Blog) error
-	Read(id uuid.UUID) (domain.Blog, error)
-	List(limit, offset int) ([]domain.Blog, error)
-	Update(blog domain.Blog) error
+	Create(blog admin.Blog) error
+	Read(id uuid.UUID) (admin.Blog, error)
+	List(limit, offset int) ([]admin.Blog, error)
+	Update(blog admin.Blog) error
 }
 
 type dbBlog struct {
@@ -43,7 +43,7 @@ func NewPostgresBlogStorage(conn database.Conn) *PostgresBlogStorage {
 	return &s
 }
 
-func (s *PostgresBlogStorage) marshal(blog domain.Blog) (dbBlog, error) {
+func (s *PostgresBlogStorage) marshal(blog admin.Blog) (dbBlog, error) {
 	row := dbBlog{
 		ID:           blog.ID,
 		FeedURL:      blog.FeedURL,
@@ -57,8 +57,8 @@ func (s *PostgresBlogStorage) marshal(blog domain.Blog) (dbBlog, error) {
 	return row, nil
 }
 
-func (s *PostgresBlogStorage) unmarshal(row dbBlog) (domain.Blog, error) {
-	blog := domain.Blog{
+func (s *PostgresBlogStorage) unmarshal(row dbBlog) (admin.Blog, error) {
+	blog := admin.Blog{
 		ID:           row.ID,
 		FeedURL:      row.FeedURL,
 		SiteURL:      row.SiteURL,
@@ -71,7 +71,7 @@ func (s *PostgresBlogStorage) unmarshal(row dbBlog) (domain.Blog, error) {
 	return blog, nil
 }
 
-func (s *PostgresBlogStorage) Create(blog domain.Blog) error {
+func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(id, feed_url, site_url, title, etag, last_modified, created_at, updated_at)
@@ -105,7 +105,7 @@ func (s *PostgresBlogStorage) Create(blog domain.Blog) error {
 	return nil
 }
 
-func (s *PostgresBlogStorage) Read(id uuid.UUID) (domain.Blog, error) {
+func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -124,18 +124,18 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (domain.Blog, error) {
 
 	rows, err := s.conn.Query(ctx, stmt, id)
 	if err != nil {
-		return domain.Blog{}, err
+		return admin.Blog{}, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbBlog])
 	if err != nil {
-		return domain.Blog{}, checkReadError(err)
+		return admin.Blog{}, checkReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresBlogStorage) List(limit, offset int) ([]domain.Blog, error) {
+func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -163,7 +163,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]domain.Blog, error) {
 		return nil, checkListError(err)
 	}
 
-	var blogs []domain.Blog
+	var blogs []admin.Blog
 	for _, row := range blogRows {
 		blog, err := s.unmarshal(row)
 		if err != nil {
@@ -176,7 +176,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]domain.Blog, error) {
 	return blogs, nil
 }
 
-func (s *PostgresBlogStorage) Update(blog domain.Blog) error {
+func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 	now := time.Now()
 	stmt := `
 		UPDATE blog

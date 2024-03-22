@@ -8,16 +8,16 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/database"
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 )
 
 // ensure TagStorage interface is satisfied
 var _ TagStorage = (*PostgresTagStorage)(nil)
 
 type TagStorage interface {
-	Create(tag domain.Tag) error
-	List(limit, offset int) ([]domain.Tag, error)
-	Delete(tag domain.Tag) error
+	Create(tag admin.Tag) error
+	List(limit, offset int) ([]admin.Tag, error)
+	Delete(tag admin.Tag) error
 }
 
 type dbTag struct {
@@ -38,7 +38,7 @@ func NewPostgresTagStorage(conn database.Conn) *PostgresTagStorage {
 	return &s
 }
 
-func (s *PostgresTagStorage) marshal(tag domain.Tag) (dbTag, error) {
+func (s *PostgresTagStorage) marshal(tag admin.Tag) (dbTag, error) {
 	row := dbTag{
 		ID:        tag.ID,
 		Name:      tag.Name,
@@ -48,8 +48,8 @@ func (s *PostgresTagStorage) marshal(tag domain.Tag) (dbTag, error) {
 	return row, nil
 }
 
-func (s *PostgresTagStorage) unmarshal(row dbTag) (domain.Tag, error) {
-	post := domain.Tag{
+func (s *PostgresTagStorage) unmarshal(row dbTag) (admin.Tag, error) {
+	post := admin.Tag{
 		ID:        row.ID,
 		Name:      row.Name,
 		CreatedAt: row.CreatedAt,
@@ -58,7 +58,7 @@ func (s *PostgresTagStorage) unmarshal(row dbTag) (domain.Tag, error) {
 	return post, nil
 }
 
-func (s *PostgresTagStorage) Create(tag domain.Tag) error {
+func (s *PostgresTagStorage) Create(tag admin.Tag) error {
 	stmt := `
 		INSERT INTO tag
 			(id, name, created_at, updated_at)
@@ -88,7 +88,7 @@ func (s *PostgresTagStorage) Create(tag domain.Tag) error {
 	return nil
 }
 
-func (s *PostgresTagStorage) List(limit, offset int) ([]domain.Tag, error) {
+func (s *PostgresTagStorage) List(limit, offset int) ([]admin.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -112,7 +112,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]domain.Tag, error) {
 		return nil, checkListError(err)
 	}
 
-	var tags []domain.Tag
+	var tags []admin.Tag
 	for _, row := range tagRows {
 		tag, err := s.unmarshal(row)
 		if err != nil {
@@ -125,7 +125,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]domain.Tag, error) {
 	return tags, nil
 }
 
-func (repo *PostgresTagStorage) Delete(tag domain.Tag) error {
+func (repo *PostgresTagStorage) Delete(tag admin.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1

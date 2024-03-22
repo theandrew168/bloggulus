@@ -3,12 +3,12 @@ package test
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-func NewMockBlog() domain.Blog {
-	blog := domain.NewBlog(
+func NewMockBlog() admin.Blog {
+	blog := admin.NewBlog(
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
@@ -18,8 +18,8 @@ func NewMockBlog() domain.Blog {
 	return blog
 }
 
-func NewMockPost(blog domain.Blog) domain.Post {
-	post := domain.NewPost(
+func NewMockPost(blog admin.Blog) admin.Post {
+	post := admin.NewPost(
 		blog,
 		RandomURL(32),
 		RandomString(32),
@@ -29,15 +29,15 @@ func NewMockPost(blog domain.Blog) domain.Post {
 	return post
 }
 
-func NewMockTag() domain.Tag {
-	tag := domain.NewTag(
+func NewMockTag() admin.Tag {
+	tag := admin.NewTag(
 		RandomString(32),
 	)
 	return tag
 }
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, store *storage.Storage) domain.Blog {
+func CreateMockBlog(t *testing.T, store *storage.Storage) admin.Blog {
 	t.Helper()
 
 	// generate some random blog data
@@ -53,7 +53,7 @@ func CreateMockBlog(t *testing.T, store *storage.Storage) domain.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, store *storage.Storage) domain.Post {
+func CreateMockPost(t *testing.T, store *storage.Storage) admin.Post {
 	t.Helper()
 
 	// generate some random blog data
@@ -78,7 +78,7 @@ func CreateMockPost(t *testing.T, store *storage.Storage) domain.Post {
 }
 
 // mocks a tag and creates it in the database
-func CreateMockTag(t *testing.T, store *storage.Storage) domain.Tag {
+func CreateMockTag(t *testing.T, store *storage.Storage) admin.Tag {
 	t.Helper()
 
 	// generate some random tag data

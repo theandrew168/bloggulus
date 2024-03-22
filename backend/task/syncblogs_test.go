@@ -3,7 +3,7 @@ package task_test
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/domain"
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/task"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -25,7 +25,7 @@ func TestSyncBlogs(t *testing.T) {
 	}
 
 	// mock some posts onto the blog
-	posts := []domain.Post{
+	posts := []admin.Post{
 		test.NewMockPost(blog),
 		test.NewMockPost(blog),
 		test.NewMockPost(blog),

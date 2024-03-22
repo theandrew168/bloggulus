@@ -1,4 +1,4 @@
-package domain
+package admin
 
 import (
 	"time"

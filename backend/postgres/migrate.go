@@ -1,14 +1,12 @@
-package migrate
+package postgres
 
 import (
 	"context"
 	"io/fs"
 	"sort"
-
-	"github.com/theandrew168/bloggulus/backend/database"
 )
 
-func Migrate(conn database.Conn, files fs.FS) ([]string, error) {
+func Migrate(conn Conn, files fs.FS) ([]string, error) {
 	ctx := context.Background()
 
 	// create migration table if it doesn't exist

@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 // ensure BlogStorage interface is satisfied
@@ -33,10 +33,10 @@ type dbBlog struct {
 }
 
 type PostgresBlogStorage struct {
-	conn database.Conn
+	conn postgres.Conn
 }
 
-func NewPostgresBlogStorage(conn database.Conn) *PostgresBlogStorage {
+func NewPostgresBlogStorage(conn postgres.Conn) *PostgresBlogStorage {
 	s := PostgresBlogStorage{
 		conn: conn,
 	}
@@ -94,7 +94,7 @@ func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	_, err = s.conn.Exec(ctx, stmt, args...)
@@ -119,7 +119,7 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
 		FROM blog
 		WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, id)
@@ -150,7 +150,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
@@ -207,7 +207,7 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, args...)

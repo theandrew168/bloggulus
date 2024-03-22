@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 // ensure TagStorage interface is satisfied
@@ -28,10 +28,10 @@ type dbTag struct {
 }
 
 type PostgresTagStorage struct {
-	conn database.Conn
+	conn postgres.Conn
 }
 
-func NewPostgresTagStorage(conn database.Conn) *PostgresTagStorage {
+func NewPostgresTagStorage(conn postgres.Conn) *PostgresTagStorage {
 	s := PostgresTagStorage{
 		conn: conn,
 	}
@@ -77,7 +77,7 @@ func (s *PostgresTagStorage) Create(tag admin.Tag) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	_, err = s.conn.Exec(ctx, stmt, args...)
@@ -99,7 +99,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]admin.Tag, error) {
 		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
@@ -131,7 +131,7 @@ func (repo *PostgresTagStorage) Delete(tag admin.Tag) error {
 		WHERE id = $1
 		RETURNING id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := repo.conn.Query(ctx, stmt, tag.ID)

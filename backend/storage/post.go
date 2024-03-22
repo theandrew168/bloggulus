@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 // ensure PostStorage interface is satisfied
@@ -33,10 +33,10 @@ type dbPost struct {
 }
 
 type PostgresPostStorage struct {
-	conn database.Conn
+	conn postgres.Conn
 }
 
-func NewPostgresPostStorage(conn database.Conn) *PostgresPostStorage {
+func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 	s := PostgresPostStorage{
 		conn: conn,
 	}
@@ -94,7 +94,7 @@ func (s *PostgresPostStorage) Create(post admin.Post) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	_, err = s.conn.Exec(ctx, stmt, args...)
@@ -119,7 +119,7 @@ func (s *PostgresPostStorage) Read(id uuid.UUID) (admin.Post, error) {
 		FROM post
 		WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, id)
@@ -150,7 +150,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
 		ORDER BY created_at ASC
 		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, limit, offset)
@@ -192,7 +192,7 @@ func (s *PostgresPostStorage) ListByBlog(blog admin.Blog, limit, offset int) ([]
 		ORDER BY created_at DESC
 		LIMIT $2 OFFSET $3`
 
-	ctx, cancel := context.WithTimeout(context.Background(), database.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, blog.ID, limit, offset)

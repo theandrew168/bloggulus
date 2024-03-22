@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/database"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
@@ -27,11 +27,11 @@ func NewConfig(t *testing.T) config.Config {
 	return cfg
 }
 
-func NewDatabase(t *testing.T) (database.Conn, CloserFunc) {
+func NewDatabase(t *testing.T) (postgres.Conn, CloserFunc) {
 	t.Helper()
 
 	cfg := NewConfig(t)
-	pool, err := database.ConnectPool(cfg.DatabaseURI)
+	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -3,18 +3,18 @@ package storage
 import (
 	"context"
 
-	"github.com/theandrew168/bloggulus/backend/database"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 type Storage struct {
-	conn database.Conn
+	conn postgres.Conn
 
 	Blog BlogStorage
 	Post PostStorage
 	Tag  TagStorage
 }
 
-func New(conn database.Conn) *Storage {
+func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 

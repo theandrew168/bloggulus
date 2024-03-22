@@ -14,9 +14,8 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/database"
 	"github.com/theandrew168/bloggulus/backend/feed"
-	"github.com/theandrew168/bloggulus/backend/migrate"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/task"
 	"github.com/theandrew168/bloggulus/backend/web"
@@ -50,7 +49,7 @@ func run() int {
 	}
 
 	// open a database connection pool
-	pool, err := database.ConnectPool(cfg.DatabaseURI)
+	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
 	if err != nil {
 		logger.Println(err)
 		return 1
@@ -58,7 +57,7 @@ func run() int {
 	defer pool.Close()
 
 	// apply database migrations
-	applied, err := migrate.Migrate(pool, migrationsFS)
+	applied, err := postgres.Migrate(pool, migrationsFS)
 	if err != nil {
 		logger.Println(err.Error())
 		return 1

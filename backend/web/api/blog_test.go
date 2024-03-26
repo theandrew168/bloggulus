@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -23,10 +23,10 @@ type jsonBlog struct {
 
 func TestHandleBlogRead(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		blog := test.CreateMockBlog(t, store)
@@ -69,12 +69,8 @@ func TestHandleBlogRead(t *testing.T) {
 
 func TestHandleBlogReadNotFound(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		return test.ErrSkipCommit
-	})
 
 	app := api.NewApplication(logger, store)
 
@@ -93,10 +89,10 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 
 func TestHandleBlogList(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		test.CreateMockBlog(t, store)
@@ -138,10 +134,10 @@ func TestHandleBlogList(t *testing.T) {
 
 func TestHandleBlogListPagination(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		// create 5 blogs to test with

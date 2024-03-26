@@ -5,31 +5,32 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestPostCreate(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	// TODO: do something more here?
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockPost(t, store)
 		return test.ErrSkipCommit
 	})
 }
 
 func TestPostCreateAlreadyExists(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
 
-		err := store.Post.Create(post)
+		err := store.Post().Create(post)
 		t.Log(err.Error())
-		if !errors.Is(err, storage.ErrConflict) {
+		if !errors.Is(err, postgres.ErrConflict) {
 			t.Fatal("duplicate post should return an error")
 		}
 
@@ -38,12 +39,12 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 }
 
 func TestPostRead(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
-		got, err := store.Post.Read(post.ID)
+		got, err := store.Post().Read(post.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -57,10 +58,10 @@ func TestPostRead(t *testing.T) {
 }
 
 func TestPostList(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockPost(t, store)
 		test.CreateMockPost(t, store)
 		test.CreateMockPost(t, store)
@@ -69,7 +70,7 @@ func TestPostList(t *testing.T) {
 
 		limit := 3
 		offset := 0
-		posts, err := store.Post.List(limit, offset)
+		posts, err := store.Post().List(limit, offset)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -83,10 +84,10 @@ func TestPostList(t *testing.T) {
 }
 
 func TestPostListByBlog(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		blog := test.CreateMockBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
@@ -99,7 +100,7 @@ func TestPostListByBlog(t *testing.T) {
 				test.RandomString(32),
 				test.RandomTime(),
 			)
-			err := store.Post.Create(post)
+			err := store.Post().Create(post)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -107,7 +108,7 @@ func TestPostListByBlog(t *testing.T) {
 
 		limit := 3
 		offset := 0
-		posts, err := store.Post.ListByBlog(blog, limit, offset)
+		posts, err := store.Post().ListByBlog(blog, limit, offset)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 )
 
 func NewMockBlog() admin.Blog {
@@ -37,14 +37,14 @@ func NewMockTag() admin.Tag {
 }
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, store *storage.Storage) admin.Blog {
+func CreateMockBlog(t *testing.T, store adminStorage.Storage) admin.Blog {
 	t.Helper()
 
 	// generate some random blog data
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := store.Blog.Create(blog)
+	err := store.Blog().Create(blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,14 +53,14 @@ func CreateMockBlog(t *testing.T, store *storage.Storage) admin.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, store *storage.Storage) admin.Post {
+func CreateMockPost(t *testing.T, store adminStorage.Storage) admin.Post {
 	t.Helper()
 
 	// generate some random blog data
 	blog := NewMockBlog()
 
 	// create an example blog
-	err := store.Blog.Create(blog)
+	err := store.Blog().Create(blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func CreateMockPost(t *testing.T, store *storage.Storage) admin.Post {
 	post := NewMockPost(blog)
 
 	// create an example post
-	err = store.Post.Create(post)
+	err = store.Post().Create(post)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,14 +78,14 @@ func CreateMockPost(t *testing.T, store *storage.Storage) admin.Post {
 }
 
 // mocks a tag and creates it in the database
-func CreateMockTag(t *testing.T, store *storage.Storage) admin.Tag {
+func CreateMockTag(t *testing.T, store adminStorage.Storage) admin.Tag {
 	t.Helper()
 
 	// generate some random tag data
 	tag := NewMockTag()
 
 	// create an example blog
-	err := store.Tag.Create(tag)
+	err := store.Tag().Create(tag)
 	if err != nil {
 		t.Fatal(err)
 	}

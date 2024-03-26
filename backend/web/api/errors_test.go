@@ -12,7 +12,7 @@ import (
 
 func TestBadRequest(t *testing.T) {
 	logger := test.NewLogger(t)
-	storage, closer := test.NewStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(logger, storage)
@@ -61,7 +61,7 @@ func TestBadRequest(t *testing.T) {
 
 func TestNotFound(t *testing.T) {
 	logger := test.NewLogger(t)
-	storage, closer := test.NewStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(logger, storage)
@@ -90,7 +90,7 @@ func TestNotFound(t *testing.T) {
 
 func TestMethodNotAllowed(t *testing.T) {
 	logger := test.NewLogger(t)
-	storage, closer := test.NewStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(logger, storage)

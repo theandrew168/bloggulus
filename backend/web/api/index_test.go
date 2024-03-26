@@ -11,7 +11,7 @@ import (
 
 func TestHandleIndex(t *testing.T) {
 	logger := test.NewLogger(t)
-	storage, closer := test.NewStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(logger, storage)

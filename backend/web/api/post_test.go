@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -26,10 +26,10 @@ type jsonPost struct {
 
 func TestHandlePostRead(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		post := test.CreateMockPost(t, store)
@@ -72,10 +72,10 @@ func TestHandlePostRead(t *testing.T) {
 
 func TestHandlePostReadNotFound(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
@@ -96,10 +96,10 @@ func TestHandlePostReadNotFound(t *testing.T) {
 
 func TestHandlePostList(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		test.CreateMockPost(t, store)
@@ -141,10 +141,10 @@ func TestHandlePostList(t *testing.T) {
 
 func TestHandlePostListPagination(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		// create 5 posts to test with

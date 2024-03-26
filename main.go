@@ -16,7 +16,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/task"
 	"github.com/theandrew168/bloggulus/backend/web"
 	"github.com/theandrew168/bloggulus/frontend"
@@ -73,7 +73,7 @@ func run() int {
 	}
 
 	// init database storage
-	store := storage.New(pool)
+	store := adminStorage.New(pool)
 
 	// init default feed reader
 	reader := feed.NewReader(logger)
@@ -90,9 +90,9 @@ func run() int {
 		}
 		logger.Printf("  found: %s\n", blog.Title)
 
-		err = store.Blog.Create(blog)
+		err = store.Blog().Create(blog)
 		if err != nil {
-			if err == storage.ErrConflict {
+			if err == postgres.ErrConflict {
 				logger.Println("  already exists")
 			} else {
 				logger.Println(err)

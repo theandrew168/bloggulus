@@ -6,17 +6,17 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/feed"
-	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
 type syncBlogsTask struct {
 	w       *Worker
-	storage *storage.Storage
+	storage storage.Storage
 	reader  feed.Reader
 }
 
-func (w *Worker) SyncBlogs(storage *storage.Storage, reader feed.Reader) Task {
+func (w *Worker) SyncBlogs(storage storage.Storage, reader feed.Reader) Task {
 	task := syncBlogsTask{
 		w:       w,
 		storage: storage,
@@ -54,7 +54,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 	offset := 0
 
 	// read initial batch of blogs
-	blogs, err := t.storage.Blog.List(limit, offset)
+	blogs, err := t.storage.Blog().List(limit, offset)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (t *syncBlogsTask) syncBlogs() error {
 
 		// read the next batch
 		offset += limit
-		blogs, err = t.storage.Blog.List(limit, offset)
+		blogs, err = t.storage.Blog().List(limit, offset)
 		if err != nil {
 			wg.Wait()
 			return err
@@ -119,7 +119,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog admin.Blog) {
 
 	// update blog if ETag or Last-Modified have changed
 	if dirty {
-		err = t.storage.Blog.Update(blog)
+		err = t.storage.Blog().Update(blog)
 		if err != nil {
 			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			return
@@ -139,7 +139,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog admin.Blog) {
 	knownPostURLs := make(map[string]bool)
 
 	// read initial batch of posts
-	knownPosts, err := t.storage.Post.ListByBlog(blog, limit, offset)
+	knownPosts, err := t.storage.Post().ListByBlog(blog, limit, offset)
 	if err != nil {
 		t.w.logger.Printf("%d: %s\n", blog.ID, err)
 		return
@@ -153,7 +153,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog admin.Blog) {
 
 		// read the next batch
 		offset += limit
-		knownPosts, err = t.storage.Post.ListByBlog(blog, limit, offset)
+		knownPosts, err = t.storage.Post().ListByBlog(blog, limit, offset)
 		if err != nil {
 			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			return
@@ -189,7 +189,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog admin.Blog) {
 
 	// sync each post with the database
 	for _, post := range newPosts {
-		err = t.storage.Post.Create(post)
+		err = t.storage.Post().Create(post)
 		if err != nil {
 			t.w.logger.Printf("%d: sync: %v %v\n", blog.ID, post.URL, err)
 		}

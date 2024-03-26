@@ -7,7 +7,7 @@ import (
 	"github.com/alexedwards/flow"
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
@@ -32,9 +32,9 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 			return
 		}
 
-		blog, err := app.storage.Blog.Read(id)
+		blog, err := app.storage.Blog().Read(id)
 		if err != nil {
-			if errors.Is(err, storage.ErrNotFound) {
+			if errors.Is(err, postgres.ErrNotFound) {
 				app.notFoundResponse(w, r)
 				return
 			}
@@ -78,7 +78,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 			return
 		}
 
-		blogs, err := app.storage.Blog.List(limit, offset)
+		blogs, err := app.storage.Blog().List(limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

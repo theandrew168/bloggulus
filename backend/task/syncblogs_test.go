@@ -14,12 +14,12 @@ func TestSyncBlogs(t *testing.T) {
 	t.Skip()
 
 	logger := test.NewLogger(t)
-	storage, closer := test.NewStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	// mock and create a blog
 	blog := test.NewMockBlog()
-	err := storage.Blog.Create(blog)
+	err := storage.Blog().Create(blog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestSyncBlogs(t *testing.T) {
 	}
 
 	// grab all posts associated with the mock blog
-	synced, err := storage.Post.ListByBlog(blog, 20, 0)
+	synced, err := storage.Post().ListByBlog(blog, 20, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

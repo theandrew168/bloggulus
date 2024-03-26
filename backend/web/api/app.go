@@ -6,16 +6,16 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type Application struct {
 	logger  *log.Logger
-	storage *storage.Storage
+	storage storage.Storage
 }
 
-func NewApplication(logger *log.Logger, storage *storage.Storage) *Application {
+func NewApplication(logger *log.Logger, storage storage.Storage) *Application {
 	app := Application{
 		logger:  logger,
 		storage: storage,

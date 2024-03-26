@@ -4,17 +4,18 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestTagCreate(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.NewMockTag()
-		err := store.Tag.Create(tag)
+		err := store.Tag().Create(tag)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -24,15 +25,15 @@ func TestTagCreate(t *testing.T) {
 }
 
 func TestTagCreateAlreadyExists(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.CreateMockTag(t, store)
 
 		// attempt to create the same tag again
-		err := store.Tag.Create(tag)
-		if !errors.Is(err, storage.ErrConflict) {
+		err := store.Tag().Create(tag)
+		if !errors.Is(err, postgres.ErrConflict) {
 			t.Fatal("duplicate tag should return an error")
 		}
 
@@ -41,10 +42,10 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 }
 
 func TestTagList(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockTag(t, store)
 		test.CreateMockTag(t, store)
 		test.CreateMockTag(t, store)
@@ -53,7 +54,7 @@ func TestTagList(t *testing.T) {
 
 		limit := 3
 		offset := 0
-		tags, err := store.Tag.List(limit, offset)
+		tags, err := store.Tag().List(limit, offset)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -67,17 +68,17 @@ func TestTagList(t *testing.T) {
 }
 
 func TestTagDelete(t *testing.T) {
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.NewMockTag()
-		err := store.Tag.Create(tag)
+		err := store.Tag().Create(tag)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = store.Tag.Delete(tag)
+		err = store.Tag().Delete(tag)
 		if err != nil {
 			t.Fatal(err)
 		}

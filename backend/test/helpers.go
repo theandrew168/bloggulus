@@ -7,7 +7,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 )
 
 type CloserFunc func()
@@ -39,10 +39,10 @@ func NewDatabase(t *testing.T) (postgres.Conn, CloserFunc) {
 	return pool, pool.Close
 }
 
-func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
+func NewAdminStorage(t *testing.T) (*adminStorage.Storage, CloserFunc) {
 	t.Helper()
 
 	db, closer := NewDatabase(t)
-	store := storage.New(db)
+	store := adminStorage.New(db)
 	return store, closer
 }

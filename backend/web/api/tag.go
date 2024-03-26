@@ -33,7 +33,7 @@ func (app *Application) handleTagList() http.HandlerFunc {
 			return
 		}
 
-		tags, err := app.storage.Tag.List(limit, offset)
+		tags, err := app.storage.Tag().List(limit, offset)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

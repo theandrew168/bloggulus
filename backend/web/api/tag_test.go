@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -21,10 +21,10 @@ type jsonTag struct {
 
 func TestHandleTagList(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		test.CreateMockTag(t, store)
@@ -66,10 +66,10 @@ func TestHandleTagList(t *testing.T) {
 
 func TestHandleTagListPagination(t *testing.T) {
 	logger := test.NewLogger(t)
-	store, closer := test.NewStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
+	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(logger, store)
 
 		// create 5 tags to test with

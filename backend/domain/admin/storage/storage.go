@@ -5,5 +5,5 @@ type Storage interface {
 	Post() PostStorage
 	Tag() TagStorage
 
-	Atomically(operation func(store Storage) error) error
+	WithTransaction(operation func(store Storage) error) error
 }

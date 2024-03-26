@@ -13,8 +13,10 @@ type Blog struct {
 	Title        string
 	ETag         string
 	LastModified string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	SyncedAt     time.Time
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
@@ -26,8 +28,10 @@ func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
 		Title:        title,
 		ETag:         etag,
 		LastModified: lastModified,
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		SyncedAt:     now.Add(-1 * time.Hour),
+
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 	return blog
 }

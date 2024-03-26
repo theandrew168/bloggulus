@@ -22,6 +22,7 @@ type dbBlog struct {
 	Title        string    `db:"title"`
 	ETag         string    `db:"etag"`
 	LastModified string    `db:"last_modified"`
+	SyncedAt     time.Time `db:"synced_at"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }
@@ -45,6 +46,7 @@ func (s *PostgresBlogStorage) marshal(blog admin.Blog) (dbBlog, error) {
 		Title:        blog.Title,
 		ETag:         blog.ETag,
 		LastModified: blog.LastModified,
+		SyncedAt:     blog.SyncedAt,
 		CreatedAt:    blog.CreatedAt,
 		UpdatedAt:    blog.UpdatedAt,
 	}
@@ -59,6 +61,7 @@ func (s *PostgresBlogStorage) unmarshal(row dbBlog) (admin.Blog, error) {
 		Title:        row.Title,
 		ETag:         row.ETag,
 		LastModified: row.LastModified,
+		SyncedAt:     row.SyncedAt,
 		CreatedAt:    row.CreatedAt,
 		UpdatedAt:    row.UpdatedAt,
 	}
@@ -68,9 +71,9 @@ func (s *PostgresBlogStorage) unmarshal(row dbBlog) (admin.Blog, error) {
 func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
 	stmt := `
 		INSERT INTO blog
-			(id, feed_url, site_url, title, etag, last_modified, created_at, updated_at)
+			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8)`
+			($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	row, err := s.marshal(blog)
 	if err != nil {
@@ -84,6 +87,7 @@ func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
 		row.Title,
 		row.ETag,
 		row.LastModified,
+		row.SyncedAt,
 		row.CreatedAt,
 		row.UpdatedAt,
 	}
@@ -108,6 +112,7 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
 			title,
 			etag,
 			last_modified,
+			synced_at,
 			created_at,
 			updated_at
 		FROM blog
@@ -129,6 +134,37 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
 	return s.unmarshal(row)
 }
 
+func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (admin.Blog, error) {
+	stmt := `
+		SELECT
+			id,
+			feed_url,
+			site_url,
+			title,
+			etag,
+			last_modified,
+			synced_at,
+			created_at,
+			updated_at
+		FROM blog
+		WHERE feed_url = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, feedURL)
+	if err != nil {
+		return admin.Blog{}, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbBlog])
+	if err != nil {
+		return admin.Blog{}, postgres.CheckReadError(err)
+	}
+
+	return s.unmarshal(row)
+}
+
 func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 	stmt := `
 		SELECT
@@ -138,6 +174,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 			title,
 			etag,
 			last_modified,
+			synced_at,
 			created_at,
 			updated_at
 		FROM blog
@@ -180,9 +217,10 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 			title = $3,
 			etag = $4,
 			last_modified = $5,
-			updated_at = $6
-		WHERE id = $7
-		  AND updated_at = $6
+			synced_at = $6
+			updated_at = $7
+		WHERE id = $8
+		  AND updated_at = $9
 		RETURNING updated_at`
 
 	row, err := s.marshal(blog)
@@ -196,6 +234,7 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 		row.Title,
 		row.ETag,
 		row.LastModified,
+		row.SyncedAt,
 		now,
 		row.ID,
 		row.UpdatedAt,

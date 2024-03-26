@@ -13,8 +13,9 @@ type Post struct {
 	Title       string
 	Content     string
 	PublishedAt time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post {
@@ -26,8 +27,9 @@ func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post 
 		Title:       title,
 		Content:     content,
 		PublishedAt: publishedAt,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 	return post
 }

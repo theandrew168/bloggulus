@@ -7,8 +7,9 @@ import (
 )
 
 type Tag struct {
-	ID        uuid.UUID
-	Name      string
+	ID   uuid.UUID
+	Name string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -16,8 +17,9 @@ type Tag struct {
 func NewTag(name string) Tag {
 	now := time.Now()
 	tag := Tag{
-		ID:        uuid.New(),
-		Name:      name,
+		ID:   uuid.New(),
+		Name: name,
+
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

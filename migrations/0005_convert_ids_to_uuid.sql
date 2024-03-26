@@ -6,6 +6,7 @@ CREATE TABLE blog_new (
 	title TEXT NOT NULL,
 	etag TEXT NOT NULL DEFAULT '',
 	last_modified TEXT NOT NULL DEFAULT '',
+	synced_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	-- temporary

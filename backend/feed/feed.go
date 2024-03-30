@@ -82,7 +82,7 @@ func (r *reader) ReadBlog(feedURL string) (admin.Blog, error) {
 	}
 
 	// create a admin.Blog for the feed
-	blog := admin.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified)
+	blog := admin.NewBlog(feedURL, feed.Link, feed.Title, etag, lastModified, time.Now())
 	return blog, nil
 }
 
@@ -138,7 +138,7 @@ func (r *reader) ReadBlogPosts(blog admin.Blog, body io.Reader) ([]admin.Post, e
 
 func (r *reader) ReadPostBody(post admin.Post) (string, error) {
 	// fetch post body if it wasn't included in the feed
-	body := post.Content
+	body := post.Contents
 	if body == "" {
 		resp, err := http.Get(post.URL)
 		if err != nil {

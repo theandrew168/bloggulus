@@ -28,5 +28,5 @@ func (r *mockReader) ReadBlogPosts(blog admin.Blog, body io.Reader) ([]admin.Pos
 }
 
 func (r *mockReader) ReadPostBody(post admin.Post) (string, error) {
-	return post.Content, nil
+	return post.Contents, nil
 }

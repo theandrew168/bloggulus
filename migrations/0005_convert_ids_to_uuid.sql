@@ -18,9 +18,9 @@ CREATE TABLE post_new (
 	blog_id UUID NOT NULL,
 	url TEXT NOT NULL UNIQUE,
 	title TEXT NOT NULL,
-	content TEXT NOT NULL,
+	contents TEXT NOT NULL,
 	published_at TIMESTAMPTZ NOT NULL,
-	fts_data TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || content)) STORED,
+	fts_data TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || contents)) STORED,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -39,7 +39,7 @@ SELECT
 FROM blog;
 
 INSERT INTO post_new
-	(blog_id, url, title, content, published_at)
+	(blog_id, url, title, contents, published_at)
 SELECT
 	blog_new.id,
 	post.url,

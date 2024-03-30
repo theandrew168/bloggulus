@@ -14,6 +14,7 @@ func NewMockBlog() admin.Blog {
 		RandomString(32),
 		RandomString(32),
 		RandomString(32),
+		RandomTime(),
 	)
 	return blog
 }

@@ -11,7 +11,7 @@ type Post struct {
 	BlogID      uuid.UUID
 	URL         string
 	Title       string
-	Content     string
+	Contents    string
 	PublishedAt time.Time
 
 	CreatedAt time.Time
@@ -25,7 +25,7 @@ func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post 
 		BlogID:      blog.ID,
 		URL:         url,
 		Title:       title,
-		Content:     content,
+		Contents:    content,
 		PublishedAt: publishedAt,
 
 		CreatedAt: now,

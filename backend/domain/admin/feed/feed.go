@@ -2,7 +2,6 @@ package feed
 
 import (
 	"fmt"
-	"io"
 	"net/url"
 	"regexp"
 	"time"
@@ -20,15 +19,15 @@ type Blog struct {
 type Post struct {
 	URL         string
 	Title       string
+	Contents    string
 	PublishedAt time.Time
-	Body        string
 }
 
 // TODO: Better, richer error handling that includes data about
 // errors from individual posts (invalid URLs, for example).
-func Parse(feedURL string, feedBody io.Reader) (Blog, error) {
+func Parse(feedURL string, feedBody string) (Blog, error) {
 	fp := gofeed.NewParser()
-	feed, err := fp.Parse(feedBody)
+	feed, err := fp.ParseString(feedBody)
 	if err != nil {
 		return Blog{}, err
 	}
@@ -68,8 +67,8 @@ func Parse(feedURL string, feedBody io.Reader) (Blog, error) {
 		post := Post{
 			URL:         link,
 			Title:       item.Title,
+			Contents:    item.Content,
 			PublishedAt: publishedAt,
-			Body:        item.Content,
 		}
 		posts = append(posts, post)
 	}
@@ -83,17 +82,17 @@ func Parse(feedURL string, feedBody io.Reader) (Blog, error) {
 	return blog, nil
 }
 
-func Hydrate(blog Blog, pageFetcher PageFetcher) error {
+func Hydrate(blog Blog, pageFetcher PageFetcher) (Blog, error) {
 	for _, post := range blog.Posts {
-		if post.Body == "" {
-			body, err := pageFetcher.FetchPage(post.URL)
+		if post.Contents == "" {
+			content, err := pageFetcher.FetchPage(post.URL)
 			if err != nil {
-				return err
+				return Blog{}, err
 			}
 
-			post.Body = body
+			post.Contents = content
 		}
 	}
 
-	return nil
+	return blog, nil
 }

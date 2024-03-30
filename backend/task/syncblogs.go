@@ -184,7 +184,7 @@ func (t *syncBlogsTask) syncBlog(wg *sync.WaitGroup, blog admin.Blog) {
 			t.w.logger.Printf("%d: %s\n", blog.ID, err)
 			continue
 		}
-		newPosts[i].Content = body
+		newPosts[i].Contents = body
 	}
 
 	// sync each post with the database

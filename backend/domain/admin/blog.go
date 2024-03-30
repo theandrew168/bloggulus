@@ -19,7 +19,7 @@ type Blog struct {
 	UpdatedAt time.Time
 }
 
-func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
+func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.Time) Blog {
 	now := time.Now()
 	blog := Blog{
 		ID:           uuid.New(),
@@ -28,7 +28,7 @@ func NewBlog(feedURL, siteURL, title, etag, lastModified string) Blog {
 		Title:        title,
 		ETag:         etag,
 		LastModified: lastModified,
-		SyncedAt:     now.Add(-1 * time.Hour),
+		SyncedAt:     syncedAt,
 
 		CreatedAt: now,
 		UpdatedAt: now,

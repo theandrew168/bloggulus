@@ -253,6 +253,7 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 		return postgres.CheckUpdateError(err)
 	}
 
+	// TODO: this done nothing while the models are passed by value
 	blog.UpdatedAt = now
 	return nil
 }

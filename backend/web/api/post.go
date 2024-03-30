@@ -51,7 +51,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 				BlogID:      post.BlogID,
 				URL:         post.URL,
 				Title:       post.Title,
-				Content:     post.Content,
+				Content:     post.Contents,
 				PublishedAt: post.PublishedAt,
 			},
 		}
@@ -101,7 +101,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 				BlogID:      post.BlogID,
 				URL:         post.URL,
 				Title:       post.Title,
-				Content:     post.Content,
+				Content:     post.Contents,
 				PublishedAt: post.PublishedAt,
 			})
 		}

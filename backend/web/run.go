@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -26,8 +27,10 @@ func (app *Application) Run(ctx context.Context, addr string) error {
 		timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
+		// TODO: log this
+		fmt.Println("stopping web server")
+
 		// disable keepalives and shutdown gracefully
-		app.logger.Println("stopping web server")
 		srv.SetKeepAlivesEnabled(false)
 		err := srv.Shutdown(timeout)
 		if err != nil {
@@ -37,7 +40,8 @@ func (app *Application) Run(ctx context.Context, addr string) error {
 		close(stopError)
 	}()
 
-	app.logger.Printf("starting web server: %s\n", srv.Addr)
+	// TODO: log this
+	fmt.Printf("starting web server: %s\n", srv.Addr)
 
 	// listen and serve forever
 	// ignore http.ErrServerClosed (expected upon stop)
@@ -52,6 +56,7 @@ func (app *Application) Run(ctx context.Context, addr string) error {
 		return err
 	}
 
-	app.logger.Println("stopped web server")
+	// TODO: log this
+	fmt.Println("stopped web server")
 	return nil
 }

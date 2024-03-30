@@ -5,19 +5,16 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
-	"time"
 
 	"github.com/coreos/go-systemd/daemon"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/feed"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/service"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/task"
 	"github.com/theandrew168/bloggulus/backend/web"
 	"github.com/theandrew168/bloggulus/frontend"
 )
@@ -30,28 +27,27 @@ func main() {
 }
 
 func run() int {
-	// log everything to stdout, include file name and line number
-	logger := log.New(os.Stdout, "", 0)
-
 	// check for config file flag
 	conf := flag.String("conf", "bloggulus.conf", "app config file")
 
 	// check for action flags
-	migrateOnly := flag.Bool("migrate", false, "apply migrations and exit")
+	migrate := flag.Bool("migrate", false, "apply migrations and exit")
 	addblog := flag.String("addblog", "", "rss / atom feed to add")
 	flag.Parse()
 
 	// load user-defined config (if specified), else use defaults
 	cfg, err := config.ReadFile(*conf)
 	if err != nil {
-		logger.Println(err)
+		// TODO: log this
+		fmt.Println(err)
 		return 1
 	}
 
 	// open a database connection pool
 	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
 	if err != nil {
-		logger.Println(err)
+		// TODO: log this
+		fmt.Println(err)
 		return 1
 	}
 	defer pool.Close()
@@ -59,45 +55,37 @@ func run() int {
 	// apply database migrations
 	applied, err := postgres.Migrate(pool, migrationsFS)
 	if err != nil {
-		logger.Println(err.Error())
+		// TODO: log this
+		fmt.Println(err)
 		return 1
 	}
 
 	for _, migration := range applied {
-		logger.Printf("applied migration: %s\n", migration)
+		// TODO: log this
+		fmt.Printf("applied migration: %s\n", migration)
 	}
 
 	// exit now if just applying migrations
-	if *migrateOnly {
+	if *migrate {
 		return 0
 	}
 
 	// init database storage
 	store := adminStorage.New(pool)
 
-	// init default feed reader
-	reader := feed.NewReader(logger)
+	syncService := service.NewSyncService(store, web.NewFeedFetcher(), web.NewPageFetcher())
 
 	// add a blog and exit now if requested
 	if *addblog != "" {
 		feedURL := *addblog
-		logger.Printf("adding blog: %s\n", feedURL)
 
-		blog, err := reader.ReadBlog(feedURL)
+		// TODO: log this
+		fmt.Printf("adding blog: %s\n", feedURL)
+		err = syncService.SyncBlog(feedURL)
 		if err != nil {
-			logger.Println(err)
+			// TODO: log this
+			fmt.Println(err)
 			return 1
-		}
-		logger.Printf("  found: %s\n", blog.Title)
-
-		err = store.Blog().Create(blog)
-		if err != nil {
-			if err == postgres.ErrConflict {
-				logger.Println("  already exists")
-			} else {
-				logger.Println(err)
-				return 1
-			}
 		}
 
 		return 0
@@ -112,7 +100,7 @@ func run() int {
 
 	var wg sync.WaitGroup
 
-	app := web.NewApplication(logger, store, frontend.Frontend)
+	app := web.NewApplication(frontend.Frontend, store)
 
 	// let port be overridden by an env var
 	port := cfg.Port
@@ -129,27 +117,9 @@ func run() int {
 
 		err := app.Run(ctx, addr)
 		if err != nil {
-			logger.Println(err.Error())
+			// TODO: log this
+			fmt.Println(err.Error())
 		}
-	}()
-
-	// init task worker
-	worker := task.NewWorker(logger)
-	syncBlogs := worker.SyncBlogs(store, reader)
-
-	// start worker in the background (standalone mode by default)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		// kick off blog sync task
-		go syncBlogs.Run(1 * time.Hour)
-
-		<-ctx.Done()
-
-		logger.Println("stopping worker")
-		worker.Wait()
-		logger.Println("stopped worker")
 	}()
 
 	// wait for the web server and worker to stop

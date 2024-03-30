@@ -11,11 +11,10 @@ import (
 )
 
 func TestBadRequest(t *testing.T) {
-	logger := test.NewLogger(t)
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	app := api.NewApplication(logger, storage)
+	app := api.NewApplication(storage)
 
 	tests := []struct {
 		url  string
@@ -60,11 +59,10 @@ func TestBadRequest(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	logger := test.NewLogger(t)
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	app := api.NewApplication(logger, storage)
+	app := api.NewApplication(storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/missing", nil)
@@ -89,11 +87,10 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
-	logger := test.NewLogger(t)
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	app := api.NewApplication(logger, storage)
+	app := api.NewApplication(storage)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("PUT", "/", nil)

@@ -2,7 +2,6 @@ package web
 
 import (
 	"io/fs"
-	"log"
 	"net/http"
 
 	"github.com/alexedwards/flow"
@@ -18,14 +17,12 @@ import (
 )
 
 type Application struct {
-	logger   *log.Logger
 	storage  storage.Storage
 	frontend fs.FS
 }
 
-func NewApplication(logger *log.Logger, storage storage.Storage, frontend fs.FS) *Application {
+func NewApplication(frontend fs.FS, storage storage.Storage) *Application {
 	app := Application{
-		logger:   logger,
 		storage:  storage,
 		frontend: frontend,
 	}
@@ -50,7 +47,7 @@ func (app *Application) Router() http.Handler {
 	}, "GET")
 
 	// backend - rest api
-	apiApp := api.NewApplication(app.logger, app.storage)
+	apiApp := api.NewApplication(app.storage)
 	mux.Handle("/api/v1/...", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
 	mux.HandleFunc("/api/v1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api/v1/", http.StatusMovedPermanently)

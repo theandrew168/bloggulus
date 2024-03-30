@@ -22,12 +22,11 @@ type jsonBlog struct {
 }
 
 func TestHandleBlogRead(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		blog := test.CreateMockBlog(t, store)
 
@@ -63,16 +62,15 @@ func TestHandleBlogRead(t *testing.T) {
 			t.Fatalf("want %v, got %v", blog.ID, got.ID)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandleBlogReadNotFound(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	app := api.NewApplication(logger, store)
+	app := api.NewApplication(store)
 
 	path := fmt.Sprintf("/blogs/%s", uuid.New())
 	w := httptest.NewRecorder()
@@ -88,12 +86,11 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 }
 
 func TestHandleBlogList(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		test.CreateMockBlog(t, store)
 
@@ -128,17 +125,16 @@ func TestHandleBlogList(t *testing.T) {
 			t.Fatalf("expected at least one blog")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandleBlogListPagination(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		// create 5 blogs to test with
 		test.CreateMockBlog(t, store)
@@ -190,6 +186,6 @@ func TestHandleBlogListPagination(t *testing.T) {
 				t.Fatalf("want %v, got %v", test.want, len(got))
 			}
 		}
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

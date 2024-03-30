@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/alexedwards/flow"
@@ -11,13 +10,11 @@ import (
 )
 
 type Application struct {
-	logger  *log.Logger
 	storage storage.Storage
 }
 
-func NewApplication(logger *log.Logger, storage storage.Storage) *Application {
+func NewApplication(storage storage.Storage) *Application {
 	app := Application{
-		logger:  logger,
 		storage: storage,
 	}
 	return &app

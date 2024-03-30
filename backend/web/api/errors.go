@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -14,7 +15,8 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 
 	err := writeJSON(w, status, resp, nil)
 	if err != nil {
-		app.logger.Println(err)
+		// TODO: log this
+		fmt.Println(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -35,8 +37,8 @@ func (app *Application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 }
 
 func (app *Application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	// skip 2 frames to identify original caller
-	app.logger.Output(2, err.Error())
+	// TODO: log this: skip 2 frames to identify original caller
+	fmt.Println(err.Error())
 
 	message := "backend server error"
 	app.errorResponse(w, r, 500, message)

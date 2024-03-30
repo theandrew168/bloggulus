@@ -1,8 +1,6 @@
 package test
 
 import (
-	"io"
-	"log"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
@@ -11,10 +9,6 @@ import (
 )
 
 type CloserFunc func()
-
-func NewLogger(t *testing.T) *log.Logger {
-	return log.New(io.Discard, "", 0)
-}
 
 func NewConfig(t *testing.T) config.Config {
 	t.Helper()

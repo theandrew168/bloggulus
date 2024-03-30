@@ -17,7 +17,7 @@ func TestPostCreate(t *testing.T) {
 	// TODO: do something more here?
 	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockPost(t, store)
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -34,7 +34,7 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 			t.Fatal("duplicate post should return an error")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -53,7 +53,7 @@ func TestPostRead(t *testing.T) {
 			t.Fatalf("want %v, got %v", post.ID, got.ID)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -79,7 +79,7 @@ func TestPostList(t *testing.T) {
 			t.Fatalf("want %v, got %v", limit, len(posts))
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -122,6 +122,6 @@ func TestPostListByBlog(t *testing.T) {
 			t.Fatalf("want %v, got %v", post.ID, posts[0].ID)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

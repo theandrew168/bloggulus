@@ -68,6 +68,10 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		return err
 	}
 
+	if resp.Feed == "" {
+		return errors.New("sync: skipping due to empty / up-to-date feed")
+	}
+
 	feedBlog, err := feed.Parse(feedURL, resp.Feed)
 	if err != nil {
 		return err
@@ -94,8 +98,8 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	for _, feedPost := range feedBlog.Posts {
 		err = s.syncPost(blog, feedPost)
 		if err != nil {
-			// TODO: log but don't stop
-			println(err)
+			// TODO: log this but don't stop
+			fmt.Println(err)
 		}
 	}
 
@@ -106,6 +110,10 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL, blog.ETag, blog.LastModified)
 	if err != nil {
 		return err
+	}
+
+	if resp.Feed == "" {
+		return errors.New("sync: skipping due to empty / up-to-date feed")
 	}
 
 	if resp.ETag != "" {
@@ -134,8 +142,8 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 	for _, feedPost := range feedBlog.Posts {
 		err = s.syncPost(blog, feedPost)
 		if err != nil {
-			// TODO: log but don't stop
-			println(err)
+			// TODO: log this but don't stop
+			fmt.Println(err)
 		}
 	}
 

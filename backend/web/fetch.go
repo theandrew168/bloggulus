@@ -91,6 +91,11 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (feed.FetchFeedR
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 300 {
+		fmt.Printf("no newer feed info found found for: %s\n", url)
+		return feed.FetchFeedResponse{}, nil
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return feed.FetchFeedResponse{}, nil

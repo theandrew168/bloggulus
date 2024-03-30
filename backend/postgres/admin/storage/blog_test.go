@@ -20,7 +20,7 @@ func TestBlogCreate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -37,7 +37,7 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 			t.Fatal("duplicate blog should return an error")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -56,7 +56,7 @@ func TestBlogRead(t *testing.T) {
 			t.Fatalf("want %v, got %v", blog.ID, got.ID)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -82,6 +82,6 @@ func TestBlogList(t *testing.T) {
 			t.Fatalf("want %v, got %v", limit, len(blogs))
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

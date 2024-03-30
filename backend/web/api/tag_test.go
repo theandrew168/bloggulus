@@ -20,12 +20,11 @@ type jsonTag struct {
 }
 
 func TestHandleTagList(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		test.CreateMockTag(t, store)
 
@@ -60,17 +59,16 @@ func TestHandleTagList(t *testing.T) {
 			t.Fatalf("expected at least one tag")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandleTagListPagination(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		// create 5 tags to test with
 		test.CreateMockTag(t, store)
@@ -122,6 +120,6 @@ func TestHandleTagListPagination(t *testing.T) {
 				t.Fatalf("want %v, got %v", test.want, len(got))
 			}
 		}
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

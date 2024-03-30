@@ -83,6 +83,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 }
 
 func Hydrate(blog Blog, pageFetcher PageFetcher) (Blog, error) {
+	var hydratedPosts []Post
 	for _, post := range blog.Posts {
 		if post.Contents == "" {
 			content, err := pageFetcher.FetchPage(post.URL)
@@ -92,7 +93,9 @@ func Hydrate(blog Blog, pageFetcher PageFetcher) (Blog, error) {
 
 			post.Contents = content
 		}
+		hydratedPosts = append(hydratedPosts, post)
 	}
 
+	blog.Posts = hydratedPosts
 	return blog, nil
 }

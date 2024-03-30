@@ -3,6 +3,6 @@ package test
 import "errors"
 
 var (
-	// sentinal error used to skip committing transactions
-	ErrSkipCommit = errors.New("test: skip commit")
+	// sentinel error used to rollback transactions
+	ErrRollback = errors.New("test: rollback")
 )

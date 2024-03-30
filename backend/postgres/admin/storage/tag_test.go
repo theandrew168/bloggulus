@@ -20,7 +20,7 @@ func TestTagCreate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -37,7 +37,7 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 			t.Fatal("duplicate tag should return an error")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -63,7 +63,7 @@ func TestTagList(t *testing.T) {
 			t.Fatalf("want %v, got %v", limit, len(tags))
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
@@ -83,6 +83,6 @@ func TestTagDelete(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

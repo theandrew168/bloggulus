@@ -25,12 +25,11 @@ type jsonPost struct {
 }
 
 func TestHandlePostRead(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		post := test.CreateMockPost(t, store)
 
@@ -66,17 +65,16 @@ func TestHandlePostRead(t *testing.T) {
 			t.Fatalf("want %v, got %v", post.ID, got.ID)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandlePostReadNotFound(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
 		w := httptest.NewRecorder()
@@ -90,17 +88,16 @@ func TestHandlePostReadNotFound(t *testing.T) {
 			t.Fatalf("want %v, got %v", 404, rr.StatusCode)
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandlePostList(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		test.CreateMockPost(t, store)
 
@@ -135,17 +132,16 @@ func TestHandlePostList(t *testing.T) {
 			t.Fatalf("expected at least one blog")
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }
 
 func TestHandlePostListPagination(t *testing.T) {
-	logger := test.NewLogger(t)
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(logger, store)
+		app := api.NewApplication(store)
 
 		// create 5 posts to test with
 		test.CreateMockPost(t, store)
@@ -198,6 +194,6 @@ func TestHandlePostListPagination(t *testing.T) {
 			}
 		}
 
-		return test.ErrSkipCommit
+		return test.ErrRollback
 	})
 }

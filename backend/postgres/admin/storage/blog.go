@@ -217,7 +217,7 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 			title = $3,
 			etag = $4,
 			last_modified = $5,
-			synced_at = $6
+			synced_at = $6,
 			updated_at = $7
 		WHERE id = $8
 		  AND updated_at = $9

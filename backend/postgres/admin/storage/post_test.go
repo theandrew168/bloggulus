@@ -67,6 +67,25 @@ func TestPostRead(t *testing.T) {
 	})
 }
 
+func TestPostReadByURL(t *testing.T) {
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store storage.Storage) error {
+		post := test.CreateMockPost(t, store)
+		got, err := store.Post().ReadByURL(post.URL())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.ID() != post.ID() {
+			t.Fatalf("want %v, got %v", post.ID(), got.ID())
+		}
+
+		return test.ErrRollback
+	})
+}
+
 func TestPostList(t *testing.T) {
 	store, closer := test.NewAdminStorage(t)
 	defer closer()

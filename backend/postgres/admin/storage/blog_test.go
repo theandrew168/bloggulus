@@ -60,6 +60,25 @@ func TestBlogRead(t *testing.T) {
 	})
 }
 
+func TestBlogReadByFeedURL(t *testing.T) {
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store storage.Storage) error {
+		blog := test.CreateMockBlog(t, store)
+		got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.ID() != blog.ID() {
+			t.Fatalf("want %v, got %v", blog.ID(), got.ID())
+		}
+
+		return test.ErrRollback
+	})
+}
+
 func TestBlogList(t *testing.T) {
 	store, closer := test.NewAdminStorage(t)
 	defer closer()

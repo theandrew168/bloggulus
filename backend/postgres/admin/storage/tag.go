@@ -33,27 +33,27 @@ func NewPostgresTagStorage(conn postgres.Conn) *PostgresTagStorage {
 	return &s
 }
 
-func (s *PostgresTagStorage) marshal(tag admin.Tag) (dbTag, error) {
+func (s *PostgresTagStorage) marshal(tag *admin.Tag) (dbTag, error) {
 	row := dbTag{
-		ID:        tag.ID,
-		Name:      tag.Name,
-		CreatedAt: tag.CreatedAt,
-		UpdatedAt: tag.UpdatedAt,
+		ID:        tag.ID(),
+		Name:      tag.Name(),
+		CreatedAt: tag.CreatedAt(),
+		UpdatedAt: tag.UpdatedAt(),
 	}
 	return row, nil
 }
 
-func (s *PostgresTagStorage) unmarshal(row dbTag) (admin.Tag, error) {
-	post := admin.Tag{
-		ID:        row.ID,
-		Name:      row.Name,
-		CreatedAt: row.CreatedAt,
-		UpdatedAt: row.UpdatedAt,
-	}
-	return post, nil
+func (s *PostgresTagStorage) unmarshal(row dbTag) (*admin.Tag, error) {
+	tag := admin.LoadTag(
+		row.ID,
+		row.Name,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
+	return tag, nil
 }
 
-func (s *PostgresTagStorage) Create(tag admin.Tag) error {
+func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
 	stmt := `
 		INSERT INTO tag
 			(id, name, created_at, updated_at)
@@ -83,7 +83,7 @@ func (s *PostgresTagStorage) Create(tag admin.Tag) error {
 	return nil
 }
 
-func (s *PostgresTagStorage) List(limit, offset int) ([]admin.Tag, error) {
+func (s *PostgresTagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -107,7 +107,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]admin.Tag, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var tags []admin.Tag
+	var tags []*admin.Tag
 	for _, row := range tagRows {
 		tag, err := s.unmarshal(row)
 		if err != nil {
@@ -120,7 +120,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]admin.Tag, error) {
 	return tags, nil
 }
 
-func (repo *PostgresTagStorage) Delete(tag admin.Tag) error {
+func (repo *PostgresTagStorage) Delete(tag *admin.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1
@@ -129,7 +129,7 @@ func (repo *PostgresTagStorage) Delete(tag admin.Tag) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := repo.conn.Query(ctx, stmt, tag.ID)
+	rows, err := repo.conn.Query(ctx, stmt, tag.ID())
 	if err != nil {
 		return err
 	}

@@ -46,8 +46,8 @@ func (app *Application) handleTagList() http.HandlerFunc {
 
 		for _, tag := range tags {
 			resp.Tags = append(resp.Tags, jsonTag{
-				ID:   tag.ID,
-				Name: tag.Name,
+				ID:   tag.ID(),
+				Name: tag.Name(),
 			})
 		}
 

@@ -30,7 +30,7 @@ func NewMockPost(blog admin.Blog) admin.Post {
 	return post
 }
 
-func NewMockTag() admin.Tag {
+func NewMockTag() *admin.Tag {
 	tag := admin.NewTag(
 		RandomString(32),
 	)
@@ -79,7 +79,7 @@ func CreateMockPost(t *testing.T, store adminStorage.Storage) admin.Post {
 }
 
 // mocks a tag and creates it in the database
-func CreateMockTag(t *testing.T, store adminStorage.Storage) admin.Tag {
+func CreateMockTag(t *testing.T, store adminStorage.Storage) *admin.Tag {
 	t.Helper()
 
 	// generate some random tag data

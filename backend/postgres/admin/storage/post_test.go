@@ -14,9 +14,19 @@ func TestPostCreate(t *testing.T) {
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
-	// TODO: do something more here?
 	store.WithTransaction(func(store storage.Storage) error {
-		test.CreateMockPost(t, store)
+		blog := test.NewMockBlog()
+		err := store.Blog().Create(blog)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		post := test.NewMockPost(blog)
+		err = store.Post().Create(post)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		return test.ErrRollback
 	})
 }

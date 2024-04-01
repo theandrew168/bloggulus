@@ -1,6 +1,6 @@
 package domain
 
-// TODO: What all should live in here?
+// What all should live in here?
 // Storage interfaces? Feed interfaces?
 // Basically anything that the core domain depends on.
 // Impls can always look it and impl the interfaces outlined in here

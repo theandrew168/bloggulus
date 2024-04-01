@@ -15,6 +15,7 @@ import (
 // ensure PostStorage interface is satisfied
 var _ storage.PostStorage = (*PostgresPostStorage)(nil)
 
+// TODO: marshalPost and unmarshalPost helpers
 type dbPost struct {
 	ID          uuid.UUID `db:"id"`
 	BlogID      uuid.UUID `db:"blog_id"`
@@ -200,7 +201,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
 	return posts, nil
 }
 
-func (s *PostgresPostStorage) ListByBlog(blog admin.Blog, limit, offset int) ([]admin.Post, error) {
+func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -219,7 +220,7 @@ func (s *PostgresPostStorage) ListByBlog(blog admin.Blog, limit, offset int) ([]
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, blog.ID, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, blog.ID(), limit, offset)
 	if err != nil {
 		return nil, err
 	}

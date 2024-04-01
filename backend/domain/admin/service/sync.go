@@ -38,12 +38,12 @@ func (s *SyncService) SyncAllBlogs() error {
 	}
 
 	for _, blog := range blogs {
-		delta := now.Sub(blog.SyncedAt)
+		delta := now.Sub(blog.SyncedAt())
 		if delta < time.Hour {
 			slog.Info("recently synced", "title", blog.Title)
 		}
 
-		s.SyncBlog(blog.FeedURL)
+		s.SyncBlog(blog.FeedURL())
 	}
 	return nil
 }
@@ -104,8 +104,8 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	return nil
 }
 
-func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
-	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL, blog.ETag, blog.LastModified)
+func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
+	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL(), blog.ETag(), blog.LastModified())
 	if err != nil {
 		return err
 	}
@@ -115,11 +115,11 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 	}
 
 	if resp.ETag != "" {
-		blog.ETag = resp.ETag
+		blog.SetETag(resp.ETag)
 	}
 
 	if resp.LastModified != "" {
-		blog.LastModified = resp.LastModified
+		blog.SetLastModified(resp.LastModified)
 	}
 
 	err = s.store.Blog().Update(blog)
@@ -127,7 +127,7 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 		return err
 	}
 
-	feedBlog, err := feed.Parse(blog.FeedURL, resp.Feed)
+	feedBlog, err := feed.Parse(blog.FeedURL(), resp.Feed)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 	return nil
 }
 
-func (s *SyncService) syncPost(blog admin.Blog, feedPost feed.Post) error {
+func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 	post, err := s.store.Post().ReadByURL(feedPost.URL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {

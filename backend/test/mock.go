@@ -7,7 +7,7 @@ import (
 	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 )
 
-func NewMockBlog() admin.Blog {
+func NewMockBlog() *admin.Blog {
 	blog := admin.NewBlog(
 		RandomURL(32),
 		RandomURL(32),
@@ -19,7 +19,7 @@ func NewMockBlog() admin.Blog {
 	return blog
 }
 
-func NewMockPost(blog admin.Blog) admin.Post {
+func NewMockPost(blog *admin.Blog) admin.Post {
 	post := admin.NewPost(
 		blog,
 		RandomURL(32),
@@ -38,7 +38,7 @@ func NewMockTag() *admin.Tag {
 }
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, store adminStorage.Storage) admin.Blog {
+func CreateMockBlog(t *testing.T, store adminStorage.Storage) *admin.Blog {
 	t.Helper()
 
 	// generate some random blog data

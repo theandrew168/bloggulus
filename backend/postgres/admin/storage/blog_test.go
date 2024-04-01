@@ -47,13 +47,13 @@ func TestBlogRead(t *testing.T) {
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := test.CreateMockBlog(t, store)
-		got, err := store.Blog().Read(blog.ID)
+		got, err := store.Blog().Read(blog.ID())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if got.ID != blog.ID {
-			t.Fatalf("want %v, got %v", blog.ID, got.ID)
+		if got.ID() != blog.ID() {
+			t.Fatalf("want %v, got %v", blog.ID(), got.ID())
 		}
 
 		return test.ErrRollback

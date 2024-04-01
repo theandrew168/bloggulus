@@ -11,6 +11,6 @@ type PostStorage interface {
 	Read(id uuid.UUID) (admin.Post, error)
 	ReadByURL(url string) (admin.Post, error)
 	List(limit, offset int) ([]admin.Post, error)
-	ListByBlog(blog admin.Blog, limit, offset int) ([]admin.Post, error)
+	ListByBlog(blog *admin.Blog, limit, offset int) ([]admin.Post, error)
 	Update(post admin.Post) error
 }

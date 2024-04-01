@@ -15,6 +15,7 @@ import (
 // ensure BlogStorage interface is satisfied
 var _ storage.BlogStorage = (*PostgresBlogStorage)(nil)
 
+// TODO: marshalBlog and unmarshalBlog helpers
 type dbBlog struct {
 	ID           uuid.UUID `db:"id"`
 	FeedURL      string    `db:"feed_url"`
@@ -38,37 +39,37 @@ func NewPostgresBlogStorage(conn postgres.Conn) *PostgresBlogStorage {
 	return &s
 }
 
-func (s *PostgresBlogStorage) marshal(blog admin.Blog) (dbBlog, error) {
+func (s *PostgresBlogStorage) marshal(blog *admin.Blog) (dbBlog, error) {
 	row := dbBlog{
-		ID:           blog.ID,
-		FeedURL:      blog.FeedURL,
-		SiteURL:      blog.SiteURL,
-		Title:        blog.Title,
-		ETag:         blog.ETag,
-		LastModified: blog.LastModified,
-		SyncedAt:     blog.SyncedAt,
-		CreatedAt:    blog.CreatedAt,
-		UpdatedAt:    blog.UpdatedAt,
+		ID:           blog.ID(),
+		FeedURL:      blog.FeedURL(),
+		SiteURL:      blog.SiteURL(),
+		Title:        blog.Title(),
+		ETag:         blog.ETag(),
+		LastModified: blog.LastModified(),
+		SyncedAt:     blog.SyncedAt(),
+		CreatedAt:    blog.CreatedAt(),
+		UpdatedAt:    blog.UpdatedAt(),
 	}
 	return row, nil
 }
 
-func (s *PostgresBlogStorage) unmarshal(row dbBlog) (admin.Blog, error) {
-	blog := admin.Blog{
-		ID:           row.ID,
-		FeedURL:      row.FeedURL,
-		SiteURL:      row.SiteURL,
-		Title:        row.Title,
-		ETag:         row.ETag,
-		LastModified: row.LastModified,
-		SyncedAt:     row.SyncedAt,
-		CreatedAt:    row.CreatedAt,
-		UpdatedAt:    row.UpdatedAt,
-	}
+func (s *PostgresBlogStorage) unmarshal(row dbBlog) (*admin.Blog, error) {
+	blog := admin.LoadBlog(
+		row.ID,
+		row.FeedURL,
+		row.SiteURL,
+		row.Title,
+		row.ETag,
+		row.LastModified,
+		row.SyncedAt,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
 	return blog, nil
 }
 
-func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
+func (s *PostgresBlogStorage) Create(blog *admin.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
@@ -103,7 +104,7 @@ func (s *PostgresBlogStorage) Create(blog admin.Blog) error {
 	return nil
 }
 
-func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
+func (s *PostgresBlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -123,18 +124,18 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (admin.Blog, error) {
 
 	rows, err := s.conn.Query(ctx, stmt, id)
 	if err != nil {
-		return admin.Blog{}, err
+		return nil, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbBlog])
 	if err != nil {
-		return admin.Blog{}, postgres.CheckReadError(err)
+		return nil, postgres.CheckReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (admin.Blog, error) {
+func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -154,18 +155,18 @@ func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (admin.Blog, error) 
 
 	rows, err := s.conn.Query(ctx, stmt, feedURL)
 	if err != nil {
-		return admin.Blog{}, err
+		return nil, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbBlog])
 	if err != nil {
-		return admin.Blog{}, postgres.CheckReadError(err)
+		return nil, postgres.CheckReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
+func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -194,7 +195,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var blogs []admin.Blog
+	var blogs []*admin.Blog
 	for _, row := range blogRows {
 		blog, err := s.unmarshal(row)
 		if err != nil {
@@ -207,7 +208,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]admin.Blog, error) {
 	return blogs, nil
 }
 
-func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
+func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
 	now := time.Now()
 	stmt := `
 		UPDATE blog
@@ -253,7 +254,6 @@ func (s *PostgresBlogStorage) Update(blog admin.Blog) error {
 		return postgres.CheckUpdateError(err)
 	}
 
-	// TODO: this done nothing while the models are passed by value
-	blog.UpdatedAt = now
+	blog.SetUpdatedAt(now)
 	return nil
 }

@@ -15,6 +15,7 @@ import (
 // ensure TagStorage interface is satisfied
 var _ storage.TagStorage = (*PostgresTagStorage)(nil)
 
+// TODO: marshalTag and unmarshalTag helpers
 type dbTag struct {
 	ID        uuid.UUID `db:"id"`
 	Name      string    `db:"name"`

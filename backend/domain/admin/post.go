@@ -18,11 +18,11 @@ type Post struct {
 	UpdatedAt time.Time
 }
 
-func NewPost(blog Blog, url, title, content string, publishedAt time.Time) Post {
+func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) Post {
 	now := time.Now()
 	post := Post{
 		ID:          uuid.New(),
-		BlogID:      blog.ID,
+		BlogID:      blog.ID(),
 		URL:         url,
 		Title:       title,
 		Contents:    content,

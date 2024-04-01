@@ -7,6 +7,7 @@ import (
 	"github.com/alexedwards/flow"
 	"github.com/google/uuid"
 
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -16,6 +17,16 @@ type jsonBlog struct {
 	FeedURL string    `json:"feedURL"`
 	SiteURL string    `json:"siteURL"`
 	Title   string    `json:"title"`
+}
+
+func marshalBlog(blog *admin.Blog) jsonBlog {
+	b := jsonBlog{
+		ID:      blog.ID(),
+		FeedURL: blog.FeedURL(),
+		SiteURL: blog.SiteURL(),
+		Title:   blog.Title(),
+	}
+	return b
 }
 
 func (app *Application) handleBlogRead() http.HandlerFunc {
@@ -43,12 +54,7 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 		}
 
 		resp := response{
-			Blog: jsonBlog{
-				ID:      blog.ID,
-				FeedURL: blog.FeedURL,
-				SiteURL: blog.SiteURL,
-				Title:   blog.Title,
-			},
+			Blog: marshalBlog(blog),
 		}
 		err = writeJSON(w, 200, resp, nil)
 		if err != nil {
@@ -90,12 +96,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 		}
 
 		for _, blog := range blogs {
-			resp.Blogs = append(resp.Blogs, jsonBlog{
-				ID:      blog.ID,
-				FeedURL: blog.FeedURL,
-				SiteURL: blog.SiteURL,
-				Title:   blog.Title,
-			})
+			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
 		}
 
 		err = writeJSON(w, 200, resp, nil)

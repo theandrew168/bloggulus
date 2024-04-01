@@ -7,29 +7,90 @@ import (
 )
 
 type Post struct {
-	ID          uuid.UUID
-	BlogID      uuid.UUID
-	URL         string
-	Title       string
-	Contents    string
-	PublishedAt time.Time
+	id          uuid.UUID
+	blogID      uuid.UUID
+	url         string
+	title       string
+	contents    string
+	publishedAt time.Time
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	createdAt time.Time
+	updatedAt time.Time
 }
 
-func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) Post {
+func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) *Post {
 	now := time.Now()
 	post := Post{
-		ID:          uuid.New(),
-		BlogID:      blog.ID(),
-		URL:         url,
-		Title:       title,
-		Contents:    content,
-		PublishedAt: publishedAt,
+		id:          uuid.New(),
+		blogID:      blog.ID(),
+		url:         url,
+		title:       title,
+		contents:    content,
+		publishedAt: publishedAt,
 
-		CreatedAt: now,
-		UpdatedAt: now,
+		createdAt: now,
+		updatedAt: now,
 	}
-	return post
+	return &post
+}
+
+func LoadPost(id, blogID uuid.UUID, url, title, content string, publishedAt, createdAt, updatedAt time.Time) *Post {
+	post := Post{
+		id:          id,
+		blogID:      blogID,
+		url:         url,
+		title:       title,
+		contents:    content,
+		publishedAt: publishedAt,
+
+		createdAt: createdAt,
+		updatedAt: updatedAt,
+	}
+	return &post
+}
+
+func (p *Post) ID() uuid.UUID {
+	return p.id
+}
+
+func (p *Post) BlogID() uuid.UUID {
+	return p.blogID
+}
+
+func (p *Post) URL() string {
+	return p.url
+}
+
+func (p *Post) Title() string {
+	return p.title
+}
+
+func (p *Post) Contents() string {
+	return p.contents
+}
+
+func (p *Post) SetContents(contents string) error {
+	p.contents = contents
+	return nil
+}
+
+func (p *Post) PublishedAt() time.Time {
+	return p.publishedAt
+}
+
+func (p *Post) CreatedAt() time.Time {
+	return p.createdAt
+}
+
+func (p *Post) UpdatedAt() time.Time {
+	return p.updatedAt
+}
+
+func (p *Post) SetUpdatedAt(updatedAt time.Time) error {
+	p.updatedAt = updatedAt
+	return nil
+}
+
+func (p *Post) CheckDelete() error {
+	return nil
 }

@@ -38,35 +38,35 @@ func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 	return &s
 }
 
-func (s *PostgresPostStorage) marshal(post admin.Post) (dbPost, error) {
+func (s *PostgresPostStorage) marshal(post *admin.Post) (dbPost, error) {
 	row := dbPost{
-		ID:          post.ID,
-		BlogID:      post.BlogID,
-		URL:         post.URL,
-		Title:       post.Title,
-		Contents:    post.Contents,
-		PublishedAt: post.PublishedAt,
-		CreatedAt:   post.CreatedAt,
-		UpdatedAt:   post.UpdatedAt,
+		ID:          post.ID(),
+		BlogID:      post.BlogID(),
+		URL:         post.URL(),
+		Title:       post.Title(),
+		Contents:    post.Contents(),
+		PublishedAt: post.PublishedAt(),
+		CreatedAt:   post.CreatedAt(),
+		UpdatedAt:   post.UpdatedAt(),
 	}
 	return row, nil
 }
 
-func (s *PostgresPostStorage) unmarshal(row dbPost) (admin.Post, error) {
-	post := admin.Post{
-		ID:          row.ID,
-		BlogID:      row.BlogID,
-		URL:         row.URL,
-		Title:       row.Title,
-		Contents:    row.Contents,
-		PublishedAt: row.PublishedAt,
-		CreatedAt:   row.CreatedAt,
-		UpdatedAt:   row.UpdatedAt,
-	}
+func (s *PostgresPostStorage) unmarshal(row dbPost) (*admin.Post, error) {
+	post := admin.LoadPost(
+		row.ID,
+		row.BlogID,
+		row.URL,
+		row.Title,
+		row.Contents,
+		row.PublishedAt,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
 	return post, nil
 }
 
-func (s *PostgresPostStorage) Create(post admin.Post) error {
+func (s *PostgresPostStorage) Create(post *admin.Post) error {
 	stmt := `
 		INSERT INTO post
 			(id, blog_id, url, title, contents, published_at, created_at, updated_at)
@@ -100,7 +100,7 @@ func (s *PostgresPostStorage) Create(post admin.Post) error {
 	return nil
 }
 
-func (s *PostgresPostStorage) Read(id uuid.UUID) (admin.Post, error) {
+func (s *PostgresPostStorage) Read(id uuid.UUID) (*admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -119,18 +119,18 @@ func (s *PostgresPostStorage) Read(id uuid.UUID) (admin.Post, error) {
 
 	rows, err := s.conn.Query(ctx, stmt, id)
 	if err != nil {
-		return admin.Post{}, err
+		return nil, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPost])
 	if err != nil {
-		return admin.Post{}, postgres.CheckReadError(err)
+		return nil, postgres.CheckReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresPostStorage) ReadByURL(url string) (admin.Post, error) {
+func (s *PostgresPostStorage) ReadByURL(url string) (*admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -149,18 +149,18 @@ func (s *PostgresPostStorage) ReadByURL(url string) (admin.Post, error) {
 
 	rows, err := s.conn.Query(ctx, stmt, url)
 	if err != nil {
-		return admin.Post{}, err
+		return nil, err
 	}
 
 	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPost])
 	if err != nil {
-		return admin.Post{}, postgres.CheckReadError(err)
+		return nil, postgres.CheckReadError(err)
 	}
 
 	return s.unmarshal(row)
 }
 
-func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
+func (s *PostgresPostStorage) List(limit, offset int) ([]*admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -188,7 +188,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []admin.Post
+	var posts []*admin.Post
 	for _, row := range postRows {
 		post, err := s.unmarshal(row)
 		if err != nil {
@@ -201,7 +201,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]admin.Post, error) {
 	return posts, nil
 }
 
-func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]admin.Post, error) {
+func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]*admin.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -230,7 +230,7 @@ func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []admin.Post
+	var posts []*admin.Post
 	for _, row := range postRows {
 		post, err := s.unmarshal(row)
 		if err != nil {
@@ -243,7 +243,7 @@ func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([
 	return posts, nil
 }
 
-func (s *PostgresPostStorage) Update(post admin.Post) error {
+func (s *PostgresPostStorage) Update(post *admin.Post) error {
 	now := time.Now()
 	stmt := `
 		UPDATE post
@@ -285,7 +285,6 @@ func (s *PostgresPostStorage) Update(post admin.Post) error {
 		return postgres.CheckUpdateError(err)
 	}
 
-	// TODO: this done nothing while the models are passed by value
-	post.UpdatedAt = now
+	post.SetUpdatedAt(now)
 	return nil
 }

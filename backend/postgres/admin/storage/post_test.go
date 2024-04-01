@@ -44,13 +44,13 @@ func TestPostRead(t *testing.T) {
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
-		got, err := store.Post().Read(post.ID)
+		got, err := store.Post().Read(post.ID())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if got.ID != post.ID {
-			t.Fatalf("want %v, got %v", post.ID, got.ID)
+		if got.ID() != post.ID() {
+			t.Fatalf("want %v, got %v", post.ID(), got.ID())
 		}
 
 		return test.ErrRollback
@@ -91,7 +91,7 @@ func TestPostListByBlog(t *testing.T) {
 		blog := test.CreateMockBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
-		var post admin.Post
+		var post *admin.Post
 		for i := 0; i < 5; i++ {
 			post = admin.NewPost(
 				blog,
@@ -118,8 +118,8 @@ func TestPostListByBlog(t *testing.T) {
 		}
 
 		// most recent post should be the one just added
-		if posts[0].ID != post.ID {
-			t.Fatalf("want %v, got %v", post.ID, posts[0].ID)
+		if posts[0].ID() != post.ID() {
+			t.Fatalf("want %v, got %v", post.ID(), posts[0].ID())
 		}
 
 		return test.ErrRollback

@@ -33,7 +33,7 @@ func TestHandlePostRead(t *testing.T) {
 
 		post := test.CreateMockPost(t, store)
 
-		url := fmt.Sprintf("/posts/%s", post.ID)
+		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 
@@ -61,8 +61,8 @@ func TestHandlePostRead(t *testing.T) {
 			t.Fatalf("response missing key: %v", "post")
 		}
 
-		if got.ID != post.ID {
-			t.Fatalf("want %v, got %v", post.ID, got.ID)
+		if got.ID != post.ID() {
+			t.Fatalf("want %v, got %v", post.ID(), got.ID)
 		}
 
 		return test.ErrRollback

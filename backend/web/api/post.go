@@ -8,6 +8,7 @@ import (
 	"github.com/alexedwards/flow"
 	"github.com/google/uuid"
 
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -17,8 +18,18 @@ type jsonPost struct {
 	BlogID      uuid.UUID `json:"blogID"`
 	URL         string    `json:"url"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
 	PublishedAt time.Time `json:"publishedAt"`
+}
+
+func marshalPost(post *admin.Post) jsonPost {
+	p := jsonPost{
+		ID:          post.ID(),
+		BlogID:      post.BlogID(),
+		URL:         post.URL(),
+		Title:       post.Title(),
+		PublishedAt: post.PublishedAt(),
+	}
+	return p
 }
 
 func (app *Application) handlePostRead() http.HandlerFunc {
@@ -46,14 +57,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 		}
 
 		resp := response{
-			Post: jsonPost{
-				ID:          post.ID,
-				BlogID:      post.BlogID,
-				URL:         post.URL,
-				Title:       post.Title,
-				Content:     post.Contents,
-				PublishedAt: post.PublishedAt,
-			},
+			Post: marshalPost(post),
 		}
 
 		err = writeJSON(w, 200, resp, nil)
@@ -96,14 +100,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		}
 
 		for _, post := range posts {
-			resp.Posts = append(resp.Posts, jsonPost{
-				ID:          post.ID,
-				BlogID:      post.BlogID,
-				URL:         post.URL,
-				Title:       post.Title,
-				Content:     post.Contents,
-				PublishedAt: post.PublishedAt,
-			})
+			resp.Posts = append(resp.Posts, marshalPost(post))
 		}
 
 		err = writeJSON(w, 200, resp, nil)

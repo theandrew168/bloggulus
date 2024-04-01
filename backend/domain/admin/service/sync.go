@@ -166,7 +166,7 @@ func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 
 	// update the post's contents (if available)
 	if feedPost.Contents != "" {
-		post.Contents = feedPost.Contents
+		post.SetContents(feedPost.Contents)
 		return s.store.Post().Update(post)
 	}
 

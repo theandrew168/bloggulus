@@ -19,7 +19,7 @@ func NewMockBlog() *admin.Blog {
 	return blog
 }
 
-func NewMockPost(blog *admin.Blog) admin.Post {
+func NewMockPost(blog *admin.Blog) *admin.Post {
 	post := admin.NewPost(
 		blog,
 		RandomURL(32),
@@ -54,7 +54,7 @@ func CreateMockBlog(t *testing.T, store adminStorage.Storage) *admin.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, store adminStorage.Storage) admin.Post {
+func CreateMockPost(t *testing.T, store adminStorage.Storage) *admin.Post {
 	t.Helper()
 
 	// generate some random blog data

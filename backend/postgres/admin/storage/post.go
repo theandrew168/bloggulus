@@ -15,7 +15,6 @@ import (
 // ensure PostStorage interface is satisfied
 var _ storage.PostStorage = (*PostgresPostStorage)(nil)
 
-// TODO: marshalPost and unmarshalPost helpers
 type dbPost struct {
 	ID          uuid.UUID `db:"id"`
 	BlogID      uuid.UUID `db:"blog_id"`
@@ -25,6 +24,34 @@ type dbPost struct {
 	PublishedAt time.Time `db:"published_at"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
+}
+
+func marshalPost(post *admin.Post) (dbPost, error) {
+	p := dbPost{
+		ID:          post.ID(),
+		BlogID:      post.BlogID(),
+		URL:         post.URL(),
+		Title:       post.Title(),
+		Contents:    post.Contents(),
+		PublishedAt: post.PublishedAt(),
+		CreatedAt:   post.CreatedAt(),
+		UpdatedAt:   post.UpdatedAt(),
+	}
+	return p, nil
+}
+
+func (p dbPost) unmarshal() (*admin.Post, error) {
+	post := admin.LoadPost(
+		p.ID,
+		p.BlogID,
+		p.URL,
+		p.Title,
+		p.Contents,
+		p.PublishedAt,
+		p.CreatedAt,
+		p.UpdatedAt,
+	)
+	return post, nil
 }
 
 type PostgresPostStorage struct {
@@ -38,34 +65,6 @@ func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 	return &s
 }
 
-func (s *PostgresPostStorage) marshal(post *admin.Post) (dbPost, error) {
-	row := dbPost{
-		ID:          post.ID(),
-		BlogID:      post.BlogID(),
-		URL:         post.URL(),
-		Title:       post.Title(),
-		Contents:    post.Contents(),
-		PublishedAt: post.PublishedAt(),
-		CreatedAt:   post.CreatedAt(),
-		UpdatedAt:   post.UpdatedAt(),
-	}
-	return row, nil
-}
-
-func (s *PostgresPostStorage) unmarshal(row dbPost) (*admin.Post, error) {
-	post := admin.LoadPost(
-		row.ID,
-		row.BlogID,
-		row.URL,
-		row.Title,
-		row.Contents,
-		row.PublishedAt,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)
-	return post, nil
-}
-
 func (s *PostgresPostStorage) Create(post *admin.Post) error {
 	stmt := `
 		INSERT INTO post
@@ -73,7 +72,7 @@ func (s *PostgresPostStorage) Create(post *admin.Post) error {
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	row, err := s.marshal(post)
+	row, err := marshalPost(post)
 	if err != nil {
 		return err
 	}
@@ -127,7 +126,7 @@ func (s *PostgresPostStorage) Read(id uuid.UUID) (*admin.Post, error) {
 		return nil, postgres.CheckReadError(err)
 	}
 
-	return s.unmarshal(row)
+	return row.unmarshal()
 }
 
 func (s *PostgresPostStorage) ReadByURL(url string) (*admin.Post, error) {
@@ -157,7 +156,7 @@ func (s *PostgresPostStorage) ReadByURL(url string) (*admin.Post, error) {
 		return nil, postgres.CheckReadError(err)
 	}
 
-	return s.unmarshal(row)
+	return row.unmarshal()
 }
 
 func (s *PostgresPostStorage) List(limit, offset int) ([]*admin.Post, error) {
@@ -190,7 +189,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]*admin.Post, error) {
 
 	var posts []*admin.Post
 	for _, row := range postRows {
-		post, err := s.unmarshal(row)
+		post, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +231,7 @@ func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([
 
 	var posts []*admin.Post
 	for _, row := range postRows {
-		post, err := s.unmarshal(row)
+		post, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +256,7 @@ func (s *PostgresPostStorage) Update(post *admin.Post) error {
 		  AND updated_at = $7
 		RETURNING updated_at`
 
-	row, err := s.marshal(post)
+	row, err := marshalPost(post)
 	if err != nil {
 		return err
 	}

@@ -15,7 +15,6 @@ import (
 // ensure BlogStorage interface is satisfied
 var _ storage.BlogStorage = (*PostgresBlogStorage)(nil)
 
-// TODO: marshalBlog and unmarshalBlog helpers
 type dbBlog struct {
 	ID           uuid.UUID `db:"id"`
 	FeedURL      string    `db:"feed_url"`
@@ -26,6 +25,36 @@ type dbBlog struct {
 	SyncedAt     time.Time `db:"synced_at"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
+}
+
+func marshalBlog(blog *admin.Blog) (dbBlog, error) {
+	b := dbBlog{
+		ID:           blog.ID(),
+		FeedURL:      blog.FeedURL(),
+		SiteURL:      blog.SiteURL(),
+		Title:        blog.Title(),
+		ETag:         blog.ETag(),
+		LastModified: blog.LastModified(),
+		SyncedAt:     blog.SyncedAt(),
+		CreatedAt:    blog.CreatedAt(),
+		UpdatedAt:    blog.UpdatedAt(),
+	}
+	return b, nil
+}
+
+func (b dbBlog) unmarshal() (*admin.Blog, error) {
+	blog := admin.LoadBlog(
+		b.ID,
+		b.FeedURL,
+		b.SiteURL,
+		b.Title,
+		b.ETag,
+		b.LastModified,
+		b.SyncedAt,
+		b.CreatedAt,
+		b.UpdatedAt,
+	)
+	return blog, nil
 }
 
 type PostgresBlogStorage struct {
@@ -39,36 +68,6 @@ func NewPostgresBlogStorage(conn postgres.Conn) *PostgresBlogStorage {
 	return &s
 }
 
-func (s *PostgresBlogStorage) marshal(blog *admin.Blog) (dbBlog, error) {
-	row := dbBlog{
-		ID:           blog.ID(),
-		FeedURL:      blog.FeedURL(),
-		SiteURL:      blog.SiteURL(),
-		Title:        blog.Title(),
-		ETag:         blog.ETag(),
-		LastModified: blog.LastModified(),
-		SyncedAt:     blog.SyncedAt(),
-		CreatedAt:    blog.CreatedAt(),
-		UpdatedAt:    blog.UpdatedAt(),
-	}
-	return row, nil
-}
-
-func (s *PostgresBlogStorage) unmarshal(row dbBlog) (*admin.Blog, error) {
-	blog := admin.LoadBlog(
-		row.ID,
-		row.FeedURL,
-		row.SiteURL,
-		row.Title,
-		row.ETag,
-		row.LastModified,
-		row.SyncedAt,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)
-	return blog, nil
-}
-
 func (s *PostgresBlogStorage) Create(blog *admin.Blog) error {
 	stmt := `
 		INSERT INTO blog
@@ -76,7 +75,7 @@ func (s *PostgresBlogStorage) Create(blog *admin.Blog) error {
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
-	row, err := s.marshal(blog)
+	row, err := marshalBlog(blog)
 	if err != nil {
 		return err
 	}
@@ -132,7 +131,7 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
 		return nil, postgres.CheckReadError(err)
 	}
 
-	return s.unmarshal(row)
+	return row.unmarshal()
 }
 
 func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
@@ -163,7 +162,7 @@ func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error)
 		return nil, postgres.CheckReadError(err)
 	}
 
-	return s.unmarshal(row)
+	return row.unmarshal()
 }
 
 func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
@@ -197,7 +196,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 
 	var blogs []*admin.Blog
 	for _, row := range blogRows {
-		blog, err := s.unmarshal(row)
+		blog, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}
@@ -224,7 +223,7 @@ func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
 		  AND updated_at = $9
 		RETURNING updated_at`
 
-	row, err := s.marshal(blog)
+	row, err := marshalBlog(blog)
 	if err != nil {
 		return err
 	}

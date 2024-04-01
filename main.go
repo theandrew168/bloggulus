@@ -5,6 +5,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -23,10 +24,18 @@ import (
 var migrationsFS embed.FS
 
 func main() {
-	os.Exit(run())
+	code := 0
+
+	err := run()
+	if err != nil {
+		slog.Error(err.Error())
+		code = 1
+	}
+
+	os.Exit(code)
 }
 
-func run() int {
+func run() error {
 	// check for config file flag
 	conf := flag.String("conf", "bloggulus.conf", "app config file")
 
@@ -38,36 +47,29 @@ func run() int {
 	// load user-defined config (if specified), else use defaults
 	cfg, err := config.ReadFile(*conf)
 	if err != nil {
-		// TODO: log this
-		fmt.Println(err)
-		return 1
+		return err
 	}
 
 	// open a database connection pool
 	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
 	if err != nil {
-		// TODO: log this
-		fmt.Println(err)
-		return 1
+		return err
 	}
 	defer pool.Close()
 
 	// apply database migrations
 	applied, err := postgres.Migrate(pool, migrationsFS)
 	if err != nil {
-		// TODO: log this
-		fmt.Println(err)
-		return 1
+		return err
 	}
 
 	for _, migration := range applied {
-		// TODO: log this
-		fmt.Printf("applied migration: %s\n", migration)
+		slog.Info("applied migration", "name", migration)
 	}
 
 	// exit now if just applying migrations
 	if *migrate {
-		return 0
+		return nil
 	}
 
 	// init database storage
@@ -79,16 +81,13 @@ func run() int {
 	if *addblog != "" {
 		feedURL := *addblog
 
-		// TODO: log this
-		fmt.Printf("adding blog: %s\n", feedURL)
+		slog.Info("adding blog", "feedURL", feedURL)
 		err = syncService.SyncBlog(feedURL)
 		if err != nil {
-			// TODO: log this
-			fmt.Println(err)
-			return 1
+			return err
 		}
 
-		return 0
+		return nil
 	}
 
 	// let systemd know that we are good to go (no-op if not using systemd)
@@ -117,13 +116,12 @@ func run() int {
 
 		err := app.Run(ctx, addr)
 		if err != nil {
-			// TODO: log this
-			fmt.Println(err.Error())
+			slog.Error(err.Error())
 		}
 	}()
 
 	// wait for the web server and worker to stop
 	wg.Wait()
 
-	return 0
+	return nil
 }

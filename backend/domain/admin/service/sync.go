@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
@@ -40,8 +40,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	for _, blog := range blogs {
 		delta := now.Sub(blog.SyncedAt)
 		if delta < time.Hour {
-			// TODO: log this
-			fmt.Printf("recently synced: %v\n", blog.Title)
+			slog.Info("recently synced", "title", blog.Title)
 		}
 
 		s.SyncBlog(blog.FeedURL)
@@ -98,8 +97,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	for _, feedPost := range feedBlog.Posts {
 		err = s.syncPost(blog, feedPost)
 		if err != nil {
-			// TODO: log this but don't stop
-			fmt.Println(err)
+			slog.Error(err.Error())
 		}
 	}
 
@@ -142,8 +140,7 @@ func (s *SyncService) syncExistingBlog(blog admin.Blog) error {
 	for _, feedPost := range feedBlog.Posts {
 		err = s.syncPost(blog, feedPost)
 		if err != nil {
-			// TODO: log this but don't stop
-			fmt.Println(err)
+			slog.Error(err.Error())
 		}
 	}
 

@@ -126,6 +126,11 @@ func (repo *PostgresTagStorage) Delete(tag *admin.Tag) error {
 		WHERE id = $1
 		RETURNING id`
 
+	err := tag.CheckDelete()
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 

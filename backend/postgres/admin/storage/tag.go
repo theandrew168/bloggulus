@@ -15,12 +15,31 @@ import (
 // ensure TagStorage interface is satisfied
 var _ storage.TagStorage = (*PostgresTagStorage)(nil)
 
-// TODO: marshalTag and unmarshalTag helpers
 type dbTag struct {
 	ID        uuid.UUID `db:"id"`
 	Name      string    `db:"name"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
+}
+
+func marshalTag(tag *admin.Tag) (dbTag, error) {
+	t := dbTag{
+		ID:        tag.ID(),
+		Name:      tag.Name(),
+		CreatedAt: tag.CreatedAt(),
+		UpdatedAt: tag.UpdatedAt(),
+	}
+	return t, nil
+}
+
+func (t dbTag) unmarshal() (*admin.Tag, error) {
+	tag := admin.LoadTag(
+		t.ID,
+		t.Name,
+		t.CreatedAt,
+		t.UpdatedAt,
+	)
+	return tag, nil
 }
 
 type PostgresTagStorage struct {
@@ -34,26 +53,6 @@ func NewPostgresTagStorage(conn postgres.Conn) *PostgresTagStorage {
 	return &s
 }
 
-func (s *PostgresTagStorage) marshal(tag *admin.Tag) (dbTag, error) {
-	row := dbTag{
-		ID:        tag.ID(),
-		Name:      tag.Name(),
-		CreatedAt: tag.CreatedAt(),
-		UpdatedAt: tag.UpdatedAt(),
-	}
-	return row, nil
-}
-
-func (s *PostgresTagStorage) unmarshal(row dbTag) (*admin.Tag, error) {
-	tag := admin.LoadTag(
-		row.ID,
-		row.Name,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)
-	return tag, nil
-}
-
 func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
 	stmt := `
 		INSERT INTO tag
@@ -61,7 +60,7 @@ func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
 		VALUES
 			($1, $2, $3, $4)`
 
-	row, err := s.marshal(tag)
+	row, err := marshalTag(tag)
 	if err != nil {
 		return err
 	}
@@ -110,7 +109,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 
 	var tags []*admin.Tag
 	for _, row := range tagRows {
-		tag, err := s.unmarshal(row)
+		tag, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}

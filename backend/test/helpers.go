@@ -13,8 +13,6 @@ type CloserFunc func()
 func NewConfig(t *testing.T) config.Config {
 	t.Helper()
 
-	// TODO: is there a better way to handle this? trying to read the
-	// conf in the root dir depends on where the reading _file_ is. wacky.
 	cfg := config.Config{
 		DatabaseURI: "postgresql://postgres:postgres@localhost:5432/postgres",
 	}

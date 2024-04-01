@@ -5,12 +5,21 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 type jsonTag struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
+}
+
+func marshalTag(tag *admin.Tag) jsonTag {
+	t := jsonTag{
+		ID:   tag.ID(),
+		Name: tag.Name(),
+	}
+	return t
 }
 
 func (app *Application) handleTagList() http.HandlerFunc {
@@ -45,10 +54,7 @@ func (app *Application) handleTagList() http.HandlerFunc {
 		}
 
 		for _, tag := range tags {
-			resp.Tags = append(resp.Tags, jsonTag{
-				ID:   tag.ID(),
-				Name: tag.Name(),
-			})
+			resp.Tags = append(resp.Tags, marshalTag(tag))
 		}
 
 		err = writeJSON(w, 200, resp, nil)

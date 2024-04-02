@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
@@ -17,15 +16,11 @@ func TestPostCreate(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := test.NewMockBlog()
 		err := store.Blog().Create(blog)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		post := test.NewMockPost(blog)
 		err = store.Post().Create(post)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		return test.ErrRollback
 	})
@@ -38,11 +33,9 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
 
+		// attempt to create the same post again
 		err := store.Post().Create(post)
-		t.Log(err.Error())
-		if !errors.Is(err, postgres.ErrConflict) {
-			t.Fatal("duplicate post should return an error")
-		}
+		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
 		return test.ErrRollback
 	})
@@ -55,13 +48,9 @@ func TestPostRead(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
 		got, err := store.Post().Read(post.ID())
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if got.ID() != post.ID() {
-			t.Fatalf("want %v, got %v", post.ID(), got.ID())
-		}
+		test.AssertEqual(t, got.ID(), post.ID())
 
 		return test.ErrRollback
 	})
@@ -74,13 +63,9 @@ func TestPostReadByURL(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
 		got, err := store.Post().ReadByURL(post.URL())
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if got.ID() != post.ID() {
-			t.Fatalf("want %v, got %v", post.ID(), got.ID())
-		}
+		test.AssertEqual(t, got.ID(), post.ID())
 
 		return test.ErrRollback
 	})
@@ -100,13 +85,9 @@ func TestPostList(t *testing.T) {
 		limit := 3
 		offset := 0
 		posts, err := store.Post().List(limit, offset)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if len(posts) != limit {
-			t.Fatalf("want %v, got %v", limit, len(posts))
-		}
+		test.AssertEqual(t, len(posts), limit)
 
 		return test.ErrRollback
 	})
@@ -130,26 +111,18 @@ func TestPostListByBlog(t *testing.T) {
 				test.RandomTime(),
 			)
 			err := store.Post().Create(post)
-			if err != nil {
-				t.Fatal(err)
-			}
+			test.AssertNilError(t, err)
 		}
 
 		limit := 3
 		offset := 0
 		posts, err := store.Post().ListByBlog(blog, limit, offset)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if len(posts) != limit {
-			t.Fatalf("want %v, got %v", limit, len(posts))
-		}
+		test.AssertEqual(t, len(posts), limit)
 
 		// most recent post should be the one just added
-		if posts[0].ID() != post.ID() {
-			t.Fatalf("want %v, got %v", post.ID(), posts[0].ID())
-		}
+		test.AssertEqual(t, posts[0].ID(), post.ID())
 
 		return test.ErrRollback
 	})
@@ -160,34 +133,35 @@ func TestPostUpdate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := test.NewMockBlog()
-		err := store.Blog().Create(blog)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		post := test.NewMockPost(blog)
-		err = store.Post().Create(post)
-		if err != nil {
-			t.Fatal(err)
-		}
+		post := test.CreateMockPost(t, store)
 
 		contents := "foobar"
 		post.SetContents(contents)
 
-		err = store.Post().Update(post)
-		if err != nil {
-			t.Fatal(err)
-		}
+		err := store.Post().Update(post)
+		test.AssertNilError(t, err)
 
 		got, err := store.Post().Read(post.ID())
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if got.Contents() != contents {
-			t.Fatalf("want %v, got %v", contents, got.Contents())
-		}
+		test.AssertEqual(t, got.Contents(), contents)
+
+		return test.ErrRollback
+	})
+}
+
+func TestPostDelete(t *testing.T) {
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store storage.Storage) error {
+		post := test.CreateMockPost(t, store)
+
+		err := store.Post().Delete(post)
+		test.AssertNilError(t, err)
+
+		_, err = store.Post().Read(post.ID())
+		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
 		return test.ErrRollback
 	})

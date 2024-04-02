@@ -12,4 +12,5 @@ type BlogStorage interface {
 	ReadByFeedURL(feedURL string) (*admin.Blog, error)
 	List(limit, offset int) ([]*admin.Blog, error)
 	Update(blog *admin.Blog) error
+	Delete(blog *admin.Blog) error
 }

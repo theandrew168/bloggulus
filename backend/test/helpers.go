@@ -24,9 +24,7 @@ func NewDatabase(t *testing.T) (postgres.Conn, CloserFunc) {
 
 	cfg := NewConfig(t)
 	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNilError(t, err)
 
 	return pool, pool.Close
 }

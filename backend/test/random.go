@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func RandomString(n int) string {
 	valid := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
 

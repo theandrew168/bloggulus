@@ -21,13 +21,9 @@ func TestHandleIndex(t *testing.T) {
 	router := app.Router()
 	router.ServeHTTP(w, r)
 
-	resp := w.Result()
-	_, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	rr := w.Result()
+	_, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-	if resp.StatusCode != 200 {
-		t.Fatalf("want %v, got %v\n", 200, resp.StatusCode)
-	}
+	test.AssertEqual(t, rr.StatusCode, 200)
 }

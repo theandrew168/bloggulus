@@ -83,6 +83,32 @@ func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
 	return nil
 }
 
+func (s *PostgresTagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
+	stmt := `
+		SELECT
+			id,
+			name,
+			created_at,
+			updated_at
+		FROM tag
+		WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, id)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbTag])
+	if err != nil {
+		return nil, postgres.CheckReadError(err)
+	}
+
+	return row.unmarshal()
+}
+
 func (s *PostgresTagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	stmt := `
 		SELECT

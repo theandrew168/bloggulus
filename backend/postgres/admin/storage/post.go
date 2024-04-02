@@ -287,3 +287,30 @@ func (s *PostgresPostStorage) Update(post *admin.Post) error {
 	post.SetUpdatedAt(now)
 	return nil
 }
+
+func (repo *PostgresPostStorage) Delete(post *admin.Post) error {
+	stmt := `
+		DELETE FROM post
+		WHERE id = $1
+		RETURNING id`
+
+	err := post.CheckDelete()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := repo.conn.Query(ctx, stmt, post.ID())
+	if err != nil {
+		return err
+	}
+
+	_, err = pgx.CollectOneRow(rows, pgx.RowTo[uuid.UUID])
+	if err != nil {
+		return postgres.CheckDeleteError(err)
+	}
+
+	return nil
+}

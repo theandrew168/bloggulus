@@ -42,13 +42,9 @@ func TestHandlePostRead(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if rr.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
-		}
+		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -61,9 +57,7 @@ func TestHandlePostRead(t *testing.T) {
 			t.Fatalf("response missing key: %v", "post")
 		}
 
-		if got.ID != post.ID() {
-			t.Fatalf("want %v, got %v", post.ID(), got.ID)
-		}
+		test.AssertEqual(t, got.ID, post.ID())
 
 		return test.ErrRollback
 	})
@@ -84,9 +78,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		if rr.StatusCode != 404 {
-			t.Fatalf("want %v, got %v", 404, rr.StatusCode)
-		}
+		test.AssertEqual(t, rr.StatusCode, 404)
 
 		return test.ErrRollback
 	})
@@ -109,13 +101,9 @@ func TestHandlePostList(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
-		if rr.StatusCode != 200 {
-			t.Fatalf("want %v, got %v", 200, rr.StatusCode)
-		}
+		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -160,8 +148,8 @@ func TestHandlePostListPagination(t *testing.T) {
 			{5, 5},
 		}
 
-		for _, test := range tests {
-			url := fmt.Sprintf("/posts?limit=%d", test.limit)
+		for _, tt := range tests {
+			url := fmt.Sprintf("/posts?limit=%d", tt.limit)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 
@@ -170,13 +158,9 @@ func TestHandlePostListPagination(t *testing.T) {
 
 			rr := w.Result()
 			body, err := io.ReadAll(rr.Body)
-			if err != nil {
-				t.Fatal(err)
-			}
+			test.AssertNilError(t, err)
 
-			if rr.StatusCode != 200 {
-				t.Fatalf("want %v, got %v", 200, rr.StatusCode)
-			}
+			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonPost
 			err = json.Unmarshal(body, &resp)
@@ -189,9 +173,7 @@ func TestHandlePostListPagination(t *testing.T) {
 				t.Fatalf("response missing key: %v", "posts")
 			}
 
-			if len(got) != test.want {
-				t.Fatalf("want %v, got %v", test.want, len(got))
-			}
+			test.AssertEqual(t, len(got), tt.want)
 		}
 
 		return test.ErrRollback

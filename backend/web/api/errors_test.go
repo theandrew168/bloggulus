@@ -34,27 +34,21 @@ func TestBadRequest(t *testing.T) {
 		{"/posts?offset=-123", "positive"},
 	}
 
-	for _, test := range tests {
+	for _, tt := range tests {
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", test.url, nil)
+		r := httptest.NewRequest("GET", tt.url, nil)
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
-		resp := w.Result()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+		rr := w.Result()
+		body, err := io.ReadAll(rr.Body)
+		test.AssertNilError(t, err)
 
-		if resp.StatusCode != 400 {
-			t.Fatalf("want %v, got %v", 400, resp.StatusCode)
-		}
+		test.AssertEqual(t, rr.StatusCode, 400)
 
 		json := string(body)
-		if !strings.Contains(strings.ToLower(json), test.want) {
-			t.Fatalf("error JSON missing '%s'", test.want)
-		}
+		test.AssertStringContains(t, strings.ToLower(json), tt.want)
 	}
 }
 
@@ -70,20 +64,14 @@ func TestNotFound(t *testing.T) {
 	router := app.Router()
 	router.ServeHTTP(w, r)
 
-	resp := w.Result()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	rr := w.Result()
+	body, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-	if resp.StatusCode != 404 {
-		t.Fatalf("want %v, got %v", 404, resp.StatusCode)
-	}
+	test.AssertEqual(t, rr.StatusCode, 404)
 
 	json := string(body)
-	if !strings.Contains(strings.ToLower(json), "not found") {
-		t.Fatalf("error JSON missing 'not found'")
-	}
+	test.AssertStringContains(t, strings.ToLower(json), "not found")
 }
 
 func TestMethodNotAllowed(t *testing.T) {
@@ -98,18 +86,12 @@ func TestMethodNotAllowed(t *testing.T) {
 	router := app.Router()
 	router.ServeHTTP(w, r)
 
-	resp := w.Result()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	rr := w.Result()
+	body, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-	if resp.StatusCode != 405 {
-		t.Fatalf("want %v, got %v", 405, resp.StatusCode)
-	}
+	test.AssertEqual(t, rr.StatusCode, 405)
 
 	json := string(body)
-	if !strings.Contains(strings.ToLower(json), "method not allowed") {
-		t.Fatalf("error JSON missing 'method not allowed'")
-	}
+	test.AssertStringContains(t, strings.ToLower(json), "method not allowed")
 }

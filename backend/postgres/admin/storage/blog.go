@@ -256,3 +256,30 @@ func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
 	blog.SetUpdatedAt(now)
 	return nil
 }
+
+func (repo *PostgresBlogStorage) Delete(blog *admin.Blog) error {
+	stmt := `
+		DELETE FROM blog
+		WHERE id = $1
+		RETURNING id`
+
+	err := blog.CheckDelete()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := repo.conn.Query(ctx, stmt, blog.ID())
+	if err != nil {
+		return err
+	}
+
+	_, err = pgx.CollectOneRow(rows, pgx.RowTo[uuid.UUID])
+	if err != nil {
+		return postgres.CheckDeleteError(err)
+	}
+
+	return nil
+}

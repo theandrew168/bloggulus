@@ -46,9 +46,7 @@ func CreateMockBlog(t *testing.T, store adminStorage.Storage) *admin.Blog {
 
 	// create an example blog
 	err := store.Blog().Create(blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNilError(t, err)
 
 	return blog
 }
@@ -62,18 +60,14 @@ func CreateMockPost(t *testing.T, store adminStorage.Storage) *admin.Post {
 
 	// create an example blog
 	err := store.Blog().Create(blog)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNilError(t, err)
 
 	// generate some random post data
 	post := NewMockPost(blog)
 
 	// create an example post
 	err = store.Post().Create(post)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNilError(t, err)
 
 	return post
 }
@@ -87,9 +81,7 @@ func CreateMockTag(t *testing.T, store adminStorage.Storage) *admin.Tag {
 
 	// create an example blog
 	err := store.Tag().Create(tag)
-	if err != nil {
-		t.Fatal(err)
-	}
+	AssertNilError(t, err)
 
 	return tag
 }

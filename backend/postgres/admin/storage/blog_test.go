@@ -104,3 +104,42 @@ func TestBlogList(t *testing.T) {
 		return test.ErrRollback
 	})
 }
+
+func TestBlogUpdate(t *testing.T) {
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store storage.Storage) error {
+		blog := test.NewMockBlog()
+		err := store.Blog().Create(blog)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		etag := "foo"
+		blog.SetETag(etag)
+
+		lastModified := "bar"
+		blog.SetLastModified(lastModified)
+
+		err = store.Blog().Update(blog)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got, err := store.Blog().Read(blog.ID())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.ETag() != etag {
+			t.Fatalf("want %v, got %v", lastModified, got.ETag())
+		}
+
+		if got.LastModified() != lastModified {
+			t.Fatalf("want %v, got %v", lastModified, got.LastModified())
+		}
+
+		return test.ErrRollback
+	})
+}

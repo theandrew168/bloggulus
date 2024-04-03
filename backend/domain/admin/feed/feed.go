@@ -1,12 +1,14 @@
 package feed
 
 import (
-	"fmt"
-	"net/url"
 	"regexp"
 	"time"
 
 	"github.com/mmcdole/gofeed"
+)
+
+var (
+	schemeRegexp = regexp.MustCompile("https?://")
 )
 
 type Blog struct {
@@ -36,25 +38,15 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 	for _, item := range feed.Items {
 		// ensure link is valid
 		link := item.Link
-		u, err := url.Parse(link)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
 
-		// ensure link includes hostname
-		if u.Hostname() == "" {
+		// ensure link includes the site's domain
+		if link[0] == '/' {
 			link = feed.Link + link
 		}
 
-		// ensure link includes scheme
-		matched, err := regexp.MatchString("^https?://", link)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		// assume https if no scheme is present
-		if !matched {
+		// ensure link includes a scheme (assume https if necessary)
+		hasScheme := schemeRegexp.MatchString(link)
+		if !hasScheme {
 			link = "https://" + link
 		}
 

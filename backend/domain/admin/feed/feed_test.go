@@ -124,6 +124,54 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseMissingDomain(t *testing.T) {
+	feedPostFoo := feed.Post{
+		URL:         "/foo",
+		Title:       "Foo",
+		Contents:    "content about foo",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo},
+	}
+
+	atomFeed := generateAtomFeed(t, feedBlog)
+
+	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	test.AssertNilError(t, err)
+
+	for _, parsedPost := range parsedBlog.Posts {
+		test.AssertEqual(t, parsedPost.URL, feedBlog.SiteURL+feedPostFoo.URL)
+	}
+}
+
+func TestParseMissingScheme(t *testing.T) {
+	feedPostFoo := feed.Post{
+		URL:         "example.com/foo",
+		Title:       "Foo",
+		Contents:    "content about foo",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo},
+	}
+
+	atomFeed := generateAtomFeed(t, feedBlog)
+
+	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	test.AssertNilError(t, err)
+
+	for _, parsedPost := range parsedBlog.Posts {
+		test.AssertEqual(t, parsedPost.URL, "https://"+feedPostFoo.URL)
+	}
+}
+
 func TestHydrate(t *testing.T) {
 	feedPostFoo := feed.Post{
 		URL:         "https://example.com/foo",

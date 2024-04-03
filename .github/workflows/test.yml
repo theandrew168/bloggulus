@@ -10,7 +10,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Start containers
-        run: docker-compose up -d
+        run: docker compose up -d
       - uses: actions/setup-node@v4
         with:
           node-version: "21"

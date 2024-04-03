@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -92,7 +93,7 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (feed.FetchFeedR
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		fmt.Printf("no newer feed info found found for: %s\n", url)
+		slog.Info("no new data for feed", "url", url)
 		return feed.FetchFeedResponse{}, nil
 	}
 

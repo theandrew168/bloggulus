@@ -1,6 +1,7 @@
 package feed
 
 import (
+	"log/slog"
 	"regexp"
 	"time"
 
@@ -25,8 +26,6 @@ type Post struct {
 	PublishedAt time.Time
 }
 
-// TODO: Better, richer error handling that includes data about
-// errors from individual posts (invalid URLs, for example).
 func Parse(feedURL string, feedBody string) (Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseString(feedBody)
@@ -80,7 +79,8 @@ func Hydrate(blog Blog, pageFetcher PageFetcher) (Blog, error) {
 		if post.Contents == "" {
 			content, err := pageFetcher.FetchPage(post.URL)
 			if err != nil {
-				return Blog{}, err
+				slog.Warn("failed to fetch page", "url", post.URL)
+				continue
 			}
 
 			post.Contents = content

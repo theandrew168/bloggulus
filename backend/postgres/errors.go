@@ -40,6 +40,7 @@ delete (CollectOneRow) - does not exist
 	Only potential error is not finding a row with the specified ID. This could just
 	ignore cases where the ID doesn't exist (and nothing gets deleted) but I think it is
 	better UX / DX to _know_ if the delete was successful (204) vs no record was deleted (404).
+	Could this also cause a constraint violation? For violating an FK or something?
 
 */
 
@@ -48,8 +49,8 @@ delete (CollectOneRow) - does not exist
 //   - what was missing
 //   - what column(s) caused the conflict
 var (
-	ErrNotFound = errors.New("storage: not found")
-	ErrConflict = errors.New("storage: conflict")
+	ErrNotFound = errors.New("postgres: not found")
+	ErrConflict = errors.New("postgres: conflict")
 )
 
 func CheckCreateError(err error) error {

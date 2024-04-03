@@ -8,8 +8,8 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-var (
-	defaultPort = "5000"
+const (
+	DefaultPort = "5000"
 )
 
 type Config struct {
@@ -64,7 +64,7 @@ func Read(data string) (Config, error) {
 
 	// handle defaults
 	if cfg.Port == "" {
-		cfg.Port = defaultPort
+		cfg.Port = DefaultPort
 	}
 
 	return cfg, nil

@@ -17,6 +17,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
+	"github.com/theandrew168/bloggulus/backend/web/fetch"
 	"github.com/theandrew168/bloggulus/frontend"
 )
 
@@ -75,7 +76,7 @@ func run() error {
 	// init database storage
 	store := adminStorage.New(pool)
 
-	syncService := service.NewSyncService(store, web.NewFeedFetcher(), web.NewPageFetcher())
+	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
 	// add a blog and exit now if requested
 	if *addblog != "" {

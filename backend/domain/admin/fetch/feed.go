@@ -1,8 +1,4 @@
-package feed
-
-type PageFetcher interface {
-	FetchPage(url string) (string, error)
-}
+package fetch
 
 type FetchFeedResponse struct {
 	Feed         string

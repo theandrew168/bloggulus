@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed"
+
+	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 )
 
 var (
@@ -73,7 +75,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 	return blog, nil
 }
 
-func Hydrate(blog Blog, pageFetcher PageFetcher) (Blog, error) {
+func Hydrate(blog Blog, pageFetcher fetch.PageFetcher) (Blog, error) {
 	var hydratedPosts []Post
 	for _, post := range blog.Posts {
 		if post.Contents == "" {

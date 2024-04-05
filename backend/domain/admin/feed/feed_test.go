@@ -2,11 +2,11 @@ package feed_test
 
 import (
 	"encoding/xml"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -58,24 +58,6 @@ func generateAtomFeed(t *testing.T, blog feed.Blog) string {
 	}
 
 	return xml.Header + string(out)
-}
-
-type mockPageFetcher struct {
-	pages map[string]string
-}
-
-func newMockPageFetcher(pages map[string]string) *mockPageFetcher {
-	f := mockPageFetcher{pages: pages}
-	return &f
-}
-
-func (f *mockPageFetcher) FetchPage(url string) (string, error) {
-	page, ok := f.pages[url]
-	if !ok {
-		return "", errors.New("page not found")
-	}
-
-	return page, nil
 }
 
 func TestParse(t *testing.T) {
@@ -198,7 +180,7 @@ func TestHydrate(t *testing.T) {
 		feedPostFoo.URL: "content about foo",
 		feedPostBar.URL: "content about bar",
 	}
-	pageFetcher := newMockPageFetcher(pages)
+	pageFetcher := fetch.NewMockPageFetcher(pages)
 
 	feedBlog, err := feed.Hydrate(feedBlog, pageFetcher)
 	test.AssertNilError(t, err)

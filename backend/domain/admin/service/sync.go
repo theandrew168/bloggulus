@@ -7,17 +7,18 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 type SyncService struct {
 	store       storage.Storage
-	feedFetcher feed.FeedFetcher
-	pageFetcher feed.PageFetcher
+	feedFetcher fetch.FeedFetcher
+	pageFetcher fetch.PageFetcher
 }
 
-func NewSyncService(store storage.Storage, feedFetcher feed.FeedFetcher, pageFetcher feed.PageFetcher) *SyncService {
+func NewSyncService(store storage.Storage, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
 	s := SyncService{
 		store:       store,
 		feedFetcher: feedFetcher,

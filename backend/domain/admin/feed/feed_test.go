@@ -61,6 +61,8 @@ func generateAtomFeed(t *testing.T, blog feed.Blog) string {
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
+
 	feedPostFoo := feed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
@@ -107,6 +109,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseMissingDomain(t *testing.T) {
+	t.Parallel()
+
 	feedPostFoo := feed.Post{
 		URL:         "/foo",
 		Title:       "Foo",
@@ -131,6 +135,8 @@ func TestParseMissingDomain(t *testing.T) {
 }
 
 func TestParseMissingScheme(t *testing.T) {
+	t.Parallel()
+
 	feedPostFoo := feed.Post{
 		URL:         "example.com/foo",
 		Title:       "Foo",
@@ -155,6 +161,8 @@ func TestParseMissingScheme(t *testing.T) {
 }
 
 func TestHydrate(t *testing.T) {
+	t.Parallel()
+
 	feedPostFoo := feed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",

@@ -9,6 +9,8 @@ import (
 )
 
 func TestTagCreate(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -22,6 +24,8 @@ func TestTagCreate(t *testing.T) {
 }
 
 func TestTagCreateAlreadyExists(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -37,6 +41,8 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 }
 
 func TestTagRead(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -52,6 +58,8 @@ func TestTagRead(t *testing.T) {
 }
 
 func TestTagList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -74,6 +82,8 @@ func TestTagList(t *testing.T) {
 }
 
 func TestTagDelete(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

@@ -10,6 +10,8 @@ import (
 )
 
 func TestPostCreate(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -27,6 +29,8 @@ func TestPostCreate(t *testing.T) {
 }
 
 func TestPostCreateAlreadyExists(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -42,6 +46,8 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 }
 
 func TestPostRead(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -57,6 +63,8 @@ func TestPostRead(t *testing.T) {
 }
 
 func TestPostReadByURL(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -72,6 +80,8 @@ func TestPostReadByURL(t *testing.T) {
 }
 
 func TestPostList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -94,6 +104,8 @@ func TestPostList(t *testing.T) {
 }
 
 func TestPostListByBlog(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -129,6 +141,8 @@ func TestPostListByBlog(t *testing.T) {
 }
 
 func TestPostUpdate(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -151,6 +165,8 @@ func TestPostUpdate(t *testing.T) {
 }
 
 func TestPostDelete(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

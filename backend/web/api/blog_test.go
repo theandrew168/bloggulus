@@ -22,6 +22,8 @@ type jsonBlog struct {
 }
 
 func TestHandleBlogRead(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -61,6 +63,8 @@ func TestHandleBlogRead(t *testing.T) {
 }
 
 func TestHandleBlogReadNotFound(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -78,6 +82,8 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 }
 
 func TestHandleBlogList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -118,6 +124,8 @@ func TestHandleBlogList(t *testing.T) {
 }
 
 func TestHandleBlogListPagination(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

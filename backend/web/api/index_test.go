@@ -10,6 +10,8 @@ import (
 )
 
 func TestHandleIndex(t *testing.T) {
+	t.Parallel()
+
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 

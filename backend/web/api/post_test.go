@@ -25,6 +25,8 @@ type jsonPost struct {
 }
 
 func TestHandlePostRead(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -64,6 +66,8 @@ func TestHandlePostRead(t *testing.T) {
 }
 
 func TestHandlePostReadNotFound(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -85,6 +89,8 @@ func TestHandlePostReadNotFound(t *testing.T) {
 }
 
 func TestHandlePostList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -125,6 +131,8 @@ func TestHandlePostList(t *testing.T) {
 }
 
 func TestHandlePostListPagination(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

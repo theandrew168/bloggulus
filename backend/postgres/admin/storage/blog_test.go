@@ -9,6 +9,8 @@ import (
 )
 
 func TestBlogCreate(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -22,6 +24,8 @@ func TestBlogCreate(t *testing.T) {
 }
 
 func TestBlogCreateAlreadyExists(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -37,6 +41,8 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 }
 
 func TestBlogRead(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -52,6 +58,8 @@ func TestBlogRead(t *testing.T) {
 }
 
 func TestBlogReadByFeedURL(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -67,6 +75,8 @@ func TestBlogReadByFeedURL(t *testing.T) {
 }
 
 func TestBlogList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -89,6 +99,8 @@ func TestBlogList(t *testing.T) {
 }
 
 func TestBlogUpdate(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -115,6 +127,8 @@ func TestBlogUpdate(t *testing.T) {
 }
 
 func TestBlogDelete(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

@@ -20,6 +20,8 @@ type jsonTag struct {
 }
 
 func TestHandleTagList(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -60,6 +62,8 @@ func TestHandleTagList(t *testing.T) {
 }
 
 func TestHandleTagListPagination(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

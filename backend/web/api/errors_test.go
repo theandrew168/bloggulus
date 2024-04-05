@@ -11,6 +11,8 @@ import (
 )
 
 func TestBadRequest(t *testing.T) {
+	t.Parallel()
+
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -53,6 +55,8 @@ func TestBadRequest(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
+	t.Parallel()
+
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
@@ -75,6 +79,8 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
+	t.Parallel()
+
 	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 

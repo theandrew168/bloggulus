@@ -12,6 +12,7 @@ type FeedFetcher interface {
 	FetchFeed(url, etag, lastModified string) (FetchFeedResponse, error)
 }
 
+// ensure FeedFetcher interface is satisfied
 var _ FeedFetcher = (*MockFeedFetcher)(nil)
 
 type MockFeedFetcher struct {

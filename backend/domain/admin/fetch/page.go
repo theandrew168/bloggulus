@@ -6,6 +6,7 @@ type PageFetcher interface {
 	FetchPage(url string) (string, error)
 }
 
+// ensure PageFetcher interface is satisfied
 var _ PageFetcher = (*MockPageFetcher)(nil)
 
 type MockPageFetcher struct {

@@ -9,7 +9,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
 type SyncService struct {
@@ -52,7 +51,7 @@ func (s *SyncService) SyncAllBlogs() error {
 func (s *SyncService) SyncBlog(feedURL string) error {
 	blog, err := s.store.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
-		if !errors.Is(err, postgres.ErrNotFound) {
+		if !errors.Is(err, storage.ErrNotFound) {
 			return err
 		}
 
@@ -151,7 +150,7 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 	post, err := s.store.Post().ReadByURL(feedPost.URL)
 	if err != nil {
-		if !errors.Is(err, postgres.ErrNotFound) {
+		if !errors.Is(err, storage.ErrNotFound) {
 			return err
 		}
 

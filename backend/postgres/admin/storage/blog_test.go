@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -34,7 +33,7 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 
 		// attempt to create the same blog again
 		err := store.Blog().Create(blog)
-		test.AssertErrorIs(t, err, postgres.ErrConflict)
+		test.AssertErrorIs(t, err, storage.ErrConflict)
 
 		return test.ErrRollback
 	})
@@ -139,7 +138,7 @@ func TestBlogDelete(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		_, err = store.Blog().Read(blog.ID())
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
+		test.AssertErrorIs(t, err, storage.ErrNotFound)
 
 		return test.ErrRollback
 	})

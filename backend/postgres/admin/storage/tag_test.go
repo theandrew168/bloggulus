@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -34,7 +33,7 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
-		test.AssertErrorIs(t, err, postgres.ErrConflict)
+		test.AssertErrorIs(t, err, storage.ErrConflict)
 
 		return test.ErrRollback
 	})
@@ -94,7 +93,7 @@ func TestTagDelete(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		_, err = store.Tag().Read(tag.ID())
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
+		test.AssertErrorIs(t, err, storage.ErrNotFound)
 
 		return test.ErrRollback
 	})

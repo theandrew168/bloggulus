@@ -1,4 +1,4 @@
-package storage_test
+package test
 
 import (
 	"testing"
@@ -7,11 +7,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
-func TestTagCreate(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestTagCreate(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.NewMockTag()
@@ -22,11 +19,8 @@ func TestTagCreate(t *testing.T) {
 	})
 }
 
-func TestTagCreateAlreadyExists(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.CreateMockTag(t, store)
@@ -39,11 +33,8 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 	})
 }
 
-func TestTagRead(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestTagRead(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.CreateMockTag(t, store)
@@ -56,11 +47,8 @@ func TestTagRead(t *testing.T) {
 	})
 }
 
-func TestTagList(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestTagList(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockTag(t, store)
@@ -80,11 +68,8 @@ func TestTagList(t *testing.T) {
 	})
 }
 
-func TestTagDelete(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestTagDelete(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := test.CreateMockTag(t, store)

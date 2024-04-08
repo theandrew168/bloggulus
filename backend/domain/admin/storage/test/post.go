@@ -1,4 +1,4 @@
-package storage_test
+package test
 
 import (
 	"testing"
@@ -8,11 +8,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
-func TestPostCreate(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostCreate(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := test.NewMockBlog()
@@ -27,11 +24,8 @@ func TestPostCreate(t *testing.T) {
 	})
 }
 
-func TestPostCreateAlreadyExists(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
@@ -44,11 +38,8 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 	})
 }
 
-func TestPostRead(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostRead(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
@@ -61,11 +52,8 @@ func TestPostRead(t *testing.T) {
 	})
 }
 
-func TestPostReadByURL(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostReadByURL(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
@@ -78,11 +66,8 @@ func TestPostReadByURL(t *testing.T) {
 	})
 }
 
-func TestPostList(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostList(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		test.CreateMockPost(t, store)
@@ -102,11 +87,8 @@ func TestPostList(t *testing.T) {
 	})
 }
 
-func TestPostListByBlog(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostListByBlog(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := test.CreateMockBlog(t, store)
@@ -139,11 +121,8 @@ func TestPostListByBlog(t *testing.T) {
 	})
 }
 
-func TestPostUpdate(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostUpdate(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)
@@ -163,11 +142,8 @@ func TestPostUpdate(t *testing.T) {
 	})
 }
 
-func TestPostDelete(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewAdminStorage(t)
-	defer closer()
+func TestPostDelete(t *testing.T, store storage.Storage) {
+	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := test.CreateMockPost(t, store)

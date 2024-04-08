@@ -1,0 +1,66 @@
+package mock
+
+import (
+	"github.com/google/uuid"
+
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+)
+
+// ensure TagStorage interface is satisfied
+var _ storage.TagStorage = (*TagStorage)(nil)
+
+type TagStorage struct {
+	data map[uuid.UUID]*admin.Tag
+}
+
+func NewTagStorage() *TagStorage {
+	s := TagStorage{
+		data: make(map[uuid.UUID]*admin.Tag),
+	}
+	return &s
+}
+
+func (s *TagStorage) Create(tag *admin.Tag) error {
+	_, ok := s.data[tag.ID()]
+	if ok {
+		return storage.ErrConflict
+	}
+
+	s.data[tag.ID()] = tag
+	return nil
+}
+
+func (s *TagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
+	tag, ok := s.data[id]
+	if !ok {
+		return nil, storage.ErrNotFound
+	}
+
+	return tag, nil
+}
+
+func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
+	var tags []*admin.Tag
+	for _, tag := range s.data {
+		tags = append(tags, tag)
+	}
+
+	start := offset
+	end := offset + limit
+	if start >= len(tags) || end >= len(tags) {
+		return nil, nil
+	}
+
+	return tags[start:end], nil
+}
+
+func (s *TagStorage) Delete(tag *admin.Tag) error {
+	_, ok := s.data[tag.ID()]
+	if !ok {
+		return storage.ErrNotFound
+	}
+
+	delete(s.data, tag.ID())
+	return nil
+}

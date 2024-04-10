@@ -1,4 +1,4 @@
-package test
+package testutil
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 )
+
+// TODO: stays in testutil
 
 func AssertEqual(t *testing.T, got, want any) {
 	t.Helper()

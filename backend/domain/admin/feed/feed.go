@@ -51,6 +51,8 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 			link = "https://" + link
 		}
 
+		// TODO: Check for timezone, convert / default to UTC
+
 		// check for a publish date, else default to now
 		publishedAt := time.Now()
 		if item.PublishedParsed != nil {

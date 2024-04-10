@@ -1,4 +1,4 @@
-package test
+package testutil
 
 import (
 	"testing"
@@ -7,6 +7,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 )
+
+// TODO: do we even need these?
 
 type CloserFunc func()
 

@@ -11,7 +11,9 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/test"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
@@ -27,13 +29,13 @@ type jsonPost struct {
 func TestHandlePostRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		post := test.CreateMockPost(t, store)
+		post := todo.CreateMockPost(t, store)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
@@ -44,9 +46,9 @@ func TestHandlePostRead(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		testutil.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -59,16 +61,16 @@ func TestHandlePostRead(t *testing.T) {
 			t.Fatalf("response missing key: %v", "post")
 		}
 
-		test.AssertEqual(t, got.ID, post.ID())
+		testutil.AssertEqual(t, got.ID, post.ID())
 
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }
 
 func TestHandlePostReadNotFound(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -82,22 +84,22 @@ func TestHandlePostReadNotFound(t *testing.T) {
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		test.AssertEqual(t, rr.StatusCode, 404)
+		testutil.AssertEqual(t, rr.StatusCode, 404)
 
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }
 
 func TestHandlePostList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		test.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
@@ -107,9 +109,9 @@ func TestHandlePostList(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		testutil.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -126,25 +128,25 @@ func TestHandlePostList(t *testing.T) {
 			t.Fatalf("expected at least one blog")
 		}
 
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }
 
 func TestHandlePostListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
 		// create 5 posts to test with
-		test.CreateMockPost(t, store)
-		test.CreateMockPost(t, store)
-		test.CreateMockPost(t, store)
-		test.CreateMockPost(t, store)
-		test.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
+		todo.CreateMockPost(t, store)
 
 		tests := []struct {
 			limit int
@@ -166,9 +168,9 @@ func TestHandlePostListPagination(t *testing.T) {
 
 			rr := w.Result()
 			body, err := io.ReadAll(rr.Body)
-			test.AssertNilError(t, err)
+			testutil.AssertNilError(t, err)
 
-			test.AssertEqual(t, rr.StatusCode, 200)
+			testutil.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonPost
 			err = json.Unmarshal(body, &resp)
@@ -181,9 +183,9 @@ func TestHandlePostListPagination(t *testing.T) {
 				t.Fatalf("response missing key: %v", "posts")
 			}
 
-			test.AssertEqual(t, len(got), tt.want)
+			testutil.AssertEqual(t, len(got), tt.want)
 		}
 
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }

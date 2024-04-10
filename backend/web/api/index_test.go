@@ -5,14 +5,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 func TestHandleIndex(t *testing.T) {
 	t.Parallel()
 
-	storage, closer := test.NewAdminStorage(t)
+	storage, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(storage)
@@ -25,7 +25,7 @@ func TestHandleIndex(t *testing.T) {
 
 	rr := w.Result()
 	_, err := io.ReadAll(rr.Body)
-	test.AssertNilError(t, err)
+	testutil.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	testutil.AssertEqual(t, rr.StatusCode, 200)
 }

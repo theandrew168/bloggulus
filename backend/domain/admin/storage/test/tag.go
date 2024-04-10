@@ -3,19 +3,21 @@ package test
 import (
 	"testing"
 
+	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
 func TestTagCreate(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := test.NewMockTag()
+		tag := mock.NewMockTag()
 		err := store.Tag().Create(tag)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		return test.ErrRollback
+		return ErrRollback
 	})
 }
 
@@ -23,13 +25,13 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := test.CreateMockTag(t, store)
+		tag := todo.CreateMockTag(t, store)
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
-		test.AssertErrorIs(t, err, storage.ErrConflict)
+		testutil.AssertErrorIs(t, err, storage.ErrConflict)
 
-		return test.ErrRollback
+		return ErrRollback
 	})
 }
 
@@ -37,13 +39,13 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := test.CreateMockTag(t, store)
+		tag := todo.CreateMockTag(t, store)
 		got, err := store.Tag().Read(tag.ID())
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.ID(), tag.ID())
+		testutil.AssertEqual(t, got.ID(), tag.ID())
 
-		return test.ErrRollback
+		return ErrRollback
 	})
 }
 
@@ -51,20 +53,20 @@ func TestTagList(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
 
 		limit := 3
 		offset := 0
 		tags, err := store.Tag().List(limit, offset)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		test.AssertEqual(t, len(tags), limit)
+		testutil.AssertEqual(t, len(tags), limit)
 
-		return test.ErrRollback
+		return ErrRollback
 	})
 }
 
@@ -72,14 +74,14 @@ func TestTagDelete(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := test.CreateMockTag(t, store)
+		tag := todo.CreateMockTag(t, store)
 
 		err := store.Tag().Delete(tag)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
 		_, err = store.Tag().Read(tag.ID())
-		test.AssertErrorIs(t, err, storage.ErrNotFound)
+		testutil.AssertErrorIs(t, err, storage.ErrNotFound)
 
-		return test.ErrRollback
+		return ErrRollback
 	})
 }

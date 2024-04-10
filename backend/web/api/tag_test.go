@@ -10,7 +10,9 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/test"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
@@ -22,13 +24,13 @@ type jsonTag struct {
 func TestHandleTagList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		test.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
@@ -38,9 +40,9 @@ func TestHandleTagList(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+		testutil.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		testutil.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonTag
 		err = json.Unmarshal(body, &resp)
@@ -57,25 +59,25 @@ func TestHandleTagList(t *testing.T) {
 			t.Fatalf("expected at least one tag")
 		}
 
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }
 
 func TestHandleTagListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := testutil.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
 		// create 5 tags to test with
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
-		test.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
+		todo.CreateMockTag(t, store)
 
 		tests := []struct {
 			limit int
@@ -97,9 +99,9 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			rr := w.Result()
 			body, err := io.ReadAll(rr.Body)
-			test.AssertNilError(t, err)
+			testutil.AssertNilError(t, err)
 
-			test.AssertEqual(t, rr.StatusCode, 200)
+			testutil.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonTag
 			err = json.Unmarshal(body, &resp)
@@ -112,8 +114,8 @@ func TestHandleTagListPagination(t *testing.T) {
 				t.Fatalf("response missing key: %v", "tags")
 			}
 
-			test.AssertEqual(t, len(got), tt.want)
+			testutil.AssertEqual(t, len(got), tt.want)
 		}
-		return test.ErrRollback
+		return storageTest.ErrRollback
 	})
 }

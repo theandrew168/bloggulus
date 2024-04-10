@@ -12,7 +12,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
@@ -28,7 +28,7 @@ type jsonPost struct {
 func TestHandlePostRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -45,9 +45,9 @@ func TestHandlePostRead(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		testutil.AssertNilError(t, err)
+		test.AssertNilError(t, err)
 
-		testutil.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -60,7 +60,7 @@ func TestHandlePostRead(t *testing.T) {
 			t.Fatalf("response missing key: %v", "post")
 		}
 
-		testutil.AssertEqual(t, got.ID, post.ID())
+		test.AssertEqual(t, got.ID, post.ID())
 
 		return storage.ErrRollback
 	})
@@ -69,7 +69,7 @@ func TestHandlePostRead(t *testing.T) {
 func TestHandlePostReadNotFound(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -83,7 +83,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		testutil.AssertEqual(t, rr.StatusCode, 404)
+		test.AssertEqual(t, rr.StatusCode, 404)
 
 		return storage.ErrRollback
 	})
@@ -92,7 +92,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 func TestHandlePostList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -108,9 +108,9 @@ func TestHandlePostList(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		testutil.AssertNilError(t, err)
+		test.AssertNilError(t, err)
 
-		testutil.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonPost
 		err = json.Unmarshal(body, &resp)
@@ -134,7 +134,7 @@ func TestHandlePostList(t *testing.T) {
 func TestHandlePostListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -167,9 +167,9 @@ func TestHandlePostListPagination(t *testing.T) {
 
 			rr := w.Result()
 			body, err := io.ReadAll(rr.Body)
-			testutil.AssertNilError(t, err)
+			test.AssertNilError(t, err)
 
-			testutil.AssertEqual(t, rr.StatusCode, 200)
+			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonPost
 			err = json.Unmarshal(body, &resp)
@@ -182,7 +182,7 @@ func TestHandlePostListPagination(t *testing.T) {
 				t.Fatalf("response missing key: %v", "posts")
 			}
 
-			testutil.AssertEqual(t, len(got), tt.want)
+			test.AssertEqual(t, len(got), tt.want)
 		}
 
 		return storage.ErrRollback

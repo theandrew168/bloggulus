@@ -6,14 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 func TestBadRequest(t *testing.T) {
 	t.Parallel()
 
-	storage, closer := testutil.NewAdminStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(storage)
@@ -45,19 +45,19 @@ func TestBadRequest(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		testutil.AssertNilError(t, err)
+		test.AssertNilError(t, err)
 
-		testutil.AssertEqual(t, rr.StatusCode, 400)
+		test.AssertEqual(t, rr.StatusCode, 400)
 
 		json := string(body)
-		testutil.AssertStringContains(t, strings.ToLower(json), tt.want)
+		test.AssertStringContains(t, strings.ToLower(json), tt.want)
 	}
 }
 
 func TestNotFound(t *testing.T) {
 	t.Parallel()
 
-	storage, closer := testutil.NewAdminStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(storage)
@@ -70,18 +70,18 @@ func TestNotFound(t *testing.T) {
 
 	rr := w.Result()
 	body, err := io.ReadAll(rr.Body)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
-	testutil.AssertEqual(t, rr.StatusCode, 404)
+	test.AssertEqual(t, rr.StatusCode, 404)
 
 	json := string(body)
-	testutil.AssertStringContains(t, strings.ToLower(json), "not found")
+	test.AssertStringContains(t, strings.ToLower(json), "not found")
 }
 
 func TestMethodNotAllowed(t *testing.T) {
 	t.Parallel()
 
-	storage, closer := testutil.NewAdminStorage(t)
+	storage, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	app := api.NewApplication(storage)
@@ -94,10 +94,10 @@ func TestMethodNotAllowed(t *testing.T) {
 
 	rr := w.Result()
 	body, err := io.ReadAll(rr.Body)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
-	testutil.AssertEqual(t, rr.StatusCode, 405)
+	test.AssertEqual(t, rr.StatusCode, 405)
 
 	json := string(body)
-	testutil.AssertStringContains(t, strings.ToLower(json), "method not allowed")
+	test.AssertStringContains(t, strings.ToLower(json), "method not allowed")
 }

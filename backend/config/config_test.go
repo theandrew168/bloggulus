@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 const (
@@ -22,10 +22,10 @@ func TestRead(t *testing.T) {
 	`, databaseURI, port)
 
 	cfg, err := config.Read(data)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
-	testutil.AssertEqual(t, cfg.DatabaseURI, databaseURI)
-	testutil.AssertEqual(t, cfg.Port, port)
+	test.AssertEqual(t, cfg.DatabaseURI, databaseURI)
+	test.AssertEqual(t, cfg.Port, port)
 }
 
 func TestOptional(t *testing.T) {
@@ -36,10 +36,10 @@ func TestOptional(t *testing.T) {
 	`, databaseURI)
 
 	cfg, err := config.Read(data)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
-	testutil.AssertEqual(t, cfg.DatabaseURI, databaseURI)
-	testutil.AssertEqual(t, cfg.Port, config.DefaultPort)
+	test.AssertEqual(t, cfg.DatabaseURI, databaseURI)
+	test.AssertEqual(t, cfg.Port, config.DefaultPort)
 }
 
 func TestRequired(t *testing.T) {
@@ -50,8 +50,8 @@ func TestRequired(t *testing.T) {
 	`, port)
 
 	_, err := config.Read(data)
-	testutil.AssertErrorContains(t, err, "missing")
-	testutil.AssertErrorContains(t, err, "database_uri")
+	test.AssertErrorContains(t, err, "missing")
+	test.AssertErrorContains(t, err, "database_uri")
 }
 
 func TestExtra(t *testing.T) {
@@ -63,6 +63,6 @@ func TestExtra(t *testing.T) {
 	`, databaseURI)
 
 	_, err := config.Read(data)
-	testutil.AssertErrorContains(t, err, "extra")
-	testutil.AssertErrorContains(t, err, "foo")
+	test.AssertErrorContains(t, err, "extra")
+	test.AssertErrorContains(t, err, "foo")
 }

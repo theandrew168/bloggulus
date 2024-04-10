@@ -11,7 +11,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
@@ -23,7 +23,7 @@ type jsonTag struct {
 func TestHandleTagList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -39,9 +39,9 @@ func TestHandleTagList(t *testing.T) {
 
 		rr := w.Result()
 		body, err := io.ReadAll(rr.Body)
-		testutil.AssertNilError(t, err)
+		test.AssertNilError(t, err)
 
-		testutil.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonTag
 		err = json.Unmarshal(body, &resp)
@@ -65,7 +65,7 @@ func TestHandleTagList(t *testing.T) {
 func TestHandleTagListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := testutil.NewAdminStorage(t)
+	store, closer := test.NewAdminStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
@@ -98,9 +98,9 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			rr := w.Result()
 			body, err := io.ReadAll(rr.Body)
-			testutil.AssertNilError(t, err)
+			test.AssertNilError(t, err)
 
-			testutil.AssertEqual(t, rr.StatusCode, 200)
+			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonTag
 			err = json.Unmarshal(body, &resp)
@@ -113,7 +113,7 @@ func TestHandleTagListPagination(t *testing.T) {
 				t.Fatalf("response missing key: %v", "tags")
 			}
 
-			testutil.AssertEqual(t, len(got), tt.want)
+			test.AssertEqual(t, len(got), tt.want)
 		}
 		return storage.ErrRollback
 	})

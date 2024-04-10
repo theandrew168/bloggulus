@@ -7,7 +7,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
 	fetchMock "github.com/theandrew168/bloggulus/backend/domain/admin/fetch/mock"
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 // Convert a feed.Blog into an XML (Atom) document.
@@ -85,11 +85,11 @@ func TestParse(t *testing.T) {
 	atomFeed := generateAtomFeed(t, feedBlog)
 
 	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
-	testutil.AssertNilError(t, err)
-	testutil.AssertEqual(t, parsedBlog.Title, feedBlog.Title)
-	testutil.AssertEqual(t, parsedBlog.SiteURL, feedBlog.SiteURL)
-	testutil.AssertEqual(t, parsedBlog.FeedURL, feedBlog.FeedURL)
-	testutil.AssertEqual(t, len(parsedBlog.Posts), len(feedBlog.Posts))
+	test.AssertNilError(t, err)
+	test.AssertEqual(t, parsedBlog.Title, feedBlog.Title)
+	test.AssertEqual(t, parsedBlog.SiteURL, feedBlog.SiteURL)
+	test.AssertEqual(t, parsedBlog.FeedURL, feedBlog.FeedURL)
+	test.AssertEqual(t, len(parsedBlog.Posts), len(feedBlog.Posts))
 
 	postsByURL := map[string]feed.Post{
 		feedPostFoo.URL: feedPostFoo,
@@ -102,9 +102,9 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		testutil.AssertEqual(t, parsedPost.URL, post.URL)
-		testutil.AssertEqual(t, parsedPost.Title, post.Title)
-		testutil.AssertEqual(t, parsedPost.Contents, post.Contents)
+		test.AssertEqual(t, parsedPost.URL, post.URL)
+		test.AssertEqual(t, parsedPost.Title, post.Title)
+		test.AssertEqual(t, parsedPost.Contents, post.Contents)
 	}
 }
 
@@ -127,10 +127,10 @@ func TestParseMissingDomain(t *testing.T) {
 	atomFeed := generateAtomFeed(t, feedBlog)
 
 	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		testutil.AssertEqual(t, parsedPost.URL, feedBlog.SiteURL+feedPostFoo.URL)
+		test.AssertEqual(t, parsedPost.URL, feedBlog.SiteURL+feedPostFoo.URL)
 	}
 }
 
@@ -153,10 +153,10 @@ func TestParseMissingScheme(t *testing.T) {
 	atomFeed := generateAtomFeed(t, feedBlog)
 
 	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		testutil.AssertEqual(t, parsedPost.URL, "https://"+feedPostFoo.URL)
+		test.AssertEqual(t, parsedPost.URL, "https://"+feedPostFoo.URL)
 	}
 }
 
@@ -181,7 +181,7 @@ func TestHydrate(t *testing.T) {
 	}
 
 	for _, feedPost := range feedBlog.Posts {
-		testutil.AssertEqual(t, feedPost.Contents, "")
+		test.AssertEqual(t, feedPost.Contents, "")
 	}
 
 	pages := map[string]string{
@@ -191,7 +191,7 @@ func TestHydrate(t *testing.T) {
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
 	feedBlog, err := feed.Hydrate(feedBlog, pageFetcher)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	for _, feedPost := range feedBlog.Posts {
 		want, ok := pages[feedPost.URL]
@@ -200,6 +200,6 @@ func TestHydrate(t *testing.T) {
 			continue
 		}
 
-		testutil.AssertEqual(t, feedPost.Contents, want)
+		test.AssertEqual(t, feedPost.Contents, want)
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/testutil"
+	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 // mocks a blog and creates it in the database
@@ -18,7 +18,7 @@ func CreateMockBlog(t *testing.T, store storage.Storage) *admin.Blog {
 
 	// create an example blog
 	err := store.Blog().Create(blog)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	return blog
 }
@@ -32,14 +32,14 @@ func CreateMockPost(t *testing.T, store storage.Storage) *admin.Post {
 
 	// create an example blog
 	err := store.Blog().Create(blog)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	// generate some random post data
 	post := mock.NewPost(blog)
 
 	// create an example post
 	err = store.Post().Create(post)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	return post
 }
@@ -53,7 +53,7 @@ func CreateMockTag(t *testing.T, store storage.Storage) *admin.Tag {
 
 	// create an example blog
 	err := store.Tag().Create(tag)
-	testutil.AssertNilError(t, err)
+	test.AssertNilError(t, err)
 
 	return tag
 }

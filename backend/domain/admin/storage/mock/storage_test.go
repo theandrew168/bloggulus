@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/suite"
 )
 
 func TestMockStorage(t *testing.T) {
 	store := mock.NewStorage()
-	test.RunStorageTests(t, store)
+	suite.RunStorageTests(t, store)
 }

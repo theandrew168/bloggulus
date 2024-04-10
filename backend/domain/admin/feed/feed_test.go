@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
+	fetchMock "github.com/theandrew168/bloggulus/backend/domain/admin/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
@@ -188,7 +188,7 @@ func TestHydrate(t *testing.T) {
 		feedPostFoo.URL: "content about foo",
 		feedPostBar.URL: "content about bar",
 	}
-	pageFetcher := fetch.NewMockPageFetcher(pages)
+	pageFetcher := fetchMock.NewPageFetcher(pages)
 
 	feedBlog, err := feed.Hydrate(feedBlog, pageFetcher)
 	testutil.AssertNilError(t, err)

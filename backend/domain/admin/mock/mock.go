@@ -5,7 +5,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
-func NewMockBlog() *admin.Blog {
+func NewBlog() *admin.Blog {
 	blog := admin.NewBlog(
 		testutil.RandomURL(32),
 		testutil.RandomURL(32),
@@ -17,7 +17,7 @@ func NewMockBlog() *admin.Blog {
 	return blog
 }
 
-func NewMockPost(blog *admin.Blog) *admin.Post {
+func NewPost(blog *admin.Blog) *admin.Post {
 	post := admin.NewPost(
 		blog,
 		testutil.RandomURL(32),
@@ -28,7 +28,7 @@ func NewMockPost(blog *admin.Blog) *admin.Post {
 	return post
 }
 
-func NewMockTag() *admin.Tag {
+func NewTag() *admin.Tag {
 	tag := admin.NewTag(
 		testutil.RandomString(32),
 	)

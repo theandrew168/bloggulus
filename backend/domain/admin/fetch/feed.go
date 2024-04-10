@@ -19,7 +19,7 @@ type MockFeedFetcher struct {
 	feeds map[string]string
 }
 
-func NewMMockFeedFetcher(feeds map[string]string) *MockFeedFetcher {
+func NewMockFeedFetcher(feeds map[string]string) *MockFeedFetcher {
 	f := MockFeedFetcher{feeds: feeds}
 	return &f
 }

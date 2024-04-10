@@ -13,7 +13,7 @@ func TestTagCreate(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := mock.NewMockTag()
+		tag := mock.NewTag()
 		err := store.Tag().Create(tag)
 		testutil.AssertNilError(t, err)
 

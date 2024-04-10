@@ -14,7 +14,7 @@ func CreateMockBlog(t *testing.T, store storage.Storage) *admin.Blog {
 	t.Helper()
 
 	// generate some random blog data
-	blog := mock.NewMockBlog()
+	blog := mock.NewBlog()
 
 	// create an example blog
 	err := store.Blog().Create(blog)
@@ -28,14 +28,14 @@ func CreateMockPost(t *testing.T, store storage.Storage) *admin.Post {
 	t.Helper()
 
 	// generate some random blog data
-	blog := mock.NewMockBlog()
+	blog := mock.NewBlog()
 
 	// create an example blog
 	err := store.Blog().Create(blog)
 	testutil.AssertNilError(t, err)
 
 	// generate some random post data
-	post := mock.NewMockPost(blog)
+	post := mock.NewPost(blog)
 
 	// create an example post
 	err = store.Post().Create(post)
@@ -49,7 +49,7 @@ func CreateMockTag(t *testing.T, store storage.Storage) *admin.Tag {
 	t.Helper()
 
 	// generate some random tag data
-	tag := mock.NewMockTag()
+	tag := mock.NewTag()
 
 	// create an example blog
 	err := store.Tag().Create(tag)

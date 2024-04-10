@@ -13,7 +13,7 @@ func TestBlogCreate(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := mock.NewMockBlog()
+		blog := mock.NewBlog()
 		err := store.Blog().Create(blog)
 		testutil.AssertNilError(t, err)
 

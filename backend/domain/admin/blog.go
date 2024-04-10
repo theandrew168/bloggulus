@@ -20,7 +20,7 @@ type Blog struct {
 }
 
 func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.Time) *Blog {
-	now := time.Now()
+	now := time.Now().UTC()
 	blog := Blog{
 		id:           uuid.New(),
 		feedURL:      feedURL,

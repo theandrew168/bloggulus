@@ -208,7 +208,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 }
 
 func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	stmt := `
 		UPDATE blog
 		SET

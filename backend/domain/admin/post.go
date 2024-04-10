@@ -19,7 +19,7 @@ type Post struct {
 }
 
 func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) *Post {
-	now := time.Now()
+	now := time.Now().UTC()
 	post := Post{
 		id:          uuid.New(),
 		blogID:      blog.ID(),

@@ -243,7 +243,7 @@ func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([
 }
 
 func (s *PostgresPostStorage) Update(post *admin.Post) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	stmt := `
 		UPDATE post
 		SET

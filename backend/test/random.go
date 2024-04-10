@@ -21,5 +21,5 @@ func RandomURL(n int) string {
 }
 
 func RandomTime() time.Time {
-	return time.Now()
+	return time.Now().UTC()
 }

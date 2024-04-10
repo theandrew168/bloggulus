@@ -30,7 +30,7 @@ func NewSyncService(store storage.Storage, feedFetcher fetch.FeedFetcher, pageFe
 // compare its syncedAt time to the current time. If the difference is an hour
 // or larger, sync the blog. Otherwise, skip syncing it.
 func (s *SyncService) SyncAllBlogs() error {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	blogs, err := s.store.Blog().List(1000, 0)
 	if err != nil {
@@ -81,13 +81,14 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		return err
 	}
 
+	now := time.Now().UTC()
 	blog := admin.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
 		feedBlog.Title,
 		resp.ETag,
 		resp.LastModified,
-		time.Now().Add(-1*time.Hour),
+		now.Add(-1*time.Hour),
 	)
 	err = s.store.Blog().Create(blog)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 )
 
 func TestBlogCreate(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := mock.NewBlog()
@@ -22,7 +22,7 @@ func TestBlogCreate(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogCreateAlreadyExists(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)
@@ -36,7 +36,7 @@ func TestBlogCreateAlreadyExists(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogRead(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)
@@ -50,7 +50,7 @@ func TestBlogRead(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogReadByFeedURL(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)
@@ -64,7 +64,7 @@ func TestBlogReadByFeedURL(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogList(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		storageTest.CreateMockBlog(t, store)
@@ -85,7 +85,7 @@ func TestBlogList(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogUpdate(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)
@@ -110,7 +110,7 @@ func TestBlogUpdate(t *testing.T, store storage.Storage) {
 }
 
 func TestBlogDelete(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)

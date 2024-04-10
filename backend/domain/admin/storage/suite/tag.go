@@ -10,7 +10,7 @@ import (
 )
 
 func TestTagCreate(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := mock.NewTag()
@@ -22,7 +22,7 @@ func TestTagCreate(t *testing.T, store storage.Storage) {
 }
 
 func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := storageTest.CreateMockTag(t, store)
@@ -36,7 +36,7 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 }
 
 func TestTagRead(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := storageTest.CreateMockTag(t, store)
@@ -50,7 +50,7 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 }
 
 func TestTagList(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		storageTest.CreateMockTag(t, store)
@@ -71,7 +71,7 @@ func TestTagList(t *testing.T, store storage.Storage) {
 }
 
 func TestTagDelete(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := storageTest.CreateMockTag(t, store)

@@ -11,7 +11,7 @@ import (
 )
 
 func TestPostCreate(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := mock.NewBlog()
@@ -27,7 +27,7 @@ func TestPostCreate(t *testing.T, store storage.Storage) {
 }
 
 func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)
@@ -41,7 +41,7 @@ func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
 }
 
 func TestPostRead(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)
@@ -55,7 +55,7 @@ func TestPostRead(t *testing.T, store storage.Storage) {
 }
 
 func TestPostReadByURL(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)
@@ -69,7 +69,7 @@ func TestPostReadByURL(t *testing.T, store storage.Storage) {
 }
 
 func TestPostList(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		storageTest.CreateMockPost(t, store)
@@ -90,7 +90,7 @@ func TestPostList(t *testing.T, store storage.Storage) {
 }
 
 func TestPostListByBlog(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		blog := storageTest.CreateMockBlog(t, store)
@@ -124,7 +124,7 @@ func TestPostListByBlog(t *testing.T, store storage.Storage) {
 }
 
 func TestPostUpdate(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)
@@ -145,7 +145,7 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 }
 
 func TestPostDelete(t *testing.T, store storage.Storage) {
-	// t.Parallel()
+	t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)

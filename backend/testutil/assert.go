@@ -8,8 +8,6 @@ import (
 	"testing"
 )
 
-// TODO: stays in testutil
-
 func AssertEqual(t *testing.T, got, want any) {
 	t.Helper()
 

@@ -17,7 +17,7 @@ func TestTagCreate(t *testing.T, store storage.Storage) {
 		err := store.Tag().Create(tag)
 		testutil.AssertNilError(t, err)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -31,7 +31,7 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 		err := store.Tag().Create(tag)
 		testutil.AssertErrorIs(t, err, storage.ErrConflict)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -45,7 +45,7 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.ID(), tag.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -66,7 +66,7 @@ func TestTagList(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, len(tags), limit)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -82,6 +82,6 @@ func TestTagDelete(t *testing.T, store storage.Storage) {
 		_, err = store.Tag().Read(tag.ID())
 		testutil.AssertErrorIs(t, err, storage.ErrNotFound)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }

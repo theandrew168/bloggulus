@@ -22,7 +22,7 @@ func TestPostCreate(t *testing.T, store storage.Storage) {
 		err = store.Post().Create(post)
 		testutil.AssertNilError(t, err)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -36,7 +36,7 @@ func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
 		err := store.Post().Create(post)
 		testutil.AssertErrorIs(t, err, storage.ErrConflict)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -50,7 +50,7 @@ func TestPostRead(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.ID(), post.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -64,7 +64,7 @@ func TestPostReadByURL(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.ID(), post.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -85,7 +85,7 @@ func TestPostList(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, len(posts), limit)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -119,7 +119,7 @@ func TestPostListByBlog(t *testing.T, store storage.Storage) {
 		// most recent post should be the one just added
 		testutil.AssertEqual(t, posts[0].ID(), post.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -140,7 +140,7 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.Contents(), contents)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -156,6 +156,6 @@ func TestPostDelete(t *testing.T, store storage.Storage) {
 		_, err = store.Post().Read(post.ID())
 		testutil.AssertErrorIs(t, err, storage.ErrNotFound)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }

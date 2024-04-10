@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
@@ -60,7 +59,7 @@ func TestHandleBlogRead(t *testing.T) {
 
 		testutil.AssertEqual(t, got.ID, blog.ID())
 
-		return storageTest.ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -121,7 +120,7 @@ func TestHandleBlogList(t *testing.T) {
 			t.Fatalf("expected at least one blog")
 		}
 
-		return storageTest.ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -176,6 +175,6 @@ func TestHandleBlogListPagination(t *testing.T) {
 
 			testutil.AssertEqual(t, len(got), tt.want)
 		}
-		return storageTest.ErrRollback
+		return storage.ErrRollback
 	})
 }

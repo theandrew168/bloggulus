@@ -17,7 +17,7 @@ func TestBlogCreate(t *testing.T, store storage.Storage) {
 		err := store.Blog().Create(blog)
 		testutil.AssertNilError(t, err)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -31,7 +31,7 @@ func TestBlogCreateAlreadyExists(t *testing.T, store storage.Storage) {
 		err := store.Blog().Create(blog)
 		testutil.AssertErrorIs(t, err, storage.ErrConflict)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -45,7 +45,7 @@ func TestBlogRead(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.ID(), blog.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -59,7 +59,7 @@ func TestBlogReadByFeedURL(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, got.ID(), blog.ID())
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -80,7 +80,7 @@ func TestBlogList(t *testing.T, store storage.Storage) {
 
 		testutil.AssertEqual(t, len(blogs), limit)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -105,7 +105,7 @@ func TestBlogUpdate(t *testing.T, store storage.Storage) {
 		testutil.AssertEqual(t, got.ETag(), etag)
 		testutil.AssertEqual(t, got.LastModified(), lastModified)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -121,6 +121,6 @@ func TestBlogDelete(t *testing.T, store storage.Storage) {
 		_, err = store.Blog().Read(blog.ID())
 		testutil.AssertErrorIs(t, err, storage.ErrNotFound)
 
-		return ErrRollback
+		return storage.ErrRollback
 	})
 }

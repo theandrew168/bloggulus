@@ -9,4 +9,7 @@ import "errors"
 var (
 	ErrNotFound = errors.New("storage: not found")
 	ErrConflict = errors.New("storage: conflict")
+
+	// sentinel error used to rollback transactions
+	ErrRollback = errors.New("storage: rollback")
 )

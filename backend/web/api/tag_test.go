@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
@@ -59,7 +58,7 @@ func TestHandleTagList(t *testing.T) {
 			t.Fatalf("expected at least one tag")
 		}
 
-		return storageTest.ErrRollback
+		return storage.ErrRollback
 	})
 }
 
@@ -116,6 +115,6 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			testutil.AssertEqual(t, len(got), tt.want)
 		}
-		return storageTest.ErrRollback
+		return storage.ErrRollback
 	})
 }

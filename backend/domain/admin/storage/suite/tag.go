@@ -5,7 +5,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
@@ -25,7 +25,7 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := todo.CreateMockTag(t, store)
+		tag := storageTest.CreateMockTag(t, store)
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
@@ -39,7 +39,7 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := todo.CreateMockTag(t, store)
+		tag := storageTest.CreateMockTag(t, store)
 		got, err := store.Tag().Read(tag.ID())
 		testutil.AssertNilError(t, err)
 
@@ -53,11 +53,11 @@ func TestTagList(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
 
 		limit := 3
 		offset := 0
@@ -74,7 +74,7 @@ func TestTagDelete(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := todo.CreateMockTag(t, store)
+		tag := storageTest.CreateMockTag(t, store)
 
 		err := store.Tag().Delete(tag)
 		testutil.AssertNilError(t, err)

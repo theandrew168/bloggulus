@@ -5,7 +5,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
@@ -25,7 +25,7 @@ func TestBlogCreateAlreadyExists(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 
 		// attempt to create the same blog again
 		err := store.Blog().Create(blog)
@@ -39,7 +39,7 @@ func TestBlogRead(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 		got, err := store.Blog().Read(blog.ID())
 		testutil.AssertNilError(t, err)
 
@@ -53,7 +53,7 @@ func TestBlogReadByFeedURL(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 		got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
 		testutil.AssertNilError(t, err)
 
@@ -67,11 +67,11 @@ func TestBlogList(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		todo.CreateMockBlog(t, store)
-		todo.CreateMockBlog(t, store)
-		todo.CreateMockBlog(t, store)
-		todo.CreateMockBlog(t, store)
-		todo.CreateMockBlog(t, store)
+		storageTest.CreateMockBlog(t, store)
+		storageTest.CreateMockBlog(t, store)
+		storageTest.CreateMockBlog(t, store)
+		storageTest.CreateMockBlog(t, store)
+		storageTest.CreateMockBlog(t, store)
 
 		limit := 3
 		offset := 0
@@ -88,7 +88,7 @@ func TestBlogUpdate(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 
 		etag := "foo"
 		blog.SetETag(etag)
@@ -113,7 +113,7 @@ func TestBlogDelete(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 
 		err := store.Blog().Delete(blog)
 		testutil.AssertNilError(t, err)

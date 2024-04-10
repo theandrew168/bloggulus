@@ -6,7 +6,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 )
 
@@ -30,7 +30,7 @@ func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := todo.CreateMockPost(t, store)
+		post := storageTest.CreateMockPost(t, store)
 
 		// attempt to create the same post again
 		err := store.Post().Create(post)
@@ -44,7 +44,7 @@ func TestPostRead(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := todo.CreateMockPost(t, store)
+		post := storageTest.CreateMockPost(t, store)
 		got, err := store.Post().Read(post.ID())
 		testutil.AssertNilError(t, err)
 
@@ -58,7 +58,7 @@ func TestPostReadByURL(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := todo.CreateMockPost(t, store)
+		post := storageTest.CreateMockPost(t, store)
 		got, err := store.Post().ReadByURL(post.URL())
 		testutil.AssertNilError(t, err)
 
@@ -72,11 +72,11 @@ func TestPostList(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		todo.CreateMockPost(t, store)
-		todo.CreateMockPost(t, store)
-		todo.CreateMockPost(t, store)
-		todo.CreateMockPost(t, store)
-		todo.CreateMockPost(t, store)
+		storageTest.CreateMockPost(t, store)
+		storageTest.CreateMockPost(t, store)
+		storageTest.CreateMockPost(t, store)
+		storageTest.CreateMockPost(t, store)
+		storageTest.CreateMockPost(t, store)
 
 		limit := 3
 		offset := 0
@@ -93,7 +93,7 @@ func TestPostListByBlog(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := todo.CreateMockBlog(t, store)
+		blog := storageTest.CreateMockBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
 		var post *admin.Post
@@ -127,7 +127,7 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := todo.CreateMockPost(t, store)
+		post := storageTest.CreateMockPost(t, store)
 
 		contents := "foobar"
 		post.SetContents(contents)
@@ -148,7 +148,7 @@ func TestPostDelete(t *testing.T, store storage.Storage) {
 	// t.Parallel()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := todo.CreateMockPost(t, store)
+		post := storageTest.CreateMockPost(t, store)
 
 		err := store.Post().Delete(post)
 		testutil.AssertNilError(t, err)

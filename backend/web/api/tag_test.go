@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage/todo"
+	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/testutil"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -29,7 +29,7 @@ func TestHandleTagList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		todo.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
@@ -72,11 +72,11 @@ func TestHandleTagListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 tags to test with
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
-		todo.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
+		storageTest.CreateMockTag(t, store)
 
 		tests := []struct {
 			limit int

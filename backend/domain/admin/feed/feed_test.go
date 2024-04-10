@@ -160,6 +160,35 @@ func TestParseMissingScheme(t *testing.T) {
 	}
 }
 
+func TestParsePublishedAtUTC(t *testing.T) {
+	t.Parallel()
+
+	publishedAt, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
+	test.AssertNilError(t, err)
+
+	feedPostFoo := feed.Post{
+		URL:         "example.com/foo",
+		Title:       "Foo",
+		Contents:    "content about foo",
+		PublishedAt: publishedAt,
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo},
+	}
+
+	atomFeed := generateAtomFeed(t, feedBlog)
+
+	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	test.AssertNilError(t, err)
+
+	for _, parsedPost := range parsedBlog.Posts {
+		test.AssertEqual(t, parsedPost.PublishedAt, publishedAt.UTC())
+	}
+}
+
 func TestHydrate(t *testing.T) {
 	t.Parallel()
 

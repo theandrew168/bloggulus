@@ -20,7 +20,7 @@ type dbPost struct {
 	BlogID      uuid.UUID `db:"blog_id"`
 	URL         string    `db:"url"`
 	Title       string    `db:"title"`
-	Contents    string    `db:"contents"`
+	Content     string    `db:"content"`
 	PublishedAt time.Time `db:"published_at"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
@@ -32,7 +32,7 @@ func marshalPost(post *admin.Post) (dbPost, error) {
 		BlogID:      post.BlogID(),
 		URL:         post.URL(),
 		Title:       post.Title(),
-		Contents:    post.Contents(),
+		Content:     post.Content(),
 		PublishedAt: post.PublishedAt(),
 		CreatedAt:   post.CreatedAt(),
 		UpdatedAt:   post.UpdatedAt(),
@@ -46,7 +46,7 @@ func (p dbPost) unmarshal() (*admin.Post, error) {
 		p.BlogID,
 		p.URL,
 		p.Title,
-		p.Contents,
+		p.Content,
 		p.PublishedAt,
 		p.CreatedAt,
 		p.UpdatedAt,
@@ -68,7 +68,7 @@ func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 func (s *PostgresPostStorage) Create(post *admin.Post) error {
 	stmt := `
 		INSERT INTO post
-			(id, blog_id, url, title, contents, published_at, created_at, updated_at)
+			(id, blog_id, url, title, content, published_at, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8)`
 
@@ -82,7 +82,7 @@ func (s *PostgresPostStorage) Create(post *admin.Post) error {
 		row.BlogID,
 		row.URL,
 		row.Title,
-		row.Contents,
+		row.Content,
 		row.PublishedAt,
 		row.CreatedAt,
 		row.UpdatedAt,
@@ -106,7 +106,7 @@ func (s *PostgresPostStorage) Read(id uuid.UUID) (*admin.Post, error) {
 			blog_id,
 			url,
 			title,
-			contents,
+			content,
 			published_at,
 			created_at,
 			updated_at
@@ -136,7 +136,7 @@ func (s *PostgresPostStorage) ReadByURL(url string) (*admin.Post, error) {
 			blog_id,
 			url,
 			title,
-			contents,
+			content,
 			published_at,
 			created_at,
 			updated_at
@@ -166,7 +166,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]*admin.Post, error) {
 			blog_id,
 			url,
 			title,
-			contents,
+			content,
 			published_at,
 			created_at,
 			updated_at
@@ -207,7 +207,7 @@ func (s *PostgresPostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([
 			blog_id,
 			url,
 			title,
-			contents,
+			content,
 			published_at,
 			created_at,
 			updated_at
@@ -249,7 +249,7 @@ func (s *PostgresPostStorage) Update(post *admin.Post) error {
 		SET
 			url = $1,
 			title = $2,
-			contents = $3,
+			content = $3,
 			published_at = $4,
 			updated_at = $5
 		WHERE id = $6
@@ -264,7 +264,7 @@ func (s *PostgresPostStorage) Update(post *admin.Post) error {
 	args := []any{
 		row.URL,
 		row.Title,
-		row.Contents,
+		row.Content,
 		row.PublishedAt,
 		now,
 		row.ID,

@@ -16,7 +16,7 @@ func TestNewBlog(t *testing.T) {
 	feedPost := feed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
 	feedBlog := feed.Blog{
@@ -57,7 +57,7 @@ func TestNewBlog(t *testing.T) {
 	post := posts[0]
 	test.AssertEqual(t, post.URL(), feedPost.URL)
 	test.AssertEqual(t, post.Title(), feedPost.Title)
-	test.AssertEqual(t, post.Contents(), feedPost.Contents)
+	test.AssertEqual(t, post.Content(), feedPost.Content)
 }
 
 func TestExistingBlog(t *testing.T) {
@@ -98,7 +98,7 @@ func TestExistingBlog(t *testing.T) {
 	feedPost := feed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
 	feedBlog.Posts = append(feedBlog.Posts, feedPost)
@@ -118,7 +118,7 @@ func TestExistingBlog(t *testing.T) {
 	post := posts[0]
 	test.AssertEqual(t, post.URL(), feedPost.URL)
 	test.AssertEqual(t, post.Title(), feedPost.Title)
-	test.AssertEqual(t, post.Contents(), feedPost.Contents)
+	test.AssertEqual(t, post.Content(), feedPost.Content)
 }
 
 func TestSkipEmptyFeed(t *testing.T) {

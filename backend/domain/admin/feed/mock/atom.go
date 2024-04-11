@@ -15,7 +15,7 @@ type xmlLink struct {
 type xmlPost struct {
 	URL         xmlLink   `xml:"link"`
 	Title       string    `xml:"title"`
-	Contents    string    `xml:"content"`
+	Content     string    `xml:"content"`
 	PublishedAt time.Time `xml:"published"`
 }
 
@@ -33,7 +33,7 @@ func GenerateAtomFeed(blog feed.Blog) (string, error) {
 		posts = append(posts, xmlPost{
 			URL:         xmlLink{HREF: post.URL},
 			Title:       post.Title,
-			Contents:    post.Contents,
+			Content:     post.Content,
 			PublishedAt: post.PublishedAt,
 		})
 	}

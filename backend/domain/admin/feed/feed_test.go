@@ -16,13 +16,13 @@ func TestParse(t *testing.T) {
 	feedPostFoo := feed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
 	feedPostBar := feed.Post{
 		URL:         "https://example.com/bar",
 		Title:       "Bar",
-		Contents:    "content about bar",
+		Content:     "content about bar",
 		PublishedAt: time.Now(),
 	}
 	feedBlog := feed.Blog{
@@ -55,7 +55,7 @@ func TestParse(t *testing.T) {
 
 		test.AssertEqual(t, parsedPost.URL, post.URL)
 		test.AssertEqual(t, parsedPost.Title, post.Title)
-		test.AssertEqual(t, parsedPost.Contents, post.Contents)
+		test.AssertEqual(t, parsedPost.Content, post.Content)
 	}
 }
 
@@ -65,7 +65,7 @@ func TestParseMissingDomain(t *testing.T) {
 	feedPostFoo := feed.Post{
 		URL:         "/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
 	feedBlog := feed.Blog{
@@ -92,7 +92,7 @@ func TestParseMissingScheme(t *testing.T) {
 	feedPostFoo := feed.Post{
 		URL:         "example.com/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
 	feedBlog := feed.Blog{
@@ -122,7 +122,7 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	feedPostFoo := feed.Post{
 		URL:         "example.com/foo",
 		Title:       "Foo",
-		Contents:    "content about foo",
+		Content:     "content about foo",
 		PublishedAt: publishedAt,
 	}
 	feedBlog := feed.Blog{
@@ -164,7 +164,7 @@ func TestHydrate(t *testing.T) {
 	}
 
 	for _, feedPost := range feedBlog.Posts {
-		test.AssertEqual(t, feedPost.Contents, "")
+		test.AssertEqual(t, feedPost.Content, "")
 	}
 
 	pages := map[string]string{
@@ -183,6 +183,6 @@ func TestHydrate(t *testing.T) {
 			continue
 		}
 
-		test.AssertEqual(t, feedPost.Contents, want)
+		test.AssertEqual(t, feedPost.Content, want)
 	}
 }

@@ -129,8 +129,8 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 	store.WithTransaction(func(store storage.Storage) error {
 		post := storageTest.CreateMockPost(t, store)
 
-		contents := "foobar"
-		post.SetContents(contents)
+		content := "foobar"
+		post.SetContent(content)
 
 		err := store.Post().Update(post)
 		test.AssertNilError(t, err)
@@ -138,7 +138,7 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 		got, err := store.Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.Contents(), contents)
+		test.AssertEqual(t, got.Content(), content)
 
 		return storage.ErrRollback
 	})

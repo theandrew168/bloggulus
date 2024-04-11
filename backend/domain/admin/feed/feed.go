@@ -24,7 +24,7 @@ type Blog struct {
 type Post struct {
 	URL         string
 	Title       string
-	Contents    string
+	Content     string
 	PublishedAt time.Time
 }
 
@@ -63,7 +63,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 		post := Post{
 			URL:         link,
 			Title:       item.Title,
-			Contents:    item.Content,
+			Content:     item.Content,
 			PublishedAt: publishedAt,
 		}
 		posts = append(posts, post)
@@ -81,14 +81,14 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 func Hydrate(blog Blog, pageFetcher fetch.PageFetcher) (Blog, error) {
 	var hydratedPosts []Post
 	for _, post := range blog.Posts {
-		if post.Contents == "" {
+		if post.Content == "" {
 			content, err := pageFetcher.FetchPage(post.URL)
 			if err != nil {
 				slog.Warn("failed to fetch page", "url", post.URL)
 				continue
 			}
 
-			post.Contents = content
+			post.Content = content
 		}
 		hydratedPosts = append(hydratedPosts, post)
 	}

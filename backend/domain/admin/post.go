@@ -11,7 +11,7 @@ type Post struct {
 	blogID      uuid.UUID
 	url         string
 	title       string
-	contents    string
+	content     string
 	publishedAt time.Time
 
 	createdAt time.Time
@@ -25,7 +25,7 @@ func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) *Pos
 		blogID:      blog.ID(),
 		url:         url,
 		title:       title,
-		contents:    content,
+		content:     content,
 		publishedAt: publishedAt,
 
 		createdAt: now,
@@ -40,7 +40,7 @@ func LoadPost(id, blogID uuid.UUID, url, title, content string, publishedAt, cre
 		blogID:      blogID,
 		url:         url,
 		title:       title,
-		contents:    content,
+		content:     content,
 		publishedAt: publishedAt,
 
 		createdAt: createdAt,
@@ -65,12 +65,12 @@ func (p *Post) Title() string {
 	return p.title
 }
 
-func (p *Post) Contents() string {
-	return p.contents
+func (p *Post) Content() string {
+	return p.content
 }
 
-func (p *Post) SetContents(contents string) error {
-	p.contents = contents
+func (p *Post) SetContent(content string) error {
+	p.content = content
 	return nil
 }
 

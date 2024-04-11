@@ -159,15 +159,15 @@ func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 			blog,
 			feedPost.URL,
 			feedPost.Title,
-			feedPost.Contents,
+			feedPost.Content,
 			feedPost.PublishedAt,
 		)
 		return s.store.Post().Create(post)
 	}
 
-	// update the post's contents (if available)
-	if feedPost.Contents != "" {
-		post.SetContents(feedPost.Contents)
+	// update the post's content (if available)
+	if feedPost.Content != "" {
+		post.SetContent(feedPost.Content)
 		return s.store.Post().Update(post)
 	}
 

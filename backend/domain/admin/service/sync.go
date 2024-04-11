@@ -11,10 +11,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 )
 
-var (
-	ErrEmptyFeed = errors.New("sync:")
-)
-
 type SyncService struct {
 	store       storage.Storage
 	feedFetcher fetch.FeedFetcher
@@ -36,6 +32,7 @@ func NewSyncService(store storage.Storage, feedFetcher fetch.FeedFetcher, pageFe
 func (s *SyncService) SyncAllBlogs() error {
 	now := time.Now().UTC()
 
+	// TODO: page through and collect all blogs
 	blogs, err := s.store.Blog().List(1000, 0)
 	if err != nil {
 		return err
@@ -45,6 +42,7 @@ func (s *SyncService) SyncAllBlogs() error {
 		delta := now.Sub(blog.SyncedAt())
 		if delta < time.Hour {
 			slog.Info("recently synced", "title", blog.Title)
+			continue
 		}
 
 		s.SyncBlog(blog.FeedURL())
@@ -88,7 +86,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		feedBlog.Title,
 		resp.ETag,
 		resp.LastModified,
-		now.Add(-1*time.Hour),
+		now,
 	)
 	err = s.store.Blog().Create(blog)
 	if err != nil {
@@ -106,13 +104,17 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 }
 
 func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
-	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL(), blog.ETag(), blog.LastModified())
+	now := time.Now().UTC()
+	blog.SetSyncedAt(now)
+
+	err := s.store.Blog().Update(blog)
 	if err != nil {
 		return err
 	}
 
-	if resp.Feed == "" {
-		return errors.New("sync: skipping due to empty / up-to-date feed")
+	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL(), blog.ETag(), blog.LastModified())
+	if err != nil {
+		return err
 	}
 
 	if resp.ETag != "" {

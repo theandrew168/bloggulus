@@ -90,6 +90,10 @@ func (b *Blog) SyncedAt() time.Time {
 	return b.syncedAt
 }
 
+func (b *Blog) SetSyncedAt(syncedAt time.Time) {
+	b.syncedAt = syncedAt
+}
+
 func (b *Blog) CreatedAt() time.Time {
 	return b.createdAt
 }

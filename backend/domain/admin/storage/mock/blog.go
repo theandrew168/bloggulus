@@ -72,8 +72,8 @@ func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	}
 
 	start := offset
-	end := offset + limit
-	if start >= len(blogs) || end >= len(blogs) {
+	end := min(offset+limit, len(blogs))
+	if start >= len(blogs) {
 		return nil, nil
 	}
 

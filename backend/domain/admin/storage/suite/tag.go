@@ -59,7 +59,7 @@ func TestTagList(t *testing.T, store storage.Storage) {
 		storageTest.CreateMockTag(t, store)
 		storageTest.CreateMockTag(t, store)
 
-		limit := 3
+		limit := 5
 		offset := 0
 		tags, err := store.Tag().List(limit, offset)
 		test.AssertNilError(t, err)

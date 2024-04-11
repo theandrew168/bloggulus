@@ -78,7 +78,7 @@ func TestPostList(t *testing.T, store storage.Storage) {
 		storageTest.CreateMockPost(t, store)
 		storageTest.CreateMockPost(t, store)
 
-		limit := 3
+		limit := 5
 		offset := 0
 		posts, err := store.Post().List(limit, offset)
 		test.AssertNilError(t, err)
@@ -109,7 +109,7 @@ func TestPostListByBlog(t *testing.T, store storage.Storage) {
 			test.AssertNilError(t, err)
 		}
 
-		limit := 3
+		limit := 5
 		offset := 0
 		posts, err := store.Post().ListByBlog(blog, limit, offset)
 		test.AssertNilError(t, err)

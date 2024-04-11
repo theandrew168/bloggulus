@@ -73,8 +73,8 @@ func (s *PostStorage) List(limit, offset int) ([]*admin.Post, error) {
 	}
 
 	start := offset
-	end := offset + limit
-	if start >= len(posts) || end >= len(posts) {
+	end := min(offset+limit, len(posts))
+	if start >= len(posts) {
 		return nil, nil
 	}
 
@@ -95,8 +95,8 @@ func (s *PostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]*admin.
 	}
 
 	start := offset
-	end := offset + limit
-	if start >= len(posts) || end >= len(posts) {
+	end := min(offset+limit, len(posts))
+	if start >= len(posts) {
 		return nil, nil
 	}
 

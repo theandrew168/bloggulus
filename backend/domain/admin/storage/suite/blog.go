@@ -73,7 +73,7 @@ func TestBlogList(t *testing.T, store storage.Storage) {
 		storageTest.CreateMockBlog(t, store)
 		storageTest.CreateMockBlog(t, store)
 
-		limit := 3
+		limit := 5
 		offset := 0
 		blogs, err := store.Blog().List(limit, offset)
 		test.AssertNilError(t, err)

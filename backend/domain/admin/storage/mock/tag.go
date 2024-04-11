@@ -59,8 +59,8 @@ func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	}
 
 	start := offset
-	end := offset + limit
-	if start >= len(tags) || end >= len(tags) {
+	end := min(offset+limit, len(tags))
+	if start >= len(tags) {
 		return nil, nil
 	}
 

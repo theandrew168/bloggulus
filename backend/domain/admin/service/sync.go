@@ -11,6 +11,10 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 )
 
+var (
+	ErrEmptyFeed = errors.New("sync:")
+)
+
 type SyncService struct {
 	store       storage.Storage
 	feedFetcher fetch.FeedFetcher
@@ -65,10 +69,6 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	resp, err := s.feedFetcher.FetchFeed(feedURL, "", "")
 	if err != nil {
 		return err
-	}
-
-	if resp.Feed == "" {
-		return errors.New("sync: skipping due to empty / up-to-date feed")
 	}
 
 	feedBlog, err := feed.Parse(feedURL, resp.Feed)

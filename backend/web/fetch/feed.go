@@ -3,7 +3,6 @@ package fetch
 import (
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
@@ -37,14 +36,21 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
+	}
+
 	if resp.StatusCode >= 300 {
-		slog.Info("no new data for feed", "url", url)
-		return fetch.FetchFeedResponse{}, nil
+		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fetch.FetchFeedResponse{}, nil
+		return fetch.FetchFeedResponse{}, err
+	}
+
+	if len(body) == 0 {
+		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
 	}
 
 	fetchFeedResponse := fetch.FetchFeedResponse{

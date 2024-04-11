@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"errors"
-
 	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 )
 
@@ -21,7 +19,11 @@ func NewFeedFetcher(feeds map[string]string) *FeedFetcher {
 func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeedResponse, error) {
 	feed, ok := f.feeds[url]
 	if !ok {
-		return fetch.FetchFeedResponse{}, errors.New("feed not found")
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
+	}
+
+	if feed == "" {
+		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
 	}
 
 	resp := fetch.FetchFeedResponse{

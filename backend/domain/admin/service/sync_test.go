@@ -6,6 +6,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/domain/admin/feed/mock"
+	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/domain/admin/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/service"
 	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
@@ -121,8 +122,40 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertEqual(t, post.Content(), feedPost.Content)
 }
 
-func TestSkipEmptyFeed(t *testing.T) {
+func TestUnreachableFeed(t *testing.T) {
+	feedURL := "https://example.com/atom.xml"
 
+	store := storageMock.NewStorage()
+
+	feeds := map[string]string{}
+	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+
+	pages := map[string]string{}
+	pageFetcher := fetchMock.NewPageFetcher(pages)
+
+	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+
+	err := syncService.SyncBlog(feedURL)
+	test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
+}
+
+func TestNoNewFeedContent(t *testing.T) {
+	feedURL := "https://example.com/atom.xml"
+
+	store := storageMock.NewStorage()
+
+	feeds := map[string]string{
+		feedURL: "",
+	}
+	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+
+	pages := map[string]string{}
+	pageFetcher := fetchMock.NewPageFetcher(pages)
+
+	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+
+	err := syncService.SyncBlog(feedURL)
+	test.AssertErrorIs(t, err, fetch.ErrNoNewFeedContent)
 }
 
 func TestSyncOncePerHour(t *testing.T) {

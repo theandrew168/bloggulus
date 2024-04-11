@@ -1,5 +1,12 @@
 package fetch
 
+import "errors"
+
+var (
+	ErrUnreachableFeed  = errors.New("fetch: unreachable feed")
+	ErrNoNewFeedContent = errors.New("fetch: no new feed content")
+)
+
 type FetchFeedResponse struct {
 	Feed         string
 	ETag         string

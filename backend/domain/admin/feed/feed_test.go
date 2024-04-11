@@ -59,6 +59,54 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseMissingURL(t *testing.T) {
+	t.Parallel()
+
+	feedPostFoo := feed.Post{
+		Title:       "Foo",
+		Content:     "content about foo",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo},
+	}
+
+	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	test.AssertNilError(t, err)
+
+	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, len(parsedBlog.Posts), 0)
+}
+
+func TestParseMissingTitle(t *testing.T) {
+	t.Parallel()
+
+	feedPostFoo := feed.Post{
+		URL:         "https://example.com/foo",
+		Content:     "content about foo",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo},
+	}
+
+	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	test.AssertNilError(t, err)
+
+	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, len(parsedBlog.Posts), 0)
+}
+
 func TestParseMissingDomain(t *testing.T) {
 	t.Parallel()
 
@@ -120,7 +168,7 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	feedPostFoo := feed.Post{
-		URL:         "example.com/foo",
+		URL:         "https://example.com/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: publishedAt,

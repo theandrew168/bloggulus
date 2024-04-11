@@ -37,18 +37,22 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 
 	var posts []Post
 	for _, item := range feed.Items {
-		// ensure link is valid
-		link := item.Link
-
-		// ensure link includes the site's domain
-		if link[0] == '/' {
-			link = feed.Link + link
+		// skip items without a link or title
+		if item.Link == "" || item.Title == "" {
+			continue
 		}
 
-		// ensure link includes a scheme (assume https if necessary)
-		hasScheme := schemeRegexp.MatchString(link)
+		url := item.Link
+
+		// ensure url includes the site's domain
+		if url[0] == '/' {
+			url = feed.Link + url
+		}
+
+		// ensure url includes a scheme (assume https if necessary)
+		hasScheme := schemeRegexp.MatchString(url)
 		if !hasScheme {
-			link = "https://" + link
+			url = "https://" + url
 		}
 
 		// check for a publish date, else default to now
@@ -61,7 +65,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 		publishedAt = publishedAt.UTC()
 
 		post := Post{
-			URL:         link,
+			URL:         url,
 			Title:       item.Title,
 			Content:     item.Content,
 			PublishedAt: publishedAt,
@@ -85,10 +89,9 @@ func Hydrate(blog Blog, pageFetcher fetch.PageFetcher) (Blog, error) {
 			content, err := pageFetcher.FetchPage(post.URL)
 			if err != nil {
 				slog.Warn("failed to fetch page", "url", post.URL)
-				continue
+			} else {
+				post.Content = content
 			}
-
-			post.Content = content
 		}
 		hydratedPosts = append(hydratedPosts, post)
 	}

@@ -216,15 +216,72 @@ func TestSyncOncePerHour(t *testing.T) {
 }
 
 func TestUpdatePostContent(t *testing.T) {
+	feedPost := feed.Post{
+		URL:         "https://example.com/foo",
+		Title:       "Foo",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPost},
+	}
 
-}
+	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	test.AssertNilError(t, err)
 
-func TestSkipPostsWithoutLink(t *testing.T) {
+	store := storageMock.NewStorage()
 
-}
+	feeds := map[string]string{
+		feedBlog.FeedURL: atomFeed,
+	}
+	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-func TestSkipPostsWithoutTitle(t *testing.T) {
+	pages := map[string]string{}
+	pageFetcher := fetchMock.NewPageFetcher(pages)
 
+	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+
+	// sync a new blog
+	err = syncService.SyncBlog(feedBlog.FeedURL)
+	test.AssertNilError(t, err)
+
+	// fetch and verify blog data
+	blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	test.AssertNilError(t, err)
+
+	// fetch posts and verify count
+	posts, err := store.Post().ListByBlog(blog, 20, 0)
+	test.AssertNilError(t, err)
+	test.AssertEqual(t, len(posts), 1)
+
+	// verify post data (should have no content)
+	post := posts[0]
+	test.AssertEqual(t, post.Content(), "")
+
+	// update the post with some content
+	content := "content about foo"
+	feedBlog.Posts[0].Content = content
+
+	// regenerate the feed
+	atomFeed, err = feedMock.GenerateAtomFeed(feedBlog)
+	test.AssertNilError(t, err)
+
+	feeds[feedBlog.FeedURL] = atomFeed
+
+	// sync the blog again
+	err = syncService.SyncBlog(feedBlog.FeedURL)
+	test.AssertNilError(t, err)
+
+	// refetch posts and verify count
+	posts, err = store.Post().ListByBlog(blog, 20, 0)
+	test.AssertNilError(t, err)
+	test.AssertEqual(t, len(posts), 1)
+
+	// verify post data (should have content now)
+	post = posts[0]
+	test.AssertEqual(t, post.Content(), content)
 }
 
 func TestCacheHeaderOverwrite(t *testing.T) {

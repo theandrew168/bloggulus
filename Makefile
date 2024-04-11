@@ -36,11 +36,7 @@ migrate:
 
 .PHONY: test
 test: migrate
-	go test -count=1 ./...
-
-.PHONY: race
-race:
-	go test -race -count=1 ./...
+	go test -count=1 -shuffle=on -race -vet=all -failfast ./...
 
 .PHONY: cover
 cover:

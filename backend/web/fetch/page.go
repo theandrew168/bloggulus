@@ -53,6 +53,10 @@ func (f *PageFetcher) FetchPage(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 300 {
+		return "", fetch.ErrUnreachablePage
+	}
+
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("%v: %v", url, err)

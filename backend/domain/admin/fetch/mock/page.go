@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"errors"
-
 	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
 )
 
@@ -21,7 +19,7 @@ func NewPageFetcher(pages map[string]string) *PageFetcher {
 func (f *PageFetcher) FetchPage(url string) (string, error) {
 	page, ok := f.pages[url]
 	if !ok {
-		return "", errors.New("page not found")
+		return "", fetch.ErrUnreachablePage
 	}
 
 	return page, nil

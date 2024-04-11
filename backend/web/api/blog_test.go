@@ -48,9 +48,7 @@ func TestHandleBlogRead(t *testing.T) {
 
 		var resp map[string]jsonBlog
 		err = json.Unmarshal(body, &resp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		got, ok := resp["blog"]
 		if !ok {
@@ -107,9 +105,7 @@ func TestHandleBlogList(t *testing.T) {
 
 		var resp map[string][]jsonBlog
 		err = json.Unmarshal(body, &resp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		got, ok := resp["blogs"]
 		if !ok {

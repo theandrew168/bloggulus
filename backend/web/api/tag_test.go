@@ -45,9 +45,7 @@ func TestHandleTagList(t *testing.T) {
 
 		var resp map[string][]jsonTag
 		err = json.Unmarshal(body, &resp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		got, ok := resp["tags"]
 		if !ok {
@@ -104,9 +102,7 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			var resp map[string][]jsonTag
 			err = json.Unmarshal(body, &resp)
-			if err != nil {
-				t.Fatal(err)
-			}
+			test.AssertNilError(t, err)
 
 			got, ok := resp["tags"]
 			if !ok {

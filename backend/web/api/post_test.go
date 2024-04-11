@@ -51,9 +51,7 @@ func TestHandlePostRead(t *testing.T) {
 
 		var resp map[string]jsonPost
 		err = json.Unmarshal(body, &resp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		got, ok := resp["post"]
 		if !ok {
@@ -114,9 +112,7 @@ func TestHandlePostList(t *testing.T) {
 
 		var resp map[string][]jsonPost
 		err = json.Unmarshal(body, &resp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		test.AssertNilError(t, err)
 
 		got, ok := resp["posts"]
 		if !ok {
@@ -173,9 +169,7 @@ func TestHandlePostListPagination(t *testing.T) {
 
 			var resp map[string][]jsonPost
 			err = json.Unmarshal(body, &resp)
-			if err != nil {
-				t.Fatal(err)
-			}
+			test.AssertNilError(t, err)
 
 			got, ok := resp["posts"]
 			if !ok {

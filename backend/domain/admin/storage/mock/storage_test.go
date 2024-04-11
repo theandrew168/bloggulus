@@ -8,6 +8,8 @@ import (
 )
 
 func TestMockStorage(t *testing.T) {
+	t.Parallel()
+
 	store := mock.NewStorage()
 	suite.RunStorageTests(t, store)
 }

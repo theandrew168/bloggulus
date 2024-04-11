@@ -8,6 +8,8 @@ import (
 )
 
 func TestPostgresStorage(t *testing.T) {
+	t.Parallel()
+
 	store, closer := test.NewAdminStorage(t)
 	defer closer()
 

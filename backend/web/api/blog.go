@@ -10,7 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/util"
-	"github.com/theandrew168/bloggulus/backend/web/validator"
+	"github.com/theandrew168/bloggulus/backend/web/api/validator"
 )
 
 type jsonBlog struct {

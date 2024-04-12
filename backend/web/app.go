@@ -11,20 +11,27 @@ import (
 	metricsMiddleware "github.com/slok/go-http-metrics/middleware"
 	metricsWrapper "github.com/slok/go-http-metrics/middleware/std"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	readerStorage "github.com/theandrew168/bloggulus/backend/domain/reader/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type Application struct {
-	storage  storage.Storage
-	frontend fs.FS
+	frontend      fs.FS
+	adminStorage  adminStorage.Storage
+	readerStorage readerStorage.Storage
 }
 
-func NewApplication(frontend fs.FS, storage storage.Storage) *Application {
+func NewApplication(
+	frontend fs.FS,
+	adminStorage adminStorage.Storage,
+	readerStorage readerStorage.Storage,
+) *Application {
 	app := Application{
-		storage:  storage,
-		frontend: frontend,
+		frontend:      frontend,
+		adminStorage:  adminStorage,
+		readerStorage: readerStorage,
 	}
 	return &app
 }
@@ -47,7 +54,7 @@ func (app *Application) Router() http.Handler {
 	}, "GET")
 
 	// backend - rest api
-	apiApp := api.NewApplication(app.storage)
+	apiApp := api.NewApplication(app.adminStorage, app.readerStorage)
 	mux.Handle("/api/v1/...", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
 	mux.HandleFunc("/api/v1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api/v1/", http.StatusMovedPermanently)

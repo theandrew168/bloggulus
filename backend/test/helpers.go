@@ -6,6 +6,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
+	readerStorage "github.com/theandrew168/bloggulus/backend/postgres/reader/storage"
 )
 
 // TODO: do we even need these?
@@ -36,5 +37,13 @@ func NewAdminStorage(t *testing.T) (*adminStorage.Storage, CloserFunc) {
 
 	db, closer := NewDatabase(t)
 	store := adminStorage.New(db)
+	return store, closer
+}
+
+func NewReaderStorage(t *testing.T) (*readerStorage.Storage, CloserFunc) {
+	t.Helper()
+
+	db, closer := NewDatabase(t)
+	store := readerStorage.New(db)
 	return store, closer
 }

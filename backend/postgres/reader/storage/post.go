@@ -57,7 +57,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]*reader.Post, error) {
 			blog.site_url as blog_url,
 			post.published_at,
 			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.fts_data, to_tsquery(tag.name)) DESC), NULL) as tags
-		FORM post
+		FROM post
 		INNER JOIN blog
 			ON blog.id = post.blog_id
 		LEFT JOIN tag
@@ -101,13 +101,13 @@ func (s *PostgresPostStorage) Search(query string, limit, offset int) ([]*reader
 			blog.site_url as blog_url,
 			post.published_at,
 			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.fts_data, to_tsquery(tag.name)) DESC), NULL) as tags
-		FORM post
+		FROM post
 		INNER JOIN blog
 			ON blog.id = post.blog_id
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ post.fts_data
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
-		GROUP BY 1,2,3,4,5
+		GROUP BY 1,2,3,4,5,post.fts_data
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC
 		LIMIT $2 OFFSET $3`
 

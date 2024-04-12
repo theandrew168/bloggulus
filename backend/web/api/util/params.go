@@ -1,4 +1,4 @@
-package api
+package util
 
 import (
 	"net/url"
@@ -7,7 +7,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
-func readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+func ReadInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
 	s := qs.Get(key)
 	if s == "" {
 		return defaultValue

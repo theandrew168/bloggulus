@@ -1,4 +1,4 @@
-package api_test
+package admin_test
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api"
+	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
 
 type jsonBlog struct {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 
 	"github.com/coreos/go-systemd/daemon"
 
@@ -37,6 +38,13 @@ func main() {
 }
 
 func run() error {
+	// set the program's local timezone to UTC
+	utc, err := time.LoadLocation("UTC")
+	if err != nil {
+		return err
+	}
+	time.Local = utc
+
 	// check for config file flag
 	conf := flag.String("conf", "bloggulus.conf", "app config file")
 

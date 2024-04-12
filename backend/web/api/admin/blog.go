@@ -1,9 +1,8 @@
-package api
+package admin
 
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/alexedwards/flow"
 	"github.com/google/uuid"
@@ -14,28 +13,26 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/api/validator"
 )
 
-type jsonPost struct {
-	ID          uuid.UUID `json:"id"`
-	BlogID      uuid.UUID `json:"blogID"`
-	URL         string    `json:"url"`
-	Title       string    `json:"title"`
-	PublishedAt time.Time `json:"publishedAt"`
+type jsonBlog struct {
+	ID      uuid.UUID `json:"id"`
+	FeedURL string    `json:"feedURL"`
+	SiteURL string    `json:"siteURL"`
+	Title   string    `json:"title"`
 }
 
-func marshalPost(post *admin.Post) jsonPost {
-	p := jsonPost{
-		ID:          post.ID(),
-		BlogID:      post.BlogID(),
-		URL:         post.URL(),
-		Title:       post.Title(),
-		PublishedAt: post.PublishedAt(),
+func marshalBlog(blog *admin.Blog) jsonBlog {
+	b := jsonBlog{
+		ID:      blog.ID(),
+		FeedURL: blog.FeedURL(),
+		SiteURL: blog.SiteURL(),
+		Title:   blog.Title(),
 	}
-	return p
+	return b
 }
 
-func (app *Application) handlePostRead() http.HandlerFunc {
+func (app *Application) handleBlogRead() http.HandlerFunc {
 	type response struct {
-		Post jsonPost `json:"post"`
+		Blog jsonBlog `json:"blog"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
@@ -47,7 +44,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			return
 		}
 
-		post, err := app.storage.Post().Read(id)
+		blog, err := app.storage.Blog().Read(id)
 		if err != nil {
 			if errors.Is(err, storage.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -58,9 +55,8 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 		}
 
 		resp := response{
-			Post: marshalPost(post),
+			Blog: marshalBlog(blog),
 		}
-
 		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
@@ -69,9 +65,9 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 	}
 }
 
-func (app *Application) handlePostList() http.HandlerFunc {
+func (app *Application) handleBlogList() http.HandlerFunc {
 	type response struct {
-		Posts []jsonPost `json:"posts"`
+		Blogs []jsonBlog `json:"blogs"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
@@ -89,7 +85,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			return
 		}
 
-		posts, err := app.storage.Post().List(limit, offset)
+		blogs, err := app.storage.Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -97,11 +93,11 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		resp := response{
 			// use make here to encode JSON as "[]" instead of "null" if empty
-			Posts: make([]jsonPost, 0),
+			Blogs: make([]jsonBlog, 0),
 		}
 
-		for _, post := range posts {
-			resp.Posts = append(resp.Posts, marshalPost(post))
+		for _, blog := range blogs {
+			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
 		}
 
 		err = util.WriteJSON(w, 200, resp, nil)

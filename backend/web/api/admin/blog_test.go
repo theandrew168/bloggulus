@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
@@ -32,7 +32,7 @@ func TestHandleBlogRead(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		blog := storageTest.CreateMockBlog(t, store)
+		blog := storageMock.CreateMockBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
@@ -90,7 +90,7 @@ func TestHandleBlogList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		storageTest.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/blogs", nil)
@@ -131,11 +131,11 @@ func TestHandleBlogListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 blogs to test with
-		storageTest.CreateMockBlog(t, store)
-		storageTest.CreateMockBlog(t, store)
-		storageTest.CreateMockBlog(t, store)
-		storageTest.CreateMockBlog(t, store)
-		storageTest.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateMockBlog(t, store)
 
 		tests := []struct {
 			limit int

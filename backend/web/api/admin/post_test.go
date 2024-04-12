@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
@@ -35,7 +35,7 @@ func TestHandlePostRead(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		post := storageTest.CreateMockPost(t, store)
+		post := storageMock.CreateMockPost(t, store)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
@@ -97,7 +97,7 @@ func TestHandlePostList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		storageTest.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
@@ -138,11 +138,11 @@ func TestHandlePostListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 posts to test with
-		storageTest.CreateMockPost(t, store)
-		storageTest.CreateMockPost(t, store)
-		storageTest.CreateMockPost(t, store)
-		storageTest.CreateMockPost(t, store)
-		storageTest.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
+		storageMock.CreateMockPost(t, store)
 
 		tests := []struct {
 			limit int

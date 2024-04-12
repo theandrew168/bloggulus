@@ -1,17 +1,20 @@
-package suite
+package postgres_test
 
 import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
-func TestTagCreate(t *testing.T, store storage.Storage) {
+func TestTagCreate(t *testing.T) {
 	t.Parallel()
+
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
 		tag := mock.NewTag()
@@ -22,11 +25,14 @@ func TestTagCreate(t *testing.T, store storage.Storage) {
 	})
 }
 
-func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
+func TestTagCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageTest.CreateMockTag(t, store)
+		tag := storageMock.CreateMockTag(t, store)
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
@@ -36,11 +42,14 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 	})
 }
 
-func TestTagRead(t *testing.T, store storage.Storage) {
+func TestTagRead(t *testing.T) {
 	t.Parallel()
 
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageTest.CreateMockTag(t, store)
+		tag := storageMock.CreateMockTag(t, store)
 		got, err := store.Tag().Read(tag.ID())
 		test.AssertNilError(t, err)
 
@@ -50,15 +59,18 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 	})
 }
 
-func TestTagList(t *testing.T, store storage.Storage) {
+func TestTagList(t *testing.T) {
 	t.Parallel()
 
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
 	store.WithTransaction(func(store storage.Storage) error {
-		storageTest.CreateMockTag(t, store)
-		storageTest.CreateMockTag(t, store)
-		storageTest.CreateMockTag(t, store)
-		storageTest.CreateMockTag(t, store)
-		storageTest.CreateMockTag(t, store)
+		storageMock.CreateMockTag(t, store)
+		storageMock.CreateMockTag(t, store)
+		storageMock.CreateMockTag(t, store)
+		storageMock.CreateMockTag(t, store)
+		storageMock.CreateMockTag(t, store)
 
 		limit := 5
 		offset := 0
@@ -71,11 +83,14 @@ func TestTagList(t *testing.T, store storage.Storage) {
 	})
 }
 
-func TestTagDelete(t *testing.T, store storage.Storage) {
+func TestTagDelete(t *testing.T) {
 	t.Parallel()
 
+	store, closer := test.NewAdminStorage(t)
+	defer closer()
+
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageTest.CreateMockTag(t, store)
+		tag := storageMock.CreateMockTag(t, store)
 
 		err := store.Tag().Delete(tag)
 		test.AssertNilError(t, err)

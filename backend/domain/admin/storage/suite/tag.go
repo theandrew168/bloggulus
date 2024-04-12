@@ -6,6 +6,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -17,7 +18,7 @@ func TestTagCreate(t *testing.T, store storage.Storage) {
 		err := store.Tag().Create(tag)
 		test.AssertNilError(t, err)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -29,9 +30,9 @@ func TestTagCreateAlreadyExists(t *testing.T, store storage.Storage) {
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
-		test.AssertErrorIs(t, err, storage.ErrConflict)
+		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -45,7 +46,7 @@ func TestTagRead(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, got.ID(), tag.ID())
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -66,7 +67,7 @@ func TestTagList(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, len(tags), limit)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -80,8 +81,8 @@ func TestTagDelete(t *testing.T, store storage.Storage) {
 		test.AssertNilError(t, err)
 
 		_, err = store.Tag().Read(tag.ID())
-		test.AssertErrorIs(t, err, storage.ErrNotFound)
+		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }

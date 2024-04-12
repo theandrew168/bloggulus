@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
+	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage/postgres"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 	readerStorage "github.com/theandrew168/bloggulus/backend/postgres/reader/storage"
 )
 

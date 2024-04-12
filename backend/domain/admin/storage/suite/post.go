@@ -7,6 +7,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -22,7 +23,7 @@ func TestPostCreate(t *testing.T, store storage.Storage) {
 		err = store.Post().Create(post)
 		test.AssertNilError(t, err)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -34,9 +35,9 @@ func TestPostCreateAlreadyExists(t *testing.T, store storage.Storage) {
 
 		// attempt to create the same post again
 		err := store.Post().Create(post)
-		test.AssertErrorIs(t, err, storage.ErrConflict)
+		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -50,7 +51,7 @@ func TestPostRead(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, got.ID(), post.ID())
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -64,7 +65,7 @@ func TestPostReadByURL(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, got.ID(), post.ID())
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -85,7 +86,7 @@ func TestPostList(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, len(posts), limit)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -119,7 +120,7 @@ func TestPostListByBlog(t *testing.T, store storage.Storage) {
 		// most recent post should be the one just added
 		test.AssertEqual(t, posts[0].ID(), post.ID())
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -140,7 +141,7 @@ func TestPostUpdate(t *testing.T, store storage.Storage) {
 
 		test.AssertEqual(t, got.Content(), content)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -154,8 +155,8 @@ func TestPostDelete(t *testing.T, store storage.Storage) {
 		test.AssertNilError(t, err)
 
 		_, err = store.Post().Read(post.ID())
-		test.AssertErrorIs(t, err, storage.ErrNotFound)
+		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
@@ -56,7 +57,7 @@ func TestHandleTagList(t *testing.T) {
 			t.Fatalf("expected at least one tag")
 		}
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -111,6 +112,6 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			test.AssertEqual(t, len(got), tt.want)
 		}
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }

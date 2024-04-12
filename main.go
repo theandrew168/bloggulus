@@ -15,8 +15,8 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/service"
+	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage/postgres"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	adminStorage "github.com/theandrew168/bloggulus/backend/postgres/admin/storage"
 	readerStorage "github.com/theandrew168/bloggulus/backend/postgres/reader/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
 	"github.com/theandrew168/bloggulus/backend/web/fetch"

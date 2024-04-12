@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/api/util"
 	"github.com/theandrew168/bloggulus/backend/web/api/validator"
 )
@@ -49,7 +49,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 
 		post, err := app.storage.Post().Read(id)
 		if err != nil {
-			if errors.Is(err, storage.ErrNotFound) {
+			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
 				return
 			}

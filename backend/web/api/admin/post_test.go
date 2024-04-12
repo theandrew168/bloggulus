@@ -12,6 +12,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	storageTest "github.com/theandrew168/bloggulus/backend/domain/admin/storage/test"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
@@ -60,7 +61,7 @@ func TestHandlePostRead(t *testing.T) {
 
 		test.AssertEqual(t, got.ID, post.ID())
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -83,7 +84,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, 404)
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -123,7 +124,7 @@ func TestHandlePostList(t *testing.T) {
 			t.Fatalf("expected at least one blog")
 		}
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }
 
@@ -179,6 +180,6 @@ func TestHandlePostListPagination(t *testing.T) {
 			test.AssertEqual(t, len(got), tt.want)
 		}
 
-		return storage.ErrRollback
+		return postgres.ErrRollback
 	})
 }

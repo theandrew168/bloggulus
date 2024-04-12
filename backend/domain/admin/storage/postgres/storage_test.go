@@ -1,4 +1,4 @@
-package storage_test
+package postgres_test
 
 import (
 	"testing"

@@ -6,7 +6,6 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 )
 
 /*
@@ -45,6 +44,18 @@ delete (CollectOneRow) - does not exist
 
 */
 
+// TODO: add metadata to errors to make em more useful:
+//   - what already exists
+//   - what was missing
+//   - what column(s) caused the conflict
+var (
+	ErrNotFound = errors.New("postgres: not found")
+	ErrConflict = errors.New("postgres: conflict")
+
+	// sentinel error used to rollback transactions
+	ErrRollback = errors.New("postgres: rollback")
+)
+
 func CheckCreateError(err error) error {
 	var pgErr *pgconn.PgError
 
@@ -52,7 +63,7 @@ func CheckCreateError(err error) error {
 	case errors.As(err, &pgErr):
 		switch {
 		case pgerrcode.IsIntegrityConstraintViolation(pgErr.Code):
-			return storage.ErrConflict
+			return ErrConflict
 		default:
 			return err
 		}
@@ -68,7 +79,7 @@ func CheckListError(err error) error {
 func CheckReadError(err error) error {
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
-		return storage.ErrNotFound
+		return ErrNotFound
 	default:
 		return err
 	}
@@ -80,11 +91,11 @@ func CheckUpdateError(err error) error {
 	switch {
 	// ErrNoRows in an update indicates a TOCTOU race condition (conflict)
 	case errors.Is(err, pgx.ErrNoRows):
-		return storage.ErrNotFound
+		return ErrNotFound
 	case errors.As(err, &pgErr):
 		switch {
 		case pgerrcode.IsIntegrityConstraintViolation(pgErr.Code):
-			return storage.ErrConflict
+			return ErrConflict
 		default:
 			return err
 		}
@@ -96,7 +107,7 @@ func CheckUpdateError(err error) error {
 func CheckDeleteError(err error) error {
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
-		return storage.ErrNotFound
+		return ErrNotFound
 	default:
 		return err
 	}

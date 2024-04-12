@@ -5,6 +5,6 @@ import (
 )
 
 type PostStorage interface {
-	List(limit, offset int) ([]reader.Post, error)
-	Search(query string, limit, offset int) ([]reader.Post, error)
+	List(limit, offset int) ([]*reader.Post, error)
+	Search(query string, limit, offset int) ([]*reader.Post, error)
 }

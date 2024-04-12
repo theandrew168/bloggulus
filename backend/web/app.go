@@ -63,8 +63,7 @@ func (app *Application) Router() http.Handler {
 	mux.Handle("/openapi.yaml", frontendHandler)
 	mux.Handle("/_app/...", frontendHandler)
 
-	// all other routes should return the index page
-	// so that the frontend router can take over
+	// all other routes should return the index page so that the frontend router can take over
 	mux.Handle("/...", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		index, err := fs.ReadFile(app.frontend, "index.html")
 		if err != nil {

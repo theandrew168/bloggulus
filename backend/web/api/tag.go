@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
@@ -38,13 +39,13 @@ func (app *Application) handleTagList() http.HandlerFunc {
 		v.Check(offset >= 0, "offset", "must be positive")
 
 		if !v.Valid() {
-			app.badRequestResponse(w, r, v.Errors)
+			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
 
 		tags, err := app.storage.Tag().List(limit, offset)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -57,9 +58,9 @@ func (app *Application) handleTagList() http.HandlerFunc {
 			resp.Tags = append(resp.Tags, marshalTag(tag))
 		}
 
-		err = writeJSON(w, 200, resp, nil)
+		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 	}

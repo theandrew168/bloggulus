@@ -6,6 +6,7 @@ import (
 	"github.com/alexedwards/flow"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/web/api/util"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
@@ -22,8 +23,8 @@ func NewApplication(storage storage.Storage) *Application {
 
 func (app *Application) Router() http.Handler {
 	mux := flow.New()
-	mux.NotFound = http.HandlerFunc(app.notFoundResponse)
-	mux.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)
+	mux.MethodNotAllowed = http.HandlerFunc(util.MethodNotAllowedResponse)
 
 	mux.Use(middleware.SecureHeaders)
 	mux.Use(middleware.EnableCORS)

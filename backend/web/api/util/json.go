@@ -1,4 +1,4 @@
-package api
+package util
 
 import (
 	"encoding/json"
@@ -12,14 +12,14 @@ import (
 // Limit the size of the request body to 1MB.
 const MaxBytes = 1024 * 1024
 
-func readBody(w http.ResponseWriter, r *http.Request) io.Reader {
+func ReadBody(w http.ResponseWriter, r *http.Request) io.Reader {
 	// Use http.MaxBytesReader() to limit the size of the request body.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxBytes)
 	return r.Body
 }
 
 // Let's Go Further - Chapter 4.3
-func readJSON(r io.Reader, dst any, strict bool) error {
+func ReadJSON(r io.Reader, dst any, strict bool) error {
 	// Initialize the json.Decoder, and call the DisallowUnknownFields() method on it
 	// before decoding (if strict). This means that if the JSON from the client now
 	// includes any field which cannot be mapped to the target destination, the decoder
@@ -109,7 +109,7 @@ func readJSON(r io.Reader, dst any, strict bool) error {
 }
 
 // Let's Go Further - Chapter 3.2
-func writeJSON(w http.ResponseWriter, status int, src any, header http.Header) error {
+func WriteJSON(w http.ResponseWriter, status int, src any, header http.Header) error {
 	// Encode the src to JSON, returning the error if there was one.
 	js, err := json.Marshal(src)
 	if err != nil {

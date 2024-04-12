@@ -46,6 +46,8 @@ func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 	return &s
 }
 
+// TODO: use templates to condense these into a single query?
+
 func (s *PostgresPostStorage) List(limit, offset int) ([]*reader.Post, error) {
 	stmt := `
 		SELECT

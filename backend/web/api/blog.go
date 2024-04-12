@@ -9,6 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/web/api/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
@@ -39,26 +40,26 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 		id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 		if err != nil {
 			v.AddError("id", "must be a valid UUID")
-			app.badRequestResponse(w, r, v.Errors)
+			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
 
 		blog, err := app.storage.Blog().Read(id)
 		if err != nil {
 			if errors.Is(err, storage.ErrNotFound) {
-				app.notFoundResponse(w, r)
+				util.NotFoundResponse(w, r)
 				return
 			}
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
 		resp := response{
 			Blog: marshalBlog(blog),
 		}
-		err = writeJSON(w, 200, resp, nil)
+		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 	}
@@ -80,13 +81,13 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 		v.Check(offset >= 0, "offset", "must be positive")
 
 		if !v.Valid() {
-			app.badRequestResponse(w, r, v.Errors)
+			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
 
 		blogs, err := app.storage.Blog().List(limit, offset)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -99,9 +100,9 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
 		}
 
-		err = writeJSON(w, 200, resp, nil)
+		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 	}

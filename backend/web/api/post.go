@@ -10,6 +10,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/web/api/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
@@ -42,17 +43,17 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 		id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 		if err != nil {
 			v.AddError("id", "must be a valid UUID")
-			app.badRequestResponse(w, r, v.Errors)
+			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
 
 		post, err := app.storage.Post().Read(id)
 		if err != nil {
 			if errors.Is(err, storage.ErrNotFound) {
-				app.notFoundResponse(w, r)
+				util.NotFoundResponse(w, r)
 				return
 			}
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -60,9 +61,9 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			Post: marshalPost(post),
 		}
 
-		err = writeJSON(w, 200, resp, nil)
+		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 	}
@@ -84,13 +85,13 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		v.Check(offset >= 0, "offset", "must be positive")
 
 		if !v.Valid() {
-			app.badRequestResponse(w, r, v.Errors)
+			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
 
 		posts, err := app.storage.Post().List(limit, offset)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -103,9 +104,9 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			resp.Posts = append(resp.Posts, marshalPost(post))
 		}
 
-		err = writeJSON(w, 200, resp, nil)
+		err = util.WriteJSON(w, 200, resp, nil)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 	}

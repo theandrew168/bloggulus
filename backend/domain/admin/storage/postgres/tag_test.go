@@ -32,7 +32,7 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageMock.CreateMockTag(t, store)
+		tag := storageMock.CreateTag(t, store)
 
 		// attempt to create the same tag again
 		err := store.Tag().Create(tag)
@@ -49,7 +49,7 @@ func TestTagRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageMock.CreateMockTag(t, store)
+		tag := storageMock.CreateTag(t, store)
 		got, err := store.Tag().Read(tag.ID())
 		test.AssertNilError(t, err)
 
@@ -66,11 +66,11 @@ func TestTagList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
 
 		limit := 5
 		offset := 0
@@ -90,7 +90,7 @@ func TestTagDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		tag := storageMock.CreateMockTag(t, store)
+		tag := storageMock.CreateTag(t, store)
 
 		err := store.Tag().Delete(tag)
 		test.AssertNilError(t, err)

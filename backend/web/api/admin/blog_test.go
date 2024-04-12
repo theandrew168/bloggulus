@@ -32,7 +32,7 @@ func TestHandleBlogRead(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
@@ -90,7 +90,7 @@ func TestHandleBlogList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateBlog(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/blogs", nil)
@@ -131,11 +131,11 @@ func TestHandleBlogListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 blogs to test with
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
 
 		tests := []struct {
 			limit int

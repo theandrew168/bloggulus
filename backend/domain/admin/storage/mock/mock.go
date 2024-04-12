@@ -10,7 +10,7 @@ import (
 )
 
 // mocks a blog and creates it in the database
-func CreateMockBlog(t *testing.T, store storage.Storage) *admin.Blog {
+func CreateBlog(t *testing.T, store storage.Storage) *admin.Blog {
 	t.Helper()
 
 	// generate some random blog data
@@ -24,7 +24,7 @@ func CreateMockBlog(t *testing.T, store storage.Storage) *admin.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreateMockPost(t *testing.T, store storage.Storage) *admin.Post {
+func CreatePost(t *testing.T, store storage.Storage) *admin.Post {
 	t.Helper()
 
 	// generate some random blog data
@@ -45,7 +45,7 @@ func CreateMockPost(t *testing.T, store storage.Storage) *admin.Post {
 }
 
 // mocks a tag and creates it in the database
-func CreateMockTag(t *testing.T, store storage.Storage) *admin.Tag {
+func CreateTag(t *testing.T, store storage.Storage) *admin.Tag {
 	t.Helper()
 
 	// generate some random tag data

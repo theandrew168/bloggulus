@@ -32,7 +32,7 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 
 		// attempt to create the same blog again
 		err := store.Blog().Create(blog)
@@ -49,7 +49,7 @@ func TestBlogRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 		got, err := store.Blog().Read(blog.ID())
 		test.AssertNilError(t, err)
 
@@ -66,7 +66,7 @@ func TestBlogReadByFeedURL(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 		got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
 		test.AssertNilError(t, err)
 
@@ -83,11 +83,11 @@ func TestBlogList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
-		storageMock.CreateMockBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
+		storageMock.CreateBlog(t, store)
 
 		limit := 5
 		offset := 0
@@ -107,7 +107,7 @@ func TestBlogUpdate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 
 		etag := "foo"
 		blog.SetETag(etag)
@@ -135,7 +135,7 @@ func TestBlogDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 
 		err := store.Blog().Delete(blog)
 		test.AssertNilError(t, err)

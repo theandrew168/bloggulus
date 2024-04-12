@@ -37,7 +37,7 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 
 		// attempt to create the same post again
 		err := store.Post().Create(post)
@@ -54,7 +54,7 @@ func TestPostRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 		got, err := store.Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
@@ -71,7 +71,7 @@ func TestPostReadByURL(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 		got, err := store.Post().ReadByURL(post.URL())
 		test.AssertNilError(t, err)
 
@@ -88,11 +88,11 @@ func TestPostList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
 
 		limit := 5
 		offset := 0
@@ -112,7 +112,7 @@ func TestPostListByBlog(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateMockBlog(t, store)
+		blog := storageMock.CreateBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
 		var post *admin.Post
@@ -149,7 +149,7 @@ func TestPostUpdate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 
 		content := "foobar"
 		post.SetContent(content)
@@ -173,7 +173,7 @@ func TestPostDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 
 		err := store.Post().Delete(post)
 		test.AssertNilError(t, err)

@@ -35,7 +35,7 @@ func TestHandlePostRead(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		post := storageMock.CreateMockPost(t, store)
+		post := storageMock.CreatePost(t, store)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
@@ -97,7 +97,7 @@ func TestHandlePostList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		storageMock.CreateMockPost(t, store)
+		storageMock.CreatePost(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
@@ -138,11 +138,11 @@ func TestHandlePostListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 posts to test with
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
-		storageMock.CreateMockPost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
+		storageMock.CreatePost(t, store)
 
 		tests := []struct {
 			limit int

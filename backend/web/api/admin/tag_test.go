@@ -30,7 +30,7 @@ func TestHandleTagList(t *testing.T) {
 	store.WithTransaction(func(store storage.Storage) error {
 		app := api.NewApplication(store)
 
-		storageMock.CreateMockTag(t, store)
+		storageMock.CreateTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
@@ -71,11 +71,11 @@ func TestHandleTagListPagination(t *testing.T) {
 		app := api.NewApplication(store)
 
 		// create 5 tags to test with
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
-		storageMock.CreateMockTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
+		storageMock.CreateTag(t, store)
 
 		tests := []struct {
 			limit int

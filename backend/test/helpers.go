@@ -5,8 +5,8 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage/postgres"
+	readerStorage "github.com/theandrew168/bloggulus/backend/domain/reader/storage/postgres"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	readerStorage "github.com/theandrew168/bloggulus/backend/postgres/reader/storage"
 )
 
 // TODO: do we even need these?

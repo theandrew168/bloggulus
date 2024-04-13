@@ -16,7 +16,7 @@
 			<Post {post} />
 		{/each}
 	</div>
-	{#if data.posts.length === 15}
+	{#if data.posts.length === 20}
 		<div class="more">
 			<a class="shadow" href={moreLink}>See More</a>
 		</div>

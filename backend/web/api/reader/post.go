@@ -38,6 +38,9 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		v := validator.New()
 		qs := r.URL.Query()
 
+		// check search param
+		q := qs.Get("q")
+
 		limit := util.ReadInt(qs, "limit", 20, v)
 		v.Check(limit >= 0, "limit", "must be positive")
 		v.Check(limit <= 50, "limit", "must be less than or equal to 50")
@@ -49,9 +52,6 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
-
-		// check search param
-		q := r.URL.Query().Get("q")
 
 		var posts []*reader.Post
 		var err error

@@ -10,5 +10,6 @@ export type Post = {
 };
 
 export type PostsResponse = {
+	count: number;
 	posts: Post[];
 };

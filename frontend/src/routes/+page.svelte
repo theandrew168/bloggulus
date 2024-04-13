@@ -7,6 +7,7 @@
 	$: q = $page.url.searchParams.get("q") ?? "";
 	$: p = parseInt($page.url.searchParams.get("p") ?? "1") || 1;
 	$: moreLink = `/?p=${p + 1}` + (q ? `&q=${q}` : "");
+	$: hasMorePages = p * 20 < data.count;
 </script>
 
 <div class="container">
@@ -16,7 +17,7 @@
 			<Post {post} />
 		{/each}
 	</div>
-	{#if data.posts.length === 20}
+	{#if hasMorePages}
 		<div class="more">
 			<a class="shadow" href={moreLink}>See More</a>
 		</div>

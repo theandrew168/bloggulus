@@ -32,6 +32,7 @@ func marshalPost(post *reader.Post) jsonPost {
 
 func (app *Application) handlePostList() http.HandlerFunc {
 	type response struct {
+		Count int        `json:"count"`
 		Posts []jsonPost `json:"posts"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -56,16 +57,29 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
+		var count int
 		var posts []*reader.Post
 		var err error
 
 		if q != "" {
+			count, err = app.store.Reader().Post().CountSearch(q)
+			if err != nil {
+				util.ServerErrorResponse(w, r, err)
+				return
+			}
+
 			posts, err = app.store.Reader().Post().ListSearch(q, limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 		} else {
+			count, err = app.store.Reader().Post().Count()
+			if err != nil {
+				util.ServerErrorResponse(w, r, err)
+				return
+			}
+
 			posts, err = app.store.Reader().Post().List(limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
@@ -74,6 +88,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		}
 
 		resp := response{
+			Count: count,
 			// use make here to encode JSON as "[]" instead of "null" if empty
 			Posts: make([]jsonPost, 0),
 		}

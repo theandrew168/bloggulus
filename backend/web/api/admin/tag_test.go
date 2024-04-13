@@ -77,17 +77,16 @@ func TestHandleTagListPagination(t *testing.T) {
 		test.CreateTag(t, store)
 
 		tests := []struct {
-			limit int
-			want  int
+			size int
+			want int
 		}{
-			{0, 0},
 			{1, 1},
 			{3, 3},
 			{5, 5},
 		}
 
 		for _, tt := range tests {
-			url := fmt.Sprintf("/tags?limit=%d", tt.limit)
+			url := fmt.Sprintf("/tags?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 

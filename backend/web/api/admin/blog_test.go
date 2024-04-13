@@ -137,17 +137,16 @@ func TestHandleBlogListPagination(t *testing.T) {
 		test.CreateBlog(t, store)
 
 		tests := []struct {
-			limit int
-			want  int
+			size int
+			want int
 		}{
-			{0, 0},
 			{1, 1},
 			{3, 3},
 			{5, 5},
 		}
 
 		for _, tt := range tests {
-			url := fmt.Sprintf("/blogs?limit=%d", tt.limit)
+			url := fmt.Sprintf("/blogs?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 

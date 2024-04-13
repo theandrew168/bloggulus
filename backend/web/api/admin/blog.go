@@ -73,17 +73,20 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 		v := validator.New()
 		qs := r.URL.Query()
 
-		limit := util.ReadInt(qs, "limit", 20, v)
-		v.Check(limit >= 0, "limit", "must be positive")
-		v.Check(limit <= 50, "limit", "must be less than or equal to 50")
+		// check pagination params
+		page := util.ReadInt(qs, "page", 1, v)
+		v.Check(page >= 1, "page", "must be greater than or equal to 1")
 
-		offset := util.ReadInt(qs, "offset", 0, v)
-		v.Check(offset >= 0, "offset", "must be positive")
+		size := util.ReadInt(qs, "size", 20, v)
+		v.Check(size >= 1, "size", "must be greater than or equal to 1")
+		v.Check(size <= 50, "size", "must be less than or equal to 50")
 
 		if !v.Valid() {
 			util.BadRequestResponse(w, r, v.Errors)
 			return
 		}
+
+		limit, offset := util.PageSizeToLimitOffset(page, size)
 
 		blogs, err := app.store.Admin().Blog().List(limit, offset)
 		if err != nil {

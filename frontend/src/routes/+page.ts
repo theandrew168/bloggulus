@@ -13,12 +13,9 @@ export const load: PageLoad = async ({ fetch, url }) => {
 
 	const p = url.searchParams.get("p");
 	if (p) {
-		const np = Number(p);
-		if (!Number.isNaN(np)) {
-			const limit = 20;
-			const offset = (np - 1) * limit;
-			search.set("limit", limit.toString());
-			search.set("offset", offset.toString());
+		const page = parseInt(p);
+		if (!Number.isNaN(page)) {
+			search.set("page", page.toString());
 		}
 	}
 

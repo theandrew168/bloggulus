@@ -13,19 +13,19 @@ import (
 )
 
 type Application struct {
-	storage *storage.Storage
+	store *storage.Storage
 }
 
-func NewApplication(storage *storage.Storage) *Application {
+func NewApplication(store *storage.Storage) *Application {
 	app := Application{
-		storage: storage,
+		store: store,
 	}
 	return &app
 }
 
 func (app *Application) Router() http.Handler {
-	adminApp := admin.NewApplication(app.storage)
-	readerApp := reader.NewApplication(app.storage)
+	adminApp := admin.NewApplication(app.store)
+	readerApp := reader.NewApplication(app.store)
 
 	mux := flow.New()
 	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)

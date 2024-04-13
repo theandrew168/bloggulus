@@ -10,12 +10,12 @@ import (
 )
 
 type Application struct {
-	storage *storage.Storage
+	store *storage.Storage
 }
 
-func NewApplication(storage *storage.Storage) *Application {
+func NewApplication(store *storage.Storage) *Application {
 	app := Application{
-		storage: storage,
+		store: store,
 	}
 	return &app
 }

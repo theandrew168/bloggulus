@@ -44,7 +44,7 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 			return
 		}
 
-		blog, err := app.storage.Admin().Blog().Read(id)
+		blog, err := app.store.Admin().Blog().Read(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -85,7 +85,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 			return
 		}
 
-		blogs, err := app.storage.Admin().Blog().List(limit, offset)
+		blogs, err := app.store.Admin().Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

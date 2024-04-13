@@ -18,16 +18,16 @@ import (
 
 type Application struct {
 	frontend fs.FS
-	storage  *storage.Storage
+	store    *storage.Storage
 }
 
 func NewApplication(
 	frontend fs.FS,
-	storage *storage.Storage,
+	store *storage.Storage,
 ) *Application {
 	app := Application{
 		frontend: frontend,
-		storage:  storage,
+		store:    store,
 	}
 	return &app
 }
@@ -50,7 +50,7 @@ func (app *Application) Router() http.Handler {
 	}, "GET")
 
 	// backend - rest api
-	apiApp := api.NewApplication(app.storage)
+	apiApp := api.NewApplication(app.store)
 	mux.Handle("/api/v1/...", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
 	mux.HandleFunc("/api/v1", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/api/v1/", http.StatusMovedPermanently)

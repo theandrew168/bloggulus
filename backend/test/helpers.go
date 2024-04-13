@@ -47,3 +47,12 @@ func NewReaderStorage(t *testing.T) (*readerStorage.Storage, CloserFunc) {
 	store := readerStorage.New(db)
 	return store, closer
 }
+
+func NewDomainStorage(t *testing.T) (*adminStorage.Storage, *readerStorage.Storage, CloserFunc) {
+	t.Helper()
+
+	db, closer := NewDatabase(t)
+	adminStore := adminStorage.New(db)
+	readerStore := readerStorage.New(db)
+	return adminStore, readerStore, closer
+}

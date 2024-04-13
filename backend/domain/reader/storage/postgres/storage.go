@@ -1,4 +1,4 @@
-package storage
+package postgres
 
 import (
 	"github.com/theandrew168/bloggulus/backend/domain/reader/storage"

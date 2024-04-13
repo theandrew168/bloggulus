@@ -32,7 +32,8 @@ run-backend:
 
 .PHONY: migrate
 migrate:
-	go run main.go -migrate
+	go run main.go -conf bloggulus.conf -migrate
+	go run main.go -conf bloggulus.test.conf -migrate
 
 .PHONY: test
 test: migrate

@@ -11,3 +11,12 @@ services:
     image: adminer
     ports:
       - "8080:8080"
+
+  testdb:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres

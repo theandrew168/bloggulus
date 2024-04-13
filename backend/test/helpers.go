@@ -13,8 +13,9 @@ type CloserFunc func()
 func NewConfig(t *testing.T) config.Config {
 	t.Helper()
 
+	// TODO: find a consistent way to read "../../bloggulus.test.conf"
 	cfg := config.Config{
-		DatabaseURI: "postgresql://postgres:postgres@localhost:5432/postgres",
+		DatabaseURI: "postgresql://postgres:postgres@localhost:5433/postgres",
 	}
 	return cfg
 }

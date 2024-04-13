@@ -1,20 +1,8 @@
+import type { PostsResponse } from "$lib/types";
 import type { PageLoad } from "./$types";
 
-export type Post = {
-	title: string;
-	url: string;
-	blogTitle: string;
-	blogURL: string;
-	publishedAt: Date;
-	tags: string[];
-};
-
-export type PostsResponse = {
-	posts: Post[];
-};
-
-export const load: PageLoad = async () => {
-	const resp = await fetch("/api/v1/posts");
+export const load: PageLoad = async ({ fetch, url }) => {
+	const resp = await fetch("/api/v1/posts?" + url.searchParams);
 	const posts: PostsResponse = await resp.json();
 	return posts;
 };

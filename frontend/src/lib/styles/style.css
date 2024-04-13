@@ -1,0 +1,18 @@
+:root {
+	--light-color: white;
+	--mid-color: rgb(75 85 99);
+	--dark-color: rgb(31 41 55);
+	--background-color: rgb(243, 244, 246);
+}
+
+html {
+	background-color: var(--background-color);
+}
+.container {
+	max-width: 48rem;
+	margin: 0 auto;
+	padding: 0 1rem;
+}
+.shadow {
+	box-shadow: 0 2px 2px hsl(0deg 0% 0% / 0.3);
+}

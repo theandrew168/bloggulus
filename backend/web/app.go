@@ -64,6 +64,7 @@ func (app *Application) Router() http.Handler {
 	mux.Handle("/robots.txt", frontendHandler)
 	mux.Handle("/favicon.png", frontendHandler)
 	mux.Handle("/openapi.yaml", frontendHandler)
+	mux.Handle("/fonts/...", frontendHandler)
 	mux.Handle("/_app/...", frontendHandler)
 
 	// all other routes should return the index page so that the frontend router can take over

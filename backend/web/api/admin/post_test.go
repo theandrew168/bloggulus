@@ -10,11 +10,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
 
 type jsonPost struct {
@@ -29,13 +28,13 @@ type jsonPost struct {
 func TestHandlePostRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
-		post := storageMock.CreatePost(t, store)
+		post := test.CreatePost(t, store)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
@@ -68,11 +67,11 @@ func TestHandlePostRead(t *testing.T) {
 func TestHandlePostReadNotFound(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
 		w := httptest.NewRecorder()
@@ -91,13 +90,13 @@ func TestHandlePostReadNotFound(t *testing.T) {
 func TestHandlePostList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
-		storageMock.CreatePost(t, store)
+		test.CreatePost(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
@@ -131,18 +130,18 @@ func TestHandlePostList(t *testing.T) {
 func TestHandlePostListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
 		// create 5 posts to test with
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
 
 		tests := []struct {
 			limit int

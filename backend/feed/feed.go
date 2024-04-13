@@ -7,7 +7,7 @@ import (
 
 	"github.com/mmcdole/gofeed"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 )
 
 var (

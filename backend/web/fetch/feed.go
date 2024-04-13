@@ -5,9 +5,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 )
 
+// ensure FeedFetcher interface is satisfied
 var _ fetch.FeedFetcher = (*FeedFetcher)(nil)
 
 type FeedFetcher struct{}

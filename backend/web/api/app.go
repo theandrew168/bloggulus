@@ -5,8 +5,7 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	readerStorage "github.com/theandrew168/bloggulus/backend/domain/reader/storage"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/admin"
 	"github.com/theandrew168/bloggulus/backend/web/api/reader"
 	"github.com/theandrew168/bloggulus/backend/web/api/util"
@@ -14,21 +13,19 @@ import (
 )
 
 type Application struct {
-	adminStorage  adminStorage.Storage
-	readerStorage readerStorage.Storage
+	storage *storage.Storage
 }
 
-func NewApplication(adminStorage adminStorage.Storage, readerStorage readerStorage.Storage) *Application {
+func NewApplication(storage *storage.Storage) *Application {
 	app := Application{
-		adminStorage:  adminStorage,
-		readerStorage: readerStorage,
+		storage: storage,
 	}
 	return &app
 }
 
 func (app *Application) Router() http.Handler {
-	adminApp := admin.NewApplication(app.adminStorage)
-	readerApp := reader.NewApplication(app.readerStorage)
+	adminApp := admin.NewApplication(app.storage)
+	readerApp := reader.NewApplication(app.storage)
 
 	mux := flow.New()
 	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)

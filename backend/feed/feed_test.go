@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
-	feedMock "github.com/theandrew168/bloggulus/backend/domain/admin/feed/mock"
-	fetchMock "github.com/theandrew168/bloggulus/backend/domain/admin/fetch/mock"
+	"github.com/theandrew168/bloggulus/backend/feed"
+	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
+	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 

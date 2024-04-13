@@ -1,4 +1,4 @@
-package postgres
+package reader
 
 import (
 	"context"
@@ -7,12 +7,8 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/domain/reader"
-	"github.com/theandrew168/bloggulus/backend/domain/reader/storage"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
-
-// ensure PostStorage interface is satisfied
-var _ storage.PostStorage = (*PostgresPostStorage)(nil)
 
 type dbPost struct {
 	Title       string    `db:"title"`
@@ -35,12 +31,12 @@ func (p dbPost) unmarshal() (*reader.Post, error) {
 	return post, nil
 }
 
-type PostgresPostStorage struct {
+type PostStorage struct {
 	conn postgres.Conn
 }
 
-func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
-	s := PostgresPostStorage{
+func NewPostStorage(conn postgres.Conn) *PostStorage {
+	s := PostStorage{
 		conn: conn,
 	}
 	return &s
@@ -48,7 +44,7 @@ func NewPostgresPostStorage(conn postgres.Conn) *PostgresPostStorage {
 
 // TODO: use templates to condense these into a single query?
 
-func (s *PostgresPostStorage) List(limit, offset int) ([]*reader.Post, error) {
+func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 	stmt := `
 		SELECT
 			post.title,
@@ -92,7 +88,7 @@ func (s *PostgresPostStorage) List(limit, offset int) ([]*reader.Post, error) {
 	return posts, nil
 }
 
-func (s *PostgresPostStorage) Search(query string, limit, offset int) ([]*reader.Post, error) {
+func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, error) {
 	stmt := `
 		SELECT
 			post.title,

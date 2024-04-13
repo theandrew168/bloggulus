@@ -1,4 +1,4 @@
-package postgres
+package admin
 
 import (
 	"context"
@@ -8,12 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
-
-// ensure TagStorage interface is satisfied
-var _ storage.TagStorage = (*PostgresTagStorage)(nil)
 
 type dbTag struct {
 	ID        uuid.UUID `db:"id"`
@@ -42,18 +38,18 @@ func (t dbTag) unmarshal() (*admin.Tag, error) {
 	return tag, nil
 }
 
-type PostgresTagStorage struct {
+type TagStorage struct {
 	conn postgres.Conn
 }
 
-func NewPostgresTagStorage(conn postgres.Conn) *PostgresTagStorage {
-	s := PostgresTagStorage{
+func NewTagStorage(conn postgres.Conn) *TagStorage {
+	s := TagStorage{
 		conn: conn,
 	}
 	return &s
 }
 
-func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
+func (s *TagStorage) Create(tag *admin.Tag) error {
 	stmt := `
 		INSERT INTO tag
 			(id, name, created_at, updated_at)
@@ -83,7 +79,7 @@ func (s *PostgresTagStorage) Create(tag *admin.Tag) error {
 	return nil
 }
 
-func (s *PostgresTagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
+func (s *TagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -109,7 +105,7 @@ func (s *PostgresTagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
 	return row.unmarshal()
 }
 
-func (s *PostgresTagStorage) List(limit, offset int) ([]*admin.Tag, error) {
+func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -146,7 +142,7 @@ func (s *PostgresTagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	return tags, nil
 }
 
-func (repo *PostgresTagStorage) Delete(tag *admin.Tag) error {
+func (repo *TagStorage) Delete(tag *admin.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1

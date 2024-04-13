@@ -4,12 +4,9 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage/postgres"
-	readerStorage "github.com/theandrew168/bloggulus/backend/domain/reader/storage/postgres"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 )
-
-// TODO: do we even need these?
 
 type CloserFunc func()
 
@@ -32,27 +29,10 @@ func NewDatabase(t *testing.T) (postgres.Conn, CloserFunc) {
 	return pool, pool.Close
 }
 
-func NewAdminStorage(t *testing.T) (*adminStorage.Storage, CloserFunc) {
+func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
 	t.Helper()
 
 	db, closer := NewDatabase(t)
-	store := adminStorage.New(db)
+	store := storage.New(db)
 	return store, closer
-}
-
-func NewReaderStorage(t *testing.T) (*readerStorage.Storage, CloserFunc) {
-	t.Helper()
-
-	db, closer := NewDatabase(t)
-	store := readerStorage.New(db)
-	return store, closer
-}
-
-func NewDomainStorage(t *testing.T) (*adminStorage.Storage, *readerStorage.Storage, CloserFunc) {
-	t.Helper()
-
-	db, closer := NewDatabase(t)
-	adminStore := adminStorage.New(db)
-	readerStore := readerStorage.New(db)
-	return adminStore, readerStore, closer
 }

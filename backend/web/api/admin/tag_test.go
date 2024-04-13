@@ -9,11 +9,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
 
 type jsonTag struct {
@@ -24,13 +23,13 @@ type jsonTag struct {
 func TestHandleTagList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
-		storageMock.CreateTag(t, store)
+		test.CreateTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
@@ -64,18 +63,18 @@ func TestHandleTagList(t *testing.T) {
 func TestHandleTagListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
 		// create 5 tags to test with
-		storageMock.CreateTag(t, store)
-		storageMock.CreateTag(t, store)
-		storageMock.CreateTag(t, store)
-		storageMock.CreateTag(t, store)
-		storageMock.CreateTag(t, store)
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
 
 		tests := []struct {
 			limit int

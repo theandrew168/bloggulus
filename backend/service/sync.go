@@ -6,19 +6,19 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/feed"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
 type SyncService struct {
-	store       storage.Storage
+	store       *storage.Storage
 	feedFetcher fetch.FeedFetcher
 	pageFetcher fetch.PageFetcher
 }
 
-func NewSyncService(store storage.Storage, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
+func NewSyncService(store *storage.Storage, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
 	s := SyncService{
 		store:       store,
 		feedFetcher: feedFetcher,
@@ -34,7 +34,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	now := time.Now().UTC()
 
 	// TODO: page through and collect all blogs
-	blogs, err := s.store.Blog().List(1000, 0)
+	blogs, err := s.store.Admin().Blog().List(1000, 0)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (s *SyncService) SyncAllBlogs() error {
 }
 
 func (s *SyncService) SyncBlog(feedURL string) error {
-	blog, err := s.store.Blog().ReadByFeedURL(feedURL)
+	blog, err := s.store.Admin().Blog().ReadByFeedURL(feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return err
@@ -89,7 +89,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		resp.LastModified,
 		now,
 	)
-	err = s.store.Blog().Create(blog)
+	err = s.store.Admin().Blog().Create(blog)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 	now := time.Now().UTC()
 	blog.SetSyncedAt(now)
 
-	err := s.store.Blog().Update(blog)
+	err := s.store.Admin().Blog().Update(blog)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 		blog.SetLastModified(resp.LastModified)
 	}
 
-	err = s.store.Blog().Update(blog)
+	err = s.store.Admin().Blog().Update(blog)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 }
 
 func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
-	post, err := s.store.Post().ReadByURL(feedPost.URL)
+	post, err := s.store.Admin().Post().ReadByURL(feedPost.URL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return err
@@ -165,13 +165,13 @@ func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 			feedPost.Content,
 			feedPost.PublishedAt,
 		)
-		return s.store.Post().Create(post)
+		return s.store.Admin().Post().Create(post)
 	}
 
 	// update the post's content (if available)
 	if feedPost.Content != "" {
 		post.SetContent(feedPost.Content)
-		return s.store.Post().Update(post)
+		return s.store.Admin().Post().Update(post)
 	}
 
 	return nil

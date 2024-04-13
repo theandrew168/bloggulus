@@ -5,15 +5,15 @@ import (
 
 	"github.com/alexedwards/flow"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/util"
 )
 
 type Application struct {
-	storage storage.Storage
+	storage *storage.Storage
 }
 
-func NewApplication(storage storage.Storage) *Application {
+func NewApplication(storage *storage.Storage) *Application {
 	app := Application{
 		storage: storage,
 	}

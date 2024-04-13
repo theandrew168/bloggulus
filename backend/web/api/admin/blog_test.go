@@ -9,11 +9,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	api "github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api/admin"
 )
 
 type jsonBlog struct {
@@ -26,13 +25,13 @@ type jsonBlog struct {
 func TestHandleBlogRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
-		blog := storageMock.CreateBlog(t, store)
+		blog := test.CreateBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
@@ -65,10 +64,10 @@ func TestHandleBlogRead(t *testing.T) {
 func TestHandleBlogReadNotFound(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	app := api.NewApplication(store)
+	app := admin.NewApplication(store)
 
 	path := fmt.Sprintf("/blogs/%s", uuid.New())
 	w := httptest.NewRecorder()
@@ -84,13 +83,13 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 func TestHandleBlogList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
-		storageMock.CreateBlog(t, store)
+		test.CreateBlog(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/blogs", nil)
@@ -124,18 +123,18 @@ func TestHandleBlogList(t *testing.T) {
 func TestHandleBlogListPagination(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		app := api.NewApplication(store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
 
 		// create 5 blogs to test with
-		storageMock.CreateBlog(t, store)
-		storageMock.CreateBlog(t, store)
-		storageMock.CreateBlog(t, store)
-		storageMock.CreateBlog(t, store)
-		storageMock.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
 
 		tests := []struct {
 			limit int

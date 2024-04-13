@@ -1,4 +1,4 @@
-package postgres
+package admin
 
 import (
 	"context"
@@ -8,12 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
-
-// ensure BlogStorage interface is satisfied
-var _ storage.BlogStorage = (*PostgresBlogStorage)(nil)
 
 type dbBlog struct {
 	ID           uuid.UUID `db:"id"`
@@ -57,18 +53,18 @@ func (b dbBlog) unmarshal() (*admin.Blog, error) {
 	return blog, nil
 }
 
-type PostgresBlogStorage struct {
+type BlogStorage struct {
 	conn postgres.Conn
 }
 
-func NewPostgresBlogStorage(conn postgres.Conn) *PostgresBlogStorage {
-	s := PostgresBlogStorage{
+func NewBlogStorage(conn postgres.Conn) *BlogStorage {
+	s := BlogStorage{
 		conn: conn,
 	}
 	return &s
 }
 
-func (s *PostgresBlogStorage) Create(blog *admin.Blog) error {
+func (s *BlogStorage) Create(blog *admin.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
@@ -103,7 +99,7 @@ func (s *PostgresBlogStorage) Create(blog *admin.Blog) error {
 	return nil
 }
 
-func (s *PostgresBlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
+func (s *BlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -134,7 +130,7 @@ func (s *PostgresBlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
 	return row.unmarshal()
 }
 
-func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
+func (s *BlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -165,7 +161,7 @@ func (s *PostgresBlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error)
 	return row.unmarshal()
 }
 
-func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
+func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -207,7 +203,7 @@ func (s *PostgresBlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	return blogs, nil
 }
 
-func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
+func (s *BlogStorage) Update(blog *admin.Blog) error {
 	now := time.Now().UTC()
 	stmt := `
 		UPDATE blog
@@ -257,7 +253,7 @@ func (s *PostgresBlogStorage) Update(blog *admin.Blog) error {
 	return nil
 }
 
-func (repo *PostgresBlogStorage) Delete(blog *admin.Blog) error {
+func (repo *BlogStorage) Delete(blog *admin.Blog) error {
 	stmt := `
 		DELETE FROM blog
 		WHERE id = $1

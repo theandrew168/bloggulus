@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
+	"github.com/theandrew168/bloggulus/backend/feed"
 )
 
 type xmlLink struct {

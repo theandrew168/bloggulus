@@ -47,7 +47,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			return
 		}
 
-		post, err := app.storage.Post().Read(id)
+		post, err := app.storage.Admin().Post().Read(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -89,7 +89,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			return
 		}
 
-		posts, err := app.storage.Post().List(limit, offset)
+		posts, err := app.storage.Admin().Post().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

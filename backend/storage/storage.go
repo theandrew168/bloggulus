@@ -1,49 +1,41 @@
-package postgres
+package storage
 
 import (
 	"context"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage/admin"
+	"github.com/theandrew168/bloggulus/backend/storage/reader"
 )
-
-// ensure Storage interface is satisfied
-var _ storage.Storage = (*Storage)(nil)
 
 type Storage struct {
 	conn postgres.Conn
 
-	blog *PostgresBlogStorage
-	post *PostgresPostStorage
-	tag  *PostgresTagStorage
+	admin  *admin.Storage
+	reader *reader.Storage
 }
 
 func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		blog: NewPostgresBlogStorage(conn),
-		post: NewPostgresPostStorage(conn),
-		tag:  NewPostgresTagStorage(conn),
+		admin:  admin.New(conn),
+		reader: reader.New(conn),
 	}
 	return &s
 }
 
-func (s *Storage) Blog() storage.BlogStorage {
-	return s.blog
+func (s *Storage) Admin() *admin.Storage {
+	return s.admin
 }
 
-func (s *Storage) Post() storage.PostStorage {
-	return s.post
-}
-
-func (s *Storage) Tag() storage.TagStorage {
-	return s.tag
+func (s *Storage) Reader() *reader.Storage {
+	return s.reader
 }
 
 // Based on:
 // https://pkg.go.dev/github.com/jackc/pgx#hdr-Transactions
-func (s *Storage) WithTransaction(operation func(store storage.Storage) error) error {
+func (s *Storage) WithTransaction(operation func(store *Storage) error) error {
 	// Calling the Begin() method on the connection creates a new pgx.Tx
 	// object, which represents the in-progress database transaction.
 	tx, err := s.conn.Begin(context.Background())

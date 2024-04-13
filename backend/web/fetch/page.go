@@ -10,7 +10,7 @@ import (
 
 	"github.com/microcosm-cc/bluemonday"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 )
 
 var _ fetch.PageFetcher = (*PageFetcher)(nil)

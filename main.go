@@ -14,10 +14,9 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/service"
-	adminStorage "github.com/theandrew168/bloggulus/backend/domain/admin/storage/postgres"
-	readerStorage "github.com/theandrew168/bloggulus/backend/domain/reader/storage/postgres"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/service"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
 	"github.com/theandrew168/bloggulus/backend/web/fetch"
 	"github.com/theandrew168/bloggulus/frontend"
@@ -83,10 +82,9 @@ func run() error {
 	}
 
 	// init database storage
-	adminStore := adminStorage.New(pool)
-	readerStore := readerStorage.New(pool)
+	store := storage.New(pool)
 
-	syncService := service.NewSyncService(adminStore, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
+	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
 	// add a blog and exit now if requested
 	if *addblog != "" {
@@ -110,7 +108,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	app := web.NewApplication(frontend.Frontend, adminStore, readerStore)
+	app := web.NewApplication(frontend.Frontend, store)
 
 	// let port be overridden by an env var
 	port := cfg.Port

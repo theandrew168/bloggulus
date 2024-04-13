@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 )
 
 // ensure PageFetcher interface is satisfied

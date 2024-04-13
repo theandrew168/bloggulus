@@ -4,23 +4,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin/feed"
-	feedMock "github.com/theandrew168/bloggulus/backend/domain/admin/feed/mock"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/fetch"
-	fetchMock "github.com/theandrew168/bloggulus/backend/domain/admin/fetch/mock"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/service"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
+	"github.com/theandrew168/bloggulus/backend/feed"
+	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
+	"github.com/theandrew168/bloggulus/backend/fetch"
+	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/service"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestNewBlog(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedPost := feed.Post{
 			URL:         "https://example.com/foo",
 			Title:       "Foo",
@@ -52,14 +52,14 @@ func TestNewBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch and verify blog data
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -77,10 +77,10 @@ func TestNewBlog(t *testing.T) {
 func TestExistingBlog(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedBlog := feed.Blog{
 			Title:   "FooBar",
 			SiteURL: "https://example.com",
@@ -105,14 +105,14 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch and verify blog data
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count (should be none)
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 0)
 
@@ -136,7 +136,7 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err = store.Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Admin().Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -153,10 +153,10 @@ func TestExistingBlog(t *testing.T) {
 func TestUnreachableFeed(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedURL := "https://example.com/atom.xml"
 
 		feeds := map[string]string{}
@@ -177,10 +177,10 @@ func TestUnreachableFeed(t *testing.T) {
 func TestNoNewFeedContent(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedURL := "https://example.com/atom.xml"
 
 		feeds := map[string]string{
@@ -203,10 +203,10 @@ func TestNoNewFeedContent(t *testing.T) {
 func TestSyncOncePerHour(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedBlog := feed.Blog{
 			Title:   "FooBar",
 			SiteURL: "https://example.com",
@@ -231,7 +231,7 @@ func TestSyncOncePerHour(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// capture its current syncedAt time
@@ -242,7 +242,7 @@ func TestSyncOncePerHour(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch the blog's data
-		blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err = store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// syncedAt should not have changed
@@ -255,10 +255,10 @@ func TestSyncOncePerHour(t *testing.T) {
 func TestUpdatePostContent(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedPost := feed.Post{
 			URL:         "https://example.com/foo",
 			Title:       "Foo",
@@ -289,11 +289,11 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -316,7 +316,7 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch posts and verify count
-		posts, err = store.Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Admin().Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -331,10 +331,10 @@ func TestUpdatePostContent(t *testing.T) {
 func TestCacheHeaderOverwrite(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
+	store.WithTransaction(func(store *storage.Storage) error {
 		feedBlog := feed.Blog{
 			Title:   "FooBar",
 			SiteURL: "https://example.com",
@@ -359,13 +359,13 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// update the blog's ETag and LastModified to something non-empty
 		blog.SetETag("foo")
 		blog.SetLastModified("bar")
-		err = store.Blog().Update(blog)
+		err = store.Admin().Blog().Update(blog)
 		test.AssertNilError(t, err)
 
 		// sync the block again (will see empty ETag and LastModified values)
@@ -373,7 +373,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch the blog
-		blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err = store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// verify that the existing ETag and LastModified values haven't been wiped out

@@ -12,13 +12,10 @@ import (
 func TestHandleIndex(t *testing.T) {
 	t.Parallel()
 
-	adminStore, adminStoreCloser := test.NewAdminStorage(t)
-	defer adminStoreCloser()
+	store, closer := test.NewStorage(t)
+	defer closer()
 
-	readerStore, readerStoreCloser := test.NewReaderStorage(t)
-	defer readerStoreCloser()
-
-	app := api.NewApplication(adminStore, readerStore)
+	app := api.NewApplication(store)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)

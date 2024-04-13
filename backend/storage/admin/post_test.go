@@ -1,29 +1,27 @@
-package postgres_test
+package admin_test
 
 import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/mock"
-	"github.com/theandrew168/bloggulus/backend/domain/admin/storage"
-	storageMock "github.com/theandrew168/bloggulus/backend/domain/admin/storage/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestPostCreate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		blog := mock.NewBlog()
-		err := store.Blog().Create(blog)
+	store.WithTransaction(func(store *storage.Storage) error {
+		blog := test.NewBlog()
+		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 
-		post := mock.NewPost(blog)
-		err = store.Post().Create(post)
+		post := test.NewPost(blog)
+		err = store.Admin().Post().Create(post)
 		test.AssertNilError(t, err)
 
 		return postgres.ErrRollback
@@ -33,14 +31,14 @@ func TestPostCreate(t *testing.T) {
 func TestPostCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreatePost(t, store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		post := test.CreatePost(t, store)
 
 		// attempt to create the same post again
-		err := store.Post().Create(post)
+		err := store.Admin().Post().Create(post)
 		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
 		return postgres.ErrRollback
@@ -50,12 +48,12 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 func TestPostRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreatePost(t, store)
-		got, err := store.Post().Read(post.ID())
+	store.WithTransaction(func(store *storage.Storage) error {
+		post := test.CreatePost(t, store)
+		got, err := store.Admin().Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), post.ID())
@@ -67,12 +65,12 @@ func TestPostRead(t *testing.T) {
 func TestPostReadByURL(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreatePost(t, store)
-		got, err := store.Post().ReadByURL(post.URL())
+	store.WithTransaction(func(store *storage.Storage) error {
+		post := test.CreatePost(t, store)
+		got, err := store.Admin().Post().ReadByURL(post.URL())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), post.ID())
@@ -84,19 +82,19 @@ func TestPostReadByURL(t *testing.T) {
 func TestPostList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
-		storageMock.CreatePost(t, store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
+		test.CreatePost(t, store)
 
 		limit := 5
 		offset := 0
-		posts, err := store.Post().List(limit, offset)
+		posts, err := store.Admin().Post().List(limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(posts), limit)
@@ -108,11 +106,11 @@ func TestPostList(t *testing.T) {
 func TestPostListByBlog(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		blog := storageMock.CreateBlog(t, store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		blog := test.CreateBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
 		var post *admin.Post
@@ -124,13 +122,13 @@ func TestPostListByBlog(t *testing.T) {
 				test.RandomString(32),
 				test.RandomTime(),
 			)
-			err := store.Post().Create(post)
+			err := store.Admin().Post().Create(post)
 			test.AssertNilError(t, err)
 		}
 
 		limit := 5
 		offset := 0
-		posts, err := store.Post().ListByBlog(blog, limit, offset)
+		posts, err := store.Admin().Post().ListByBlog(blog, limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(posts), limit)
@@ -145,19 +143,19 @@ func TestPostListByBlog(t *testing.T) {
 func TestPostUpdate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreatePost(t, store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		post := test.CreatePost(t, store)
 
 		content := "foobar"
 		post.SetContent(content)
 
-		err := store.Post().Update(post)
+		err := store.Admin().Post().Update(post)
 		test.AssertNilError(t, err)
 
-		got, err := store.Post().Read(post.ID())
+		got, err := store.Admin().Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.Content(), content)
@@ -169,16 +167,16 @@ func TestPostUpdate(t *testing.T) {
 func TestPostDelete(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewAdminStorage(t)
+	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store storage.Storage) error {
-		post := storageMock.CreatePost(t, store)
+	store.WithTransaction(func(store *storage.Storage) error {
+		post := test.CreatePost(t, store)
 
-		err := store.Post().Delete(post)
+		err := store.Admin().Post().Delete(post)
 		test.AssertNilError(t, err)
 
-		_, err = store.Post().Read(post.ID())
+		_, err = store.Admin().Post().Read(post.ID())
 		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
 		return postgres.ErrRollback

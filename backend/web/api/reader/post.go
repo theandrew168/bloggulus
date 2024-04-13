@@ -57,13 +57,13 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		var err error
 
 		if q != "" {
-			posts, err = app.storage.Post().Search(q, limit, offset)
+			posts, err = app.storage.Reader().Post().Search(q, limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 		} else {
-			posts, err = app.storage.Post().List(limit, offset)
+			posts, err = app.storage.Reader().Post().List(limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return

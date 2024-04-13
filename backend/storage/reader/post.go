@@ -42,10 +42,15 @@ func NewPostStorage(conn postgres.Conn) *PostStorage {
 	return &s
 }
 
-// TODO: use templates to condense these into a single query?
-
 func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 	stmt := `
+		WITH latest AS (
+			SELECT
+				post.id
+			FROM post
+			ORDER BY post.published_at DESC
+			LIMIT $1 OFFSET $2
+		)
 		SELECT
 			post.title,
 			post.url,
@@ -53,14 +58,15 @@ func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 			blog.site_url as blog_url,
 			post.published_at,
 			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.fts_data, to_tsquery(tag.name)) DESC), NULL) as tags
-		FROM post
+		FROM latest
+		INNER JOIN post
+			ON post.id = latest.id
 		INNER JOIN blog
 			ON blog.id = post.blog_id
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ post.fts_data
 		GROUP BY 1,2,3,4,5
-		ORDER BY post.published_at DESC
-		LIMIT $1 OFFSET $2`
+		ORDER BY post.published_at DESC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -90,6 +96,13 @@ func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 
 func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, error) {
 	stmt := `
+		WITH relevant AS (
+			SELECT
+				post.id
+			FROM post
+			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC
+			LIMIT $2 OFFSET $3
+		)
 		SELECT
 			post.title,
 			post.url,
@@ -97,15 +110,16 @@ func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, e
 			blog.site_url as blog_url,
 			post.published_at,
 			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.fts_data, to_tsquery(tag.name)) DESC), NULL) as tags
-		FROM post
+		FROM relevant
+		INNER JOIN post
+			ON post.id = relevant.id
 		INNER JOIN blog
 			ON blog.id = post.blog_id
 		LEFT JOIN tag
 			ON to_tsquery(tag.name) @@ post.fts_data
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
 		GROUP BY 1,2,3,4,5,post.fts_data
-		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC
-		LIMIT $2 OFFSET $3`
+		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()

@@ -94,7 +94,7 @@ func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 	return posts, nil
 }
 
-func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, error) {
+func (s *PostStorage) ListSearch(search string, limit, offset int) ([]*reader.Post, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -124,7 +124,7 @@ func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, e
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, query, limit, offset)
+	rows, err := s.conn.Query(ctx, stmt, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -145,4 +145,47 @@ func (s *PostStorage) Search(query string, limit, offset int) ([]*reader.Post, e
 	}
 
 	return posts, nil
+}
+
+func (s *PostStorage) Count() (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
+func (s *PostStorage) CountSearch(search string) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post
+		WHERE fts_data @@ websearch_to_tsquery('english',  $1)`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, search)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
 }

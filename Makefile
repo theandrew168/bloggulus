@@ -28,7 +28,7 @@ run-frontend:
 
 .PHONY: run-backend
 run-backend:
-	DEBUG=1 go run main.go
+	go run main.go
 
 .PHONY: migrate
 migrate:

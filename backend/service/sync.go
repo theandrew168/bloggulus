@@ -72,8 +72,7 @@ func (s *SyncService) SyncAllBlogs() error {
 
 	slog.Info("syncing blogs")
 
-	// TODO: page through and collect all blogs
-	blogs, err := s.store.Admin().Blog().List(1000, 0)
+	blogs, err := s.store.Admin().Blog().ListAll()
 	if err != nil {
 		return err
 	}

@@ -203,6 +203,47 @@ func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	return blogs, nil
 }
 
+func (s *BlogStorage) ListAll() ([]*admin.Blog, error) {
+	stmt := `
+		SELECT
+			id,
+			feed_url,
+			site_url,
+			title,
+			etag,
+			last_modified,
+			synced_at,
+			created_at,
+			updated_at
+		FROM blog
+		ORDER BY created_at DESC`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	blogRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbBlog])
+	if err != nil {
+		return nil, postgres.CheckListError(err)
+	}
+
+	var blogs []*admin.Blog
+	for _, row := range blogRows {
+		blog, err := row.unmarshal()
+		if err != nil {
+			return nil, err
+		}
+
+		blogs = append(blogs, blog)
+	}
+
+	return blogs, nil
+}
+
 func (s *BlogStorage) Update(blog *admin.Blog) error {
 	now := time.Now().UTC()
 	stmt := `

@@ -76,6 +76,7 @@ func run() error {
 	// init database storage
 	store := storage.New(pool)
 
+	// init the sync service and do an initial sync
 	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
 	// add a blog and exit now if requested
@@ -121,7 +122,18 @@ func run() error {
 		}
 	}()
 
-	// wait for the web server and worker to stop
+	// start the sync service in the background
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		err := syncService.Run(ctx)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}()
+
+	// wait for the web server and sync service to stop
 	wg.Wait()
 
 	return nil

@@ -41,17 +41,9 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 
-	if resp.StatusCode >= 300 {
-		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fetch.FetchFeedResponse{}, err
-	}
-
-	if len(body) == 0 {
-		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
 	}
 
 	fetchFeedResponse := fetch.FetchFeedResponse{

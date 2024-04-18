@@ -3,8 +3,7 @@ package fetch
 import "errors"
 
 var (
-	ErrUnreachableFeed  = errors.New("fetch: unreachable feed")
-	ErrNoNewFeedContent = errors.New("fetch: no new feed content")
+	ErrUnreachableFeed = errors.New("fetch: unreachable feed")
 )
 
 type FetchFeedResponse struct {

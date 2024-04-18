@@ -22,10 +22,6 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 
-	if feed == "" {
-		return fetch.FetchFeedResponse{}, fetch.ErrNoNewFeedContent
-	}
-
 	resp := fetch.FetchFeedResponse{
 		Feed: feed,
 	}

@@ -174,32 +174,6 @@ func TestUnreachableFeed(t *testing.T) {
 	})
 }
 
-func TestNoNewFeedContent(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		feedURL := "https://example.com/atom.xml"
-
-		feeds := map[string]string{
-			feedURL: "",
-		}
-		feedFetcher := fetchMock.NewFeedFetcher(feeds)
-
-		pages := map[string]string{}
-		pageFetcher := fetchMock.NewPageFetcher(pages)
-
-		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
-
-		err := syncService.SyncBlog(feedURL)
-		test.AssertErrorIs(t, err, fetch.ErrNoNewFeedContent)
-
-		return postgres.ErrRollback
-	})
-}
-
 func TestSyncOncePerHour(t *testing.T) {
 	t.Parallel()
 

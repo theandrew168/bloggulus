@@ -14,7 +14,10 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-const SyncInterval = 1 * time.Hour
+const (
+	SyncInterval = 1 * time.Hour
+	SyncCooldown = 30 * time.Minute
+)
 
 type SyncService struct {
 	mu          sync.Mutex
@@ -79,9 +82,9 @@ func (s *SyncService) SyncAllBlogs() error {
 
 	now := time.Now().UTC()
 	for _, blog := range blogs {
-		// only sync each blog once an hour (at most) regardless of SyncInterval
+		// don't sync a given blog more than once per SyncCooldown
 		delta := now.Sub(blog.SyncedAt())
-		if delta < 1*time.Hour {
+		if delta < SyncCooldown {
 			slog.Info("skipping blog", "title", blog.Title(), "id", blog.ID())
 			continue
 		}

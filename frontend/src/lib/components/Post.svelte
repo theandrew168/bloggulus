@@ -8,9 +8,11 @@
 <div class="post shadow">
 	<div class="top">
 		<div class="updated">{new Date(post.publishedAt).toLocaleDateString()}</div>
-		{#each post.tags.slice(0, 3) as tag}
-			<Tag name={tag} />
-		{/each}
+		<div class="tags">
+			{#each post.tags.slice(0, 3) as tag}
+				<Tag name={tag} />
+			{/each}
+		</div>
 	</div>
 	<div class="title">
 		<a href={post.url}>{post.title}</a>
@@ -30,6 +32,7 @@
 	.top {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 	}
@@ -38,6 +41,12 @@
 		font-size: 0.875rem;
 		font-weight: 300;
 		margin-right: auto;
+	}
+	.tags {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		overflow-x: auto;
 	}
 	.title {
 		margin-bottom: 0.5rem;

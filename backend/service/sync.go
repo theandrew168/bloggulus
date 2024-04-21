@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/sync/semaphore"
+
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/fetch"
@@ -17,6 +19,8 @@ import (
 const (
 	SyncInterval = 1 * time.Hour
 	SyncCooldown = 30 * time.Minute
+
+	SyncConcurrency = 8
 )
 
 type SyncService struct {
@@ -65,7 +69,6 @@ func (s *SyncService) Run(ctx context.Context) error {
 // Start with the current time and a list of all known blogs. For each blog,
 // compare its syncedAt time to the current time. If the difference is less
 // than SyncCooldown, skip it. Otherwise, check for and sync new content.
-// TODO: Make this concurrent.
 func (s *SyncService) SyncAllBlogs() error {
 	// ensure only one sync happens at a time
 	if !s.mu.TryLock() {
@@ -82,20 +85,39 @@ func (s *SyncService) SyncAllBlogs() error {
 	}
 
 	now := time.Now().UTC()
+
+	// use a weighted semaphore to limit concurrency
+	ctx := context.TODO()
+	sem := semaphore.NewWeighted(SyncConcurrency)
+
+	// sync all blogs in parallel (up to SyncConcurrency at once)
 	for _, blog := range blogs {
-		// don't sync a given blog more than once per SyncCooldown
-		delta := now.Sub(blog.SyncedAt())
-		if delta < SyncCooldown {
-			slog.Info("skipping blog", "title", blog.Title(), "id", blog.ID())
+		if err := sem.Acquire(ctx, 1); err != nil {
+			slog.Warn("failed to acquire semaphore", "error", err.Error())
 			continue
 		}
 
-		slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
-		err = s.SyncBlog(blog.FeedURL())
-		if err != nil {
-			slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
-		}
+		go func(blog *admin.Blog) {
+			defer sem.Release(1)
+
+			// don't sync a given blog more than once per SyncCooldown
+			delta := now.Sub(blog.SyncedAt())
+			if delta < SyncCooldown {
+				slog.Info("skipping blog", "title", blog.Title(), "id", blog.ID())
+				return
+			}
+
+			slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
+			err = s.SyncBlog(blog.FeedURL())
+			if err != nil {
+				slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
+				return
+			}
+		}(blog)
 	}
+
+	// wait for all blogs to finish syncing
+	sem.Acquire(ctx, SyncConcurrency)
 
 	return nil
 }

@@ -63,8 +63,9 @@ func (s *SyncService) Run(ctx context.Context) error {
 }
 
 // Start with the current time and a list of all known blogs. For each blog,
-// compare its syncedAt time to the current time. If the difference is an hour
-// or larger, sync the blog. Otherwise, skip syncing it.
+// compare its syncedAt time to the current time. If the difference is less
+// than SyncCooldown, skip it. Otherwise, check for and sync new content.
+// TODO: Make this concurrent.
 func (s *SyncService) SyncAllBlogs() error {
 	// ensure only one sync happens at a time
 	if !s.mu.TryLock() {

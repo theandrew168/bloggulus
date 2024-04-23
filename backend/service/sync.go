@@ -87,15 +87,11 @@ func (s *SyncService) SyncAllBlogs() error {
 	now := time.Now().UTC()
 
 	// use a weighted semaphore to limit concurrency
-	ctx := context.TODO()
 	sem := semaphore.NewWeighted(SyncConcurrency)
 
 	// sync all blogs in parallel (up to SyncConcurrency at once)
 	for _, blog := range blogs {
-		if err := sem.Acquire(ctx, 1); err != nil {
-			slog.Warn("failed to acquire semaphore", "error", err.Error())
-			continue
-		}
+		sem.Acquire(context.Background(), 1)
 
 		go func(blog *admin.Blog) {
 			defer sem.Release(1)
@@ -117,7 +113,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	}
 
 	// wait for all blogs to finish syncing
-	sem.Acquire(ctx, SyncConcurrency)
+	sem.Acquire(context.Background(), SyncConcurrency)
 
 	return nil
 }

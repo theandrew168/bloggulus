@@ -48,6 +48,12 @@ cover:
 release:
 	goreleaser release --clean --snapshot
 
+.PHONY: deploy
+deploy: release
+	scp dist/bloggulus_linux_amd64_v1/bloggulus derz@bloggulus.com:/tmp/bloggulus
+	ssh -t derz@bloggulus.com sudo install /tmp/bloggulus /usr/local/bin/bloggulus
+	ssh -t derz@bloggulus.com sudo systemctl restart bloggulus
+
 .PHONY: format
 format: format-frontend format-backend
 

@@ -3,11 +3,15 @@
 	import Tag from "./Tag.svelte";
 
 	export let post: Post;
+
+	function formatPostDate(date: string): string {
+		return new Date(date).toLocaleDateString("en-us", { month: "short", day: "numeric", year: "numeric" });
+	}
 </script>
 
 <div class="post shadow">
 	<div class="top">
-		<div class="updated">{new Date(post.publishedAt).toLocaleDateString()}</div>
+		<div class="updated">{formatPostDate(post.publishedAt)}</div>
 		<div class="tags">
 			{#each post.tags.slice(0, 3) as tag}
 				<Tag name={tag} />

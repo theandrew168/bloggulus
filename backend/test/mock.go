@@ -49,9 +49,8 @@ func NewAccount(t *testing.T) *admin.Account {
 }
 
 func NewToken(t *testing.T, account *admin.Account) *admin.Token {
-	token, err := admin.NewToken(
+	token, _, err := admin.NewToken(
 		account,
-		RandomString(32),
 		// expire in 24 hours
 		time.Now().UTC().Add(24*time.Hour),
 	)

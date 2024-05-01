@@ -2,7 +2,9 @@ package admin_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -53,6 +55,34 @@ func TestTokenRead(t *testing.T) {
 	store.WithTransaction(func(store *storage.Storage) error {
 		token := test.CreateToken(t, store)
 		got, err := store.Admin().Token().Read(token.ID())
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, got.ID(), token.ID())
+
+		return postgres.ErrRollback
+	})
+}
+
+func TestTokenReadByHash(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		account := test.CreateAccount(t, store)
+
+		token, value, err := admin.NewToken(
+			account,
+			// expire in 24 hours
+			time.Now().UTC().Add(24*time.Hour),
+		)
+		test.AssertNilError(t, err)
+
+		err = store.Admin().Token().Create(token)
+		test.AssertNilError(t, err)
+
+		got, err := store.Admin().Token().ReadByValue(value)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), token.ID())

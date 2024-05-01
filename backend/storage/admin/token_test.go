@@ -63,7 +63,7 @@ func TestTokenRead(t *testing.T) {
 	})
 }
 
-func TestTokenReadByHash(t *testing.T) {
+func TestTokenReadByValue(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)

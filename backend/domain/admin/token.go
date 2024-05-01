@@ -21,7 +21,7 @@ type Token struct {
 	updatedAt time.Time
 }
 
-func generateToken() (string, error) {
+func GenerateToken() (string, error) {
 	// Initialize a zero-valued byte slice with a length of 16 bytes.
 	randomBytes := make([]byte, 16)
 
@@ -46,7 +46,7 @@ func NewToken(account *Account, expiresAt time.Time) (*Token, string, error) {
 		return nil, "", fmt.Errorf("token: expires in the past")
 	}
 
-	plaintext, err := generateToken()
+	value, err := GenerateToken()
 	if err != nil {
 		return nil, "", err
 	}
@@ -55,7 +55,7 @@ func NewToken(account *Account, expiresAt time.Time) (*Token, string, error) {
 	// that we store in the `hash` field of our database table. Note that the
 	// sha256.Sum256() function returns an *array* of length 32, so to make it easier to
 	// work with we convert it to a slice using the [:] operator before storing it.
-	hashBytes := sha256.Sum256([]byte(plaintext))
+	hashBytes := sha256.Sum256([]byte(value))
 	hash := hex.EncodeToString(hashBytes[:])
 
 	token := Token{
@@ -67,7 +67,7 @@ func NewToken(account *Account, expiresAt time.Time) (*Token, string, error) {
 		createdAt: now,
 		updatedAt: now,
 	}
-	return &token, plaintext, nil
+	return &token, value, nil
 }
 
 func LoadToken(id, accountID uuid.UUID, hash string, expiresAt, createdAt, updatedAt time.Time) *Token {

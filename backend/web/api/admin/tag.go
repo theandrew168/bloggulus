@@ -27,6 +27,7 @@ func (app *Application) handleTagList() http.HandlerFunc {
 	type response struct {
 		Tags []jsonTag `json:"tags"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
@@ -40,7 +41,7 @@ func (app *Application) handleTagList() http.HandlerFunc {
 		v.Check(size <= 50, "size", "must be less than or equal to 50")
 
 		if !v.Valid() {
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 
@@ -61,7 +62,8 @@ func (app *Application) handleTagList() http.HandlerFunc {
 			resp.Tags = append(resp.Tags, marshalTag(tag))
 		}
 
-		err = util.WriteJSON(w, 200, resp, nil)
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

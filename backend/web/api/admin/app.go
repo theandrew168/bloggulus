@@ -30,6 +30,7 @@ func (app *Application) Router() http.Handler {
 	mux.HandleFunc("/posts", app.handlePostList(), "GET")
 	mux.HandleFunc("/posts/:id", app.handlePostRead(), "GET")
 	mux.HandleFunc("/tags", app.handleTagList(), "GET")
+	mux.HandleFunc("/accounts", app.handleAccountCreate(), "POST")
 
 	return mux
 }

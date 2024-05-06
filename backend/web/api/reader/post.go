@@ -51,7 +51,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		v.Check(size <= 50, "size", "must be less than or equal to 50")
 
 		if !v.Valid() {
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 

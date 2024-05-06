@@ -37,13 +37,14 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 	type response struct {
 		Post jsonPost `json:"post"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 
 		id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 		if err != nil {
 			v.AddError("id", "must be a valid UUID")
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 
@@ -61,7 +62,8 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			Post: marshalPost(post),
 		}
 
-		err = util.WriteJSON(w, 200, resp, nil)
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -73,6 +75,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 	type response struct {
 		Posts []jsonPost `json:"posts"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
@@ -86,7 +89,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		v.Check(size <= 50, "size", "must be less than or equal to 50")
 
 		if !v.Valid() {
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 
@@ -107,7 +110,8 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			resp.Posts = append(resp.Posts, marshalPost(post))
 		}
 
-		err = util.WriteJSON(w, 200, resp, nil)
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

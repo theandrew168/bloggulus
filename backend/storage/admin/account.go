@@ -12,20 +12,20 @@ import (
 )
 
 type dbAccount struct {
-	ID        uuid.UUID `db:"id"`
-	Username  string    `db:"username"`
-	Password  string    `db:"password"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID           uuid.UUID `db:"id"`
+	Username     string    `db:"username"`
+	PasswordHash string    `db:"password_hash"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }
 
 func marshalAccount(account *admin.Account) (dbAccount, error) {
 	a := dbAccount{
-		ID:        account.ID(),
-		Username:  account.Username(),
-		Password:  account.Password(),
-		CreatedAt: account.CreatedAt(),
-		UpdatedAt: account.UpdatedAt(),
+		ID:           account.ID(),
+		Username:     account.Username(),
+		PasswordHash: account.PasswordHash(),
+		CreatedAt:    account.CreatedAt(),
+		UpdatedAt:    account.UpdatedAt(),
 	}
 	return a, nil
 }
@@ -34,7 +34,7 @@ func (a dbAccount) unmarshal() (*admin.Account, error) {
 	account := admin.LoadAccount(
 		a.ID,
 		a.Username,
-		a.Password,
+		a.PasswordHash,
 		a.CreatedAt,
 		a.UpdatedAt,
 	)
@@ -55,7 +55,7 @@ func NewAccountStoragee(conn postgres.Conn) *AccountStorage {
 func (s *AccountStorage) Create(account *admin.Account) error {
 	stmt := `
 		INSERT INTO account
-			(id, username, password, created_at, updated_at)
+			(id, username, password_hash, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4, $5)`
 
@@ -67,7 +67,7 @@ func (s *AccountStorage) Create(account *admin.Account) error {
 	args := []interface{}{
 		row.ID,
 		row.Username,
-		row.Password,
+		row.PasswordHash,
 		row.CreatedAt,
 		row.UpdatedAt,
 	}
@@ -88,7 +88,7 @@ func (s *AccountStorage) Read(id uuid.UUID) (*admin.Account, error) {
 		SELECT
 			id,
 			username,
-			password,
+			password_hash,
 			created_at,
 			updated_at
 		FROM account

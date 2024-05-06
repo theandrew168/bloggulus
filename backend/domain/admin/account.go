@@ -10,9 +10,9 @@ import (
 )
 
 type Account struct {
-	id       uuid.UUID
-	username string
-	password string
+	id           uuid.UUID
+	username     string
+	passwordHash string
 
 	createdAt time.Time
 	updatedAt time.Time
@@ -23,16 +23,16 @@ func NewAccount(username, password string) (*Account, error) {
 		return nil, fmt.Errorf("account: invalid username")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now().UTC()
 	account := Account{
-		id:       uuid.New(),
-		username: username,
-		password: string(hash),
+		id:           uuid.New(),
+		username:     username,
+		passwordHash: string(passwordHash),
 
 		createdAt: now,
 		updatedAt: now,
@@ -40,11 +40,11 @@ func NewAccount(username, password string) (*Account, error) {
 	return &account, nil
 }
 
-func LoadAccount(id uuid.UUID, username, password string, createdAt, updatedAt time.Time) *Account {
+func LoadAccount(id uuid.UUID, username, passwordHash string, createdAt, updatedAt time.Time) *Account {
 	account := Account{
-		id:       id,
-		username: username,
-		password: password,
+		id:           id,
+		username:     username,
+		passwordHash: passwordHash,
 
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -60,12 +60,12 @@ func (a *Account) Username() string {
 	return a.username
 }
 
-func (a *Account) Password() string {
-	return a.password
+func (a *Account) PasswordHash() string {
+	return a.passwordHash
 }
 
 func (a *Account) PasswordMatches(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(a.password), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(a.passwordHash), []byte(password))
 	return err == nil
 }
 

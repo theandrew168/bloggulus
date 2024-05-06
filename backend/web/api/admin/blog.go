@@ -34,13 +34,14 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 	type response struct {
 		Blog jsonBlog `json:"blog"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 
 		id, err := uuid.Parse(flow.Param(r.Context(), "id"))
 		if err != nil {
 			v.AddError("id", "must be a valid UUID")
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 
@@ -57,7 +58,9 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 		resp := response{
 			Blog: marshalBlog(blog),
 		}
-		err = util.WriteJSON(w, 200, resp, nil)
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -69,6 +72,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 	type response struct {
 		Blogs []jsonBlog `json:"blogs"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
@@ -82,7 +86,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 		v.Check(size <= 50, "size", "must be less than or equal to 50")
 
 		if !v.Valid() {
-			util.BadRequestResponse(w, r, v.Errors)
+			util.FailedValidationResponse(w, r, v.Errors())
 			return
 		}
 
@@ -103,7 +107,8 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
 		}
 
-		err = util.WriteJSON(w, 200, resp, nil)
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

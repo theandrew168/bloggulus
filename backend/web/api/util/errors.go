@@ -3,6 +3,7 @@ package util
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 func ErrorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
@@ -21,23 +22,47 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request, status int, message a
 	}
 }
 
-func BadRequestResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
-	ErrorResponse(w, r, 400, errors)
+func BadRequestResponse(w http.ResponseWriter, r *http.Request) {
+	code := http.StatusBadRequest
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower((text)))
 }
 
 func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
-	message := "not found"
-	ErrorResponse(w, r, 404, message)
+	code := http.StatusNotFound
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower((text)))
 }
 
 func MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
-	message := "method not allowed"
-	ErrorResponse(w, r, 405, message)
+	code := http.StatusMethodNotAllowed
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower((text)))
+}
+
+func ConflictResponse(w http.ResponseWriter, r *http.Request) {
+	code := http.StatusConflict
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower(text))
+}
+
+func UnprocessableEntityResponse(w http.ResponseWriter, r *http.Request) {
+	code := http.StatusUnprocessableEntity
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower(text))
+}
+
+// Note that the errors parameter here has the type map[string]string, which is exactly
+// the same as the errors map contained in our Validator type.
+func FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	code := http.StatusUnprocessableEntity
+	ErrorResponse(w, r, code, errors)
 }
 
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	slog.Error(err.Error())
 
-	message := "backend server error"
-	ErrorResponse(w, r, 500, message)
+	code := http.StatusInternalServerError
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower(text))
 }

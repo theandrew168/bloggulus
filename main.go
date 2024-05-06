@@ -10,7 +10,7 @@ import (
 	"os/signal"
 	"sync"
 
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/daemon"
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/postgres"

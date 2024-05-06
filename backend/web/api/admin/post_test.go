@@ -33,24 +33,23 @@ func TestHandlePostRead(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		post := test.CreatePost(t, store)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err := io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string]jsonPost
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["post"]
@@ -72,12 +71,11 @@ func TestHandlePostReadNotFound(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", path, nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -95,23 +93,22 @@ func TestHandlePostList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		test.CreatePost(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err := io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonPost
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["posts"]
@@ -135,6 +132,7 @@ func TestHandlePostListPagination(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		// create 5 posts to test with
 		test.CreatePost(t, store)
@@ -156,18 +154,16 @@ func TestHandlePostListPagination(t *testing.T) {
 			url := fmt.Sprintf("/posts?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-
-			router := app.Router()
 			router.ServeHTTP(w, r)
 
 			rr := w.Result()
-			body, err := io.ReadAll(rr.Body)
+			respBody, err := io.ReadAll(rr.Body)
 			test.AssertNilError(t, err)
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonPost
-			err = json.Unmarshal(body, &resp)
+			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
 			got, ok := resp["posts"]

@@ -43,17 +43,11 @@ func MethodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 func ConflictResponse(w http.ResponseWriter, r *http.Request) {
 	code := http.StatusConflict
 	text := http.StatusText(code)
-	ErrorResponse(w, r, code, strings.ToLower(text))
+	ErrorResponse(w, r, code, strings.ToLower((text)))
 }
 
-func UnprocessableEntityResponse(w http.ResponseWriter, r *http.Request) {
-	code := http.StatusUnprocessableEntity
-	text := http.StatusText(code)
-	ErrorResponse(w, r, code, strings.ToLower(text))
-}
-
-// Note that the errors parameter here has the type map[string]string, which is exactly
-// the same as the errors map contained in our Validator type.
+// Note that the errors parameter here has the type map[string]string,
+// which is exactly the same as the errors map contained in our Validator type.
 func FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
 	code := http.StatusUnprocessableEntity
 	ErrorResponse(w, r, code, errors)

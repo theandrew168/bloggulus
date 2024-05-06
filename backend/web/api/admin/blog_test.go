@@ -30,24 +30,23 @@ func TestHandleBlogRead(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		blog := test.CreateBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err := io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string]jsonBlog
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["blog"]
@@ -68,12 +67,11 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 	defer closer()
 
 	app := admin.NewApplication(store)
+	router := app.Router()
 
 	path := fmt.Sprintf("/blogs/%s", uuid.New())
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", path, nil)
-
-	router := app.Router()
 	router.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -88,23 +86,22 @@ func TestHandleBlogList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		test.CreateBlog(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/blogs", nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err := io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonBlog
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["blogs"]
@@ -128,6 +125,7 @@ func TestHandleBlogListPagination(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		// create 5 blogs to test with
 		test.CreateBlog(t, store)
@@ -149,18 +147,16 @@ func TestHandleBlogListPagination(t *testing.T) {
 			url := fmt.Sprintf("/blogs?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-
-			router := app.Router()
 			router.ServeHTTP(w, r)
 
 			rr := w.Result()
-			body, err := io.ReadAll(rr.Body)
+			respBody, err := io.ReadAll(rr.Body)
 			test.AssertNilError(t, err)
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonBlog
-			err = json.Unmarshal(body, &resp)
+			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
 			got, ok := resp["blogs"]

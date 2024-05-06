@@ -28,23 +28,22 @@ func TestHandleTagList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		test.CreateTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
-
-		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err := io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp map[string][]jsonTag
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["tags"]
@@ -68,6 +67,7 @@ func TestHandleTagListPagination(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
+		router := app.Router()
 
 		// create 5 tags to test with
 		test.CreateTag(t, store)
@@ -89,18 +89,16 @@ func TestHandleTagListPagination(t *testing.T) {
 			url := fmt.Sprintf("/tags?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-
-			router := app.Router()
 			router.ServeHTTP(w, r)
 
 			rr := w.Result()
-			body, err := io.ReadAll(rr.Body)
+			respBody, err := io.ReadAll(rr.Body)
 			test.AssertNilError(t, err)
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
 			var resp map[string][]jsonTag
-			err = json.Unmarshal(body, &resp)
+			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
 			got, ok := resp["tags"]

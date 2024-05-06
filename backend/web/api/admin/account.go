@@ -68,7 +68,8 @@ func (app *Application) handleAccountCreate() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
-				util.ConflictResponse(w, r)
+				v.AddError("username", "already exists")
+				util.FailedValidationResponse(w, r, v.Errors())
 			default:
 				util.ServerErrorResponse(w, r, err)
 			}

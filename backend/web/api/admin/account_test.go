@@ -34,23 +34,23 @@ func TestAccountCreate(t *testing.T) {
 			"username": "foo",
 			"password": "password",
 		}
-		body, err := json.Marshal(req)
+		reqBody, err := json.Marshal(req)
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(body))
+		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 
 		router := app.Router()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
-		body, err = io.ReadAll(rr.Body)
+		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 		var resp map[string]jsonAccount
-		err = json.Unmarshal(body, &resp)
+		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
 		got, ok := resp["account"]
@@ -59,6 +59,41 @@ func TestAccountCreate(t *testing.T) {
 		}
 
 		test.AssertEqual(t, got.Username, "foo")
+
+		return postgres.ErrRollback
+	})
+}
+
+func TestAccountCreateAlreadyExists(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := admin.NewApplication(store)
+		router := app.Router()
+
+		req := map[string]string{
+			"username": "foo",
+			"password": "password",
+		}
+		reqBody, err := json.Marshal(req)
+		test.AssertNilError(t, err)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
+		router.ServeHTTP(w, r)
+
+		rr := w.Result()
+		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
+		router.ServeHTTP(w, r)
+
+		rr = w.Result()
+		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 
 		return postgres.ErrRollback
 	})

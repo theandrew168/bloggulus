@@ -15,7 +15,7 @@ func TestBlogCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog()
+		blog := test.NewBlog(t)
 		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 

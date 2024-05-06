@@ -16,11 +16,11 @@ func TestPostCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog()
+		blog := test.NewBlog(t)
 		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 
-		post := test.NewPost(blog)
+		post := test.NewPost(t, blog)
 		err = store.Admin().Post().Create(post)
 		test.AssertNilError(t, err)
 
@@ -115,14 +115,17 @@ func TestPostListByBlog(t *testing.T) {
 		// create 5 posts leaving the most recent one in "post"
 		var post *admin.Post
 		for i := 0; i < 5; i++ {
-			post = admin.NewPost(
+			var err error
+			post, err = admin.NewPost(
 				blog,
 				test.RandomURL(32),
 				test.RandomString(32),
 				test.RandomString(32),
 				test.RandomTime(),
 			)
-			err := store.Admin().Post().Create(post)
+			test.AssertNilError(t, err)
+
+			err = store.Admin().Post().Create(post)
 			test.AssertNilError(t, err)
 		}
 

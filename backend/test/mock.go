@@ -8,8 +8,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-func NewBlog() *admin.Blog {
-	blog := admin.NewBlog(
+func NewBlog(t *testing.T) *admin.Blog {
+	blog, err := admin.NewBlog(
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
@@ -17,24 +17,30 @@ func NewBlog() *admin.Blog {
 		RandomString(32),
 		RandomTime(),
 	)
+	AssertNilError(t, err)
+
 	return blog
 }
 
-func NewPost(blog *admin.Blog) *admin.Post {
-	post := admin.NewPost(
+func NewPost(t *testing.T, blog *admin.Blog) *admin.Post {
+	post, err := admin.NewPost(
 		blog,
 		RandomURL(32),
 		RandomString(32),
 		RandomString(32),
 		RandomTime(),
 	)
+	AssertNilError(t, err)
+
 	return post
 }
 
-func NewTag() *admin.Tag {
-	tag := admin.NewTag(
+func NewTag(t *testing.T) *admin.Tag {
+	tag, err := admin.NewTag(
 		RandomString(32),
 	)
+	AssertNilError(t, err)
+
 	return tag
 }
 
@@ -64,7 +70,7 @@ func CreateBlog(t *testing.T, store *storage.Storage) *admin.Blog {
 	t.Helper()
 
 	// generate some random blog data
-	blog := NewBlog()
+	blog := NewBlog(t)
 
 	// create an example blog
 	err := store.Admin().Blog().Create(blog)
@@ -78,14 +84,14 @@ func CreatePost(t *testing.T, store *storage.Storage) *admin.Post {
 	t.Helper()
 
 	// generate some random blog data
-	blog := NewBlog()
+	blog := NewBlog(t)
 
 	// create an example blog
 	err := store.Admin().Blog().Create(blog)
 	AssertNilError(t, err)
 
 	// generate some random post data
-	post := NewPost(blog)
+	post := NewPost(t, blog)
 
 	// create an example post
 	err = store.Admin().Post().Create(post)
@@ -99,7 +105,7 @@ func CreateTag(t *testing.T, store *storage.Storage) *admin.Tag {
 	t.Helper()
 
 	// generate some random tag data
-	tag := NewTag()
+	tag := NewTag(t)
 
 	// create an example tag
 	err := store.Admin().Tag().Create(tag)

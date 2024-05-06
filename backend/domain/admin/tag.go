@@ -14,7 +14,7 @@ type Tag struct {
 	updatedAt time.Time
 }
 
-func NewTag(name string) *Tag {
+func NewTag(name string) (*Tag, error) {
 	now := time.Now().UTC()
 	tag := Tag{
 		id:   uuid.New(),
@@ -23,7 +23,7 @@ func NewTag(name string) *Tag {
 		createdAt: now,
 		updatedAt: now,
 	}
-	return &tag
+	return &tag, nil
 }
 
 func LoadTag(id uuid.UUID, name string, createdAt, updatedAt time.Time) *Tag {

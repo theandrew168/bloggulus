@@ -15,7 +15,7 @@ func TestTagCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		tag := test.NewTag()
+		tag := test.NewTag(t)
 		err := store.Admin().Tag().Create(tag)
 		test.AssertNilError(t, err)
 

@@ -18,7 +18,7 @@ type Post struct {
 	updatedAt time.Time
 }
 
-func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) *Post {
+func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) (*Post, error) {
 	now := time.Now().UTC()
 	post := Post{
 		id:          uuid.New(),
@@ -31,7 +31,7 @@ func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) *Pos
 		createdAt: now,
 		updatedAt: now,
 	}
-	return &post
+	return &post, nil
 }
 
 func LoadPost(id, blogID uuid.UUID, url, title, content string, publishedAt, createdAt, updatedAt time.Time) *Post {

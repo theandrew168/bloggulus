@@ -153,7 +153,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	}
 
 	now := time.Now().UTC()
-	blog := admin.NewBlog(
+	blog, err := admin.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
 		feedBlog.Title,
@@ -161,6 +161,10 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		resp.LastModified,
 		now,
 	)
+	if err != nil {
+		return err
+	}
+
 	err = s.store.Admin().Blog().Create(blog)
 	if err != nil {
 		return err
@@ -235,13 +239,17 @@ func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 			return err
 		}
 
-		post := admin.NewPost(
+		post, err := admin.NewPost(
 			blog,
 			feedPost.URL,
 			feedPost.Title,
 			feedPost.Content,
 			feedPost.PublishedAt,
 		)
+		if err != nil {
+			return err
+		}
+
 		return s.store.Admin().Post().Create(post)
 	}
 

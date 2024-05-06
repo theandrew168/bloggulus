@@ -17,11 +17,11 @@ func TestPostList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog()
+		blog := test.NewBlog(t)
 		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 
-		post := test.NewPost(blog)
+		post := test.NewPost(t, blog)
 		err = store.Admin().Post().Create(post)
 		test.AssertNilError(t, err)
 
@@ -45,29 +45,33 @@ func TestPostListSearch(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog()
+		blog := test.NewBlog(t)
 		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		pythonPost := admin.NewPost(
+		pythonPost, err := admin.NewPost(
 			blog,
 			"https://example.com/python",
 			"Python",
 			"content about python",
 			time.Now().UTC(),
 		)
+		test.AssertNilError(t, err)
+
 		err = store.Admin().Post().Create(pythonPost)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		boringPost := admin.NewPost(
+		boringPost, err := admin.NewPost(
 			blog,
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
 			time.Now().UTC(),
 		)
+		test.AssertNilError(t, err)
+
 		err = store.Admin().Post().Create(boringPost)
 		test.AssertNilError(t, err)
 
@@ -110,29 +114,33 @@ func TestPostCountSearch(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog()
+		blog := test.NewBlog(t)
 		err := store.Admin().Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		pythonPost := admin.NewPost(
+		pythonPost, err := admin.NewPost(
 			blog,
 			"https://example.com/python",
 			"Python",
 			"content about python",
 			time.Now().UTC(),
 		)
+		test.AssertNilError(t, err)
+
 		err = store.Admin().Post().Create(pythonPost)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		boringPost := admin.NewPost(
+		boringPost, err := admin.NewPost(
 			blog,
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
 			time.Now().UTC(),
 		)
+		test.AssertNilError(t, err)
+
 		err = store.Admin().Post().Create(boringPost)
 		test.AssertNilError(t, err)
 

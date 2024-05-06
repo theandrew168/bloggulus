@@ -19,7 +19,7 @@ type Blog struct {
 	updatedAt time.Time
 }
 
-func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.Time) *Blog {
+func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.Time) (*Blog, error) {
 	now := time.Now().UTC()
 	blog := Blog{
 		id:           uuid.New(),
@@ -33,7 +33,7 @@ func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.T
 		createdAt: now,
 		updatedAt: now,
 	}
-	return &blog
+	return &blog, nil
 }
 
 func LoadBlog(id uuid.UUID, feedURL, siteURL, title, etag, lastModified string, syncedAt, createdAt, updatedAt time.Time) *Blog {

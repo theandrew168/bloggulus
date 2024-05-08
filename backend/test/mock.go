@@ -58,7 +58,7 @@ func NewToken(t *testing.T, account *admin.Account) *admin.Token {
 	token, _, err := admin.NewToken(
 		account,
 		// expire in 24 hours
-		time.Now().UTC().Add(24*time.Hour),
+		24*time.Hour,
 	)
 	AssertNilError(t, err)
 

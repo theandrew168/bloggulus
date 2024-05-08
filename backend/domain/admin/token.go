@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base32"
 	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,11 +39,8 @@ func GenerateToken() (string, error) {
 	return token, nil
 }
 
-func NewToken(account *Account, expiresAt time.Time) (*Token, string, error) {
+func NewToken(account *Account, ttl time.Duration) (*Token, string, error) {
 	now := time.Now().UTC()
-	if expiresAt.Before(now) {
-		return nil, "", fmt.Errorf("token: expires in the past")
-	}
 
 	value, err := GenerateToken()
 	if err != nil {
@@ -62,7 +58,7 @@ func NewToken(account *Account, expiresAt time.Time) (*Token, string, error) {
 		id:        uuid.New(),
 		accountID: account.ID(),
 		hash:      hash,
-		expiresAt: expiresAt,
+		expiresAt: now.Add(ttl),
 
 		createdAt: now,
 		updatedAt: now,

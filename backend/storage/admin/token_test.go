@@ -74,6 +74,7 @@ func TestTokenReadByValue(t *testing.T) {
 
 		token, value, err := admin.NewToken(
 			account,
+			// expire in 24 hours
 			24*time.Hour,
 		)
 		test.AssertNilError(t, err)

@@ -59,8 +59,7 @@ func (app *Application) handleAccountCreate() http.HandlerFunc {
 
 		account, err := admin.NewAccount(req.Username, req.Password)
 		if err != nil {
-			v.AddError("account", err.Error())
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.ServerErrorResponse(w, r, err)
 			return
 		}
 

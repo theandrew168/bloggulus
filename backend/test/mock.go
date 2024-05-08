@@ -44,25 +44,26 @@ func NewTag(t *testing.T) *admin.Tag {
 	return tag
 }
 
-func NewAccount(t *testing.T) *admin.Account {
+func NewAccount(t *testing.T) (*admin.Account, string) {
+	password := RandomString(32)
 	account, err := admin.NewAccount(
 		RandomString(32),
-		RandomString(32),
+		password,
 	)
 	AssertNilError(t, err)
 
-	return account
+	return account, password
 }
 
-func NewToken(t *testing.T, account *admin.Account) *admin.Token {
-	token, _, err := admin.NewToken(
+func NewToken(t *testing.T, account *admin.Account) (*admin.Token, string) {
+	token, value, err := admin.NewToken(
 		account,
 		// expire in 24 hours
 		24*time.Hour,
 	)
 	AssertNilError(t, err)
 
-	return token
+	return token, value
 }
 
 // mocks a blog and creates it in the database
@@ -80,21 +81,14 @@ func CreateBlog(t *testing.T, store *storage.Storage) *admin.Blog {
 }
 
 // mocks a post and creates it in the database
-func CreatePost(t *testing.T, store *storage.Storage) *admin.Post {
+func CreatePost(t *testing.T, store *storage.Storage, blog *admin.Blog) *admin.Post {
 	t.Helper()
-
-	// generate some random blog data
-	blog := NewBlog(t)
-
-	// create an example blog
-	err := store.Admin().Blog().Create(blog)
-	AssertNilError(t, err)
 
 	// generate some random post data
 	post := NewPost(t, blog)
 
 	// create an example post
-	err = store.Admin().Post().Create(post)
+	err := store.Admin().Post().Create(post)
 	AssertNilError(t, err)
 
 	return post
@@ -115,36 +109,29 @@ func CreateTag(t *testing.T, store *storage.Storage) *admin.Tag {
 }
 
 // mocks an account and creates it in the database
-func CreateAccount(t *testing.T, store *storage.Storage) *admin.Account {
+func CreateAccount(t *testing.T, store *storage.Storage) (*admin.Account, string) {
 	t.Helper()
 
 	// generate some random account data
-	account := NewAccount(t)
+	account, password := NewAccount(t)
 
 	// create an example account
 	err := store.Admin().Account().Create(account)
 	AssertNilError(t, err)
 
-	return account
+	return account, password
 }
 
 // mocks a token and creates it in the database
-func CreateToken(t *testing.T, store *storage.Storage) *admin.Token {
+func CreateToken(t *testing.T, store *storage.Storage, account *admin.Account) (*admin.Token, string) {
 	t.Helper()
 
-	// generate some random account data
-	account := NewAccount(t)
-
-	// create an example account
-	err := store.Admin().Account().Create(account)
-	AssertNilError(t, err)
-
 	// generate some random token data
-	token := NewToken(t, account)
+	token, value := NewToken(t, account)
 
 	// create an example token
-	err = store.Admin().Token().Create(token)
+	err := store.Admin().Token().Create(token)
 	AssertNilError(t, err)
 
-	return token
+	return token, value
 }

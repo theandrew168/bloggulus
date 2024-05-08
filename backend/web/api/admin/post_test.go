@@ -35,7 +35,8 @@ func TestHandlePostRead(t *testing.T) {
 		app := admin.NewApplication(store)
 		router := app.Router()
 
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 
 		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
@@ -95,7 +96,8 @@ func TestHandlePostList(t *testing.T) {
 		app := admin.NewApplication(store)
 		router := app.Router()
 
-		test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/posts", nil)
@@ -135,11 +137,12 @@ func TestHandlePostListPagination(t *testing.T) {
 		router := app.Router()
 
 		// create 5 posts to test with
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
 
 		tests := []struct {
 			size int

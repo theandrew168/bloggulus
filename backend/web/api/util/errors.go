@@ -28,6 +28,12 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request) {
 	ErrorResponse(w, r, code, strings.ToLower((text)))
 }
 
+func UnauthorizedResponse(w http.ResponseWriter, r *http.Request) {
+	code := http.StatusUnauthorized
+	text := http.StatusText(code)
+	ErrorResponse(w, r, code, strings.ToLower((text)))
+}
+
 func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
 	code := http.StatusNotFound
 	text := http.StatusText(code)

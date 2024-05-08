@@ -94,9 +94,10 @@ func TestPostCount(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
 
 		count, err := store.Reader().Post().Count()
 		test.AssertNilError(t, err)

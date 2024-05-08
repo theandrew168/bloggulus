@@ -35,7 +35,8 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 
 		// attempt to create the same post again
 		err := store.Admin().Post().Create(post)
@@ -52,7 +53,8 @@ func TestPostRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 		got, err := store.Admin().Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
@@ -69,7 +71,8 @@ func TestPostReadByURL(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 		got, err := store.Admin().Post().ReadByURL(post.URL())
 		test.AssertNilError(t, err)
 
@@ -86,11 +89,12 @@ func TestPostList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
-		test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
 
 		limit := 5
 		offset := 0
@@ -150,7 +154,8 @@ func TestPostUpdate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 
 		content := "foobar"
 		post.SetContent(content)
@@ -174,7 +179,8 @@ func TestPostDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		post := test.CreatePost(t, store)
+		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 
 		err := store.Admin().Post().Delete(post)
 		test.AssertNilError(t, err)

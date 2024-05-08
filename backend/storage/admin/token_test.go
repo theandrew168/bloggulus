@@ -2,9 +2,7 @@ package admin_test
 
 import (
 	"testing"
-	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -17,11 +15,11 @@ func TestTokenCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.NewAccount(t)
+		account, _ := test.NewAccount(t)
 		err := store.Admin().Account().Create(account)
 		test.AssertNilError(t, err)
 
-		token := test.NewToken(t, account)
+		token, _ := test.NewToken(t, account)
 		err = store.Admin().Token().Create(token)
 		test.AssertNilError(t, err)
 
@@ -36,7 +34,8 @@ func TestTokenCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		token := test.CreateToken(t, store)
+		account, _ := test.CreateAccount(t, store)
+		token, _ := test.CreateToken(t, store, account)
 
 		// attempt to create the same token again
 		err := store.Admin().Token().Create(token)
@@ -53,7 +52,9 @@ func TestTokenRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		token := test.CreateToken(t, store)
+		account, _ := test.CreateAccount(t, store)
+		token, _ := test.CreateToken(t, store, account)
+
 		got, err := store.Admin().Token().Read(token.ID())
 		test.AssertNilError(t, err)
 
@@ -70,17 +71,8 @@ func TestTokenReadByValue(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.CreateAccount(t, store)
-
-		token, value, err := admin.NewToken(
-			account,
-			// expire in 24 hours
-			24*time.Hour,
-		)
-		test.AssertNilError(t, err)
-
-		err = store.Admin().Token().Create(token)
-		test.AssertNilError(t, err)
+		account, _ := test.CreateAccount(t, store)
+		token, value := test.CreateToken(t, store, account)
 
 		got, err := store.Admin().Token().ReadByValue(value)
 		test.AssertNilError(t, err)
@@ -98,7 +90,8 @@ func TestTokenDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		token := test.CreateToken(t, store)
+		account, _ := test.CreateAccount(t, store)
+		token, _ := test.CreateToken(t, store, account)
 
 		err := store.Admin().Token().Delete(token)
 		test.AssertNilError(t, err)

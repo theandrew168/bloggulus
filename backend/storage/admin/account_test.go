@@ -15,7 +15,7 @@ func TestAccountCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.NewAccount(t)
+		account, _ := test.NewAccount(t)
 		err := store.Admin().Account().Create(account)
 		test.AssertNilError(t, err)
 
@@ -30,7 +30,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.CreateAccount(t, store)
+		account, _ := test.CreateAccount(t, store)
 
 		// attempt to create the same account again
 		err := store.Admin().Account().Create(account)
@@ -47,8 +47,25 @@ func TestAccountRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.CreateAccount(t, store)
+		account, _ := test.CreateAccount(t, store)
 		got, err := store.Admin().Account().Read(account.ID())
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, got.ID(), account.ID())
+
+		return postgres.ErrRollback
+	})
+}
+
+func TestAccountReadByUsername(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		account, _ := test.CreateAccount(t, store)
+		got, err := store.Admin().Account().ReadByUsername(account.Username())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), account.ID())
@@ -64,7 +81,7 @@ func TestAccountDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		account := test.CreateAccount(t, store)
+		account, _ := test.CreateAccount(t, store)
 
 		err := store.Admin().Account().Delete(account)
 		test.AssertNilError(t, err)

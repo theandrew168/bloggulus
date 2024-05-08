@@ -110,6 +110,33 @@ func (s *AccountStorage) Read(id uuid.UUID) (*admin.Account, error) {
 	return row.unmarshal()
 }
 
+func (s *AccountStorage) ReadByUsername(username string) (*admin.Account, error) {
+	stmt := `
+		SELECT
+			id,
+			username,
+			password_hash,
+			created_at,
+			updated_at
+		FROM account
+		WHERE username = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, username)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbAccount])
+	if err != nil {
+		return nil, postgres.CheckReadError(err)
+	}
+
+	return row.unmarshal()
+}
+
 func (repo *AccountStorage) Delete(account *admin.Account) error {
 	stmt := `
 		DELETE FROM account

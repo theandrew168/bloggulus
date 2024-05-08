@@ -31,6 +31,7 @@ func (app *Application) Router() http.Handler {
 	mux.HandleFunc("/posts/:id", app.handlePostRead(), "GET")
 	mux.HandleFunc("/tags", app.handleTagList(), "GET")
 	mux.HandleFunc("/accounts", app.handleAccountCreate(), "POST")
+	mux.HandleFunc("/tokens", app.handleTokenCreate(), "POST")
 
 	return mux
 }

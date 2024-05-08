@@ -34,7 +34,10 @@ func (app *Application) Router() http.Handler {
 	mux.Use(middleware.SecureHeaders)
 	mux.Use(middleware.EnableCORS)
 
-	mux.HandleFunc("/", app.handleIndex(), "GET")
+	mux.HandleFunc("/", app.handleIndexRapidoc(), "GET")
+	mux.HandleFunc("/redoc", app.handleIndexRedoc(), "GET")
+	mux.HandleFunc("/rapidoc", app.handleIndexRapidoc(), "GET")
+	mux.HandleFunc("/stoplight", app.handleIndexStoplight(), "GET")
 	mux.Handle("/admin/...", http.StripPrefix("/admin", adminApp.Router()))
 	mux.Handle("/...", readerApp.Router())
 

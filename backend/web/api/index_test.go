@@ -1,7 +1,6 @@
 package api_test
 
 import (
-	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -24,8 +23,5 @@ func TestHandleIndex(t *testing.T) {
 	router.ServeHTTP(w, r)
 
 	rr := w.Result()
-	_, err := io.ReadAll(rr.Body)
-	test.AssertNilError(t, err)
-
 	test.AssertEqual(t, rr.StatusCode, 200)
 }

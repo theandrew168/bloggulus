@@ -13,7 +13,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api"
-	"github.com/theandrew168/bloggulus/backend/web/middleware"
+	"github.com/theandrew168/bloggulus/backend/web/api/middleware"
 )
 
 type Application struct {

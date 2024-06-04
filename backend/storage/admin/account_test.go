@@ -74,6 +74,25 @@ func TestAccountReadByUsername(t *testing.T) {
 	})
 }
 
+func TestAccountReadByToken(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		account, _ := test.CreateAccount(t, store)
+		_, token := test.CreateToken(t, store, account)
+
+		got, err := store.Admin().Account().ReadByToken(token)
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, got.ID(), account.ID())
+
+		return postgres.ErrRollback
+	})
+}
+
 func TestAccountDelete(t *testing.T) {
 	t.Parallel()
 

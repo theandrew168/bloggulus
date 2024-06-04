@@ -2,6 +2,8 @@ package admin
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -125,6 +127,38 @@ func (s *AccountStorage) ReadByUsername(username string) (*admin.Account, error)
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, username)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbAccount])
+	if err != nil {
+		return nil, postgres.CheckReadError(err)
+	}
+
+	return row.unmarshal()
+}
+
+func (s *AccountStorage) ReadByToken(token string) (*admin.Account, error) {
+	stmt := `
+		SELECT
+			account.id,
+			account.username,
+			account.password_hash,
+			account.created_at,
+			account.updated_at
+		FROM account
+		INNER JOIN token
+			ON token.account_id = account.id
+		WHERE token.hash = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	hashBytes := sha256.Sum256([]byte(token))
+	hash := hex.EncodeToString(hashBytes[:])
+
+	rows, err := s.conn.Query(ctx, stmt, hash)
 	if err != nil {
 		return nil, err
 	}

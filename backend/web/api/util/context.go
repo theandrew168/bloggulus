@@ -10,27 +10,21 @@ import (
 // Define a custom contextKey type, with the underlying type string.
 type contextKey string
 
-// Convert the string "account" to a contextKey type and assign it to the accountContextKey
+// Convert the string "account" to a contextKey type and assign it to the contextKeyAccount
 // constant. We'll use this constant as the key for getting and setting account information
 // in the request context.
-const accountContextKey = contextKey("account")
+const contextKeyAccount = contextKey("account")
 
 // The ContextSetAccount() method returns a new copy of the request with the provided
 // admin.Account added to the context. Note that we use our accountContextKey constant
 // as the key.
 func ContextSetAccount(r *http.Request, account *admin.Account) *http.Request {
-	ctx := context.WithValue(r.Context(), accountContextKey, account)
+	ctx := context.WithValue(r.Context(), contextKeyAccount, account)
 	return r.WithContext(ctx)
 }
 
-// The ContextGetAccount() retrieves the admin.Account from the request context. The only
-// time that we'll use this helper is when we logically expect there to be admin.Account
-// value in the context, and if it doesn't exist it will firmly be an 'unexpected' error.
-// As we discussed earlier in the book, it's OK to panic in those circumstances.
-func ContextGetAccount(r *http.Request) *admin.Account {
-	account, ok := r.Context().Value(accountContextKey).(*admin.Account)
-	if !ok {
-		panic("missing account value in request context")
-	}
-	return account
+// The ContextGetAccount() retrieves the admin.Account and an "exists" bool from the request context.
+func ContextGetAccount(r *http.Request) (*admin.Account, bool) {
+	account, ok := r.Context().Value(contextKeyAccount).(*admin.Account)
+	return account, ok
 }

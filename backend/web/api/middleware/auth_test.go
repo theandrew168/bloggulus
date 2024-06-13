@@ -13,7 +13,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/api/util"
 )
 
-func TestAuthenticate(t *testing.T) {
+func TestAccountRequired(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -28,17 +28,19 @@ func TestAuthenticate(t *testing.T) {
 		r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			test.AssertEqual(t, util.ContextGetAccount(r).ID(), account.ID())
+			got, ok := util.ContextGetAccount(r)
+			test.AssertEqual(t, ok, true)
+			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		mw := middleware.Authenticate(store)(next)
+		mw := middleware.AccountRequired(store)(next)
 		mw.ServeHTTP(w, r)
 
 		return postgres.ErrRollback
 	})
 }
 
-func TestAuthenticateNoHeader(t *testing.T) {
+func TestAccountRequiredNoHeader(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -51,14 +53,14 @@ func TestAuthenticateNoHeader(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mw := middleware.Authenticate(store)(next)
+	mw := middleware.AccountRequired(store)(next)
 	mw.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
 }
 
-func TestAuthenticateInvalidHeader(t *testing.T) {
+func TestAccountRequiredInvalidHeader(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -72,14 +74,14 @@ func TestAuthenticateInvalidHeader(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mw := middleware.Authenticate(store)(next)
+	mw := middleware.AccountRequired(store)(next)
 	mw.ServeHTTP(w, r)
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
 }
 
-func TestAuthenticateInvalidToken(t *testing.T) {
+func TestAccountRequiredInvalidToken(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -93,7 +95,96 @@ func TestAuthenticateInvalidToken(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mw := middleware.Authenticate(store)(next)
+	mw := middleware.AccountRequired(store)(next)
+	mw.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
+}
+
+func TestAccountOptional(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		account, _ := test.CreateAccount(t, store)
+		_, token := test.CreateToken(t, store, account)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/", nil)
+		r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			got, ok := util.ContextGetAccount(r)
+			test.AssertEqual(t, ok, true)
+			test.AssertEqual(t, got.ID(), account.ID())
+		})
+
+		mw := middleware.AccountOptional(store)(next)
+		mw.ServeHTTP(w, r)
+
+		return postgres.ErrRollback
+	})
+}
+
+func TestAccountOptionalNoHeader(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := middleware.AccountOptional(store)(next)
+	mw.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
+}
+
+func TestAccountOptionalInvalidHeader(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Authorization", "BearerFOOBAR")
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := middleware.AccountOptional(store)(next)
+	mw.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
+}
+
+func TestAccountOptionalInvalidToken(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Authorization", "Bearer FOOBAR")
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := middleware.AccountOptional(store)(next)
 	mw.ServeHTTP(w, r)
 
 	rr := w.Result()

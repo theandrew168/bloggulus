@@ -38,7 +38,7 @@ func (app *Application) Router() http.Handler {
 	})
 
 	mux := flow.New()
-	mux.Use(middleware.RecoverPanic)
+	mux.Use(middleware.RecoverPanic())
 
 	// metrics
 	mux.Handle("/metrics", promhttp.Handler(), "GET")

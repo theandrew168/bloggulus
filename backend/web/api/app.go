@@ -31,8 +31,8 @@ func (app *Application) Router() http.Handler {
 	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)
 	mux.MethodNotAllowed = http.HandlerFunc(util.MethodNotAllowedResponse)
 
-	mux.Use(middleware.SecureHeaders)
-	mux.Use(middleware.EnableCORS)
+	mux.Use(middleware.SecureHeaders())
+	mux.Use(middleware.EnableCORS())
 
 	mux.HandleFunc("/", app.handleIndexRapidoc(), "GET")
 	mux.HandleFunc("/redoc", app.handleIndexRedoc(), "GET")

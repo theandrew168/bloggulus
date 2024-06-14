@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/alexedwards/flow v0.1.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438

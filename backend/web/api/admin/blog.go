@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/alexedwards/flow"
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
@@ -38,7 +37,7 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 
-		id, err := uuid.Parse(flow.Param(r.Context(), "id"))
+		id, err := uuid.Parse(r.PathValue("id"))
 		if err != nil {
 			v.AddError("id", "must be a valid UUID")
 			util.FailedValidationResponse(w, r, v.Errors())

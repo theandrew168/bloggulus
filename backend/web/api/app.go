@@ -3,13 +3,10 @@ package api
 import (
 	"net/http"
 
-	"github.com/alexedwards/flow"
-
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/admin"
 	"github.com/theandrew168/bloggulus/backend/web/api/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/api/reader"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
 )
 
 type Application struct {
@@ -27,19 +24,13 @@ func (app *Application) Router() http.Handler {
 	adminApp := admin.NewApplication(app.store)
 	readerApp := reader.NewApplication(app.store)
 
-	mux := flow.New()
-	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)
-	mux.MethodNotAllowed = http.HandlerFunc(util.MethodNotAllowedResponse)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{$}", app.handleIndexRapidoc())
+	mux.HandleFunc("GET /redoc", app.handleIndexRedoc())
+	mux.HandleFunc("GET /rapidoc", app.handleIndexRapidoc())
+	mux.HandleFunc("GET /stoplight", app.handleIndexStoplight())
+	mux.Handle("/admin/", http.StripPrefix("/admin", adminApp.Router()))
+	mux.Handle("/", readerApp.Router())
 
-	mux.Use(middleware.SecureHeaders())
-	mux.Use(middleware.EnableCORS())
-
-	mux.HandleFunc("/", app.handleIndexRapidoc(), "GET")
-	mux.HandleFunc("/redoc", app.handleIndexRedoc(), "GET")
-	mux.HandleFunc("/rapidoc", app.handleIndexRapidoc(), "GET")
-	mux.HandleFunc("/stoplight", app.handleIndexStoplight(), "GET")
-	mux.Handle("/admin/...", http.StripPrefix("/admin", adminApp.Router()))
-	mux.Handle("/...", readerApp.Router())
-
-	return mux
+	return middleware.Adapt(mux, middleware.SecureHeaders(), middleware.EnableCORS())
 }

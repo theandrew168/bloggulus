@@ -3,10 +3,7 @@ package reader
 import (
 	"net/http"
 
-	"github.com/alexedwards/flow"
-
 	"github.com/theandrew168/bloggulus/backend/storage"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
 )
 
 type Application struct {
@@ -21,11 +18,8 @@ func NewApplication(store *storage.Storage) *Application {
 }
 
 func (app *Application) Router() http.Handler {
-	mux := flow.New()
-	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)
-	mux.MethodNotAllowed = http.HandlerFunc(util.MethodNotAllowedResponse)
-
-	mux.HandleFunc("/posts", app.handlePostList(), "GET")
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /posts", app.handlePostList())
 
 	return mux
 }

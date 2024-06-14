@@ -3,10 +3,7 @@ package admin
 import (
 	"net/http"
 
-	"github.com/alexedwards/flow"
-
 	"github.com/theandrew168/bloggulus/backend/storage"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
 )
 
 type Application struct {
@@ -21,17 +18,14 @@ func NewApplication(store *storage.Storage) *Application {
 }
 
 func (app *Application) Router() http.Handler {
-	mux := flow.New()
-	mux.NotFound = http.HandlerFunc(util.NotFoundResponse)
-	mux.MethodNotAllowed = http.HandlerFunc(util.MethodNotAllowedResponse)
-
-	mux.HandleFunc("/blogs", app.handleBlogList(), "GET")
-	mux.HandleFunc("/blogs/:id", app.handleBlogRead(), "GET")
-	mux.HandleFunc("/posts", app.handlePostList(), "GET")
-	mux.HandleFunc("/posts/:id", app.handlePostRead(), "GET")
-	mux.HandleFunc("/tags", app.handleTagList(), "GET")
-	mux.HandleFunc("/accounts", app.handleAccountCreate(), "POST")
-	mux.HandleFunc("/tokens", app.handleTokenCreate(), "POST")
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /blogs", app.handleBlogList())
+	mux.HandleFunc("GET /blogs/{id}", app.handleBlogRead())
+	mux.HandleFunc("GET /posts", app.handlePostList())
+	mux.HandleFunc("GET /posts/{id}", app.handlePostRead())
+	mux.HandleFunc("GET /tags", app.handleTagList())
+	mux.HandleFunc("POST /accounts", app.handleAccountCreate())
+	mux.HandleFunc("POST /tokens", app.handleTokenCreate())
 
 	return mux
 }

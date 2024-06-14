@@ -69,6 +69,7 @@ func AccountRequired() Adapter {
 			_, ok := util.ContextGetAccount(r)
 			if !ok {
 				util.UnauthorizedResponse(w, r)
+				return
 			}
 
 			next.ServeHTTP(w, r)

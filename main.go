@@ -13,11 +13,11 @@ import (
 	"github.com/coreos/go-systemd/v22/daemon"
 
 	"github.com/theandrew168/bloggulus/backend/config"
+	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
-	"github.com/theandrew168/bloggulus/backend/web/fetch"
 	"github.com/theandrew168/bloggulus/frontend"
 )
 

@@ -33,6 +33,11 @@ func (s *Storage) Reader() *reader.Storage {
 	return s.reader
 }
 
+func (s *Storage) Exec(ctx context.Context, sql string, args ...any) error {
+	_, err := s.conn.Exec(ctx, sql, args...)
+	return err
+}
+
 // Based on:
 // https://pkg.go.dev/github.com/jackc/pgx#hdr-Transactions
 func (s *Storage) WithTransaction(operation func(store *Storage) error) error {

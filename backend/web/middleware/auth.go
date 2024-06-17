@@ -76,3 +76,22 @@ func AccountRequired() Adapter {
 		})
 	}
 }
+
+func AdminRequired() Adapter {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			account, ok := util.ContextGetAccount(r)
+			if !ok {
+				util.UnauthorizedResponse(w, r)
+				return
+			}
+
+			if !account.IsAdmin() {
+				util.UnauthorizedResponse(w, r)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}

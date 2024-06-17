@@ -34,6 +34,7 @@ func NewAccount(username, password string) (*Account, error) {
 		id:           uuid.New(),
 		username:     username,
 		passwordHash: string(passwordHash),
+		isAdmin:      false,
 
 		createdAt: now,
 		updatedAt: now,

@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/domain/reader"
+	"github.com/theandrew168/bloggulus/backend/model/reader"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/reader"
+	"github.com/theandrew168/bloggulus/backend/model/reader"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )

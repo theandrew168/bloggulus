@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/model/admin"
 )
 
 // Define a custom contextKey type, with the underlying type string.

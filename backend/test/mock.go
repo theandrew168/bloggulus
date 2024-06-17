@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/domain/admin"
+	"github.com/theandrew168/bloggulus/backend/model/admin"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 

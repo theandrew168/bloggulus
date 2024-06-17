@@ -13,6 +13,7 @@ type Account struct {
 	id           uuid.UUID
 	username     string
 	passwordHash string
+	isAdmin      bool
 
 	createdAt time.Time
 	updatedAt time.Time
@@ -40,11 +41,12 @@ func NewAccount(username, password string) (*Account, error) {
 	return &account, nil
 }
 
-func LoadAccount(id uuid.UUID, username, passwordHash string, createdAt, updatedAt time.Time) *Account {
+func LoadAccount(id uuid.UUID, username, passwordHash string, isAdmin bool, createdAt, updatedAt time.Time) *Account {
 	account := Account{
 		id:           id,
 		username:     username,
 		passwordHash: passwordHash,
+		isAdmin:      isAdmin,
 
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -67,6 +69,10 @@ func (a *Account) PasswordHash() string {
 func (a *Account) PasswordMatches(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(a.passwordHash), []byte(password))
 	return err == nil
+}
+
+func (a *Account) IsAdmin() bool {
+	return a.isAdmin
 }
 
 func (a *Account) CreatedAt() time.Time {

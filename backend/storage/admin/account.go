@@ -17,6 +17,7 @@ type dbAccount struct {
 	ID           uuid.UUID `db:"id"`
 	Username     string    `db:"username"`
 	PasswordHash string    `db:"password_hash"`
+	IsAdmin      bool      `db:"is_admin"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }
@@ -26,6 +27,7 @@ func marshalAccount(account *admin.Account) (dbAccount, error) {
 		ID:           account.ID(),
 		Username:     account.Username(),
 		PasswordHash: account.PasswordHash(),
+		IsAdmin:      account.IsAdmin(),
 		CreatedAt:    account.CreatedAt(),
 		UpdatedAt:    account.UpdatedAt(),
 	}
@@ -37,6 +39,7 @@ func (a dbAccount) unmarshal() (*admin.Account, error) {
 		a.ID,
 		a.Username,
 		a.PasswordHash,
+		a.IsAdmin,
 		a.CreatedAt,
 		a.UpdatedAt,
 	)
@@ -91,6 +94,7 @@ func (s *AccountStorage) Read(id uuid.UUID) (*admin.Account, error) {
 			id,
 			username,
 			password_hash,
+			is_admin,
 			created_at,
 			updated_at
 		FROM account
@@ -118,6 +122,7 @@ func (s *AccountStorage) ReadByUsername(username string) (*admin.Account, error)
 			id,
 			username,
 			password_hash,
+			is_admin,
 			created_at,
 			updated_at
 		FROM account
@@ -145,6 +150,7 @@ func (s *AccountStorage) ReadByToken(token string) (*admin.Account, error) {
 			account.id,
 			account.username,
 			account.password_hash,
+			account.is_admin,
 			account.created_at,
 			account.updated_at
 		FROM account

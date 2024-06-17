@@ -9,8 +9,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api/middleware"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
+	"github.com/theandrew168/bloggulus/backend/web/middleware"
+	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 func TestAuthenticate(t *testing.T) {

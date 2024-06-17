@@ -7,7 +7,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
+	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 // Let's Go Further - Chapter 15.3

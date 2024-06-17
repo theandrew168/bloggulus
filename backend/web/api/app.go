@@ -5,8 +5,8 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/admin"
-	"github.com/theandrew168/bloggulus/backend/web/api/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/api/reader"
+	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type Application struct {

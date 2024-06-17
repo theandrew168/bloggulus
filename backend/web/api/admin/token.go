@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/theandrew168/bloggulus/backend/domain/admin"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/web/api/util"
-	"github.com/theandrew168/bloggulus/backend/web/api/validator"
+	"github.com/theandrew168/bloggulus/backend/web/util"
+	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 // when newly-created (and only then), tokens will include their plaintext value

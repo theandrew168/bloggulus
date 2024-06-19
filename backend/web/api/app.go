@@ -20,7 +20,7 @@ func NewApplication(store *storage.Storage) *Application {
 	return &app
 }
 
-func (app *Application) Router() http.Handler {
+func (app *Application) Handler() http.Handler {
 	adminApp := admin.NewApplication(app.store)
 	readerApp := reader.NewApplication(app.store)
 
@@ -29,8 +29,8 @@ func (app *Application) Router() http.Handler {
 	mux.HandleFunc("GET /redoc", app.handleIndexRedoc())
 	mux.HandleFunc("GET /rapidoc", app.handleIndexRapidoc())
 	mux.HandleFunc("GET /stoplight", app.handleIndexStoplight())
-	mux.Handle("/admin/", http.StripPrefix("/admin", adminApp.Router()))
-	mux.Handle("/", readerApp.Router())
+	mux.Handle("/admin/", http.StripPrefix("/admin", adminApp.Handler()))
+	mux.Handle("/", readerApp.Handler())
 
 	return middleware.Adapt(mux, middleware.SecureHeaders(), middleware.EnableCORS())
 }

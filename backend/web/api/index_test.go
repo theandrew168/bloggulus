@@ -19,7 +19,7 @@ func TestHandleIndex(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
 
-	router := app.Router()
+	router := app.Handler()
 	router.ServeHTTP(w, r)
 
 	rr := w.Result()

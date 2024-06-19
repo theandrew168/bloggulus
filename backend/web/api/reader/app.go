@@ -17,7 +17,7 @@ func NewApplication(store *storage.Storage) *Application {
 	return &app
 }
 
-func (app *Application) Router() http.Handler {
+func (app *Application) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /posts", app.handlePostList())
 

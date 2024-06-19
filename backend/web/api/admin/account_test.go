@@ -40,7 +40,7 @@ func TestAccountCreate(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 
-		router := app.Router()
+		router := app.Handler()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -72,7 +72,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		req := map[string]string{
 			"username": "foo",

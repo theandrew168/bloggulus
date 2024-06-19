@@ -49,7 +49,7 @@ func TestTokenCreate(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Router()
+		router := app.Handler()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -94,7 +94,7 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Router()
+		router := app.Handler()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -126,7 +126,7 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Router()
+		router := app.Handler()
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()

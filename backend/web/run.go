@@ -11,7 +11,7 @@ import (
 func (app *Application) Run(ctx context.Context, addr string) error {
 	srv := http.Server{
 		Addr:    addr,
-		Handler: app.Router(),
+		Handler: app.Handler(),
 
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

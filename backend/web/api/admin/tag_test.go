@@ -28,7 +28,7 @@ func TestHandleTagList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		test.CreateTag(t, store)
 
@@ -67,7 +67,7 @@ func TestHandleTagListPagination(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		// create 5 tags to test with
 		test.CreateTag(t, store)

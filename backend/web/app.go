@@ -31,7 +31,7 @@ func NewApplication(
 	return &app
 }
 
-func (app *Application) Router() http.Handler {
+func (app *Application) Handler() http.Handler {
 	mmw := metricsMiddleware.New(metricsMiddleware.Config{
 		Recorder: metrics.NewRecorder(metrics.Config{}),
 	})
@@ -49,7 +49,7 @@ func (app *Application) Router() http.Handler {
 
 	// backend - rest api
 	apiApp := api.NewApplication(app.store)
-	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Router())))
+	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Handler())))
 
 	// frontend - svelte
 	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(app.frontend)))

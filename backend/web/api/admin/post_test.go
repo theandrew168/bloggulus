@@ -33,7 +33,7 @@ func TestHandlePostRead(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
@@ -72,7 +72,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
 		w := httptest.NewRecorder()
@@ -94,7 +94,7 @@ func TestHandlePostList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
 		test.CreatePost(t, store, blog)
@@ -134,7 +134,7 @@ func TestHandlePostListPagination(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		app := admin.NewApplication(store)
-		router := app.Router()
+		router := app.Handler()
 
 		// create 5 posts to test with
 		blog := test.CreateBlog(t, store)

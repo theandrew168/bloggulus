@@ -1,4 +1,4 @@
-package reader
+package storage
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/reader"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -19,8 +19,8 @@ type dbArticle struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (a dbArticle) unmarshal() (*reader.Article, error) {
-	article := reader.LoadArticle(
+func (a dbArticle) unmarshal() (*model.Article, error) {
+	article := model.LoadArticle(
 		a.Title,
 		a.URL,
 		a.BlogTitle,
@@ -42,7 +42,7 @@ func NewArticleStorage(conn postgres.Conn) *ArticleStorage {
 	return &s
 }
 
-func (s *ArticleStorage) List(limit, offset int) ([]*reader.Article, error) {
+func (s *ArticleStorage) List(limit, offset int) ([]*model.Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -81,7 +81,7 @@ func (s *ArticleStorage) List(limit, offset int) ([]*reader.Article, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var articles []*reader.Article
+	var articles []*model.Article
 	for _, row := range articleRows {
 		article, err := row.unmarshal()
 		if err != nil {
@@ -94,7 +94,7 @@ func (s *ArticleStorage) List(limit, offset int) ([]*reader.Article, error) {
 	return articles, nil
 }
 
-func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*reader.Article, error) {
+func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*model.Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -134,7 +134,7 @@ func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*reader
 		return nil, postgres.CheckListError(err)
 	}
 
-	var articles []*reader.Article
+	var articles []*model.Article
 	for _, row := range articleRows {
 		article, err := row.unmarshal()
 		if err != nil {

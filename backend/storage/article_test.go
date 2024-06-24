@@ -1,4 +1,4 @@
-package reader_test
+package storage_test
 
 import (
 	"testing"
@@ -25,7 +25,7 @@ func TestArticleList(t *testing.T) {
 		err = store.Admin().Post().Create(post)
 		test.AssertNilError(t, err)
 
-		articles, err := store.Reader().Article().List(20, 0)
+		articles, err := store.Article().List(20, 0)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(articles), 1)
@@ -76,7 +76,7 @@ func TestArticleListSearch(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// list articles that relate to python
-		articles, err := store.Reader().Article().ListSearch("python", 20, 0)
+		articles, err := store.Article().ListSearch("python", 20, 0)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(articles), 1)
@@ -99,7 +99,7 @@ func TestArticleCount(t *testing.T) {
 		test.CreatePost(t, store, blog)
 		test.CreatePost(t, store, blog)
 
-		count, err := store.Reader().Article().Count()
+		count, err := store.Article().Count()
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, count, 3)
@@ -146,7 +146,7 @@ func TestArticleCountSearch(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// count posts that relate to python
-		count, err := store.Reader().Article().CountSearch("python")
+		count, err := store.Article().CountSearch("python")
 		test.AssertNilError(t, err)
 
 		// should only find one

@@ -1,10 +1,10 @@
-package reader
+package api
 
 import (
 	"net/http"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/model/reader"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -18,7 +18,7 @@ type jsonArticle struct {
 	Tags        []string  `json:"tags"`
 }
 
-func marshalArticle(article *reader.Article) jsonArticle {
+func marshalArticle(article *model.Article) jsonArticle {
 	a := jsonArticle{
 		Title:       article.Title(),
 		URL:         article.URL(),
@@ -58,29 +58,29 @@ func (app *Application) handleArticleList() http.HandlerFunc {
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
 		var count int
-		var articles []*reader.Article
+		var articles []*model.Article
 		var err error
 
 		if q != "" {
-			count, err = app.store.Reader().Article().CountSearch(q)
+			count, err = app.store.Article().CountSearch(q)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			articles, err = app.store.Reader().Article().ListSearch(q, limit, offset)
+			articles, err = app.store.Article().ListSearch(q, limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 		} else {
-			count, err = app.store.Reader().Article().Count()
+			count, err = app.store.Article().Count()
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			articles, err = app.store.Reader().Article().List(limit, offset)
+			articles, err = app.store.Article().List(limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return

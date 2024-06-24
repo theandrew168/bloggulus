@@ -5,7 +5,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api/admin"
-	"github.com/theandrew168/bloggulus/backend/web/api/reader"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
@@ -22,15 +21,16 @@ func NewApplication(store *storage.Storage) *Application {
 
 func (app *Application) Handler() http.Handler {
 	adminApp := admin.NewApplication(app.store)
-	readerApp := reader.NewApplication(app.store)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", app.handleIndexRapidoc())
 	mux.HandleFunc("GET /redoc", app.handleIndexRedoc())
 	mux.HandleFunc("GET /rapidoc", app.handleIndexRapidoc())
 	mux.HandleFunc("GET /stoplight", app.handleIndexStoplight())
+
+	mux.HandleFunc("GET /articles", app.handleArticleList())
+
 	mux.Handle("/admin/", http.StripPrefix("/admin", adminApp.Handler()))
-	mux.Handle("/", readerApp.Handler())
 
 	return middleware.Adapt(mux, middleware.SecureHeaders(), middleware.EnableCORS())
 }

@@ -5,22 +5,22 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage/admin"
-	"github.com/theandrew168/bloggulus/backend/storage/reader"
 )
 
 type Storage struct {
 	conn postgres.Conn
 
-	admin  *admin.Storage
-	reader *reader.Storage
+	admin *admin.Storage
+
+	article *ArticleStorage
 }
 
 func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		admin:  admin.New(conn),
-		reader: reader.New(conn),
+		admin:   admin.New(conn),
+		article: NewArticleStorage(conn),
 	}
 	return &s
 }
@@ -29,8 +29,8 @@ func (s *Storage) Admin() *admin.Storage {
 	return s.admin
 }
 
-func (s *Storage) Reader() *reader.Storage {
-	return s.reader
+func (s *Storage) Article() *ArticleStorage {
+	return s.article
 }
 
 func (s *Storage) Exec(ctx context.Context, sql string, args ...any) error {

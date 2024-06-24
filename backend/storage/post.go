@@ -1,4 +1,4 @@
-package admin
+package storage
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -22,7 +22,7 @@ type dbPost struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func marshalPost(post *admin.Post) (dbPost, error) {
+func marshalPost(post *model.Post) (dbPost, error) {
 	p := dbPost{
 		ID:          post.ID(),
 		BlogID:      post.BlogID(),
@@ -36,8 +36,8 @@ func marshalPost(post *admin.Post) (dbPost, error) {
 	return p, nil
 }
 
-func (p dbPost) unmarshal() (*admin.Post, error) {
-	post := admin.LoadPost(
+func (p dbPost) unmarshal() (*model.Post, error) {
+	post := model.LoadPost(
 		p.ID,
 		p.BlogID,
 		p.URL,
@@ -61,7 +61,7 @@ func NewPostStorage(conn postgres.Conn) *PostStorage {
 	return &s
 }
 
-func (s *PostStorage) Create(post *admin.Post) error {
+func (s *PostStorage) Create(post *model.Post) error {
 	stmt := `
 		INSERT INTO post
 			(id, blog_id, url, title, content, published_at, created_at, updated_at)
@@ -95,7 +95,7 @@ func (s *PostStorage) Create(post *admin.Post) error {
 	return nil
 }
 
-func (s *PostStorage) Read(id uuid.UUID) (*admin.Post, error) {
+func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -125,7 +125,7 @@ func (s *PostStorage) Read(id uuid.UUID) (*admin.Post, error) {
 	return row.unmarshal()
 }
 
-func (s *PostStorage) ReadByURL(url string) (*admin.Post, error) {
+func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -155,7 +155,7 @@ func (s *PostStorage) ReadByURL(url string) (*admin.Post, error) {
 	return row.unmarshal()
 }
 
-func (s *PostStorage) List(limit, offset int) ([]*admin.Post, error) {
+func (s *PostStorage) List(limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -183,7 +183,7 @@ func (s *PostStorage) List(limit, offset int) ([]*admin.Post, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []*admin.Post
+	var posts []*model.Post
 	for _, row := range postRows {
 		post, err := row.unmarshal()
 		if err != nil {
@@ -196,7 +196,7 @@ func (s *PostStorage) List(limit, offset int) ([]*admin.Post, error) {
 	return posts, nil
 }
 
-func (s *PostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]*admin.Post, error) {
+func (s *PostStorage) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			id,
@@ -225,7 +225,7 @@ func (s *PostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]*admin.
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []*admin.Post
+	var posts []*model.Post
 	for _, row := range postRows {
 		post, err := row.unmarshal()
 		if err != nil {
@@ -238,7 +238,7 @@ func (s *PostStorage) ListByBlog(blog *admin.Blog, limit, offset int) ([]*admin.
 	return posts, nil
 }
 
-func (s *PostStorage) Update(post *admin.Post) error {
+func (s *PostStorage) Update(post *model.Post) error {
 	now := time.Now().UTC()
 	stmt := `
 		UPDATE post
@@ -284,7 +284,7 @@ func (s *PostStorage) Update(post *admin.Post) error {
 	return nil
 }
 
-func (repo *PostStorage) Delete(post *admin.Post) error {
+func (repo *PostStorage) Delete(post *model.Post) error {
 	stmt := `
 		DELETE FROM post
 		WHERE id = $1

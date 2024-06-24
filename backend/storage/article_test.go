@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -18,11 +18,11 @@ func TestArticleList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.NewBlog(t)
-		err := store.Admin().Blog().Create(blog)
+		err := store.Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		post := test.NewPost(t, blog)
-		err = store.Admin().Post().Create(post)
+		err = store.Post().Create(post)
 		test.AssertNilError(t, err)
 
 		articles, err := store.Article().List(20, 0)
@@ -46,11 +46,11 @@ func TestArticleListSearch(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.NewBlog(t)
-		err := store.Admin().Blog().Create(blog)
+		err := store.Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		pythonPost, err := admin.NewPost(
+		pythonPost, err := model.NewPost(
 			blog,
 			"https://example.com/python",
 			"Python",
@@ -59,11 +59,11 @@ func TestArticleListSearch(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Admin().Post().Create(pythonPost)
+		err = store.Post().Create(pythonPost)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		boringPost, err := admin.NewPost(
+		boringPost, err := model.NewPost(
 			blog,
 			"https://example.com/boring",
 			"Boring",
@@ -72,7 +72,7 @@ func TestArticleListSearch(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Admin().Post().Create(boringPost)
+		err = store.Post().Create(boringPost)
 		test.AssertNilError(t, err)
 
 		// list articles that relate to python
@@ -116,11 +116,11 @@ func TestArticleCountSearch(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.NewBlog(t)
-		err := store.Admin().Blog().Create(blog)
+		err := store.Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		pythonPost, err := admin.NewPost(
+		pythonPost, err := model.NewPost(
 			blog,
 			"https://example.com/python",
 			"Python",
@@ -129,11 +129,11 @@ func TestArticleCountSearch(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Admin().Post().Create(pythonPost)
+		err = store.Post().Create(pythonPost)
 		test.AssertNilError(t, err)
 
 		// create a post about python
-		boringPost, err := admin.NewPost(
+		boringPost, err := model.NewPost(
 			blog,
 			"https://example.com/boring",
 			"Boring",
@@ -142,7 +142,7 @@ func TestArticleCountSearch(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Admin().Post().Create(boringPost)
+		err = store.Post().Create(boringPost)
 		test.AssertNilError(t, err)
 
 		// count posts that relate to python

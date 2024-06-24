@@ -1,4 +1,4 @@
-package admin
+package storage
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -22,7 +22,7 @@ type dbAccount struct {
 	UpdatedAt    time.Time `db:"updated_at"`
 }
 
-func marshalAccount(account *admin.Account) (dbAccount, error) {
+func marshalAccount(account *model.Account) (dbAccount, error) {
 	a := dbAccount{
 		ID:           account.ID(),
 		Username:     account.Username(),
@@ -34,8 +34,8 @@ func marshalAccount(account *admin.Account) (dbAccount, error) {
 	return a, nil
 }
 
-func (a dbAccount) unmarshal() (*admin.Account, error) {
-	account := admin.LoadAccount(
+func (a dbAccount) unmarshal() (*model.Account, error) {
+	account := model.LoadAccount(
 		a.ID,
 		a.Username,
 		a.PasswordHash,
@@ -57,7 +57,7 @@ func NewAccountStoragee(conn postgres.Conn) *AccountStorage {
 	return &s
 }
 
-func (s *AccountStorage) Create(account *admin.Account) error {
+func (s *AccountStorage) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
 			(id, username, password_hash, created_at, updated_at)
@@ -88,7 +88,7 @@ func (s *AccountStorage) Create(account *admin.Account) error {
 	return nil
 }
 
-func (s *AccountStorage) Read(id uuid.UUID) (*admin.Account, error) {
+func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
 	stmt := `
 		SELECT
 			id,
@@ -116,7 +116,7 @@ func (s *AccountStorage) Read(id uuid.UUID) (*admin.Account, error) {
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) ReadByUsername(username string) (*admin.Account, error) {
+func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			id,
@@ -144,7 +144,7 @@ func (s *AccountStorage) ReadByUsername(username string) (*admin.Account, error)
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) ReadByToken(token string) (*admin.Account, error) {
+func (s *AccountStorage) ReadByToken(token string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -177,7 +177,7 @@ func (s *AccountStorage) ReadByToken(token string) (*admin.Account, error) {
 	return row.unmarshal()
 }
 
-func (repo *AccountStorage) Delete(account *admin.Account) error {
+func (repo *AccountStorage) Delete(account *model.Account) error {
 	stmt := `
 		DELETE FROM account
 		WHERE id = $1

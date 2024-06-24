@@ -1,4 +1,4 @@
-package admin
+package storage
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -18,7 +18,7 @@ type dbTag struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func marshalTag(tag *admin.Tag) (dbTag, error) {
+func marshalTag(tag *model.Tag) (dbTag, error) {
 	t := dbTag{
 		ID:        tag.ID(),
 		Name:      tag.Name(),
@@ -28,8 +28,8 @@ func marshalTag(tag *admin.Tag) (dbTag, error) {
 	return t, nil
 }
 
-func (t dbTag) unmarshal() (*admin.Tag, error) {
-	tag := admin.LoadTag(
+func (t dbTag) unmarshal() (*model.Tag, error) {
+	tag := model.LoadTag(
 		t.ID,
 		t.Name,
 		t.CreatedAt,
@@ -49,7 +49,7 @@ func NewTagStorage(conn postgres.Conn) *TagStorage {
 	return &s
 }
 
-func (s *TagStorage) Create(tag *admin.Tag) error {
+func (s *TagStorage) Create(tag *model.Tag) error {
 	stmt := `
 		INSERT INTO tag
 			(id, name, created_at, updated_at)
@@ -79,7 +79,7 @@ func (s *TagStorage) Create(tag *admin.Tag) error {
 	return nil
 }
 
-func (s *TagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
+func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -105,7 +105,7 @@ func (s *TagStorage) Read(id uuid.UUID) (*admin.Tag, error) {
 	return row.unmarshal()
 }
 
-func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
+func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
 	stmt := `
 		SELECT
 			id,
@@ -129,7 +129,7 @@ func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var tags []*admin.Tag
+	var tags []*model.Tag
 	for _, row := range tagRows {
 		tag, err := row.unmarshal()
 		if err != nil {
@@ -142,7 +142,7 @@ func (s *TagStorage) List(limit, offset int) ([]*admin.Tag, error) {
 	return tags, nil
 }
 
-func (repo *TagStorage) Delete(tag *admin.Tag) error {
+func (repo *TagStorage) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1

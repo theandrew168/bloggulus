@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -15,7 +15,7 @@ type jsonTag struct {
 	Name string    `json:"name"`
 }
 
-func marshalTag(tag *admin.Tag) jsonTag {
+func marshalTag(tag *model.Tag) jsonTag {
 	t := jsonTag{
 		ID:   tag.ID(),
 		Name: tag.Name(),
@@ -47,7 +47,7 @@ func (app *Application) handleTagList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		tags, err := app.store.Admin().Tag().List(limit, offset)
+		tags, err := app.store.Tag().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

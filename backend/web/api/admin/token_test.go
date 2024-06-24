@@ -67,7 +67,7 @@ func TestTokenCreate(t *testing.T) {
 			t.Fatalf("response missing key: %v", "token")
 		}
 
-		_, err = store.Admin().Token().ReadByValue(got.Value)
+		_, err = store.Token().ReadByValue(got.Value)
 		test.AssertNilError(t, err)
 
 		return postgres.ErrRollback

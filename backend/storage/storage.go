@@ -4,33 +4,55 @@ import (
 	"context"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage/admin"
 )
 
 type Storage struct {
 	conn postgres.Conn
 
-	admin *admin.Storage
-
 	article *ArticleStorage
+	blog    *BlogStorage
+	post    *PostStorage
+	tag     *TagStorage
+	account *AccountStorage
+	token   *TokenStorage
 }
 
 func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		admin:   admin.New(conn),
 		article: NewArticleStorage(conn),
+		blog:    NewBlogStorage(conn),
+		post:    NewPostStorage(conn),
+		tag:     NewTagStorage(conn),
+		account: NewAccountStoragee(conn),
+		token:   NewTokenStorage(conn),
 	}
 	return &s
 }
 
-func (s *Storage) Admin() *admin.Storage {
-	return s.admin
-}
-
 func (s *Storage) Article() *ArticleStorage {
 	return s.article
+}
+
+func (s *Storage) Blog() *BlogStorage {
+	return s.blog
+}
+
+func (s *Storage) Post() *PostStorage {
+	return s.post
+}
+
+func (s *Storage) Tag() *TagStorage {
+	return s.tag
+}
+
+func (s *Storage) Account() *AccountStorage {
+	return s.account
+}
+
+func (s *Storage) Token() *TokenStorage {
+	return s.token
 }
 
 func (s *Storage) Exec(ctx context.Context, sql string, args ...any) error {

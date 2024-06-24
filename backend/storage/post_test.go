@@ -1,9 +1,9 @@
-package admin_test
+package storage_test
 
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -17,11 +17,11 @@ func TestPostCreate(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.NewBlog(t)
-		err := store.Admin().Blog().Create(blog)
+		err := store.Blog().Create(blog)
 		test.AssertNilError(t, err)
 
 		post := test.NewPost(t, blog)
-		err = store.Admin().Post().Create(post)
+		err = store.Post().Create(post)
 		test.AssertNilError(t, err)
 
 		return postgres.ErrRollback
@@ -39,7 +39,7 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 		post := test.CreatePost(t, store, blog)
 
 		// attempt to create the same post again
-		err := store.Admin().Post().Create(post)
+		err := store.Post().Create(post)
 		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
 		return postgres.ErrRollback
@@ -55,7 +55,7 @@ func TestPostRead(t *testing.T) {
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
-		got, err := store.Admin().Post().Read(post.ID())
+		got, err := store.Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), post.ID())
@@ -73,7 +73,7 @@ func TestPostReadByURL(t *testing.T) {
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
-		got, err := store.Admin().Post().ReadByURL(post.URL())
+		got, err := store.Post().ReadByURL(post.URL())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), post.ID())
@@ -98,7 +98,7 @@ func TestPostList(t *testing.T) {
 
 		limit := 5
 		offset := 0
-		posts, err := store.Admin().Post().List(limit, offset)
+		posts, err := store.Post().List(limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(posts), limit)
@@ -117,10 +117,10 @@ func TestPostListByBlog(t *testing.T) {
 		blog := test.CreateBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
-		var post *admin.Post
+		var post *model.Post
 		for i := 0; i < 5; i++ {
 			var err error
-			post, err = admin.NewPost(
+			post, err = model.NewPost(
 				blog,
 				test.RandomURL(32),
 				test.RandomString(32),
@@ -129,13 +129,13 @@ func TestPostListByBlog(t *testing.T) {
 			)
 			test.AssertNilError(t, err)
 
-			err = store.Admin().Post().Create(post)
+			err = store.Post().Create(post)
 			test.AssertNilError(t, err)
 		}
 
 		limit := 5
 		offset := 0
-		posts, err := store.Admin().Post().ListByBlog(blog, limit, offset)
+		posts, err := store.Post().ListByBlog(blog, limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(posts), limit)
@@ -160,10 +160,10 @@ func TestPostUpdate(t *testing.T) {
 		content := "foobar"
 		post.SetContent(content)
 
-		err := store.Admin().Post().Update(post)
+		err := store.Post().Update(post)
 		test.AssertNilError(t, err)
 
-		got, err := store.Admin().Post().Read(post.ID())
+		got, err := store.Post().Read(post.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.Content(), content)
@@ -182,10 +182,10 @@ func TestPostDelete(t *testing.T) {
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
 
-		err := store.Admin().Post().Delete(post)
+		err := store.Post().Delete(post)
 		test.AssertNilError(t, err)
 
-		_, err = store.Admin().Post().Read(post.ID())
+		_, err = store.Post().Read(post.ID())
 		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
 		return postgres.ErrRollback

@@ -1,4 +1,4 @@
-package admin_test
+package storage_test
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestTagCreate(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		tag := test.NewTag(t)
-		err := store.Admin().Tag().Create(tag)
+		err := store.Tag().Create(tag)
 		test.AssertNilError(t, err)
 
 		return postgres.ErrRollback
@@ -33,7 +33,7 @@ func TestTagCreateAlreadyExists(t *testing.T) {
 		tag := test.CreateTag(t, store)
 
 		// attempt to create the same tag again
-		err := store.Admin().Tag().Create(tag)
+		err := store.Tag().Create(tag)
 		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
 		return postgres.ErrRollback
@@ -48,7 +48,7 @@ func TestTagRead(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		tag := test.CreateTag(t, store)
-		got, err := store.Admin().Tag().Read(tag.ID())
+		got, err := store.Tag().Read(tag.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), tag.ID())
@@ -72,7 +72,7 @@ func TestTagList(t *testing.T) {
 
 		limit := 5
 		offset := 0
-		tags, err := store.Admin().Tag().List(limit, offset)
+		tags, err := store.Tag().List(limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(tags), limit)
@@ -90,10 +90,10 @@ func TestTagDelete(t *testing.T) {
 	store.WithTransaction(func(store *storage.Storage) error {
 		tag := test.CreateTag(t, store)
 
-		err := store.Admin().Tag().Delete(tag)
+		err := store.Tag().Delete(tag)
 		test.AssertNilError(t, err)
 
-		_, err = store.Admin().Tag().Read(tag.ID())
+		_, err = store.Tag().Read(tag.ID())
 		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
 		return postgres.ErrRollback

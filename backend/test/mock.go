@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
-func NewBlog(t *testing.T) *admin.Blog {
-	blog, err := admin.NewBlog(
+func NewBlog(t *testing.T) *model.Blog {
+	blog, err := model.NewBlog(
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
@@ -22,8 +22,8 @@ func NewBlog(t *testing.T) *admin.Blog {
 	return blog
 }
 
-func NewPost(t *testing.T, blog *admin.Blog) *admin.Post {
-	post, err := admin.NewPost(
+func NewPost(t *testing.T, blog *model.Blog) *model.Post {
+	post, err := model.NewPost(
 		blog,
 		RandomURL(32),
 		RandomString(32),
@@ -35,8 +35,8 @@ func NewPost(t *testing.T, blog *admin.Blog) *admin.Post {
 	return post
 }
 
-func NewTag(t *testing.T) *admin.Tag {
-	tag, err := admin.NewTag(
+func NewTag(t *testing.T) *model.Tag {
+	tag, err := model.NewTag(
 		RandomString(32),
 	)
 	AssertNilError(t, err)
@@ -44,9 +44,9 @@ func NewTag(t *testing.T) *admin.Tag {
 	return tag
 }
 
-func NewAccount(t *testing.T) (*admin.Account, string) {
+func NewAccount(t *testing.T) (*model.Account, string) {
 	password := RandomString(32)
-	account, err := admin.NewAccount(
+	account, err := model.NewAccount(
 		RandomString(32),
 		password,
 	)
@@ -55,8 +55,8 @@ func NewAccount(t *testing.T) (*admin.Account, string) {
 	return account, password
 }
 
-func NewToken(t *testing.T, account *admin.Account) (*admin.Token, string) {
-	token, value, err := admin.NewToken(
+func NewToken(t *testing.T, account *model.Account) (*model.Token, string) {
+	token, value, err := model.NewToken(
 		account,
 		// expire in 24 hours
 		24*time.Hour,
@@ -67,70 +67,70 @@ func NewToken(t *testing.T, account *admin.Account) (*admin.Token, string) {
 }
 
 // mocks a blog and creates it in the database
-func CreateBlog(t *testing.T, store *storage.Storage) *admin.Blog {
+func CreateBlog(t *testing.T, store *storage.Storage) *model.Blog {
 	t.Helper()
 
 	// generate some random blog data
 	blog := NewBlog(t)
 
 	// create an example blog
-	err := store.Admin().Blog().Create(blog)
+	err := store.Blog().Create(blog)
 	AssertNilError(t, err)
 
 	return blog
 }
 
 // mocks a post and creates it in the database
-func CreatePost(t *testing.T, store *storage.Storage, blog *admin.Blog) *admin.Post {
+func CreatePost(t *testing.T, store *storage.Storage, blog *model.Blog) *model.Post {
 	t.Helper()
 
 	// generate some random post data
 	post := NewPost(t, blog)
 
 	// create an example post
-	err := store.Admin().Post().Create(post)
+	err := store.Post().Create(post)
 	AssertNilError(t, err)
 
 	return post
 }
 
 // mocks a tag and creates it in the database
-func CreateTag(t *testing.T, store *storage.Storage) *admin.Tag {
+func CreateTag(t *testing.T, store *storage.Storage) *model.Tag {
 	t.Helper()
 
 	// generate some random tag data
 	tag := NewTag(t)
 
 	// create an example tag
-	err := store.Admin().Tag().Create(tag)
+	err := store.Tag().Create(tag)
 	AssertNilError(t, err)
 
 	return tag
 }
 
 // mocks an account and creates it in the database
-func CreateAccount(t *testing.T, store *storage.Storage) (*admin.Account, string) {
+func CreateAccount(t *testing.T, store *storage.Storage) (*model.Account, string) {
 	t.Helper()
 
 	// generate some random account data
 	account, password := NewAccount(t)
 
 	// create an example account
-	err := store.Admin().Account().Create(account)
+	err := store.Account().Create(account)
 	AssertNilError(t, err)
 
 	return account, password
 }
 
 // mocks a token and creates it in the database
-func CreateToken(t *testing.T, store *storage.Storage, account *admin.Account) (*admin.Token, string) {
+func CreateToken(t *testing.T, store *storage.Storage, account *model.Account) (*model.Token, string) {
 	t.Helper()
 
 	// generate some random token data
 	token, value := NewToken(t, account)
 
 	// create an example token
-	err := store.Admin().Token().Create(token)
+	err := store.Token().Create(token)
 	AssertNilError(t, err)
 
 	return token, value

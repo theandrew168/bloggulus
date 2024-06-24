@@ -52,14 +52,14 @@ func TestNewBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch and verify blog data
-		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count
-		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -105,14 +105,14 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch and verify blog data
-		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count (should be none)
-		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 0)
 
@@ -136,7 +136,7 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err = store.Admin().Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -205,7 +205,7 @@ func TestSyncOncePerHour(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// capture its current syncedAt time
@@ -216,7 +216,7 @@ func TestSyncOncePerHour(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch the blog's data
-		blog, err = store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// syncedAt should not have changed
@@ -263,11 +263,11 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err := store.Admin().Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -290,7 +290,7 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch posts and verify count
-		posts, err = store.Admin().Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Post().ListByBlog(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -333,13 +333,13 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch the synced blog
-		blog, err := store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// update the blog's ETag and LastModified to something non-empty
 		blog.SetETag("foo")
 		blog.SetLastModified("bar")
-		err = store.Admin().Blog().Update(blog)
+		err = store.Blog().Update(blog)
 		test.AssertNilError(t, err)
 
 		// sync the block again (will see empty ETag and LastModified values)
@@ -347,7 +347,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch the blog
-		blog, err = store.Admin().Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// verify that the existing ETag and LastModified values haven't been wiped out

@@ -1,4 +1,4 @@
-package admin_test
+package storage_test
 
 import (
 	"testing"
@@ -16,11 +16,11 @@ func TestTokenCreate(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		account, _ := test.NewAccount(t)
-		err := store.Admin().Account().Create(account)
+		err := store.Account().Create(account)
 		test.AssertNilError(t, err)
 
 		token, _ := test.NewToken(t, account)
-		err = store.Admin().Token().Create(token)
+		err = store.Token().Create(token)
 		test.AssertNilError(t, err)
 
 		return postgres.ErrRollback
@@ -38,7 +38,7 @@ func TestTokenCreateAlreadyExists(t *testing.T) {
 		token, _ := test.CreateToken(t, store, account)
 
 		// attempt to create the same token again
-		err := store.Admin().Token().Create(token)
+		err := store.Token().Create(token)
 		test.AssertErrorIs(t, err, postgres.ErrConflict)
 
 		return postgres.ErrRollback
@@ -55,7 +55,7 @@ func TestTokenRead(t *testing.T) {
 		account, _ := test.CreateAccount(t, store)
 		token, _ := test.CreateToken(t, store, account)
 
-		got, err := store.Admin().Token().Read(token.ID())
+		got, err := store.Token().Read(token.ID())
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), token.ID())
@@ -74,7 +74,7 @@ func TestTokenReadByValue(t *testing.T) {
 		account, _ := test.CreateAccount(t, store)
 		token, value := test.CreateToken(t, store, account)
 
-		got, err := store.Admin().Token().ReadByValue(value)
+		got, err := store.Token().ReadByValue(value)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, got.ID(), token.ID())
@@ -93,10 +93,10 @@ func TestTokenDelete(t *testing.T) {
 		account, _ := test.CreateAccount(t, store)
 		token, _ := test.CreateToken(t, store, account)
 
-		err := store.Admin().Token().Delete(token)
+		err := store.Token().Delete(token)
 		test.AssertNilError(t, err)
 
-		_, err = store.Admin().Token().Read(token.ID())
+		_, err = store.Token().Read(token.ID())
 		test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
 		return postgres.ErrRollback

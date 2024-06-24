@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
@@ -17,7 +17,7 @@ type jsonAccount struct {
 	Username string    `json:"username"`
 }
 
-func marshalAccount(account *admin.Account) jsonAccount {
+func marshalAccount(account *model.Account) jsonAccount {
 	a := jsonAccount{
 		ID:       account.ID(),
 		Username: account.Username(),
@@ -57,13 +57,13 @@ func (app *Application) handleAccountCreate() http.HandlerFunc {
 			return
 		}
 
-		account, err := admin.NewAccount(req.Username, req.Password)
+		account, err := model.NewAccount(req.Username, req.Password)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
-		err = app.store.Admin().Account().Create(account)
+		err = app.store.Account().Create(account)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):

@@ -11,7 +11,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/fetch"
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
@@ -79,7 +79,7 @@ func (s *SyncService) SyncAllBlogs() error {
 
 	slog.Info("syncing blogs")
 
-	blogs, err := s.store.Admin().Blog().ListAll()
+	blogs, err := s.store.Blog().ListAll()
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	for _, blog := range blogs {
 		sem.Acquire(context.Background(), 1)
 
-		go func(blog *admin.Blog) {
+		go func(blog *model.Blog) {
 			defer sem.Release(1)
 
 			// don't sync a given blog more than once per SyncCooldown
@@ -119,7 +119,7 @@ func (s *SyncService) SyncAllBlogs() error {
 }
 
 func (s *SyncService) SyncBlog(feedURL string) error {
-	blog, err := s.store.Admin().Blog().ReadByFeedURL(feedURL)
+	blog, err := s.store.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return err
@@ -153,7 +153,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	}
 
 	now := time.Now().UTC()
-	blog, err := admin.NewBlog(
+	blog, err := model.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
 		feedBlog.Title,
@@ -165,7 +165,7 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		return err
 	}
 
-	err = s.store.Admin().Blog().Create(blog)
+	err = s.store.Blog().Create(blog)
 	if err != nil {
 		return err
 	}
@@ -180,11 +180,11 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 	return nil
 }
 
-func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
+func (s *SyncService) syncExistingBlog(blog *model.Blog) error {
 	now := time.Now().UTC()
 	blog.SetSyncedAt(now)
 
-	err := s.store.Admin().Blog().Update(blog)
+	err := s.store.Blog().Update(blog)
 	if err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 		blog.SetLastModified(resp.LastModified)
 	}
 
-	err = s.store.Admin().Blog().Update(blog)
+	err = s.store.Blog().Update(blog)
 	if err != nil {
 		return err
 	}
@@ -232,14 +232,14 @@ func (s *SyncService) syncExistingBlog(blog *admin.Blog) error {
 	return nil
 }
 
-func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
-	post, err := s.store.Admin().Post().ReadByURL(feedPost.URL)
+func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) error {
+	post, err := s.store.Post().ReadByURL(feedPost.URL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return err
 		}
 
-		post, err := admin.NewPost(
+		post, err := model.NewPost(
 			blog,
 			feedPost.URL,
 			feedPost.Title,
@@ -250,13 +250,13 @@ func (s *SyncService) syncPost(blog *admin.Blog, feedPost feed.Post) error {
 			return err
 		}
 
-		return s.store.Admin().Post().Create(post)
+		return s.store.Post().Create(post)
 	}
 
 	// update the post's content (if available)
 	if feedPost.Content != "" {
 		post.SetContent(feedPost.Content)
-		return s.store.Admin().Post().Update(post)
+		return s.store.Post().Update(post)
 	}
 
 	return nil

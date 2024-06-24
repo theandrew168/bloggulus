@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
@@ -18,7 +18,7 @@ type jsonNewToken struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func marshalNewToken(token *admin.Token, value string) jsonNewToken {
+func marshalNewToken(token *model.Token, value string) jsonNewToken {
 	a := jsonNewToken{
 		ID:        token.ID(),
 		Value:     value,
@@ -32,7 +32,7 @@ type jsonToken struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func marshalToken(token *admin.Token) jsonToken {
+func marshalToken(token *model.Token) jsonToken {
 	a := jsonToken{
 		ID:        token.ID(),
 		ExpiresAt: token.ExpiresAt(),
@@ -69,7 +69,7 @@ func (app *Application) handleTokenCreate() http.HandlerFunc {
 		}
 
 		// check that an account exists with the given username
-		account, err := app.store.Admin().Account().ReadByUsername(req.Username)
+		account, err := app.store.Account().ReadByUsername(req.Username)
 		if err != nil {
 			switch err {
 			case postgres.ErrNotFound:
@@ -87,13 +87,13 @@ func (app *Application) handleTokenCreate() http.HandlerFunc {
 			return
 		}
 
-		token, value, err := admin.NewToken(account, 24*time.Hour)
+		token, value, err := model.NewToken(account, 24*time.Hour)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
 
-		err = app.store.Admin().Token().Create(token)
+		err = app.store.Token().Create(token)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

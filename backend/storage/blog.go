@@ -1,4 +1,4 @@
-package admin
+package storage
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -23,7 +23,7 @@ type dbBlog struct {
 	UpdatedAt    time.Time `db:"updated_at"`
 }
 
-func marshalBlog(blog *admin.Blog) (dbBlog, error) {
+func marshalBlog(blog *model.Blog) (dbBlog, error) {
 	b := dbBlog{
 		ID:           blog.ID(),
 		FeedURL:      blog.FeedURL(),
@@ -38,8 +38,8 @@ func marshalBlog(blog *admin.Blog) (dbBlog, error) {
 	return b, nil
 }
 
-func (b dbBlog) unmarshal() (*admin.Blog, error) {
-	blog := admin.LoadBlog(
+func (b dbBlog) unmarshal() (*model.Blog, error) {
+	blog := model.LoadBlog(
 		b.ID,
 		b.FeedURL,
 		b.SiteURL,
@@ -64,7 +64,7 @@ func NewBlogStorage(conn postgres.Conn) *BlogStorage {
 	return &s
 }
 
-func (s *BlogStorage) Create(blog *admin.Blog) error {
+func (s *BlogStorage) Create(blog *model.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
@@ -99,7 +99,7 @@ func (s *BlogStorage) Create(blog *admin.Blog) error {
 	return nil
 }
 
-func (s *BlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
+func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -130,7 +130,7 @@ func (s *BlogStorage) Read(id uuid.UUID) (*admin.Blog, error) {
 	return row.unmarshal()
 }
 
-func (s *BlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
+func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -161,7 +161,7 @@ func (s *BlogStorage) ReadByFeedURL(feedURL string) (*admin.Blog, error) {
 	return row.unmarshal()
 }
 
-func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
+func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -190,7 +190,7 @@ func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var blogs []*admin.Blog
+	var blogs []*model.Blog
 	for _, row := range blogRows {
 		blog, err := row.unmarshal()
 		if err != nil {
@@ -203,7 +203,7 @@ func (s *BlogStorage) List(limit, offset int) ([]*admin.Blog, error) {
 	return blogs, nil
 }
 
-func (s *BlogStorage) ListAll() ([]*admin.Blog, error) {
+func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	stmt := `
 		SELECT
 			id,
@@ -231,7 +231,7 @@ func (s *BlogStorage) ListAll() ([]*admin.Blog, error) {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var blogs []*admin.Blog
+	var blogs []*model.Blog
 	for _, row := range blogRows {
 		blog, err := row.unmarshal()
 		if err != nil {
@@ -244,7 +244,7 @@ func (s *BlogStorage) ListAll() ([]*admin.Blog, error) {
 	return blogs, nil
 }
 
-func (s *BlogStorage) Update(blog *admin.Blog) error {
+func (s *BlogStorage) Update(blog *model.Blog) error {
 	now := time.Now().UTC()
 	stmt := `
 		UPDATE blog
@@ -294,7 +294,7 @@ func (s *BlogStorage) Update(blog *admin.Blog) error {
 	return nil
 }
 
-func (repo *BlogStorage) Delete(blog *admin.Blog) error {
+func (repo *BlogStorage) Delete(blog *model.Blog) error {
 	stmt := `
 		DELETE FROM blog
 		WHERE id = $1

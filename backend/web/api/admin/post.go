@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
@@ -21,7 +21,7 @@ type jsonPost struct {
 	PublishedAt time.Time `json:"publishedAt"`
 }
 
-func marshalPost(post *admin.Post) jsonPost {
+func marshalPost(post *model.Post) jsonPost {
 	p := jsonPost{
 		ID:          post.ID(),
 		BlogID:      post.BlogID(),
@@ -47,7 +47,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			return
 		}
 
-		post, err := app.store.Admin().Post().Read(id)
+		post, err := app.store.Post().Read(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -94,7 +94,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		posts, err := app.store.Admin().Post().List(limit, offset)
+		posts, err := app.store.Post().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

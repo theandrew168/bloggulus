@@ -1,4 +1,4 @@
-package admin
+package storage
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -22,7 +22,7 @@ type dbToken struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func marshalToken(token *admin.Token) (dbToken, error) {
+func marshalToken(token *model.Token) (dbToken, error) {
 	t := dbToken{
 		ID:        token.ID(),
 		AccountID: token.AccountID(),
@@ -34,8 +34,8 @@ func marshalToken(token *admin.Token) (dbToken, error) {
 	return t, nil
 }
 
-func (t dbToken) unmarshal() (*admin.Token, error) {
-	token := admin.LoadToken(
+func (t dbToken) unmarshal() (*model.Token, error) {
+	token := model.LoadToken(
 		t.ID,
 		t.AccountID,
 		t.Hash,
@@ -57,7 +57,7 @@ func NewTokenStorage(conn postgres.Conn) *TokenStorage {
 	return &s
 }
 
-func (s *TokenStorage) Create(token *admin.Token) error {
+func (s *TokenStorage) Create(token *model.Token) error {
 	stmt := `
 		INSERT INTO token
 			(id, account_id, hash, expires_at, created_at, updated_at)
@@ -89,7 +89,7 @@ func (s *TokenStorage) Create(token *admin.Token) error {
 	return nil
 }
 
-func (s *TokenStorage) Read(id uuid.UUID) (*admin.Token, error) {
+func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
 	stmt := `
 		SELECT
 			id,
@@ -117,7 +117,7 @@ func (s *TokenStorage) Read(id uuid.UUID) (*admin.Token, error) {
 	return row.unmarshal()
 }
 
-func (s *TokenStorage) ReadByValue(value string) (*admin.Token, error) {
+func (s *TokenStorage) ReadByValue(value string) (*model.Token, error) {
 	stmt := `
 		SELECT
 			id,
@@ -148,7 +148,7 @@ func (s *TokenStorage) ReadByValue(value string) (*admin.Token, error) {
 	return row.unmarshal()
 }
 
-func (repo *TokenStorage) Delete(token *admin.Token) error {
+func (repo *TokenStorage) Delete(token *model.Token) error {
 	stmt := `
 		DELETE FROM token
 		WHERE id = $1

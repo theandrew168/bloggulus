@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/model/admin"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
@@ -19,7 +19,7 @@ type jsonBlog struct {
 	Title   string    `json:"title"`
 }
 
-func marshalBlog(blog *admin.Blog) jsonBlog {
+func marshalBlog(blog *model.Blog) jsonBlog {
 	b := jsonBlog{
 		ID:      blog.ID(),
 		FeedURL: blog.FeedURL(),
@@ -44,7 +44,7 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 			return
 		}
 
-		blog, err := app.store.Admin().Blog().Read(id)
+		blog, err := app.store.Blog().Read(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -91,7 +91,7 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		blogs, err := app.store.Admin().Blog().List(limit, offset)
+		blogs, err := app.store.Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

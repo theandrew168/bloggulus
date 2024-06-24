@@ -42,7 +42,7 @@ func Authenticate(store *storage.Storage) Adapter {
 			token := headerParts[1]
 
 			// Retrieve the details of the account associated with the token.
-			account, err := store.Admin().Account().ReadByToken(token)
+			account, err := store.Account().ReadByToken(token)
 			if err != nil {
 				switch {
 				case errors.Is(err, postgres.ErrNotFound):

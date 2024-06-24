@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import Post from "$lib/components/Post.svelte";
+	import Article from "$lib/components/Article.svelte";
 
 	export let data;
 
@@ -11,10 +11,14 @@
 </script>
 
 <div class="container">
-	<h1>Recent Posts</h1>
-	<div class="posts">
-		{#each data.posts as post}
-			<Post {post} />
+	{#if q === ""}
+		<h1>Recent Articles</h1>
+	{:else}
+		<h1>Relevant Articles</h1>
+	{/if}
+	<div class="articles">
+		{#each data.articles as article}
+			<Article {article} />
 		{/each}
 	</div>
 	{#if hasMorePages}
@@ -32,7 +36,7 @@
 		margin-top: 1.5rem;
 		margin-bottom: 1.5rem;
 	}
-	.posts {
+	.articles {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;

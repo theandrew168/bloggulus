@@ -1,33 +1,33 @@
 <script lang="ts">
-	import type { Post } from "$lib/types";
+	import type { Article } from "$lib/types";
 	import Tag from "./Tag.svelte";
 
-	export let post: Post;
+	export let article: Article;
 
 	function formatPostDate(date: string): string {
 		return new Date(date).toLocaleDateString("en-us", { month: "short", day: "numeric", year: "numeric" });
 	}
 </script>
 
-<div class="post shadow">
+<div class="article shadow">
 	<div class="top">
-		<div class="updated">{formatPostDate(post.publishedAt)}</div>
+		<div class="updated">{formatPostDate(article.publishedAt)}</div>
 		<div class="tags">
-			{#each post.tags.slice(0, 3) as tag}
+			{#each article.tags.slice(0, 3) as tag}
 				<Tag name={tag} />
 			{/each}
 		</div>
 	</div>
 	<div class="title">
-		<a href={post.url}>{post.title}</a>
+		<a href={article.url}>{article.title}</a>
 	</div>
 	<div class="blogTitle">
-		<a href={post.blogURL}>{post.blogTitle}</a>
+		<a href={article.blogURL}>{article.blogTitle}</a>
 	</div>
 </div>
 
 <style>
-	.post {
+	.article {
 		background-color: var(--light-color);
 		text-align: left;
 		padding: 1.5rem;

@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 
-import type { PostsResponse } from "$lib/types";
+import type { ArticlesResponse } from "$lib/types";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch, url }) => {
@@ -19,11 +19,11 @@ export const load: PageLoad = async ({ fetch, url }) => {
 		}
 	}
 
-	const resp = await fetch("/api/v1/posts?" + search);
+	const resp = await fetch("/api/v1/articles?" + search);
 	if (!resp.ok) {
 		error(resp.status, await resp.text());
 	}
 
-	const posts: PostsResponse = await resp.json();
-	return posts;
+	const articles: ArticlesResponse = await resp.json();
+	return articles;
 };

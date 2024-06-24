@@ -1,6 +1,4 @@
-// reader domain types
-
-export type Post = {
+export type Article = {
 	title: string;
 	url: string;
 	blogTitle: string;
@@ -9,7 +7,7 @@ export type Post = {
 	tags: string[];
 };
 
-export type PostsResponse = {
+export type ArticlesResponse = {
 	count: number;
-	posts: Post[];
+	articles: Article[];
 };

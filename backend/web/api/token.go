@@ -1,4 +1,4 @@
-package admin
+package api
 
 import (
 	"net/http"
@@ -27,18 +27,19 @@ func marshalNewToken(token *model.Token, value string) jsonNewToken {
 	return a
 }
 
-type jsonToken struct {
-	ID        uuid.UUID `json:"id"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
+// TODO: For when listing / reading tokens
+// type jsonToken struct {
+// 	ID        uuid.UUID `json:"id"`
+// 	ExpiresAt time.Time `json:"expires_at"`
+// }
 
-func marshalToken(token *model.Token) jsonToken {
-	a := jsonToken{
-		ID:        token.ID(),
-		ExpiresAt: token.ExpiresAt(),
-	}
-	return a
-}
+// func marshalToken(token *model.Token) jsonToken {
+// 	a := jsonToken{
+// 		ID:        token.ID(),
+// 		ExpiresAt: token.ExpiresAt(),
+// 	}
+// 	return a
+// }
 
 func (app *Application) handleTokenCreate() http.HandlerFunc {
 	type request struct {

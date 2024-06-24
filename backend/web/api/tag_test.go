@@ -1,4 +1,4 @@
-package admin_test
+package api_test
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 type jsonTag struct {
@@ -27,7 +27,7 @@ func TestHandleTagList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
 		test.CreateTag(t, store)
@@ -66,7 +66,7 @@ func TestHandleTagListPagination(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
 		// create 5 tags to test with

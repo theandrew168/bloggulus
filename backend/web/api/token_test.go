@@ -1,4 +1,4 @@
-package admin_test
+package api_test
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 type jsonNewToken struct {
@@ -23,10 +23,11 @@ type jsonNewToken struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-type jsonToken struct {
-	ID        uuid.UUID `json:"id"`
-	ExpiresAt time.Time `json:"expires_at"`
-}
+// TODO: For when listing / reading tokens
+// type jsonToken struct {
+// 	ID        uuid.UUID `json:"id"`
+// 	ExpiresAt time.Time `json:"expires_at"`
+// }
 
 func TestTokenCreate(t *testing.T) {
 	t.Parallel()
@@ -35,7 +36,7 @@ func TestTokenCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 
 		account, password := test.CreateAccount(t, store)
 
@@ -81,7 +82,7 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 
 		// specify a username that doesn't exist
 		req := map[string]string{
@@ -111,7 +112,7 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 
 		account, _ := test.CreateAccount(t, store)
 

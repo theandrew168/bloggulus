@@ -1,4 +1,4 @@
-package admin_test
+package api_test
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
 type jsonAccount struct {
@@ -28,7 +28,7 @@ func TestAccountCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 
 		req := map[string]string{
 			"username": "foo",
@@ -71,7 +71,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
 		req := map[string]string{

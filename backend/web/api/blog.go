@@ -1,9 +1,8 @@
-package admin
+package api
 
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -13,28 +12,26 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
-type jsonPost struct {
-	ID          uuid.UUID `json:"id"`
-	BlogID      uuid.UUID `json:"blogID"`
-	URL         string    `json:"url"`
-	Title       string    `json:"title"`
-	PublishedAt time.Time `json:"publishedAt"`
+type jsonBlog struct {
+	ID      uuid.UUID `json:"id"`
+	FeedURL string    `json:"feedURL"`
+	SiteURL string    `json:"siteURL"`
+	Title   string    `json:"title"`
 }
 
-func marshalPost(post *model.Post) jsonPost {
-	p := jsonPost{
-		ID:          post.ID(),
-		BlogID:      post.BlogID(),
-		URL:         post.URL(),
-		Title:       post.Title(),
-		PublishedAt: post.PublishedAt(),
+func marshalBlog(blog *model.Blog) jsonBlog {
+	b := jsonBlog{
+		ID:      blog.ID(),
+		FeedURL: blog.FeedURL(),
+		SiteURL: blog.SiteURL(),
+		Title:   blog.Title(),
 	}
-	return p
+	return b
 }
 
-func (app *Application) handlePostRead() http.HandlerFunc {
+func (app *Application) handleBlogRead() http.HandlerFunc {
 	type response struct {
-		Post jsonPost `json:"post"`
+		Blog jsonBlog `json:"blog"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +44,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			return
 		}
 
-		post, err := app.store.Post().Read(id)
+		blog, err := app.store.Blog().Read(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				util.NotFoundResponse(w, r)
@@ -58,7 +55,7 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 		}
 
 		resp := response{
-			Post: marshalPost(post),
+			Blog: marshalBlog(blog),
 		}
 
 		code := http.StatusOK
@@ -70,9 +67,9 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 	}
 }
 
-func (app *Application) handlePostList() http.HandlerFunc {
+func (app *Application) handleBlogList() http.HandlerFunc {
 	type response struct {
-		Posts []jsonPost `json:"posts"`
+		Blogs []jsonBlog `json:"blogs"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +91,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		posts, err := app.store.Post().List(limit, offset)
+		blogs, err := app.store.Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -102,11 +99,11 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		resp := response{
 			// use make here to encode JSON as "[]" instead of "null" if empty
-			Posts: make([]jsonPost, 0),
+			Blogs: make([]jsonBlog, 0),
 		}
 
-		for _, post := range posts {
-			resp.Posts = append(resp.Posts, marshalPost(post))
+		for _, blog := range blogs {
+			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
 		}
 
 		code := http.StatusOK

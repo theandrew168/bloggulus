@@ -1,4 +1,4 @@
-package admin_test
+package api_test
 
 import (
 	"encoding/json"
@@ -6,35 +6,39 @@ import (
 	"io"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
-	"github.com/theandrew168/bloggulus/backend/web/api/admin"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
-type jsonBlog struct {
-	ID      uuid.UUID `json:"id"`
-	FeedURL string    `json:"feedURL"`
-	SiteURL string    `json:"siteURL"`
-	Title   string    `json:"title"`
+type jsonPost struct {
+	ID          uuid.UUID `json:"id"`
+	BlogID      uuid.UUID `json:"blogID"`
+	URL         string    `json:"url"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	PublishedAt time.Time `json:"publishedAt"`
 }
 
-func TestHandleBlogRead(t *testing.T) {
+func TestHandlePostRead(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
+		post := test.CreatePost(t, store, blog)
 
-		url := fmt.Sprintf("/blogs/%s", blog.ID())
+		url := fmt.Sprintf("/posts/%s", post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 		router.ServeHTTP(w, r)
@@ -45,53 +49,58 @@ func TestHandleBlogRead(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string]jsonBlog
+		var resp map[string]jsonPost
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["blog"]
+		got, ok := resp["post"]
 		if !ok {
-			t.Fatalf("response missing key: %v", "blog")
+			t.Fatalf("response missing key: %v", "post")
 		}
 
-		test.AssertEqual(t, got.ID, blog.ID())
+		test.AssertEqual(t, got.ID, post.ID())
 
 		return postgres.ErrRollback
 	})
 }
 
-func TestHandleBlogReadNotFound(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	app := admin.NewApplication(store)
-	router := app.Handler()
-
-	path := fmt.Sprintf("/blogs/%s", uuid.New())
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", path, nil)
-	router.ServeHTTP(w, r)
-
-	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 404)
-}
-
-func TestHandleBlogList(t *testing.T) {
+func TestHandlePostReadNotFound(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
-		test.CreateBlog(t, store)
+		path := fmt.Sprintf("/posts/%s", uuid.New())
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", path, nil)
+		router.ServeHTTP(w, r)
+
+		rr := w.Result()
+		test.AssertEqual(t, rr.StatusCode, 404)
+
+		return postgres.ErrRollback
+	})
+}
+
+func TestHandlePostList(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		app := api.NewApplication(store)
+		router := app.Handler()
+
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/blogs", nil)
+		r := httptest.NewRequest("GET", "/posts", nil)
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -100,13 +109,13 @@ func TestHandleBlogList(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string][]jsonBlog
+		var resp map[string][]jsonPost
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["blogs"]
+		got, ok := resp["posts"]
 		if !ok {
-			t.Fatalf("response missing key: %v", "blogs")
+			t.Fatalf("response missing key: %v", "posts")
 		}
 
 		if len(got) < 1 {
@@ -117,22 +126,23 @@ func TestHandleBlogList(t *testing.T) {
 	})
 }
 
-func TestHandleBlogListPagination(t *testing.T) {
+func TestHandlePostListPagination(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := admin.NewApplication(store)
+		app := api.NewApplication(store)
 		router := app.Handler()
 
-		// create 5 blogs to test with
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
+		// create 5 posts to test with
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
 
 		tests := []struct {
 			size int
@@ -144,7 +154,7 @@ func TestHandleBlogListPagination(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			url := fmt.Sprintf("/blogs?size=%d", tt.size)
+			url := fmt.Sprintf("/posts?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 			router.ServeHTTP(w, r)
@@ -155,17 +165,18 @@ func TestHandleBlogListPagination(t *testing.T) {
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
-			var resp map[string][]jsonBlog
+			var resp map[string][]jsonPost
 			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
-			got, ok := resp["blogs"]
+			got, ok := resp["posts"]
 			if !ok {
-				t.Fatalf("response missing key: %v", "blogs")
+				t.Fatalf("response missing key: %v", "posts")
 			}
 
 			test.AssertEqual(t, len(got), tt.want)
 		}
+
 		return postgres.ErrRollback
 	})
 }

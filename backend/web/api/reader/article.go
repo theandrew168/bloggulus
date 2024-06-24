@@ -9,7 +9,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
-type jsonPost struct {
+type jsonArticle struct {
 	Title       string    `json:"title"`
 	URL         string    `json:"url"`
 	BlogTitle   string    `json:"blogTitle"`
@@ -18,22 +18,22 @@ type jsonPost struct {
 	Tags        []string  `json:"tags"`
 }
 
-func marshalPost(post *reader.Post) jsonPost {
-	p := jsonPost{
-		Title:       post.Title(),
-		URL:         post.URL(),
-		BlogTitle:   post.BlogTitle(),
-		BlogURL:     post.BlogURL(),
-		PublishedAt: post.PublishedAt(),
-		Tags:        post.Tags(),
+func marshalArticle(article *reader.Article) jsonArticle {
+	a := jsonArticle{
+		Title:       article.Title(),
+		URL:         article.URL(),
+		BlogTitle:   article.BlogTitle(),
+		BlogURL:     article.BlogURL(),
+		PublishedAt: article.PublishedAt(),
+		Tags:        article.Tags(),
 	}
-	return p
+	return a
 }
 
-func (app *Application) handlePostList() http.HandlerFunc {
+func (app *Application) handleArticleList() http.HandlerFunc {
 	type response struct {
-		Count int        `json:"count"`
-		Posts []jsonPost `json:"posts"`
+		Count    int           `json:"count"`
+		Articles []jsonArticle `json:"articles"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
@@ -58,29 +58,29 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
 		var count int
-		var posts []*reader.Post
+		var articles []*reader.Article
 		var err error
 
 		if q != "" {
-			count, err = app.store.Reader().Post().CountSearch(q)
+			count, err = app.store.Reader().Article().CountSearch(q)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			posts, err = app.store.Reader().Post().ListSearch(q, limit, offset)
+			articles, err = app.store.Reader().Article().ListSearch(q, limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 		} else {
-			count, err = app.store.Reader().Post().Count()
+			count, err = app.store.Reader().Article().Count()
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			posts, err = app.store.Reader().Post().List(limit, offset)
+			articles, err = app.store.Reader().Article().List(limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
@@ -90,11 +90,11 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		resp := response{
 			Count: count,
 			// use make here to encode JSON as "[]" instead of "null" if empty
-			Posts: make([]jsonPost, 0),
+			Articles: make([]jsonArticle, 0),
 		}
 
-		for _, post := range posts {
-			resp.Posts = append(resp.Posts, marshalPost(post))
+		for _, article := range articles {
+			resp.Articles = append(resp.Articles, marshalArticle(article))
 		}
 
 		err = util.WriteJSON(w, 200, resp, nil)

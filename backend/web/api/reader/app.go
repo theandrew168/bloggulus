@@ -19,7 +19,7 @@ func NewApplication(store *storage.Storage) *Application {
 
 func (app *Application) Handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /posts", app.handlePostList())
+	mux.HandleFunc("GET /posts", app.handleArticleList())
 
 	return mux
 }

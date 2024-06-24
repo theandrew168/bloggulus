@@ -10,7 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
-type dbPost struct {
+type dbArticle struct {
 	Title       string    `db:"title"`
 	URL         string    `db:"url"`
 	BlogTitle   string    `db:"blog_title"`
@@ -19,30 +19,30 @@ type dbPost struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (p dbPost) unmarshal() (*reader.Post, error) {
-	post := reader.LoadPost(
-		p.Title,
-		p.URL,
-		p.BlogTitle,
-		p.BlogURL,
-		p.PublishedAt,
-		p.Tags,
+func (a dbArticle) unmarshal() (*reader.Article, error) {
+	article := reader.LoadArticle(
+		a.Title,
+		a.URL,
+		a.BlogTitle,
+		a.BlogURL,
+		a.PublishedAt,
+		a.Tags,
 	)
-	return post, nil
+	return article, nil
 }
 
-type PostStorage struct {
+type ArticleStorage struct {
 	conn postgres.Conn
 }
 
-func NewPostStorage(conn postgres.Conn) *PostStorage {
-	s := PostStorage{
+func NewArticleStorage(conn postgres.Conn) *ArticleStorage {
+	s := ArticleStorage{
 		conn: conn,
 	}
 	return &s
 }
 
-func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
+func (s *ArticleStorage) List(limit, offset int) ([]*reader.Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -76,25 +76,25 @@ func (s *PostStorage) List(limit, offset int) ([]*reader.Post, error) {
 		return nil, err
 	}
 
-	postRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbPost])
+	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []*reader.Post
-	for _, row := range postRows {
-		post, err := row.unmarshal()
+	var articles []*reader.Article
+	for _, row := range articleRows {
+		article, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}
 
-		posts = append(posts, post)
+		articles = append(articles, article)
 	}
 
-	return posts, nil
+	return articles, nil
 }
 
-func (s *PostStorage) ListSearch(search string, limit, offset int) ([]*reader.Post, error) {
+func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*reader.Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -129,25 +129,25 @@ func (s *PostStorage) ListSearch(search string, limit, offset int) ([]*reader.Po
 		return nil, err
 	}
 
-	postRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbPost])
+	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
 	}
 
-	var posts []*reader.Post
-	for _, row := range postRows {
-		post, err := row.unmarshal()
+	var articles []*reader.Article
+	for _, row := range articleRows {
+		article, err := row.unmarshal()
 		if err != nil {
 			return nil, err
 		}
 
-		posts = append(posts, post)
+		articles = append(articles, article)
 	}
 
-	return posts, nil
+	return articles, nil
 }
 
-func (s *PostStorage) Count() (int, error) {
+func (s *ArticleStorage) Count() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -168,7 +168,7 @@ func (s *PostStorage) Count() (int, error) {
 	return count, nil
 }
 
-func (s *PostStorage) CountSearch(search string) (int, error) {
+func (s *ArticleStorage) CountSearch(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post

@@ -7,18 +7,18 @@ import (
 type Storage struct {
 	conn postgres.Conn
 
-	post *PostStorage
+	article *ArticleStorage
 }
 
 func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		post: NewPostStorage(conn),
+		article: NewArticleStorage(conn),
 	}
 	return &s
 }
 
-func (s *Storage) Post() *PostStorage {
-	return s.post
+func (s *Storage) Article() *ArticleStorage {
+	return s.article
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
-func TestPostList(t *testing.T) {
+func TestArticleList(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -25,20 +25,20 @@ func TestPostList(t *testing.T) {
 		err = store.Admin().Post().Create(post)
 		test.AssertNilError(t, err)
 
-		posts, err := store.Reader().Post().List(20, 0)
+		articles, err := store.Reader().Article().List(20, 0)
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, len(posts), 1)
-		test.AssertEqual(t, posts[0].Title(), post.Title())
-		test.AssertEqual(t, posts[0].URL(), post.URL())
-		test.AssertEqual(t, posts[0].BlogTitle(), blog.Title())
-		test.AssertEqual(t, posts[0].BlogURL(), blog.SiteURL())
+		test.AssertEqual(t, len(articles), 1)
+		test.AssertEqual(t, articles[0].Title(), post.Title())
+		test.AssertEqual(t, articles[0].URL(), post.URL())
+		test.AssertEqual(t, articles[0].BlogTitle(), blog.Title())
+		test.AssertEqual(t, articles[0].BlogURL(), blog.SiteURL())
 
 		return postgres.ErrRollback
 	})
 }
 
-func TestPostListSearch(t *testing.T) {
+func TestArticleListSearch(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -75,19 +75,19 @@ func TestPostListSearch(t *testing.T) {
 		err = store.Admin().Post().Create(boringPost)
 		test.AssertNilError(t, err)
 
-		// list posts that relate to python
-		posts, err := store.Reader().Post().ListSearch("python", 20, 0)
+		// list articles that relate to python
+		articles, err := store.Reader().Article().ListSearch("python", 20, 0)
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, len(posts), 1)
-		test.AssertEqual(t, posts[0].Title(), pythonPost.Title())
-		test.AssertEqual(t, posts[0].URL(), pythonPost.URL())
+		test.AssertEqual(t, len(articles), 1)
+		test.AssertEqual(t, articles[0].Title(), pythonPost.Title())
+		test.AssertEqual(t, articles[0].URL(), pythonPost.URL())
 
 		return postgres.ErrRollback
 	})
 }
 
-func TestPostCount(t *testing.T) {
+func TestArticleCount(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -99,7 +99,7 @@ func TestPostCount(t *testing.T) {
 		test.CreatePost(t, store, blog)
 		test.CreatePost(t, store, blog)
 
-		count, err := store.Reader().Post().Count()
+		count, err := store.Reader().Article().Count()
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, count, 3)
@@ -108,7 +108,7 @@ func TestPostCount(t *testing.T) {
 	})
 }
 
-func TestPostCountSearch(t *testing.T) {
+func TestArticleCountSearch(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
@@ -146,7 +146,7 @@ func TestPostCountSearch(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// count posts that relate to python
-		count, err := store.Reader().Post().CountSearch("python")
+		count, err := store.Reader().Article().CountSearch("python")
 		test.AssertNilError(t, err)
 
 		// should only find one

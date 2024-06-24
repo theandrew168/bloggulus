@@ -69,7 +69,7 @@ func (s *TokenStorage) Create(token *model.Token) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		row.ID,
 		row.AccountID,
 		row.Hash,

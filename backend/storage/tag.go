@@ -61,7 +61,7 @@ func (s *TagStorage) Create(tag *model.Tag) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		row.ID,
 		row.Name,
 		row.CreatedAt,

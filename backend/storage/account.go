@@ -69,7 +69,7 @@ func (s *AccountStorage) Create(account *model.Account) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		row.ID,
 		row.Username,
 		row.PasswordHash,

@@ -73,7 +73,7 @@ func (s *PostStorage) Create(post *model.Post) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		row.ID,
 		row.BlogID,
 		row.URL,

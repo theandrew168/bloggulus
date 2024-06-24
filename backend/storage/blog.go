@@ -76,7 +76,7 @@ func (s *BlogStorage) Create(blog *model.Blog) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		row.ID,
 		row.FeedURL,
 		row.SiteURL,

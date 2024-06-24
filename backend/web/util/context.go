@@ -23,7 +23,7 @@ func ContextSetAccount(r *http.Request, account *model.Account) *http.Request {
 	return r.WithContext(ctx)
 }
 
-// The ContextGetAccount() retrieves the admin.Account and an "exists" bool from the request context.
+// The ContextGetAccount() retrieves the model.Account and an "exists" bool from the request context.
 func ContextGetAccount(r *http.Request) (*model.Account, bool) {
 	account, ok := r.Context().Value(contextKeyAccount).(*model.Account)
 	return account, ok

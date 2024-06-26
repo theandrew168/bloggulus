@@ -11,7 +11,7 @@ import (
 )
 
 // Let's Go Further - Chapter 15.3
-func Authenticate(store *storage.Storage) Adapter {
+func Authenticate(store *storage.Storage) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Add the "Vary: Authorization" header to the response. This indicates to any
@@ -63,7 +63,7 @@ func Authenticate(store *storage.Storage) Adapter {
 	}
 }
 
-func AccountRequired() Adapter {
+func AccountRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, ok := util.ContextGetAccount(r)
@@ -77,7 +77,7 @@ func AccountRequired() Adapter {
 	}
 }
 
-func AdminRequired() Adapter {
+func AdminRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			account, ok := util.ContextGetAccount(r)

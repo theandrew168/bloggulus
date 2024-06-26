@@ -71,5 +71,5 @@ func (app *Application) Handler() http.Handler {
 		w.Write(index)
 	}))
 
-	return middleware.Adapt(mux, middleware.RecoverPanic())
+	return middleware.Use(mux, middleware.RecoverPanic())
 }

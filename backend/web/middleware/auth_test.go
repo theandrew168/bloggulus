@@ -34,7 +34,7 @@ func TestAuthenticate(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Adapt(
+		h := middleware.Use(
 			next,
 			middleware.Authenticate(store),
 		)
@@ -57,7 +57,7 @@ func TestAuthenticateNoHeader(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	h := middleware.Adapt(next, middleware.Authenticate(store))
+	h := middleware.Use(next, middleware.Authenticate(store))
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -78,7 +78,7 @@ func TestAuthenticatelInvalidHeader(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	h := middleware.Adapt(next, middleware.Authenticate(store))
+	h := middleware.Use(next, middleware.Authenticate(store))
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -99,7 +99,7 @@ func TestAuthenticateInvalidToken(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	h := middleware.Adapt(next, middleware.Authenticate(store))
+	h := middleware.Use(next, middleware.Authenticate(store))
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -126,7 +126,7 @@ func TestAccountRequired(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Adapt(
+		h := middleware.Use(
 			next,
 			middleware.Authenticate(store),
 			middleware.AccountRequired(),
@@ -166,7 +166,7 @@ func TestAdminRequired(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Adapt(
+		h := middleware.Use(
 			next,
 			middleware.Authenticate(store),
 			middleware.AccountRequired(),

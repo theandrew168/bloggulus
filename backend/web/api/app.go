@@ -34,5 +34,5 @@ func (app *Application) Handler() http.Handler {
 	mux.HandleFunc("POST /accounts", app.handleAccountCreate())
 	mux.HandleFunc("POST /tokens", app.handleTokenCreate())
 
-	return middleware.Adapt(mux, middleware.SecureHeaders(), middleware.EnableCORS())
+	return middleware.Use(mux, middleware.SecureHeaders(), middleware.EnableCORS())
 }

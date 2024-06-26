@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func SecureHeaders() Adapter {
+func SecureHeaders() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
@@ -17,7 +17,7 @@ func SecureHeaders() Adapter {
 	}
 }
 
-func EnableCORS() Adapter {
+func EnableCORS() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")

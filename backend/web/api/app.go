@@ -25,19 +25,25 @@ func NewApplication(store *storage.Storage, syncService *service.SyncService) *A
 
 func (app *Application) Handler() http.Handler {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("GET /{$}", app.handleIndexRapidoc())
 	mux.HandleFunc("GET /redoc", app.handleIndexRedoc())
 	mux.HandleFunc("GET /rapidoc", app.handleIndexRapidoc())
 	mux.HandleFunc("GET /stoplight", app.handleIndexStoplight())
 
 	mux.HandleFunc("GET /articles", app.handleArticleList())
+
 	mux.HandleFunc("GET /blogs", app.handleBlogList())
 	mux.HandleFunc("GET /blogs/{id}", app.handleBlogRead())
 	mux.HandleFunc("POST /blogs", app.handleBlogCreate())
+
 	mux.HandleFunc("GET /posts", app.handlePostList())
 	mux.HandleFunc("GET /posts/{id}", app.handlePostRead())
+
 	mux.HandleFunc("GET /tags", app.handleTagList())
+
 	mux.HandleFunc("POST /accounts", app.handleAccountCreate())
+
 	mux.HandleFunc("POST /tokens", app.handleTokenCreate())
 
 	return middleware.Use(mux, middleware.SecureHeaders(), middleware.EnableCORS())

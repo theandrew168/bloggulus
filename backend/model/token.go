@@ -40,7 +40,7 @@ func GenerateToken() (string, error) {
 }
 
 func NewToken(account *Account, ttl time.Duration) (*Token, string, error) {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 
 	value, err := GenerateToken()
 	if err != nil {

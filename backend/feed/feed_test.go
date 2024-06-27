@@ -187,7 +187,7 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		test.AssertEqual(t, parsedPost.PublishedAt, publishedAt.UTC())
+		test.AssertEqual(t, parsedPost.PublishedAt, publishedAt.UTC().Round(time.Microsecond))
 	}
 }
 

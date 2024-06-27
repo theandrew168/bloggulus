@@ -15,7 +15,7 @@ type Tag struct {
 }
 
 func NewTag(name string) (*Tag, error) {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	tag := Tag{
 		id:   uuid.New(),
 		name: name,

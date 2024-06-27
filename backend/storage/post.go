@@ -239,7 +239,7 @@ func (s *PostStorage) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.
 }
 
 func (s *PostStorage) Update(post *model.Post) error {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	stmt := `
 		UPDATE post
 		SET

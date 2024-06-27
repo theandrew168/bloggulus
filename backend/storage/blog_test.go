@@ -53,7 +53,7 @@ func TestBlogRead(t *testing.T) {
 		got, err := store.Blog().Read(blog.ID())
 		test.AssertNilError(t, err)
 
-		foo := time.Now().UTC()
+		foo := time.Now().UTC().Round(time.Microsecond)
 		fmt.Printf("%+v\n", foo)
 		test.AssertEqual(t, got.ID(), blog.ID())
 

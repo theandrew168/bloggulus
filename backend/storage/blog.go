@@ -245,7 +245,7 @@ func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 }
 
 func (s *BlogStorage) Update(blog *model.Blog) error {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	stmt := `
 		UPDATE blog
 		SET

@@ -55,7 +55,7 @@ func TestArticleListSearch(t *testing.T) {
 			"https://example.com/python",
 			"Python",
 			"content about python",
-			time.Now().UTC(),
+			time.Now().UTC().Round(time.Microsecond),
 		)
 		test.AssertNilError(t, err)
 
@@ -68,7 +68,7 @@ func TestArticleListSearch(t *testing.T) {
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
-			time.Now().UTC(),
+			time.Now().UTC().Round(time.Microsecond),
 		)
 		test.AssertNilError(t, err)
 
@@ -125,7 +125,7 @@ func TestArticleCountSearch(t *testing.T) {
 			"https://example.com/python",
 			"Python",
 			"content about python",
-			time.Now().UTC(),
+			time.Now().UTC().Round(time.Microsecond),
 		)
 		test.AssertNilError(t, err)
 
@@ -138,7 +138,7 @@ func TestArticleCountSearch(t *testing.T) {
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
-			time.Now().UTC(),
+			time.Now().UTC().Round(time.Microsecond),
 		)
 		test.AssertNilError(t, err)
 

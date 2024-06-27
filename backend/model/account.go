@@ -29,7 +29,7 @@ func NewAccount(username, password string) (*Account, error) {
 		return nil, err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	account := Account{
 		id:           uuid.New(),
 		username:     username,

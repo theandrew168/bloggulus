@@ -84,7 +84,7 @@ func (s *SyncService) SyncAllBlogs() error {
 		return err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 
 	// use a weighted semaphore to limit concurrency
 	sem := semaphore.NewWeighted(SyncConcurrency)
@@ -152,7 +152,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	blog, err := model.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
@@ -181,7 +181,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
-	now := time.Now().UTC()
+	now := time.Now().UTC().Round(time.Microsecond)
 	blog.SetSyncedAt(now)
 
 	err := s.store.Blog().Update(blog)

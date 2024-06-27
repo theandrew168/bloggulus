@@ -62,7 +62,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 		}
 
 		// ensure publishedAt is in UTC
-		publishedAt = publishedAt.UTC()
+		publishedAt = publishedAt.UTC().Round(time.Microsecond)
 
 		post := Post{
 			URL:         url,

@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"html"
 	"io"
 	"net/http"
@@ -49,7 +48,7 @@ func NewPageFetcher() *PageFetcher {
 func (f *PageFetcher) FetchPage(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", fmt.Errorf("%v: %v", url, err)
+		return "", fetch.ErrUnreachablePage
 	}
 	defer resp.Body.Close()
 
@@ -59,7 +58,7 @@ func (f *PageFetcher) FetchPage(url string) (string, error) {
 
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("%v: %v", url, err)
+		return "", fetch.ErrUnreachablePage
 	}
 
 	return cleanHTML(string(buf)), nil

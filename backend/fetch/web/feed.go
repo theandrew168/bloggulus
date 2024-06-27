@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
@@ -21,7 +20,7 @@ func NewFeedFetcher() *FeedFetcher {
 func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeedResponse, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return fetch.FetchFeedResponse{}, fmt.Errorf("%v: %v", url, err)
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 
 	if etag != "" {
@@ -33,7 +32,7 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fetch.FetchFeedResponse{}, fmt.Errorf("%v: %v", url, err)
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 	defer resp.Body.Close()
 
@@ -43,7 +42,7 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fetch.FetchFeedResponse{}, err
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachablePage
 	}
 
 	fetchFeedResponse := fetch.FetchFeedResponse{

@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -46,11 +47,13 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 
 		blog, err := app.store.Blog().Read(id)
 		if err != nil {
-			if errors.Is(err, postgres.ErrNotFound) {
+			switch {
+			case errors.Is(err, postgres.ErrNotFound):
 				util.NotFoundResponse(w, r)
-				return
+			default:
+				util.ServerErrorResponse(w, r, err)
 			}
-			util.ServerErrorResponse(w, r, err)
+
 			return
 		}
 
@@ -104,6 +107,81 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 
 		for _, blog := range blogs {
 			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
+		}
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+	}
+}
+
+func (app *Application) handleBlogCreate() http.HandlerFunc {
+	type request struct {
+		FeedURL string `json:"feedURL"`
+	}
+	type response struct {
+		Blog jsonBlog `json:"blog"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := validator.New()
+		body := util.ReadBody(w, r)
+
+		var req request
+		err := util.ReadJSON(body, &req, true)
+		if err != nil {
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		v.Check(req.FeedURL != "", "feedURL", "must be provided")
+
+		if !v.Valid() {
+			util.FailedValidationResponse(w, r, v.Errors())
+			return
+		}
+
+		// Check if the blog already exists. If it does, return its details.
+		blog, err := app.store.Blog().ReadByFeedURL(req.FeedURL)
+		if err == nil {
+			resp := response{
+				Blog: marshalBlog(blog),
+			}
+
+			code := http.StatusOK
+			err = util.WriteJSON(w, code, resp, nil)
+			if err != nil {
+				util.ServerErrorResponse(w, r, err)
+				return
+			}
+
+			return
+		}
+
+		// At this point, the only "expected" error is ErrNotFound.
+		if !errors.Is(err, postgres.ErrNotFound) {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		// Use the SyncService to add the new blog.
+		blog, err = app.syncService.SyncBlog(req.FeedURL)
+		if err != nil {
+			switch {
+			case errors.Is(err, fetch.ErrUnreachableFeed):
+				v.AddError("feedURL", "must link to a valid feed")
+				util.FailedValidationResponse(w, r, v.Errors())
+			default:
+				util.ServerErrorResponse(w, r, err)
+			}
+			return
+		}
+
+		resp := response{
+			Blog: marshalBlog(blog),
 		}
 
 		code := http.StatusOK

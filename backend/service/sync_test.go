@@ -48,11 +48,10 @@ func TestNewBlog(t *testing.T) {
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
 		// sync a new blog
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
-		// fetch and verify blog data
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		// verify blog data
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
@@ -101,11 +100,10 @@ func TestExistingBlog(t *testing.T) {
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
 		// sync a new blog
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
-		// fetch and verify blog data
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		// verify blog data
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, blog.Title(), feedBlog.Title)
 		test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
@@ -132,7 +130,7 @@ func TestExistingBlog(t *testing.T) {
 		feeds[feedBlog.FeedURL] = atomFeed
 
 		// sync the blog again
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		_, err = syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
@@ -167,7 +165,7 @@ func TestUnreachableFeed(t *testing.T) {
 
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
-		err := syncService.SyncBlog(feedURL)
+		_, err := syncService.SyncBlog(feedURL)
 		test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
 
 		return postgres.ErrRollback
@@ -201,14 +199,10 @@ func TestSyncOncePerHour(t *testing.T) {
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
 		// add a blog (sync now)
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
-		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
-		test.AssertNilError(t, err)
-
-		// capture its current syncedAt time
+		// capture the blog's current syncedAt time
 		syncedAt := blog.SyncedAt()
 
 		// sync all blogs
@@ -259,11 +253,7 @@ func TestUpdatePostContent(t *testing.T) {
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
 		// sync a new blog
-		err = syncService.SyncBlog(feedBlog.FeedURL)
-		test.AssertNilError(t, err)
-
-		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
@@ -286,7 +276,7 @@ func TestUpdatePostContent(t *testing.T) {
 		feeds[feedBlog.FeedURL] = atomFeed
 
 		// sync the blog again
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		_, err = syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// refetch posts and verify count
@@ -329,11 +319,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
 
 		// sync a new blog
-		err = syncService.SyncBlog(feedBlog.FeedURL)
-		test.AssertNilError(t, err)
-
-		// fetch the synced blog
-		blog, err := store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+		blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// update the blog's ETag and LastModified to something non-empty
@@ -342,8 +328,8 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 		err = store.Blog().Update(blog)
 		test.AssertNilError(t, err)
 
-		// sync the block again (will see empty ETag and LastModified values)
-		err = syncService.SyncBlog(feedBlog.FeedURL)
+		// sync the blog again (will see empty ETag and LastModified values)
+		_, err = syncService.SyncBlog(feedBlog.FeedURL)
 		test.AssertNilError(t, err)
 
 		// refetch the blog

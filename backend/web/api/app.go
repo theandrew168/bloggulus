@@ -3,17 +3,22 @@ package api
 import (
 	"net/http"
 
+	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type Application struct {
 	store *storage.Storage
+
+	syncService *service.SyncService
 }
 
-func NewApplication(store *storage.Storage) *Application {
+func NewApplication(store *storage.Storage, syncService *service.SyncService) *Application {
 	app := Application{
 		store: store,
+
+		syncService: syncService,
 	}
 	return &app
 }
@@ -28,6 +33,7 @@ func (app *Application) Handler() http.Handler {
 	mux.HandleFunc("GET /articles", app.handleArticleList())
 	mux.HandleFunc("GET /blogs", app.handleBlogList())
 	mux.HandleFunc("GET /blogs/{id}", app.handleBlogRead())
+	mux.HandleFunc("POST /blogs", app.handleBlogCreate())
 	mux.HandleFunc("GET /posts", app.handlePostList())
 	mux.HandleFunc("GET /posts/{id}", app.handlePostRead())
 	mux.HandleFunc("GET /tags", app.handleTagList())

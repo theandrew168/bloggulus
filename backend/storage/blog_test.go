@@ -1,7 +1,9 @@
 package storage_test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
@@ -51,6 +53,8 @@ func TestBlogRead(t *testing.T) {
 		got, err := store.Blog().Read(blog.ID())
 		test.AssertNilError(t, err)
 
+		foo := time.Now().UTC()
+		fmt.Printf("%+v\n", foo)
 		test.AssertEqual(t, got.ID(), blog.ID())
 
 		return postgres.ErrRollback

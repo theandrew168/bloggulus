@@ -27,8 +27,10 @@ func TestAccountCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 
 		req := map[string]string{
 			"username": "foo",
@@ -70,8 +72,10 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		req := map[string]string{

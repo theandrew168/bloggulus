@@ -10,6 +10,7 @@ import (
 	metricsMiddleware "github.com/slok/go-http-metrics/middleware"
 	metricsWrapper "github.com/slok/go-http-metrics/middleware/std"
 
+	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
@@ -18,15 +19,20 @@ import (
 type Application struct {
 	frontend fs.FS
 	store    *storage.Storage
+
+	syncService *service.SyncService
 }
 
 func NewApplication(
 	frontend fs.FS,
 	store *storage.Storage,
+	syncService *service.SyncService,
 ) *Application {
 	app := Application{
 		frontend: frontend,
 		store:    store,
+
+		syncService: syncService,
 	}
 	return &app
 }
@@ -48,7 +54,7 @@ func (app *Application) Handler() http.Handler {
 	})
 
 	// backend - rest api
-	apiApp := api.NewApplication(app.store)
+	apiApp := api.NewApplication(app.store, app.syncService)
 	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Handler())))
 
 	// frontend - svelte

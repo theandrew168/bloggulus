@@ -104,7 +104,7 @@ func (s *SyncService) SyncAllBlogs() error {
 			}
 
 			slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
-			err = s.SyncBlog(blog.FeedURL())
+			_, err = s.SyncBlog(blog.FeedURL())
 			if err != nil {
 				slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
 				return
@@ -118,11 +118,11 @@ func (s *SyncService) SyncAllBlogs() error {
 	return nil
 }
 
-func (s *SyncService) SyncBlog(feedURL string) error {
+func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 	blog, err := s.store.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
-			return err
+			return nil, err
 		}
 
 		return s.syncNewBlog(feedURL)
@@ -131,25 +131,25 @@ func (s *SyncService) SyncBlog(feedURL string) error {
 	return s.syncExistingBlog(blog)
 }
 
-func (s *SyncService) syncNewBlog(feedURL string) error {
+func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 	resp, err := s.feedFetcher.FetchFeed(feedURL, "", "")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// no feed from a new blog (no cache headers) is an error
 	if resp.Feed == "" {
-		return fetch.ErrUnreachableFeed
+		return nil, fetch.ErrUnreachableFeed
 	}
 
 	feedBlog, err := feed.Parse(feedURL, resp.Feed)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	feedBlog, err = feed.Hydrate(feedBlog, s.pageFetcher)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	now := time.Now().UTC()
@@ -162,41 +162,41 @@ func (s *SyncService) syncNewBlog(feedURL string) error {
 		now,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = s.store.Blog().Create(blog)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, feedPost := range feedBlog.Posts {
-		err = s.syncPost(blog, feedPost)
+		_, err = s.syncPost(blog, feedPost)
 		if err != nil {
 			slog.Warn(err.Error(), "url", feedPost.URL)
 		}
 	}
 
-	return nil
+	return blog, nil
 }
 
-func (s *SyncService) syncExistingBlog(blog *model.Blog) error {
+func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 	now := time.Now().UTC()
 	blog.SetSyncedAt(now)
 
 	err := s.store.Blog().Update(blog)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL(), blog.ETag(), blog.LastModified())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.Feed == "" {
 		slog.Info("no new content", "title", blog.Title(), "id", blog.ID())
-		return nil
+		return blog, nil
 	}
 
 	if resp.ETag != "" {
@@ -209,34 +209,34 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) error {
 
 	err = s.store.Blog().Update(blog)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	feedBlog, err := feed.Parse(blog.FeedURL(), resp.Feed)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	feedBlog, err = feed.Hydrate(feedBlog, s.pageFetcher)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, feedPost := range feedBlog.Posts {
-		err = s.syncPost(blog, feedPost)
+		_, err = s.syncPost(blog, feedPost)
 		if err != nil {
 			slog.Warn(err.Error(), "url", feedPost.URL)
 		}
 	}
 
-	return nil
+	return blog, nil
 }
 
-func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) error {
+func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Post, error) {
 	post, err := s.store.Post().ReadByURL(feedPost.URL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
-			return err
+			return nil, err
 		}
 
 		post, err := model.NewPost(
@@ -247,17 +247,27 @@ func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) error {
 			feedPost.PublishedAt,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		return s.store.Post().Create(post)
+		err = s.store.Post().Create(post)
+		if err != nil {
+			return nil, err
+		}
+
+		return post, nil
 	}
 
 	// update the post's content (if available)
 	if feedPost.Content != "" {
 		post.SetContent(feedPost.Content)
-		return s.store.Post().Update(post)
+		err = s.store.Post().Update(post)
+		if err != nil {
+			return nil, err
+		}
+
+		return post, nil
 	}
 
-	return nil
+	return post, nil
 }

@@ -4,6 +4,7 @@ services:
     ports:
       - "5432:5432"
     environment:
+      TZ: Etc/UTC
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -17,6 +18,7 @@ services:
     ports:
       - "5433:5432"
     environment:
+      TZ: Etc/UTC
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

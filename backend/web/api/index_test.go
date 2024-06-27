@@ -14,7 +14,9 @@ func TestHandleIndex(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	app := api.NewApplication(store)
+	syncService := test.NewSyncService(t, store)
+
+	app := api.NewApplication(store, syncService)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)

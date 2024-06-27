@@ -42,7 +42,6 @@ func run() error {
 
 	// check for action flags
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")
-	addblog := flag.String("addblog", "", "rss / atom feed to add")
 	flag.Parse()
 
 	// load user-defined config (if specified), else use defaults
@@ -79,19 +78,6 @@ func run() error {
 	// init the sync service and do an initial sync
 	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
-	// add a blog and exit now if requested
-	if *addblog != "" {
-		feedURL := *addblog
-
-		slog.Info("adding blog", "feedURL", feedURL)
-		err = syncService.SyncBlog(feedURL)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
 	// let systemd know that we are good to go (no-op if not using systemd)
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
@@ -101,7 +87,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	app := web.NewApplication(frontend.Frontend, store)
+	app := web.NewApplication(frontend.Frontend, store, syncService)
 
 	// let port be overridden by an env var
 	port := cfg.Port

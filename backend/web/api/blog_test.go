@@ -28,8 +28,10 @@ func TestHandleBlogRead(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
@@ -66,7 +68,9 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	app := api.NewApplication(store)
+	syncService := test.NewSyncService(t, store)
+
+	app := api.NewApplication(store, syncService)
 	router := app.Handler()
 
 	path := fmt.Sprintf("/blogs/%s", uuid.New())
@@ -84,8 +88,10 @@ func TestHandleBlogList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		test.CreateBlog(t, store)
@@ -123,8 +129,10 @@ func TestHandleBlogListPagination(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		// create 5 blogs to test with

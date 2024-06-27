@@ -31,8 +31,10 @@ func TestHandlePostRead(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
@@ -70,8 +72,10 @@ func TestHandlePostReadNotFound(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		path := fmt.Sprintf("/posts/%s", uuid.New())
@@ -92,8 +96,10 @@ func TestHandlePostList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		blog := test.CreateBlog(t, store)
@@ -132,8 +138,10 @@ func TestHandlePostListPagination(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
+	syncService := test.NewSyncService(t, store)
+
 	store.WithTransaction(func(store *storage.Storage) error {
-		app := api.NewApplication(store)
+		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
 		// create 5 posts to test with

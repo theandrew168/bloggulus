@@ -49,11 +49,13 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 
 		post, err := app.store.Post().Read(id)
 		if err != nil {
-			if errors.Is(err, postgres.ErrNotFound) {
+			switch {
+			case errors.Is(err, postgres.ErrNotFound):
 				util.NotFoundResponse(w, r)
-				return
+			default:
+				util.ServerErrorResponse(w, r, err)
 			}
-			util.ServerErrorResponse(w, r, err)
+
 			return
 		}
 

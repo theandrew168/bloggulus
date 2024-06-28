@@ -119,3 +119,49 @@ func (app *Application) handlePostList() http.HandlerFunc {
 		}
 	}
 }
+
+func (app *Application) handlePostDelete() http.HandlerFunc {
+	type response struct {
+		Post jsonPost `json:"post"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := validator.New()
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			v.AddError("id", "must be a valid UUID")
+			util.FailedValidationResponse(w, r, v.Errors())
+			return
+		}
+
+		post, err := app.store.Post().Read(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, postgres.ErrNotFound):
+				util.NotFoundResponse(w, r)
+			default:
+				util.ServerErrorResponse(w, r, err)
+			}
+
+			return
+		}
+
+		err = app.store.Post().Delete(post)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		resp := response{
+			Post: marshalPost(post),
+		}
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+	}
+}

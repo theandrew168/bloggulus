@@ -40,6 +40,7 @@ func (app *Application) Handler() http.Handler {
 
 	mux.HandleFunc("GET /posts", app.handlePostList())
 	mux.HandleFunc("GET /posts/{id}", app.handlePostRead())
+	mux.HandleFunc("DELETE /posts/{id}", app.handlePostDelete())
 
 	mux.HandleFunc("GET /tags", app.handleTagList())
 

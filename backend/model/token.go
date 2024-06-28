@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type Token struct {
@@ -40,7 +41,7 @@ func GenerateToken() (string, error) {
 }
 
 func NewToken(account *Account, ttl time.Duration) (*Token, string, error) {
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 
 	value, err := GenerateToken()
 	if err != nil {

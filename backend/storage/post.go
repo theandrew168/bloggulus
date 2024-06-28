@@ -9,6 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type dbPost struct {
@@ -239,7 +240,7 @@ func (s *PostStorage) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.
 }
 
 func (s *PostStorage) Update(post *model.Post) error {
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	stmt := `
 		UPDATE post
 		SET

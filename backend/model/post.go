@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type Post struct {
@@ -19,7 +21,7 @@ type Post struct {
 }
 
 func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) (*Post, error) {
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	post := Post{
 		id:          uuid.New(),
 		blogID:      blog.ID(),

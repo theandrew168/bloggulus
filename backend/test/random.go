@@ -3,6 +3,8 @@ package test
 import (
 	"math/rand"
 	"time"
+
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 func RandomString(n int) string {
@@ -21,5 +23,5 @@ func RandomURL(n int) string {
 }
 
 func RandomTime() time.Time {
-	return time.Now().UTC().Round(time.Microsecond)
+	return timeutil.Now()
 }

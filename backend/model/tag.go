@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type Tag struct {
@@ -15,7 +17,7 @@ type Tag struct {
 }
 
 func NewTag(name string) (*Tag, error) {
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	tag := Tag{
 		id:   uuid.New(),
 		name: name,

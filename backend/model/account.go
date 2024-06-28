@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type Account struct {
@@ -29,7 +30,7 @@ func NewAccount(username, password string) (*Account, error) {
 		return nil, err
 	}
 
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	account := Account{
 		id:           uuid.New(),
 		username:     username,

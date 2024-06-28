@@ -2,12 +2,12 @@ package storage_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 func TestArticleList(t *testing.T) {
@@ -55,7 +55,7 @@ func TestArticleListSearch(t *testing.T) {
 			"https://example.com/python",
 			"Python",
 			"content about python",
-			time.Now().UTC().Round(time.Microsecond),
+			timeutil.Now(),
 		)
 		test.AssertNilError(t, err)
 
@@ -68,7 +68,7 @@ func TestArticleListSearch(t *testing.T) {
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
-			time.Now().UTC().Round(time.Microsecond),
+			timeutil.Now(),
 		)
 		test.AssertNilError(t, err)
 
@@ -125,7 +125,7 @@ func TestArticleCountSearch(t *testing.T) {
 			"https://example.com/python",
 			"Python",
 			"content about python",
-			time.Now().UTC().Round(time.Microsecond),
+			timeutil.Now(),
 		)
 		test.AssertNilError(t, err)
 
@@ -138,7 +138,7 @@ func TestArticleCountSearch(t *testing.T) {
 			"https://example.com/boring",
 			"Boring",
 			"content about nothing",
-			time.Now().UTC().Round(time.Microsecond),
+			timeutil.Now(),
 		)
 		test.AssertNilError(t, err)
 

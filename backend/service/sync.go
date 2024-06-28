@@ -14,6 +14,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 const (
@@ -84,7 +85,7 @@ func (s *SyncService) SyncAllBlogs() error {
 		return err
 	}
 
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 
 	// use a weighted semaphore to limit concurrency
 	sem := semaphore.NewWeighted(SyncConcurrency)
@@ -152,7 +153,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	blog, err := model.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
@@ -181,7 +182,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
-	now := time.Now().UTC().Round(time.Microsecond)
+	now := timeutil.Now()
 	blog.SetSyncedAt(now)
 
 	err := s.store.Blog().Update(blog)

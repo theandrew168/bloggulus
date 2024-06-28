@@ -26,9 +26,9 @@ func TestHandleTagList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
-
 	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
 		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
@@ -67,9 +67,9 @@ func TestHandleTagListPagination(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
-
 	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
 		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 

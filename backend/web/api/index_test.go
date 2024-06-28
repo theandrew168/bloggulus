@@ -14,7 +14,7 @@ func TestHandleIndex(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
+	syncService := test.NewSyncService(t, store, nil, nil)
 
 	app := api.NewApplication(store, syncService)
 

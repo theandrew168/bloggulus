@@ -40,11 +40,14 @@ func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
 	return store, closer
 }
 
-func NewSyncService(t *testing.T, store *storage.Storage) *service.SyncService {
+func NewSyncService(
+	t *testing.T,
+	store *storage.Storage,
+	feeds map[string]string,
+	pages map[string]string,
+) *service.SyncService {
 	t.Helper()
 
-	feeds := make(map[string]string)
-	pages := make(map[string]string)
 	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(feeds), fetch.NewPageFetcher(pages))
 	return syncService
 }

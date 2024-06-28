@@ -35,9 +35,9 @@ func TestTokenCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
-
 	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
 		app := api.NewApplication(store, syncService)
 
 		account, password := test.CreateAccount(t, store)
@@ -83,9 +83,9 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
-
 	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
 		app := api.NewApplication(store, syncService)
 
 		// specify a username that doesn't exist
@@ -115,9 +115,9 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	syncService := test.NewSyncService(t, store)
-
 	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
 		app := api.NewApplication(store, syncService)
 
 		account, _ := test.CreateAccount(t, store)

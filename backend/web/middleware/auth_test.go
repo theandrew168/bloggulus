@@ -34,8 +34,7 @@ func TestAuthenticate(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Use(
-			next,
+		h := middleware.Use(next,
 			middleware.Authenticate(store),
 		)
 		h.ServeHTTP(w, r)
@@ -126,8 +125,7 @@ func TestAccountRequired(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Use(
-			next,
+		h := middleware.Use(next,
 			middleware.Authenticate(store),
 			middleware.AccountRequired(),
 		)
@@ -166,8 +164,7 @@ func TestAdminRequired(t *testing.T) {
 			test.AssertEqual(t, got.ID(), account.ID())
 		})
 
-		h := middleware.Use(
-			next,
+		h := middleware.Use(next,
 			middleware.Authenticate(store),
 			middleware.AccountRequired(),
 			middleware.AdminRequired(),

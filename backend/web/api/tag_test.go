@@ -115,3 +115,46 @@ func TestHandleTagListPagination(t *testing.T) {
 		return postgres.ErrRollback
 	})
 }
+
+func TestHandleTagDelete(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
+		app := api.NewApplication(store, syncService)
+		router := app.Handler()
+
+		tag := test.CreateTag(t, store)
+
+		url := fmt.Sprintf("/tags/%s", tag.ID())
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("DELETE", url, nil)
+		router.ServeHTTP(w, r)
+
+		rr := w.Result()
+		respBody, err := io.ReadAll(rr.Body)
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, rr.StatusCode, 200)
+
+		var resp map[string]jsonTag
+		err = json.Unmarshal(respBody, &resp)
+		test.AssertNilError(t, err)
+
+		got, ok := resp["tag"]
+		if !ok {
+			t.Fatalf("response missing key: %v", "tag")
+		}
+
+		test.AssertEqual(t, got.ID, tag.ID())
+
+		_, err = store.Tag().Read(got.ID)
+		test.AssertErrorIs(t, err, postgres.ErrNotFound)
+
+		return postgres.ErrRollback
+	})
+}

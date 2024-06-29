@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -60,6 +62,52 @@ func (app *Application) handleTagList() http.HandlerFunc {
 
 		for _, tag := range tags {
 			resp.Tags = append(resp.Tags, marshalTag(tag))
+		}
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+	}
+}
+
+func (app *Application) handleTagDelete() http.HandlerFunc {
+	type response struct {
+		Tag jsonTag `json:"tag"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := validator.New()
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			v.AddError("id", "must be a valid UUID")
+			util.FailedValidationResponse(w, r, v.Errors())
+			return
+		}
+
+		tag, err := app.store.Tag().Read(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, postgres.ErrNotFound):
+				util.NotFoundResponse(w, r)
+			default:
+				util.ServerErrorResponse(w, r, err)
+			}
+
+			return
+		}
+
+		err = app.store.Tag().Delete(tag)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		resp := response{
+			Tag: marshalTag(tag),
 		}
 
 		code := http.StatusOK

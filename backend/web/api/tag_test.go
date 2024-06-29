@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,6 +19,58 @@ import (
 type jsonTag struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
+}
+
+func TestHandleTagCreate(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		syncService := test.NewSyncService(t, store, nil, nil)
+
+		app := api.NewApplication(store, syncService)
+		router := app.Handler()
+
+		req := struct {
+			Name string `json:"name"`
+		}{
+			Name: "foo",
+		}
+
+		reqBody, err := json.Marshal(req)
+		test.AssertNilError(t, err)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
+		router.ServeHTTP(w, r)
+
+		rr := w.Result()
+		respBody, err := io.ReadAll(rr.Body)
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, rr.StatusCode, 200)
+
+		var resp map[string]jsonTag
+		err = json.Unmarshal(respBody, &resp)
+		test.AssertNilError(t, err)
+
+		got, ok := resp["tag"]
+		if !ok {
+			t.Fatalf("response missing key: %v", "tag")
+		}
+
+		test.AssertEqual(t, got.Name, req.Name)
+
+		// Ensure the tag got created in the database.
+		gotDB, err := store.Tag().Read(got.ID)
+		test.AssertNilError(t, err)
+		test.AssertEqual(t, gotDB.ID(), got.ID)
+		test.AssertEqual(t, gotDB.Name(), got.Name)
+
+		return postgres.ErrRollback
+	})
 }
 
 func TestHandleTagList(t *testing.T) {

@@ -25,6 +25,57 @@ func marshalTag(tag *model.Tag) jsonTag {
 	return t
 }
 
+func (app *Application) handleTagCreate() http.HandlerFunc {
+	type request struct {
+		Name string `json:"name"`
+	}
+	type response struct {
+		Tag jsonTag `json:"tag"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		v := validator.New()
+		body := util.ReadBody(w, r)
+
+		var req request
+		err := util.ReadJSON(body, &req, true)
+		if err != nil {
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		v.Check(req.Name != "", "name", "must be provided")
+
+		if !v.Valid() {
+			util.FailedValidationResponse(w, r, v.Errors())
+			return
+		}
+
+		tag, err := model.NewTag(req.Name)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		err = app.store.Tag().Create(tag)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		resp := response{
+			Tag: marshalTag(tag),
+		}
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+	}
+}
+
 func (app *Application) handleTagList() http.HandlerFunc {
 	type response struct {
 		Tags []jsonTag `json:"tags"`

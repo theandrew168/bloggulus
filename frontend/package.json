@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vite dev",
 		"build": "vite build",
 		"check": "tsc && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"format": "prettier --write src/"

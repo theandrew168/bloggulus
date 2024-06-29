@@ -70,6 +70,11 @@ func TestTokenCreate(t *testing.T) {
 			t.Fatalf("response missing key: %v", "token")
 		}
 
+		// Ensure the token got created in the database.
+		_, err = store.Token().Read(got.ID)
+		test.AssertNilError(t, err)
+
+		// Ensure the token can be read by value.
 		_, err = store.Token().ReadByValue(got.Value)
 		test.AssertNilError(t, err)
 

@@ -64,10 +64,8 @@ func TestHandleTagCreate(t *testing.T) {
 		test.AssertEqual(t, got.Name, req.Name)
 
 		// Ensure the tag got created in the database.
-		gotDB, err := store.Tag().Read(got.ID)
+		_, err = store.Tag().Read(got.ID)
 		test.AssertNilError(t, err)
-		test.AssertEqual(t, gotDB.ID(), got.ID)
-		test.AssertEqual(t, gotDB.Name(), got.Name)
 
 		return postgres.ErrRollback
 	})

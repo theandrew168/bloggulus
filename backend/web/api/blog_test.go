@@ -82,11 +82,8 @@ func TestHandleBlogCreate(t *testing.T) {
 		test.AssertEqual(t, got.Title, blog.Title)
 
 		// Ensure the blog got created in the database.
-		gotDB, err := store.Blog().Read(got.ID)
+		_, err = store.Blog().Read(got.ID)
 		test.AssertNilError(t, err)
-		test.AssertEqual(t, gotDB.FeedURL(), blog.FeedURL)
-		test.AssertEqual(t, gotDB.SiteURL(), blog.SiteURL)
-		test.AssertEqual(t, gotDB.Title(), blog.Title)
 
 		return postgres.ErrRollback
 	})

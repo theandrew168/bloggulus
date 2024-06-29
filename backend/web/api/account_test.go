@@ -62,6 +62,10 @@ func TestAccountCreate(t *testing.T) {
 
 		test.AssertEqual(t, got.Username, "foo")
 
+		// Ensure the account got created in the database.
+		_, err = store.Account().Read(got.ID)
+		test.AssertNilError(t, err)
+
 		return postgres.ErrRollback
 	})
 }

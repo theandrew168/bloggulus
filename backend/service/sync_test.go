@@ -214,7 +214,7 @@ func TestSyncOncePerHour(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// syncedAt should not have changed
-		test.AssertEqual(t, blog.SyncedAt(), syncedAt)
+		test.AssertEqualTimes(t, blog.SyncedAt(), syncedAt)
 
 		return postgres.ErrRollback
 	})

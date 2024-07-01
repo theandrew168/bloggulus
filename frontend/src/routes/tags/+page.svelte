@@ -2,20 +2,16 @@
 	import { superForm } from "sveltekit-superforms";
 	import { zod } from "sveltekit-superforms/adapters";
 
-	import { CreateTagSchema } from "$lib/schemas.js";
+	import { NewTagSchema } from "$lib/schemas.js";
 
 	export let data;
 
-	const {
-		form: createTagForm,
-		errors: createTagErrors,
-		enhance: createTagEnhance,
-	} = superForm(data.createTagForm, {
+	const { form, errors, enhance } = superForm(data.form, {
 		SPA: true,
-		validators: zod(CreateTagSchema),
+		validators: zod(NewTagSchema),
 		async onUpdate({ form }) {
+			// If the form isn't valid on the client-side, don't submit.
 			if (!form.valid) {
-				// If the form isn't valid on the client-side, don't submit.
 				return;
 			}
 
@@ -37,11 +33,11 @@
 <div class="container">
 	<h1>Tags</h1>
 	<div class="add">
-		<form method="POST" use:createTagEnhance>
+		<form use:enhance>
 			<label>
-				<input bind:value={$createTagForm.name} placeholder="Name" />
+				<input bind:value={$form.name} placeholder="Name" />
 			</label>
-			{#if $createTagErrors.name}<span>{$createTagErrors.name}</span>{/if}
+			{#if $errors.name}<span>{$errors.name}</span>{/if}
 			<button type="submit">Add</button>
 		</form>
 	</div>

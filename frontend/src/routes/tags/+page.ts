@@ -4,7 +4,7 @@ import { zod } from "sveltekit-superforms/adapters";
 
 import type { PageLoad } from "./$types";
 import type { TagsResponse } from "$lib/types";
-import { CreateTagSchema, DeleteTagSchema } from "$lib/schemas";
+import { NewTagSchema } from "$lib/schemas";
 
 export const load: PageLoad = async ({ fetch }) => {
 	const resp = await fetch("/api/v1/tags");
@@ -14,7 +14,6 @@ export const load: PageLoad = async ({ fetch }) => {
 
 	const tags: TagsResponse = await resp.json();
 
-	const createTagForm = await superValidate(zod(CreateTagSchema));
-	const deleteTagForm = await superValidate(zod(DeleteTagSchema));
-	return { tags: tags.tags, createTagForm, deleteTagForm };
+	const form = await superValidate(zod(NewTagSchema));
+	return { tags: tags.tags, form };
 };

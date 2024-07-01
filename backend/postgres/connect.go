@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -34,6 +35,14 @@ func Connect(uri string) (*pgx.Conn, error) {
 		return nil, err
 	}
 
+	// Ensure UTC values from a timestamptz column persist their UTC value.
+	// https://github.com/jackc/pgx/issues/1195#issuecomment-2002079265
+	conn.TypeMap().RegisterType(&pgtype.Type{
+		Name:  "timestamptz",
+		OID:   pgtype.TimestamptzOID,
+		Codec: &pgtype.TimestamptzCodec{ScanLocation: time.UTC},
+	})
+
 	// test connection to ensure all is well
 	if err = conn.Ping(ctx); err != nil {
 		conn.Close(ctx)
@@ -49,6 +58,18 @@ func ConnectPool(uri string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(uri)
 	if err != nil {
 		return nil, err
+	}
+
+	// Ensure UTC values from a timestamptz column persist their UTC value.
+	// https://github.com/jackc/pgx/issues/1195#issuecomment-2002079265
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		conn.TypeMap().RegisterType(&pgtype.Type{
+			Name:  "timestamptz",
+			OID:   pgtype.TimestamptzOID,
+			Codec: &pgtype.TimestamptzCodec{ScanLocation: time.UTC},
+		})
+
+		return nil
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)

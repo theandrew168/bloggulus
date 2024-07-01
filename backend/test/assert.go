@@ -6,21 +6,12 @@ import (
 	"slices"
 	"strings"
 	"testing"
-	"time"
 )
 
 func AssertEqual(t *testing.T, got, want any) {
 	t.Helper()
 
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("got %v; want %v", got, want)
-	}
-}
-
-func AssertEqualTimes(t *testing.T, got, want time.Time) {
-	t.Helper()
-
-	if !got.Equal(want) {
 		t.Fatalf("got %v; want %v", got, want)
 	}
 }

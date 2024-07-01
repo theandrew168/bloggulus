@@ -35,7 +35,7 @@ func Connect(uri string) (*pgx.Conn, error) {
 		return nil, err
 	}
 
-	// Ensure UTC values from a timestamptz column persist their UTC value.
+	// Ensure timestamps read from a timestamptz column retain their UTC location.
 	// https://github.com/jackc/pgx/issues/1195#issuecomment-2002079265
 	conn.TypeMap().RegisterType(&pgtype.Type{
 		Name:  "timestamptz",
@@ -60,7 +60,7 @@ func ConnectPool(uri string) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	// Ensure UTC values from a timestamptz column persist their UTC value.
+	// Ensure timestamps read from a timestamptz column retain their UTC location.
 	// https://github.com/jackc/pgx/issues/1195#issuecomment-2002079265
 	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		conn.TypeMap().RegisterType(&pgtype.Type{

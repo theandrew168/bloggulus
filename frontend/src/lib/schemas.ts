@@ -1,5 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const TagSchema = z.object({
-	name: z.string().min(2),
+export const CreateTagSchema = z.object({
+	name: z.string(),
 });
+
+export const DeleteTagSchema = z.object({});

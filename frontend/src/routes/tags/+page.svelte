@@ -3,6 +3,7 @@
 
 	export let data;
 
+	// TODO: Add proper validation / error handling
 	async function createTag(event: Event) {
 		const form = new FormData(event.target as HTMLFormElement);
 		const name = form.get("name");
@@ -14,6 +15,7 @@
 		await invalidateAll();
 	}
 
+	// TODO: Add proper validation / error handling
 	async function deleteTag(event: Event) {
 		const form = new FormData(event.target as HTMLFormElement);
 		const id = form.get("id");

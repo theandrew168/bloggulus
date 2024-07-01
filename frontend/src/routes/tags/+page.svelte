@@ -1,50 +1,48 @@
 <script lang="ts">
-	import { superForm } from "sveltekit-superforms";
-	import { zod } from "sveltekit-superforms/adapters";
-
-	import { NewTagSchema } from "$lib/schemas.js";
+	import { invalidateAll } from "$app/navigation";
 
 	export let data;
 
-	const { form, errors, enhance } = superForm(data.form, {
-		SPA: true,
-		validators: zod(NewTagSchema),
-		async onUpdate({ form }) {
-			// If the form isn't valid on the client-side, don't submit.
-			if (!form.valid) {
-				return;
-			}
+	async function createTag(event: Event) {
+		const form = new FormData(event.target as HTMLFormElement);
+		const name = form.get("name");
+		await fetch(`/api/v1/tags`, {
+			method: "POST",
+			body: JSON.stringify({ name }),
+		});
 
-			await fetch(`/api/v1/tags`, {
-				method: "POST",
-				body: JSON.stringify({ name: form.data.name }),
-			});
-		},
-	});
+		await invalidateAll();
+	}
 
-	async function deleteTag(id: string) {
+	async function deleteTag(event: Event) {
+		const form = new FormData(event.target as HTMLFormElement);
+		const id = form.get("id");
 		await fetch(`/api/v1/tags/${id}`, {
 			method: "DELETE",
 		});
-		data.tags = data.tags.filter((tag) => tag.id !== id);
+
+		await invalidateAll();
 	}
 </script>
 
 <div class="container">
 	<h1>Tags</h1>
 	<div class="add">
-		<form use:enhance>
+		<form on:submit|preventDefault={createTag}>
 			<label>
-				<input bind:value={$form.name} placeholder="Name" />
+				Add tag:&nbsp;
+				<input name="name" placeholder="Name" />
 			</label>
-			{#if $errors.name}<span>{$errors.name}</span>{/if}
 			<button type="submit">Add</button>
 		</form>
 	</div>
 	<div class="tags">
 		{#each data.tags as tag}
 			<div class="tag">
-				<button on:click={async () => await deleteTag(tag.id)}>Delete</button>
+				<form on:submit|preventDefault={deleteTag}>
+					<input type="hidden" name="id" value={tag.id} />
+					<button type="submit">Delete</button>
+				</form>
 				<p>{tag.name}</p>
 			</div>
 		{/each}

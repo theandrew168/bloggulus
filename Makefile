@@ -14,11 +14,15 @@ frontend/node_modules:
 frontend: frontend/node_modules
 	cd frontend && npm run build
 
+.PHONY: frontend-watch
+frontend-watch: frontend/node_modules
+	cd frontend && npm run watch
+
 .PHONY: backend
 backend: frontend
 	go build -tags embed -o bloggulus main.go
 
-# run the backend and frontend concurrently (requires at least "-j2") 
+# run the backend and frontend concurrently (requires "-j" to work correctly)
 .PHONY: run
 run: run-frontend run-backend
 

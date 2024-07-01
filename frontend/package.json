@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"watch": "vite build --watch",
 		"check": "tsc && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"format": "prettier --write src/"
 	},

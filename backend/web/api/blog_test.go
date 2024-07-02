@@ -140,9 +140,9 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 	app := api.NewApplication(store, syncService)
 	router := app.Handler()
 
-	path := fmt.Sprintf("/blogs/%s", uuid.New())
+	url := fmt.Sprintf("/blogs/%s", uuid.New())
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", path, nil)
+	r := httptest.NewRequest("GET", url, nil)
 	router.ServeHTTP(w, r)
 
 	rr := w.Result()

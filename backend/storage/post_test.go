@@ -90,31 +90,6 @@ func TestPostList(t *testing.T) {
 
 	store.WithTransaction(func(store *storage.Storage) error {
 		blog := test.CreateBlog(t, store)
-		test.CreatePost(t, store, blog)
-		test.CreatePost(t, store, blog)
-		test.CreatePost(t, store, blog)
-		test.CreatePost(t, store, blog)
-		test.CreatePost(t, store, blog)
-
-		limit := 5
-		offset := 0
-		posts, err := store.Post().List(limit, offset)
-		test.AssertNilError(t, err)
-
-		test.AssertEqual(t, len(posts), limit)
-
-		return postgres.ErrRollback
-	})
-}
-
-func TestPostListByBlog(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
 
 		// create 5 posts leaving the most recent one in "post"
 		var post *model.Post
@@ -135,7 +110,7 @@ func TestPostListByBlog(t *testing.T) {
 
 		limit := 5
 		offset := 0
-		posts, err := store.Post().ListByBlog(blog, limit, offset)
+		posts, err := store.Post().List(blog, limit, offset)
 		test.AssertNilError(t, err)
 
 		test.AssertEqual(t, len(posts), limit)

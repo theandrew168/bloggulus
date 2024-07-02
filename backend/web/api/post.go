@@ -75,6 +75,24 @@ func (app *Application) handlePostList() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
+		if err != nil {
+			util.NotFoundResponse(w, r)
+			return
+		}
+
+		blog, err := app.store.Blog().Read(blogID)
+		if err != nil {
+			switch {
+			case errors.Is(err, postgres.ErrNotFound):
+				util.NotFoundResponse(w, r)
+			default:
+				util.ServerErrorResponse(w, r, err)
+			}
+
+			return
+		}
+
 		v := validator.New()
 		qs := r.URL.Query()
 
@@ -93,7 +111,7 @@ func (app *Application) handlePostList() http.HandlerFunc {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		posts, err := app.store.Post().List(limit, offset)
+		posts, err := app.store.Post().List(blog, limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

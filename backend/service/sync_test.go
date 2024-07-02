@@ -58,7 +58,7 @@ func TestNewBlog(t *testing.T) {
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().List(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -110,7 +110,7 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 		// fetch posts and verify count (should be none)
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().List(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 0)
 
@@ -134,7 +134,7 @@ func TestExistingBlog(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err = store.Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Post().List(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -257,7 +257,7 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// fetch posts and verify count
-		posts, err := store.Post().ListByBlog(blog, 20, 0)
+		posts, err := store.Post().List(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 
@@ -280,7 +280,7 @@ func TestUpdatePostContent(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		// refetch posts and verify count
-		posts, err = store.Post().ListByBlog(blog, 20, 0)
+		posts, err = store.Post().List(blog, 20, 0)
 		test.AssertNilError(t, err)
 		test.AssertEqual(t, len(posts), 1)
 

@@ -156,48 +156,7 @@ func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (s *PostStorage) List(limit, offset int) ([]*model.Post, error) {
-	stmt := `
-		SELECT
-			id,
-			blog_id,
-			url,
-			title,
-			content,
-			published_at,
-			created_at,
-			updated_at
-		FROM post
-		ORDER BY created_at ASC
-		LIMIT $1 OFFSET $2`
-
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := s.conn.Query(ctx, stmt, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	postRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbPost])
-	if err != nil {
-		return nil, postgres.CheckListError(err)
-	}
-
-	var posts []*model.Post
-	for _, row := range postRows {
-		post, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, post)
-	}
-
-	return posts, nil
-}
-
-func (s *PostStorage) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
+func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			id,

@@ -38,9 +38,9 @@ func (app *Application) Handler() http.Handler {
 	mux.HandleFunc("GET /blogs/{blogID}", app.handleBlogRead())
 	mux.HandleFunc("DELETE /blogs/{blogID}", app.handleBlogDelete())
 
-	mux.HandleFunc("GET /posts", app.handlePostList())
-	mux.HandleFunc("GET /posts/{postID}", app.handlePostRead())
-	mux.HandleFunc("DELETE /posts/{postID}", app.handlePostDelete())
+	mux.HandleFunc("GET /blogs/{blogID}/posts", app.handlePostList())
+	mux.HandleFunc("GET /blogs/{blogID}/posts/{postID}", app.handlePostRead())
+	mux.HandleFunc("DELETE /blogs/{blogID}/posts/{postID}", app.handlePostDelete())
 
 	mux.HandleFunc("POST /tags", app.handleTagCreate())
 	mux.HandleFunc("GET /tags", app.handleTagList())

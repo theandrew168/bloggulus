@@ -40,7 +40,7 @@ func TestHandlePostRead(t *testing.T) {
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
 
-		url := fmt.Sprintf("/posts/%s", post.ID())
+		url := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 		router.ServeHTTP(w, r)
@@ -78,7 +78,9 @@ func TestHandlePostReadNotFound(t *testing.T) {
 		app := api.NewApplication(store, syncService)
 		router := app.Handler()
 
-		path := fmt.Sprintf("/posts/%s", uuid.New())
+		blog := test.CreateBlog(t, store)
+
+		path := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), uuid.New())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", path, nil)
 		router.ServeHTTP(w, r)
@@ -105,8 +107,9 @@ func TestHandlePostList(t *testing.T) {
 		blog := test.CreateBlog(t, store)
 		test.CreatePost(t, store, blog)
 
+		path := fmt.Sprintf("/blogs/%s/posts", blog.ID())
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/posts", nil)
+		r := httptest.NewRequest("GET", path, nil)
 		router.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -162,7 +165,7 @@ func TestHandlePostListPagination(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			url := fmt.Sprintf("/posts?size=%d", tt.size)
+			url := fmt.Sprintf("/blogs/%s/posts?size=%d", blog.ID(), tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
 			router.ServeHTTP(w, r)
@@ -204,7 +207,7 @@ func TestHandlePostDelete(t *testing.T) {
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
 
-		url := fmt.Sprintf("/posts/%s", post.ID())
+		url := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("DELETE", url, nil)
 		router.ServeHTTP(w, r)

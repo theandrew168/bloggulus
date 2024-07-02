@@ -130,16 +130,13 @@ func (app *Application) handleTagDelete() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
-
-		id, err := uuid.Parse(r.PathValue("id"))
+		tagID, err := uuid.Parse(r.PathValue("tagID"))
 		if err != nil {
-			v.AddError("id", "must be a valid UUID")
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.NotFoundResponse(w, r)
 			return
 		}
 
-		tag, err := app.store.Tag().Read(id)
+		tag, err := app.store.Tag().Read(tagID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):

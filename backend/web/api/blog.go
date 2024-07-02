@@ -118,16 +118,13 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
-
-		id, err := uuid.Parse(r.PathValue("id"))
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			v.AddError("id", "must be a valid UUID")
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.NotFoundResponse(w, r)
 			return
 		}
 
-		blog, err := app.store.Blog().Read(id)
+		blog, err := app.store.Blog().Read(blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -206,16 +203,13 @@ func (app *Application) handleBlogDelete() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
-
-		id, err := uuid.Parse(r.PathValue("id"))
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			v.AddError("id", "must be a valid UUID")
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.NotFoundResponse(w, r)
 			return
 		}
 
-		blog, err := app.store.Blog().Read(id)
+		blog, err := app.store.Blog().Read(blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):

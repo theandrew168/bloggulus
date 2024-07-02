@@ -38,16 +38,13 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
-
-		id, err := uuid.Parse(r.PathValue("id"))
+		postID, err := uuid.Parse(r.PathValue("postID"))
 		if err != nil {
-			v.AddError("id", "must be a valid UUID")
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.NotFoundResponse(w, r)
 			return
 		}
 
-		post, err := app.store.Post().Read(id)
+		post, err := app.store.Post().Read(postID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -126,16 +123,13 @@ func (app *Application) handlePostDelete() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
-
-		id, err := uuid.Parse(r.PathValue("id"))
+		postID, err := uuid.Parse(r.PathValue("postID"))
 		if err != nil {
-			v.AddError("id", "must be a valid UUID")
-			util.FailedValidationResponse(w, r, v.Errors())
+			util.NotFoundResponse(w, r)
 			return
 		}
 
-		post, err := app.store.Post().Read(id)
+		post, err := app.store.Post().Read(postID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):

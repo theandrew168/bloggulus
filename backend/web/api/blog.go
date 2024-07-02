@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -14,18 +15,20 @@ import (
 )
 
 type jsonBlog struct {
-	ID      uuid.UUID `json:"id"`
-	FeedURL string    `json:"feedURL"`
-	SiteURL string    `json:"siteURL"`
-	Title   string    `json:"title"`
+	ID       uuid.UUID `json:"id"`
+	FeedURL  string    `json:"feedURL"`
+	SiteURL  string    `json:"siteURL"`
+	Title    string    `json:"title"`
+	SyncedAt time.Time `json:"syncedAt"`
 }
 
 func marshalBlog(blog *model.Blog) jsonBlog {
 	b := jsonBlog{
-		ID:      blog.ID(),
-		FeedURL: blog.FeedURL(),
-		SiteURL: blog.SiteURL(),
-		Title:   blog.Title(),
+		ID:       blog.ID(),
+		FeedURL:  blog.FeedURL(),
+		SiteURL:  blog.SiteURL(),
+		Title:    blog.Title(),
+		SyncedAt: blog.SyncedAt(),
 	}
 	return b
 }

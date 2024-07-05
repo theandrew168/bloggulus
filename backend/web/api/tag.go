@@ -25,7 +25,7 @@ func marshalTag(tag *model.Tag) jsonTag {
 	return t
 }
 
-func (app *Application) handleTagCreate() http.HandlerFunc {
+func (app *Application) handleTagCreate() http.Handler {
 	type request struct {
 		Name string `json:"name"`
 	}
@@ -33,7 +33,7 @@ func (app *Application) handleTagCreate() http.HandlerFunc {
 		Tag jsonTag `json:"tag"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		body := util.ReadBody(w, r)
 
@@ -73,15 +73,15 @@ func (app *Application) handleTagCreate() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handleTagList() http.HandlerFunc {
+func (app *Application) handleTagList() http.Handler {
 	type response struct {
 		Tags []jsonTag `json:"tags"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
 
@@ -121,15 +121,15 @@ func (app *Application) handleTagList() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handleTagDelete() http.HandlerFunc {
+func (app *Application) handleTagDelete() http.Handler {
 	type response struct {
 		Tag jsonTag `json:"tag"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tagID, err := uuid.Parse(r.PathValue("tagID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -164,5 +164,5 @@ func (app *Application) handleTagDelete() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

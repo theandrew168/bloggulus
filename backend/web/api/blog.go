@@ -37,7 +37,7 @@ func marshalBlog(blog *model.Blog) jsonBlog {
 // just run it in the background and keep track of which user
 // submitted it (to link it once complete). Should I invest
 // in a proper queue + worker system? Probably River?
-func (app *Application) handleBlogCreate() http.HandlerFunc {
+func (app *Application) handleBlogCreate() http.Handler {
 	type request struct {
 		FeedURL string `json:"feedURL"`
 	}
@@ -45,7 +45,7 @@ func (app *Application) handleBlogCreate() http.HandlerFunc {
 		Blog jsonBlog `json:"blog"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		body := util.ReadBody(w, r)
 
@@ -109,15 +109,15 @@ func (app *Application) handleBlogCreate() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handleBlogRead() http.HandlerFunc {
+func (app *Application) handleBlogRead() http.Handler {
 	type response struct {
 		Blog jsonBlog `json:"blog"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -146,15 +146,15 @@ func (app *Application) handleBlogRead() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handleBlogList() http.HandlerFunc {
+func (app *Application) handleBlogList() http.Handler {
 	type response struct {
 		Blogs []jsonBlog `json:"blogs"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
 
@@ -194,15 +194,15 @@ func (app *Application) handleBlogList() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handleBlogDelete() http.HandlerFunc {
+func (app *Application) handleBlogDelete() http.Handler {
 	type response struct {
 		Blog jsonBlog `json:"blog"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -237,5 +237,5 @@ func (app *Application) handleBlogDelete() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

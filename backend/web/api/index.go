@@ -34,10 +34,10 @@ const redocHTML = `
 </html>
 `
 
-func (app *Application) handleIndexRedoc() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleIndexRedoc() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(redocHTML))
-	}
+	})
 }
 
 const rapidocHTML = `
@@ -64,10 +64,10 @@ const rapidocHTML = `
 </html>
 `
 
-func (app *Application) handleIndexRapidoc() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleIndexRapidoc() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(rapidocHTML))
-	}
+	})
 }
 
 const stoplightHTML = `
@@ -96,8 +96,8 @@ const stoplightHTML = `
 </html>
 `
 
-func (app *Application) handleIndexStoplight() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (app *Application) handleIndexStoplight() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(stoplightHTML))
-	}
+	})
 }

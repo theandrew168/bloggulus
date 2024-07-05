@@ -30,12 +30,12 @@ func marshalArticle(article *model.Article) jsonArticle {
 	return a
 }
 
-func (app *Application) handleArticleList() http.HandlerFunc {
+func (app *Application) handleArticleList() http.Handler {
 	type response struct {
 		Count    int           `json:"count"`
 		Articles []jsonArticle `json:"articles"`
 	}
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		qs := r.URL.Query()
 
@@ -102,5 +102,5 @@ func (app *Application) handleArticleList() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

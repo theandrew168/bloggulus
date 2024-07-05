@@ -32,12 +32,12 @@ func marshalPost(post *model.Post) jsonPost {
 	return p
 }
 
-func (app *Application) handlePostRead() http.HandlerFunc {
+func (app *Application) handlePostRead() http.Handler {
 	type response struct {
 		Post jsonPost `json:"post"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		postID, err := uuid.Parse(r.PathValue("postID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -66,15 +66,15 @@ func (app *Application) handlePostRead() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handlePostList() http.HandlerFunc {
+func (app *Application) handlePostList() http.Handler {
 	type response struct {
 		Posts []jsonPost `json:"posts"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -132,15 +132,15 @@ func (app *Application) handlePostList() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }
 
-func (app *Application) handlePostDelete() http.HandlerFunc {
+func (app *Application) handlePostDelete() http.Handler {
 	type response struct {
 		Post jsonPost `json:"post"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		postID, err := uuid.Parse(r.PathValue("postID"))
 		if err != nil {
 			util.NotFoundResponse(w, r)
@@ -175,5 +175,5 @@ func (app *Application) handlePostDelete() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

@@ -26,29 +26,33 @@ func NewApplication(store *storage.Storage, syncService *service.SyncService) *A
 func (app *Application) Handler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /{$}", app.handleIndexRapidoc())
-	mux.HandleFunc("GET /redoc", app.handleIndexRedoc())
-	mux.HandleFunc("GET /rapidoc", app.handleIndexRapidoc())
-	mux.HandleFunc("GET /stoplight", app.handleIndexStoplight())
+	// accountRequired := middleware.AccountRequired()
+	// adminRequired := middleware.AdminRequired()
+	// protected := middleware.Chain(accountRequired, adminRequired)
 
-	mux.HandleFunc("GET /articles", app.handleArticleList())
+	mux.Handle("GET /{$}", app.handleIndexRapidoc())
+	mux.Handle("GET /redoc", app.handleIndexRedoc())
+	mux.Handle("GET /rapidoc", app.handleIndexRapidoc())
+	mux.Handle("GET /stoplight", app.handleIndexStoplight())
 
-	mux.HandleFunc("POST /blogs", app.handleBlogCreate())
-	mux.HandleFunc("GET /blogs", app.handleBlogList())
-	mux.HandleFunc("GET /blogs/{blogID}", app.handleBlogRead())
-	mux.HandleFunc("DELETE /blogs/{blogID}", app.handleBlogDelete())
+	mux.Handle("GET /articles", app.handleArticleList())
 
-	mux.HandleFunc("GET /blogs/{blogID}/posts", app.handlePostList())
-	mux.HandleFunc("GET /blogs/{blogID}/posts/{postID}", app.handlePostRead())
-	mux.HandleFunc("DELETE /blogs/{blogID}/posts/{postID}", app.handlePostDelete())
+	mux.Handle("POST /blogs", app.handleBlogCreate())
+	mux.Handle("GET /blogs", app.handleBlogList())
+	mux.Handle("GET /blogs/{blogID}", app.handleBlogRead())
+	mux.Handle("DELETE /blogs/{blogID}", app.handleBlogDelete())
 
-	mux.HandleFunc("POST /tags", app.handleTagCreate())
-	mux.HandleFunc("GET /tags", app.handleTagList())
-	mux.HandleFunc("DELETE /tags/{tagID}", app.handleTagDelete())
+	mux.Handle("GET /blogs/{blogID}/posts", app.handlePostList())
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", app.handlePostRead())
+	mux.Handle("DELETE /blogs/{blogID}/posts/{postID}", app.handlePostDelete())
 
-	mux.HandleFunc("POST /accounts", app.handleAccountCreate())
+	mux.Handle("POST /tags", app.handleTagCreate())
+	mux.Handle("GET /tags", app.handleTagList())
+	mux.Handle("DELETE /tags/{tagID}", app.handleTagDelete())
 
-	mux.HandleFunc("POST /tokens", app.handleTokenCreate())
+	mux.Handle("POST /accounts", app.handleAccountCreate())
+
+	mux.Handle("POST /tokens", app.handleTokenCreate())
 
 	return middleware.Use(mux,
 		middleware.SecureHeaders(),

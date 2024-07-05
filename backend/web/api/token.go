@@ -41,7 +41,7 @@ func marshalNewToken(token *model.Token, value string) jsonNewToken {
 // 	return a
 // }
 
-func (app *Application) handleTokenCreate() http.HandlerFunc {
+func (app *Application) handleTokenCreate() http.Handler {
 	type request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -50,7 +50,7 @@ func (app *Application) handleTokenCreate() http.HandlerFunc {
 		Token jsonNewToken `json:"token"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		body := util.ReadBody(w, r)
 
@@ -110,5 +110,5 @@ func (app *Application) handleTokenCreate() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

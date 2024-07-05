@@ -25,7 +25,7 @@ func marshalAccount(account *model.Account) jsonAccount {
 	return a
 }
 
-func (app *Application) handleAccountCreate() http.HandlerFunc {
+func (app *Application) handleAccountCreate() http.Handler {
 	type request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -34,7 +34,7 @@ func (app *Application) handleAccountCreate() http.HandlerFunc {
 		Account jsonAccount `json:"account"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v := validator.New()
 		body := util.ReadBody(w, r)
 
@@ -86,5 +86,5 @@ func (app *Application) handleAccountCreate() http.HandlerFunc {
 			util.ServerErrorResponse(w, r, err)
 			return
 		}
-	}
+	})
 }

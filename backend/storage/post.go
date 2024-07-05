@@ -169,7 +169,7 @@ func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, 
 			updated_at
 		FROM post
 		WHERE post.blog_id = $1
-		ORDER BY created_at DESC
+		ORDER BY published_at DESC
 		LIMIT $2 OFFSET $3`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)

@@ -3,7 +3,7 @@
 </script>
 
 <div class="container">
-	<h1>{$page.status}: {$page.error?.message}</h1>
+	<h1>{$page.status}: {$page.error?.message ?? "Internal Server Error"}</h1>
 </div>
 
 <style>

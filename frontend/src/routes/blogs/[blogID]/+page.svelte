@@ -6,8 +6,8 @@
 	// TODO: Add proper validation / error handling
 	async function deleteBlog(event: Event) {
 		const form = new FormData(event.target as HTMLFormElement);
-		const id = form.get("id");
-		await fetch(`/api/v1/blogs/${id}`, {
+		const blogID = form.get("blogID");
+		await fetch(`/api/v1/blogs/${blogID}`, {
 			method: "DELETE",
 		});
 
@@ -30,7 +30,7 @@
 		<h2>Actions</h2>
 		<div class="buttons">
 			<form on:submit|preventDefault={deleteBlog}>
-				<input type="hidden" name="id" value={data.blog.id} />
+				<input type="hidden" name="blogID" value={data.blog.id} />
 				<button type="submit">Delete</button>
 			</form>
 		</div>
@@ -40,7 +40,7 @@
 		<h2>{data.posts.length} Posts</h2>
 		{#each data.posts as post}
 			<div class="post">
-				<a href="/admin/posts/{post.id}">{post.title}</a>
+				<a href="/blogs/{data.blog.id}/posts/{post.id}">{post.title}</a>
 				<span>{new Date(post.publishedAt).toDateString()}</span>
 			</div>
 		{/each}

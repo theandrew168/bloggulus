@@ -42,8 +42,8 @@ func TestAccountCreate(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 
-		router := app.Handler()
-		router.ServeHTTP(w, r)
+		handler := app.Handler()
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -80,7 +80,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		req := map[string]string{
 			"username": "foo",
@@ -91,14 +91,14 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr = w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)

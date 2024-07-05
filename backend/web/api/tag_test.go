@@ -31,7 +31,7 @@ func TestHandleTagCreate(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		req := struct {
 			Name string `json:"name"`
@@ -44,7 +44,7 @@ func TestHandleTagCreate(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -81,13 +81,13 @@ func TestHandleTagList(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		test.CreateTag(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -122,7 +122,7 @@ func TestHandleTagListPagination(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		// create 5 tags to test with
 		test.CreateTag(t, store)
@@ -144,7 +144,7 @@ func TestHandleTagListPagination(t *testing.T) {
 			url := fmt.Sprintf("/tags?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-			router.ServeHTTP(w, r)
+			handler.ServeHTTP(w, r)
 
 			rr := w.Result()
 			respBody, err := io.ReadAll(rr.Body)
@@ -177,14 +177,14 @@ func TestHandleTagDelete(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		tag := test.CreateTag(t, store)
 
 		url := fmt.Sprintf("/tags/%s", tag.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("DELETE", url, nil)
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)

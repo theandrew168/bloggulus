@@ -47,7 +47,7 @@ func TestHandleBlogCreate(t *testing.T) {
 		syncService := test.NewSyncService(t, store, feeds, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		req := struct {
 			FeedURL string `json:"feedURL"`
@@ -60,7 +60,7 @@ func TestHandleBlogCreate(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/blogs", bytes.NewReader(reqBody))
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -99,14 +99,14 @@ func TestHandleBlogRead(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		blog := test.CreateBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -138,12 +138,12 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 	syncService := test.NewSyncService(t, store, nil, nil)
 
 	app := api.NewApplication(store, syncService)
-	router := app.Handler()
+	handler := app.Handler()
 
 	url := fmt.Sprintf("/blogs/%s", uuid.New())
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", url, nil)
-	router.ServeHTTP(w, r)
+	handler.ServeHTTP(w, r)
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, 404)
@@ -159,13 +159,13 @@ func TestHandleBlogList(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		test.CreateBlog(t, store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/blogs", nil)
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -200,7 +200,7 @@ func TestHandleBlogListPagination(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		// create 5 blogs to test with
 		test.CreateBlog(t, store)
@@ -222,7 +222,7 @@ func TestHandleBlogListPagination(t *testing.T) {
 			url := fmt.Sprintf("/blogs?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-			router.ServeHTTP(w, r)
+			handler.ServeHTTP(w, r)
 
 			rr := w.Result()
 			respBody, err := io.ReadAll(rr.Body)
@@ -255,14 +255,14 @@ func TestHandleBlogDelete(t *testing.T) {
 		syncService := test.NewSyncService(t, store, nil, nil)
 
 		app := api.NewApplication(store, syncService)
-		router := app.Handler()
+		handler := app.Handler()
 
 		blog := test.CreateBlog(t, store)
 
 		url := fmt.Sprintf("/blogs/%s", blog.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("DELETE", url, nil)
-		router.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)

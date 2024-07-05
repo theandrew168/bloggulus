@@ -52,8 +52,8 @@ func TestTokenCreate(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Handler()
-		router.ServeHTTP(w, r)
+		handler := app.Handler()
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -104,8 +104,8 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Handler()
-		router.ServeHTTP(w, r)
+		handler := app.Handler()
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
@@ -138,8 +138,8 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 
-		router := app.Handler()
-		router.ServeHTTP(w, r)
+		handler := app.Handler()
+		handler.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)

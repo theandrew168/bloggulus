@@ -54,8 +54,8 @@ func (app *Application) Handler() http.Handler {
 	})
 
 	// backend - rest api
-	apiApp := api.NewApplication(app.store, app.syncService)
-	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiApp.Handler())))
+	apiHandler := api.Handler(app.store, app.syncService)
+	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiHandler)))
 
 	// frontend - svelte
 	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(app.frontend)))

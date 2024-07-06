@@ -9,6 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -32,7 +33,7 @@ func marshalPost(post *model.Post) jsonPost {
 	return p
 }
 
-func (app *Application) handlePostRead() http.Handler {
+func HandlePostRead(store *storage.Storage) http.Handler {
 	type response struct {
 		Post jsonPost `json:"post"`
 	}
@@ -44,7 +45,7 @@ func (app *Application) handlePostRead() http.Handler {
 			return
 		}
 
-		post, err := app.store.Post().Read(postID)
+		post, err := store.Post().Read(postID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -69,7 +70,7 @@ func (app *Application) handlePostRead() http.Handler {
 	})
 }
 
-func (app *Application) handlePostList() http.Handler {
+func HandlePostList(store *storage.Storage) http.Handler {
 	type response struct {
 		Posts []jsonPost `json:"posts"`
 	}
@@ -81,7 +82,7 @@ func (app *Application) handlePostList() http.Handler {
 			return
 		}
 
-		blog, err := app.store.Blog().Read(blogID)
+		blog, err := store.Blog().Read(blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -111,7 +112,7 @@ func (app *Application) handlePostList() http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		posts, err := app.store.Post().List(blog, limit, offset)
+		posts, err := store.Post().List(blog, limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -135,7 +136,7 @@ func (app *Application) handlePostList() http.Handler {
 	})
 }
 
-func (app *Application) handlePostDelete() http.Handler {
+func HandlePostDelete(store *storage.Storage) http.Handler {
 	type response struct {
 		Post jsonPost `json:"post"`
 	}
@@ -147,7 +148,7 @@ func (app *Application) handlePostDelete() http.Handler {
 			return
 		}
 
-		post, err := app.store.Post().Read(postID)
+		post, err := store.Post().Read(postID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -159,7 +160,7 @@ func (app *Application) handlePostDelete() http.Handler {
 			return
 		}
 
-		err = app.store.Post().Delete(post)
+		err = store.Post().Delete(post)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

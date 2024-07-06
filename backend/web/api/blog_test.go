@@ -130,9 +130,11 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 
 	h := api.HandleBlogRead(store)
 
-	url := fmt.Sprintf("/blogs/%s", uuid.New())
+	blogID := uuid.New()
+	url := fmt.Sprintf("/blogs/%s", blogID)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", url, nil)
+	r.SetPathValue("blogID", blogID.String())
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()

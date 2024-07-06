@@ -32,10 +32,7 @@ func TestHandlePostRead(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
+		h := api.HandlePostRead(store)
 
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
@@ -43,7 +40,9 @@ func TestHandlePostRead(t *testing.T) {
 		url := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
-		handler.ServeHTTP(w, r)
+		r.SetPathValue("blogID", blog.ID().String())
+		r.SetPathValue("postID", post.ID().String())
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -51,15 +50,13 @@ func TestHandlePostRead(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string]jsonPost
+		var resp struct {
+			Post jsonPost `json:"post"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["post"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "post")
-		}
-
+		got := resp.Post
 		test.AssertEqual(t, got.ID, post.ID())
 
 		return postgres.ErrRollback
@@ -73,17 +70,17 @@ func TestHandlePostReadNotFound(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		blog := test.CreateBlog(t, store)
 
-		path := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), uuid.New())
+		h := api.HandlePostRead(store)
+
+		postID := uuid.New()
+		url := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), postID)
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", path, nil)
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("GET", url, nil)
+		r.SetPathValue("blogID", blog.ID().String())
+		r.SetPathValue("postID", postID.String())
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, 404)
@@ -99,18 +96,16 @@ func TestHandlePostList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		blog := test.CreateBlog(t, store)
 		test.CreatePost(t, store, blog)
 
-		path := fmt.Sprintf("/blogs/%s/posts", blog.ID())
+		h := api.HandlePostList(store)
+
+		url := fmt.Sprintf("/blogs/%s/posts", blog.ID())
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", path, nil)
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("GET", url, nil)
+		r.SetPathValue("blogID", blog.ID().String())
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -118,17 +113,15 @@ func TestHandlePostList(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string][]jsonPost
+		var resp struct {
+			Posts []jsonPost `json:"posts"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["posts"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "posts")
-		}
-
+		got := resp.Posts
 		if len(got) < 1 {
-			t.Fatalf("expected at least one blog")
+			t.Fatalf("expected at least one post")
 		}
 
 		return postgres.ErrRollback
@@ -142,11 +135,6 @@ func TestHandlePostListPagination(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		// create 5 posts to test with
 		blog := test.CreateBlog(t, store)
 		test.CreatePost(t, store, blog)
@@ -164,11 +152,14 @@ func TestHandlePostListPagination(t *testing.T) {
 			{5, 5},
 		}
 
+		h := api.HandlePostList(store)
+
 		for _, tt := range tests {
 			url := fmt.Sprintf("/blogs/%s/posts?size=%d", blog.ID(), tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-			handler.ServeHTTP(w, r)
+			r.SetPathValue("blogID", blog.ID().String())
+			h.ServeHTTP(w, r)
 
 			rr := w.Result()
 			respBody, err := io.ReadAll(rr.Body)
@@ -176,15 +167,13 @@ func TestHandlePostListPagination(t *testing.T) {
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
-			var resp map[string][]jsonPost
+			var resp struct {
+				Posts []jsonPost `json:"posts"`
+			}
 			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
-			got, ok := resp["posts"]
-			if !ok {
-				t.Fatalf("response missing key: %v", "posts")
-			}
-
+			got := resp.Posts
 			test.AssertEqual(t, len(got), tt.want)
 		}
 
@@ -199,18 +188,17 @@ func TestHandlePostDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		blog := test.CreateBlog(t, store)
 		post := test.CreatePost(t, store, blog)
+
+		h := api.HandlePostDelete(store)
 
 		url := fmt.Sprintf("/blogs/%s/posts/%s", blog.ID(), post.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("DELETE", url, nil)
-		handler.ServeHTTP(w, r)
+		r.SetPathValue("blogID", blog.ID().String())
+		r.SetPathValue("postID", post.ID().String())
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -218,15 +206,13 @@ func TestHandlePostDelete(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string]jsonBlog
+		var resp struct {
+			Post jsonPost `json:"post"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["post"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "post")
-		}
-
+		got := resp.Post
 		test.AssertEqual(t, got.ID, post.ID())
 
 		_, err = store.Post().Read(got.ID)

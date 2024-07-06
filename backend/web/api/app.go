@@ -30,17 +30,18 @@ func (app *Application) Handler() http.Handler {
 	// 1. Add auth to the tests for each route (bad idea / couples too many ideas together)
 	// 2. Don't test against the top-level app.Handler(), test specific handlers (need to make them public)
 	// 3. De-couple handlers from the joint App (closure in the required store / services)
+	// Let's go with number 3!
 
 	// accountRequired := middleware.AccountRequired()
 	// adminRequired := middleware.AdminRequired()
 	// protected := middleware.Chain(accountRequired, adminRequired)
 
-	mux.Handle("GET /{$}", app.handleIndexRapidoc())
-	mux.Handle("GET /redoc", app.handleIndexRedoc())
-	mux.Handle("GET /rapidoc", app.handleIndexRapidoc())
-	mux.Handle("GET /stoplight", app.handleIndexStoplight())
+	mux.Handle("GET /{$}", HandleIndexRapidoc())
+	mux.Handle("GET /redoc", HandleIndexRedoc())
+	mux.Handle("GET /rapidoc", HandleIndexRapidoc())
+	mux.Handle("GET /stoplight", HandleIndexStoplight())
 
-	mux.Handle("GET /articles", app.handleArticleList())
+	mux.Handle("GET /articles", HandleArticleList(app.store))
 
 	mux.Handle("POST /blogs", app.handleBlogCreate())
 	mux.Handle("GET /blogs", app.handleBlogList())

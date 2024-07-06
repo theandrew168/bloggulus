@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -30,7 +31,7 @@ func marshalArticle(article *model.Article) jsonArticle {
 	return a
 }
 
-func (app *Application) handleArticleList() http.Handler {
+func HandleArticleList(store *storage.Storage) http.Handler {
 	type response struct {
 		Count    int           `json:"count"`
 		Articles []jsonArticle `json:"articles"`
@@ -62,25 +63,25 @@ func (app *Application) handleArticleList() http.Handler {
 		var err error
 
 		if q != "" {
-			count, err = app.store.Article().CountSearch(q)
+			count, err = store.Article().CountSearch(q)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			articles, err = app.store.Article().ListSearch(q, limit, offset)
+			articles, err = store.Article().ListSearch(q, limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 		} else {
-			count, err = app.store.Article().Count()
+			count, err = store.Article().Count()
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return
 			}
 
-			articles, err = app.store.Article().List(limit, offset)
+			articles, err = store.Article().List(limit, offset)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
 				return

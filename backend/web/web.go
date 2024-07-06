@@ -16,28 +16,11 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
-type Application struct {
-	frontend fs.FS
-	store    *storage.Storage
-
-	syncService *service.SyncService
-}
-
-func NewApplication(
+func Handler(
 	frontend fs.FS,
 	store *storage.Storage,
 	syncService *service.SyncService,
-) *Application {
-	app := Application{
-		frontend: frontend,
-		store:    store,
-
-		syncService: syncService,
-	}
-	return &app
-}
-
-func (app *Application) Handler() http.Handler {
+) http.Handler {
 	mmw := metricsMiddleware.New(metricsMiddleware.Config{
 		Recorder: metrics.NewRecorder(metrics.Config{}),
 	})
@@ -54,11 +37,11 @@ func (app *Application) Handler() http.Handler {
 	})
 
 	// backend - rest api
-	apiHandler := api.Handler(app.store, app.syncService)
+	apiHandler := api.Handler(store, syncService)
 	mux.Handle("/api/v1/", metricsWrapper.Handler("/api/v1", mmw, http.StripPrefix("/api/v1", apiHandler)))
 
 	// frontend - svelte
-	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(app.frontend)))
+	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(frontend)))
 
 	// serve non-index static files from the frontend FS
 	mux.Handle("/robots.txt", frontendHandler)
@@ -69,7 +52,7 @@ func (app *Application) Handler() http.Handler {
 
 	// all other routes should return the index page so that the frontend router can take over
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		index, err := fs.ReadFile(app.frontend, "index.html")
+		index, err := fs.ReadFile(frontend, "index.html")
 		if err != nil {
 			panic(err)
 		}

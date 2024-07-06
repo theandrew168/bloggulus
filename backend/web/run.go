@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-func (app *Application) Run(ctx context.Context, addr string) error {
+func Run(ctx context.Context, handler http.Handler, addr string) error {
 	srv := http.Server{
 		Addr:    addr,
-		Handler: app.Handler(),
+		Handler: handler,
 
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

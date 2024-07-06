@@ -87,7 +87,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	app := web.NewApplication(frontend.Frontend, store, syncService)
+	webHandler := web.Handler(frontend.Frontend, store, syncService)
 
 	// let port be overridden by an env var
 	port := cfg.Port
@@ -102,7 +102,7 @@ func run() error {
 	go func() {
 		defer wg.Done()
 
-		err := app.Run(ctx, addr)
+		err := web.Run(ctx, webHandler, addr)
 		if err != nil {
 			slog.Error(err.Error())
 		}

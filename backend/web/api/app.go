@@ -52,9 +52,9 @@ func (app *Application) Handler() http.Handler {
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", HandlePostRead(app.store))
 	mux.Handle("DELETE /blogs/{blogID}/posts/{postID}", HandlePostDelete(app.store))
 
-	mux.Handle("POST /tags", app.handleTagCreate())
-	mux.Handle("GET /tags", app.handleTagList())
-	mux.Handle("DELETE /tags/{tagID}", app.handleTagDelete())
+	mux.Handle("POST /tags", HandleTagCreate(app.store))
+	mux.Handle("GET /tags", HandleTagList(app.store))
+	mux.Handle("DELETE /tags/{tagID}", HandleTagDelete(app.store))
 
 	mux.Handle("POST /accounts", HandleAccountCreate(app.store))
 

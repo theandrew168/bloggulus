@@ -28,10 +28,7 @@ func TestHandleTagCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
+		h := api.HandleTagCreate(store)
 
 		req := struct {
 			Name string `json:"name"`
@@ -44,7 +41,7 @@ func TestHandleTagCreate(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
-		handler.ServeHTTP(w, r)
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -52,15 +49,13 @@ func TestHandleTagCreate(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string]jsonTag
+		var resp struct {
+			Tag jsonTag `json:"tag"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["tag"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "tag")
-		}
-
+		got := resp.Tag
 		test.AssertEqual(t, got.Name, req.Name)
 
 		// Ensure the tag got created in the database.
@@ -78,16 +73,13 @@ func TestHandleTagList(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		test.CreateTag(t, store)
+
+		h := api.HandleTagList(store)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/tags", nil)
-		handler.ServeHTTP(w, r)
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -95,15 +87,13 @@ func TestHandleTagList(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string][]jsonTag
+		var resp struct {
+			Tags []jsonTag `json:"tags"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["tags"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "tags")
-		}
-
+		got := resp.Tags
 		if len(got) < 1 {
 			t.Fatalf("expected at least one tag")
 		}
@@ -119,11 +109,6 @@ func TestHandleTagListPagination(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		// create 5 tags to test with
 		test.CreateTag(t, store)
 		test.CreateTag(t, store)
@@ -140,11 +125,13 @@ func TestHandleTagListPagination(t *testing.T) {
 			{5, 5},
 		}
 
+		h := api.HandleTagList(store)
+
 		for _, tt := range tests {
 			url := fmt.Sprintf("/tags?size=%d", tt.size)
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", url, nil)
-			handler.ServeHTTP(w, r)
+			h.ServeHTTP(w, r)
 
 			rr := w.Result()
 			respBody, err := io.ReadAll(rr.Body)
@@ -152,15 +139,13 @@ func TestHandleTagListPagination(t *testing.T) {
 
 			test.AssertEqual(t, rr.StatusCode, 200)
 
-			var resp map[string][]jsonTag
+			var resp struct {
+				Tags []jsonTag `json:"tags"`
+			}
 			err = json.Unmarshal(respBody, &resp)
 			test.AssertNilError(t, err)
 
-			got, ok := resp["tags"]
-			if !ok {
-				t.Fatalf("response missing key: %v", "tags")
-			}
-
+			got := resp.Tags
 			test.AssertEqual(t, len(got), tt.want)
 		}
 		return postgres.ErrRollback
@@ -174,17 +159,15 @@ func TestHandleTagDelete(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
-
 		tag := test.CreateTag(t, store)
+
+		h := api.HandleTagDelete(store)
 
 		url := fmt.Sprintf("/tags/%s", tag.ID())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("DELETE", url, nil)
-		handler.ServeHTTP(w, r)
+		r.SetPathValue("tagID", tag.ID().String())
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -192,15 +175,13 @@ func TestHandleTagDelete(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp map[string]jsonTag
+		var resp struct {
+			Tag jsonTag `json:"tag"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["tag"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "tag")
-		}
-
+		got := resp.Tag
 		test.AssertEqual(t, got.ID, tag.ID())
 
 		_, err = store.Tag().Read(got.ID)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -25,7 +26,7 @@ func marshalTag(tag *model.Tag) jsonTag {
 	return t
 }
 
-func (app *Application) handleTagCreate() http.Handler {
+func HandleTagCreate(store *storage.Storage) http.Handler {
 	type request struct {
 		Name string `json:"name"`
 	}
@@ -57,7 +58,7 @@ func (app *Application) handleTagCreate() http.Handler {
 			return
 		}
 
-		err = app.store.Tag().Create(tag)
+		err = store.Tag().Create(tag)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -76,7 +77,7 @@ func (app *Application) handleTagCreate() http.Handler {
 	})
 }
 
-func (app *Application) handleTagList() http.Handler {
+func HandleTagList(store *storage.Storage) http.Handler {
 	type response struct {
 		Tags []jsonTag `json:"tags"`
 	}
@@ -100,7 +101,7 @@ func (app *Application) handleTagList() http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		tags, err := app.store.Tag().List(limit, offset)
+		tags, err := store.Tag().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -124,7 +125,7 @@ func (app *Application) handleTagList() http.Handler {
 	})
 }
 
-func (app *Application) handleTagDelete() http.Handler {
+func HandleTagDelete(store *storage.Storage) http.Handler {
 	type response struct {
 		Tag jsonTag `json:"tag"`
 	}
@@ -136,7 +137,7 @@ func (app *Application) handleTagDelete() http.Handler {
 			return
 		}
 
-		tag, err := app.store.Tag().Read(tagID)
+		tag, err := store.Tag().Read(tagID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -148,7 +149,7 @@ func (app *Application) handleTagDelete() http.Handler {
 			return
 		}
 
-		err = app.store.Tag().Delete(tag)
+		err = store.Tag().Delete(tag)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

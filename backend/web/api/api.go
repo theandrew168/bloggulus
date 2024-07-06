@@ -11,12 +11,6 @@ import (
 func Handler(store *storage.Storage, syncService *service.SyncService) http.Handler {
 	mux := http.NewServeMux()
 
-	// TODO: Three options for testing the handlers indepedently of auth middleware:
-	// 1. Add auth to the tests for each route (bad idea / couples too many ideas together)
-	// 2. Don't test against the top-level app.Handler(), test specific handlers (need to make them public)
-	// 3. De-couple handlers from the joint App (closure in the required store / services)
-	// Let's go with number 3!
-
 	// accountRequired := middleware.AccountRequired()
 	// adminRequired := middleware.AdminRequired()
 	// protected := middleware.Chain(accountRequired, adminRequired)

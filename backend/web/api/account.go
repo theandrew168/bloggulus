@@ -8,6 +8,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -25,7 +26,7 @@ func marshalAccount(account *model.Account) jsonAccount {
 	return a
 }
 
-func (app *Application) handleAccountCreate() http.Handler {
+func HandleAccountCreate(store *storage.Storage) http.Handler {
 	type request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -63,7 +64,7 @@ func (app *Application) handleAccountCreate() http.Handler {
 			return
 		}
 
-		err = app.store.Account().Create(account)
+		err = store.Account().Create(account)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):

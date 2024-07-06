@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -41,7 +42,7 @@ func marshalNewToken(token *model.Token, value string) jsonNewToken {
 // 	return a
 // }
 
-func (app *Application) handleTokenCreate() http.Handler {
+func HandleTokenCreate(store *storage.Storage) http.Handler {
 	type request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -70,7 +71,7 @@ func (app *Application) handleTokenCreate() http.Handler {
 		}
 
 		// check that an account exists with the given username
-		account, err := app.store.Account().ReadByUsername(req.Username)
+		account, err := store.Account().ReadByUsername(req.Username)
 		if err != nil {
 			switch err {
 			case postgres.ErrNotFound:
@@ -94,7 +95,7 @@ func (app *Application) handleTokenCreate() http.Handler {
 			return
 		}
 
-		err = app.store.Token().Create(token)
+		err = store.Token().Create(token)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

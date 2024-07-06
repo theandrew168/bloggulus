@@ -28,9 +28,7 @@ func TestAccountCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
+		h := api.HandleAccountCreate(store)
 
 		req := map[string]string{
 			"username": "foo",
@@ -40,10 +38,8 @@ func TestAccountCreate(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
-
-		handler := app.Handler()
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -51,15 +47,13 @@ func TestAccountCreate(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
-		var resp map[string]jsonAccount
+		var resp struct {
+			Account jsonAccount `json:"account"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["account"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "account")
-		}
-
+		got := resp.Account
 		test.AssertEqual(t, got.Username, "foo")
 
 		// Ensure the account got created in the database.
@@ -77,10 +71,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-		handler := app.Handler()
+		h := api.HandleAccountCreate(store)
 
 		req := map[string]string{
 			"username": "foo",
@@ -90,15 +81,15 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 		w = httptest.NewRecorder()
-		r = httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
-		handler.ServeHTTP(w, r)
+		r = httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr = w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)

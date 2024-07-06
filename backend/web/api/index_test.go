@@ -8,21 +8,40 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
 
-func TestHandleIndex(t *testing.T) {
+func TestHandleIndexRedoc(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	syncService := test.NewSyncService(t, store, nil, nil)
-
-	app := api.NewApplication(store, syncService)
+	h := api.HandleIndexRedoc()
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
+	h.ServeHTTP(w, r)
 
-	handler := app.Handler()
-	handler.ServeHTTP(w, r)
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, 200)
+}
+
+func TestHandleIndexRapidoc(t *testing.T) {
+	t.Parallel()
+
+	h := api.HandleIndexRapidoc()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, 200)
+}
+
+func TestHandleIndexStoplight(t *testing.T) {
+	t.Parallel()
+
+	h := api.HandleIndexStoplight()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	h.ServeHTTP(w, r)
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, 200)

@@ -56,9 +56,9 @@ func (app *Application) Handler() http.Handler {
 	mux.Handle("GET /tags", app.handleTagList())
 	mux.Handle("DELETE /tags/{tagID}", app.handleTagDelete())
 
-	mux.Handle("POST /accounts", app.handleAccountCreate())
+	mux.Handle("POST /accounts", HandleAccountCreate(app.store))
 
-	mux.Handle("POST /tokens", app.handleTokenCreate())
+	mux.Handle("POST /tokens", HandleTokenCreate(app.store))
 
 	return middleware.Use(mux,
 		middleware.SecureHeaders(),

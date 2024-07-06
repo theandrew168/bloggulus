@@ -36,11 +36,9 @@ func TestTokenCreate(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-
 		account, password := test.CreateAccount(t, store)
+
+		h := api.HandleTokenCreate(store)
 
 		req := map[string]string{
 			"username": account.Username(),
@@ -50,10 +48,8 @@ func TestTokenCreate(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-
-		handler := app.Handler()
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)
@@ -61,14 +57,13 @@ func TestTokenCreate(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
-		var resp map[string]jsonNewToken
+		var resp struct {
+			Token jsonNewToken `json:"token"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got, ok := resp["token"]
-		if !ok {
-			t.Fatalf("response missing key: %v", "token")
-		}
+		got := resp.Token
 
 		// Ensure the token got created in the database.
 		_, err = store.Token().Read(got.ID)
@@ -89,9 +84,7 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
+		h := api.HandleTokenCreate(store)
 
 		// specify a username that doesn't exist
 		req := map[string]string{
@@ -102,10 +95,8 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-
-		handler := app.Handler()
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
@@ -121,11 +112,9 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 	defer closer()
 
 	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, nil, nil)
-
-		app := api.NewApplication(store, syncService)
-
 		account, _ := test.CreateAccount(t, store)
+
+		h := api.HandleTokenCreate(store)
 
 		// specify a password that isn't correct
 		req := map[string]string{
@@ -136,10 +125,8 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-
-		handler := app.Handler()
-		handler.ServeHTTP(w, r)
+		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)

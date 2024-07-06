@@ -22,11 +22,6 @@ type jsonArticle struct {
 	Tags        []string  `json:"tags"`
 }
 
-type response struct {
-	Count    int           `json:"count"`
-	Articles []jsonArticle `json:"articles"`
-}
-
 func TestHandleArticleList(t *testing.T) {
 	t.Parallel()
 
@@ -38,9 +33,9 @@ func TestHandleArticleList(t *testing.T) {
 		test.CreatePost(t, store, blog)
 
 		h := api.HandleArticleList(store)
+
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/", nil)
-
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -49,7 +44,10 @@ func TestHandleArticleList(t *testing.T) {
 
 		test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp response
+		var resp struct {
+			Count    int           `json:"count"`
+			Articles []jsonArticle `json:"articles"`
+		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 

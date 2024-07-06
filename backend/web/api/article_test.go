@@ -35,7 +35,7 @@ func TestHandleArticleList(t *testing.T) {
 		h := api.HandleArticleList(store)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/", nil)
+		r := httptest.NewRequest("GET", "/articles", nil)
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()

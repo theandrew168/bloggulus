@@ -38,7 +38,7 @@ func TestAccountCreate(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -81,14 +81,14 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r := httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
 		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 		w = httptest.NewRecorder()
-		r = httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r = httptest.NewRequest("POST", "/accounts", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr = w.Result()

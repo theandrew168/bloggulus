@@ -43,10 +43,10 @@ func (app *Application) Handler() http.Handler {
 
 	mux.Handle("GET /articles", HandleArticleList(app.store))
 
-	mux.Handle("POST /blogs", app.handleBlogCreate())
-	mux.Handle("GET /blogs", app.handleBlogList())
-	mux.Handle("GET /blogs/{blogID}", app.handleBlogRead())
-	mux.Handle("DELETE /blogs/{blogID}", app.handleBlogDelete())
+	mux.Handle("POST /blogs", HandleBlogCreate(app.store, app.syncService))
+	mux.Handle("GET /blogs", HandleBlogList(app.store))
+	mux.Handle("GET /blogs/{blogID}", HandleBlogRead(app.store))
+	mux.Handle("DELETE /blogs/{blogID}", HandleBlogDelete(app.store))
 
 	mux.Handle("GET /blogs/{blogID}/posts", app.handlePostList())
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", app.handlePostRead())

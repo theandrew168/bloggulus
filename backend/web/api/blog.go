@@ -10,6 +10,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/service"
+	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
@@ -37,7 +39,7 @@ func marshalBlog(blog *model.Blog) jsonBlog {
 // just run it in the background and keep track of which user
 // submitted it (to link it once complete). Should I invest
 // in a proper queue + worker system? Probably River?
-func (app *Application) handleBlogCreate() http.Handler {
+func HandleBlogCreate(store *storage.Storage, syncService *service.SyncService) http.Handler {
 	type request struct {
 		FeedURL string `json:"feedURL"`
 	}
@@ -64,7 +66,7 @@ func (app *Application) handleBlogCreate() http.Handler {
 		}
 
 		// Check if the blog already exists. If it does, return its details.
-		blog, err := app.store.Blog().ReadByFeedURL(req.FeedURL)
+		blog, err := store.Blog().ReadByFeedURL(req.FeedURL)
 		if err == nil {
 			resp := response{
 				Blog: marshalBlog(blog),
@@ -87,7 +89,7 @@ func (app *Application) handleBlogCreate() http.Handler {
 		}
 
 		// Use the SyncService to add the new blog.
-		blog, err = app.syncService.SyncBlog(req.FeedURL)
+		blog, err = syncService.SyncBlog(req.FeedURL)
 		if err != nil {
 			switch {
 			case errors.Is(err, fetch.ErrUnreachableFeed):
@@ -112,7 +114,7 @@ func (app *Application) handleBlogCreate() http.Handler {
 	})
 }
 
-func (app *Application) handleBlogRead() http.Handler {
+func HandleBlogRead(store *storage.Storage) http.Handler {
 	type response struct {
 		Blog jsonBlog `json:"blog"`
 	}
@@ -124,7 +126,7 @@ func (app *Application) handleBlogRead() http.Handler {
 			return
 		}
 
-		blog, err := app.store.Blog().Read(blogID)
+		blog, err := store.Blog().Read(blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -149,7 +151,7 @@ func (app *Application) handleBlogRead() http.Handler {
 	})
 }
 
-func (app *Application) handleBlogList() http.Handler {
+func HandleBlogList(store *storage.Storage) http.Handler {
 	type response struct {
 		Blogs []jsonBlog `json:"blogs"`
 	}
@@ -173,7 +175,7 @@ func (app *Application) handleBlogList() http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		blogs, err := app.store.Blog().List(limit, offset)
+		blogs, err := store.Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return
@@ -197,7 +199,7 @@ func (app *Application) handleBlogList() http.Handler {
 	})
 }
 
-func (app *Application) handleBlogDelete() http.Handler {
+func HandleBlogDelete(store *storage.Storage) http.Handler {
 	type response struct {
 		Blog jsonBlog `json:"blog"`
 	}
@@ -209,7 +211,7 @@ func (app *Application) handleBlogDelete() http.Handler {
 			return
 		}
 
-		blog, err := app.store.Blog().Read(blogID)
+		blog, err := store.Blog().Read(blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -221,7 +223,7 @@ func (app *Application) handleBlogDelete() http.Handler {
 			return
 		}
 
-		err = app.store.Blog().Delete(blog)
+		err = store.Blog().Delete(blog)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

@@ -48,7 +48,7 @@ func TestTokenCreate(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -95,7 +95,7 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -125,7 +125,7 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 		test.AssertNilError(t, err)
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()

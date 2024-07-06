@@ -14,7 +14,7 @@ func TestHandleIndexRedoc(t *testing.T) {
 	h := api.HandleIndexRedoc()
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/", nil)
+	r := httptest.NewRequest("GET", "/redoc", nil)
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -27,7 +27,7 @@ func TestHandleIndexRapidoc(t *testing.T) {
 	h := api.HandleIndexRapidoc()
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/", nil)
+	r := httptest.NewRequest("GET", "/rapidoc", nil)
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -40,7 +40,7 @@ func TestHandleIndexStoplight(t *testing.T) {
 	h := api.HandleIndexStoplight()
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/", nil)
+	r := httptest.NewRequest("GET", "/stoplight", nil)
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()

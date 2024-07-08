@@ -18,9 +18,12 @@ import (
 )
 
 const (
-	SyncInterval = 1 * time.Hour
-	SyncCooldown = 30 * time.Minute
+	// Check for new posts every SyncInterval.
+	SyncInterval = 2 * time.Hour
+	// Since blogs are synced at startup, ensure they don't get synced more often than every SyncCooldown.
+	SyncCooldown = 1 * time.Hour
 
+	// How many blogs to sync at once.
 	SyncConcurrency = 8
 )
 
@@ -41,7 +44,7 @@ func NewSyncService(store *storage.Storage, feedFetcher fetch.FeedFetcher, pageF
 }
 
 func (s *SyncService) Run(ctx context.Context) error {
-	// perform an initial sync upfront
+	// perform an initial sync at service startup
 	err := s.SyncAllBlogs()
 	if err != nil {
 		slog.Error(err.Error())

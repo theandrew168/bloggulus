@@ -172,7 +172,7 @@ func TestUnreachableFeed(t *testing.T) {
 	})
 }
 
-func TestSyncOncePerHour(t *testing.T) {
+func TestSyncCooldown(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)

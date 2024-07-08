@@ -30,7 +30,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          # include --skip-validate because the build process changes what files are present
-          args: release --clean --skip-validate
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

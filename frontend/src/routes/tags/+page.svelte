@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { invalidateAll } from "$app/navigation";
+	import { goto, invalidateAll } from "$app/navigation";
 
 	export let data;
 
 	// TODO: Add proper validation / error handling
 	async function createTag(event: Event) {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			await goto("/login");
+		}
+
 		const form = new FormData(event.target as HTMLFormElement);
 		const name = form.get("name");
 		await fetch(`/api/v1/tags`, {
 			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 			body: JSON.stringify({ name }),
 		});
 
@@ -17,10 +25,18 @@
 
 	// TODO: Add proper validation / error handling
 	async function deleteTag(event: Event) {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			await goto("/login");
+		}
+
 		const form = new FormData(event.target as HTMLFormElement);
 		const id = form.get("id");
 		await fetch(`/api/v1/tags/${id}`, {
 			method: "DELETE",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		await invalidateAll();

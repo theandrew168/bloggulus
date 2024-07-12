@@ -56,3 +56,22 @@ export type TagResponse = {
 export type TagsResponse = {
 	tags: Tag[];
 };
+
+export type Account = {
+	id: string;
+	username: string;
+};
+
+export type AccountResponse = {
+	account: Account;
+};
+
+export type Token = {
+	id: string;
+	value: string;
+	expiresAt: string;
+};
+
+export type TokenResponse = {
+	token: Token;
+};

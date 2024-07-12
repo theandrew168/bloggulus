@@ -5,10 +5,18 @@
 
 	// TODO: Add proper validation / error handling
 	async function deleteBlog(event: Event) {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			await goto("/login");
+		}
+
 		const form = new FormData(event.target as HTMLFormElement);
 		const blogID = form.get("blogID");
 		await fetch(`/api/v1/blogs/${blogID}`, {
 			method: "DELETE",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		await goto("/blogs");

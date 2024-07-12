@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { invalidateAll } from "$app/navigation";
+	import { goto, invalidateAll } from "$app/navigation";
 
 	export let data;
 
 	// TODO: Add proper validation / error handling
 	async function createBlog(event: Event) {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			await goto("/login");
+		}
+
 		const form = new FormData(event.target as HTMLFormElement);
 		const feedURL = form.get("feedURL");
 		await fetch(`/api/v1/blogs`, {
 			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 			body: JSON.stringify({ feedURL }),
 		});
 

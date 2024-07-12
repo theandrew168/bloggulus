@@ -6,9 +6,17 @@
 
 	// TODO: Add proper validation / error handling
 	async function deletePost() {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			await goto("/login");
+		}
+
 		const params = $page.params;
 		await fetch(`/api/v1/blogs/${params.blogID}/posts/${params.postID}`, {
 			method: "DELETE",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		await goto(`/blogs/${params.blogID}`);

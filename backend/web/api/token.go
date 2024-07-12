@@ -16,7 +16,7 @@ import (
 type jsonNewToken struct {
 	ID        uuid.UUID `json:"id"`
 	Value     string    `json:"value"`
-	ExpiresAt time.Time `json:"expires_at"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 func marshalNewToken(token *model.Token, value string) jsonNewToken {

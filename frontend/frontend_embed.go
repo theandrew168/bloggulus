@@ -7,14 +7,12 @@ import (
 	"io/fs"
 )
 
-// embed with all:build to pickup _app dir (starts with an underscore)
-
-//go:embed all:build
+//go:embed dist
 var frontend embed.FS
 
 func init() {
 	var err error
-	Frontend, err = fs.Sub(frontend, "build")
+	Frontend, err = fs.Sub(frontend, "dist")
 	if err != nil {
 		panic(err)
 	}

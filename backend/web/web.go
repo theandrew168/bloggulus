@@ -44,11 +44,12 @@ func Handler(
 	frontendHandler := gzhttp.GzipHandler(http.FileServer(http.FS(frontend)))
 
 	// serve non-index static files from the frontend FS
-	mux.Handle("/robots.txt", frontendHandler)
 	mux.Handle("/favicon.png", frontendHandler)
 	mux.Handle("/openapi.yaml", frontendHandler)
+	mux.Handle("/robots.txt", frontendHandler)
+	mux.Handle("/assets/", frontendHandler)
+	mux.Handle("/css/", frontendHandler)
 	mux.Handle("/fonts/", frontendHandler)
-	mux.Handle("/_app/", frontendHandler)
 
 	// all other routes should return the index page so that the frontend router can take over
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -4,21 +4,20 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev --clearScreen false",
-		"build": "vite build",
-		"watch": "vite build --watch",
-		"check": "tsc && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"dev": "vite build --watch",
+		"build": "tsc && vite build",
 		"format": "prettier --write src/"
 	},
+	"dependencies": {
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1"
+	},
 	"devDependencies": {
-		"@sveltejs/adapter-static": "^3.0.2",
-		"@sveltejs/kit": "^2.5.18",
-		"@sveltejs/vite-plugin-svelte": "^3.1.1",
+		"@types/node": "^20.14.10",
+		"@types/react": "^18.3.3",
+		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react": "^4.3.1",
 		"prettier": "^3.3.2",
-		"prettier-plugin-svelte": "^3.2.5",
-		"svelte": "^4.2.18",
-		"svelte-check": "^3.8.4",
-		"tslib": "^2.6.3",
 		"typescript": "^5.5.3",
 		"vite": "^5.3.3"
 	},
@@ -31,17 +30,6 @@
 		"semi": true,
 		"singleQuote": false,
 		"trailingComma": "all",
-		"useTabs": true,
-		"plugins": [
-			"prettier-plugin-svelte"
-		],
-		"overrides": [
-			{
-				"files": "*.svelte",
-				"options": {
-					"parser": "svelte"
-				}
-			}
-		]
+		"useTabs": true
 	}
 }

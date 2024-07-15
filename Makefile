@@ -14,10 +14,6 @@ frontend/node_modules:
 frontend: frontend/node_modules
 	cd frontend && npm run build
 
-.PHONY: frontend-watch
-frontend-watch: frontend/node_modules
-	cd frontend && npm run watch
-
 .PHONY: backend
 backend: frontend
 	go build -tags embed -o bloggulus main.go

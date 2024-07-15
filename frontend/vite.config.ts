@@ -1,11 +1,8 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
+// Reference:
+// https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [sveltekit()],
-	server: {
-		proxy: {
-			'/api': 'http://localhost:5000'
-		}
-	}
-});
+  plugins: [react()],
+})

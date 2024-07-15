@@ -7,5 +7,5 @@ import (
 )
 
 func init() {
-	Frontend = os.DirFS("./frontend/build")
+	Frontend = os.DirFS("./frontend/dist")
 }

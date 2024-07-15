@@ -79,4 +79,4 @@ update-backend:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus c.out dist/ frontend/build/
+	rm -fr bloggulus c.out dist/ frontend/dist/

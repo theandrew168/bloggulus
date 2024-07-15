@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vite dev --clearScreen false",
 		"build": "tsc && vite build",
 		"format": "prettier --write src/"
 	},

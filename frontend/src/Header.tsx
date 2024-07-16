@@ -1,21 +1,29 @@
+import { useEffect, useState } from "react";
+import { Form, Link } from "react-router-dom";
+
 export type Props = {
 	q: string;
 };
 
 export default function Header({ q }: Props) {
+	const [search, setSearch] = useState(q);
+	useEffect(() => {
+		setSearch(q);
+	}, [q]);
+
 	return (
 		<nav className="bg-white shadow">
 			<div className="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center gap-x-2">
 				<div className="flex flex-wrap items-baseline gap-2">
-					<a href="/" className="text-gray-800 text-xl md:text-2xl hover:text-gray-500">
+					<Link to="/" className="text-gray-800 text-xl md:text-2xl hover:text-gray-500">
 						Bloggulus
-					</a>
+					</Link>
 					<a href="/api/v1/" className="text-gray-800 text-base md:text-lg hover:text-gray-500">
 						[API]
 					</a>
 				</div>
 
-				<form method="GET" action="/" className="block relative shrink-0">
+				<Form method="GET" action="/" className="block relative shrink-0">
 					<span className="absolute inset-y-0 left-0 flex items-center pl-3">
 						<svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
 							<path
@@ -31,11 +39,12 @@ export default function Header({ q }: Props) {
 					<input
 						name="q"
 						type="text"
-						value={q}
+						value={search}
+						onChange={(e) => setSearch(e.currentTarget.value)}
 						placeholder="Search"
 						className="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring"
 					/>
-				</form>
+				</Form>
 			</div>
 		</nav>
 	);

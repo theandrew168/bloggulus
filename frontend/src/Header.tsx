@@ -1,4 +1,8 @@
-export default function Header() {
+export type Props = {
+	q: string;
+};
+
+export default function Header({ q }: Props) {
 	return (
 		<nav className="bg-white shadow">
 			<div className="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center gap-x-2">
@@ -27,6 +31,7 @@ export default function Header() {
 					<input
 						name="q"
 						type="text"
+						value={q}
 						placeholder="Search"
 						className="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring"
 					/>

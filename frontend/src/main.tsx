@@ -3,11 +3,12 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import ErrorPage from "./ErrorPage";
+import Root from "./Root";
 
 const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <h1 className="container mx-auto text-lg sans-serif">Hello, world</h1>,
+		element: <Root />,
 		errorElement: <ErrorPage />,
 	},
 ]);

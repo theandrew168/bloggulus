@@ -15,8 +15,8 @@ export default function ErrorPage() {
 	}
 
 	return (
-		<div className="container">
-			<h1 style={{ marginTop: "1.5rem" }}>
+		<div className="container mx-auto">
+			<h1 className="mt-4">
 				<p>
 					{statusCode}: {statusText}
 				</p>

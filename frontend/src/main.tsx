@@ -7,7 +7,7 @@ import ErrorPage from "./ErrorPage";
 const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <h1 className="sans-serif">Hello, world</h1>,
+		element: <h1 className="container mx-auto text-lg sans-serif">Hello, world</h1>,
 		errorElement: <ErrorPage />,
 	},
 ]);

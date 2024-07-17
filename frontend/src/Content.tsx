@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import ArticleCard from "./ArticleCard";
 import type { Article } from "./types";
 
 export type Props = {
@@ -17,32 +18,7 @@ export default function Content({ articles, moreLink, hasMorePages }: Props) {
 
 			<div className="px-6 md:px-0">
 				{articles.map((article) => (
-					<div className="max-w-3xl mx-auto bg-white overflow-hidden shadow-md rounded-lg mb-6 p-6" key={article.url}>
-						<div className="flex justify-between items-center mb-2">
-							<span className="text-sm font-light text-gray-600">
-								{new Date(article.publishedAt).toLocaleDateString()}
-							</span>
-							<div className="flex items-center gap-x-2">
-								{article.tags.map((tag) => (
-									<Link
-										to={`/?q=${tag}`}
-										key={tag}
-										className="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500"
-									>
-										{tag}
-									</Link>
-								))}
-							</div>
-						</div>
-
-						<a href={article.url} className="text-2xl text-gray-700 font-bold hover:underline block mb-2">
-							{article.title}
-						</a>
-
-						<a href={article.blogURL} className="text-gray-700 font-bold hover:underline block">
-							{article.blogTitle}
-						</a>
-					</div>
+					<ArticleCard article={article} />
 				))}
 			</div>
 

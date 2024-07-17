@@ -1,9 +1,30 @@
-import { Form } from "react-router-dom";
+import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
+
+import type { TokenResponse } from "../types";
+
+// TODO: Handle input validation and errors.
+export async function loginPageAction({ request }: ActionFunctionArgs) {
+	const form = await request.formData();
+	const username = form.get("username");
+	const password = form.get("password");
+	const resp = await fetch(`/api/v1/tokens`, {
+		method: "POST",
+		body: JSON.stringify({ username, password }),
+	});
+
+	if (resp.ok) {
+		const token: TokenResponse = await resp.json();
+		localStorage.setItem("token", token.token.value);
+		return redirect("/");
+	}
+
+	return null;
+}
 
 export default function LoginPage() {
 	return (
 		<div className="h-full flex items-center justify-center">
-			<Form className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-4">
+			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-4">
 				<label>
 					Username:
 					<br />

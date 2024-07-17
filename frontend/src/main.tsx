@@ -2,14 +2,14 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import ErrorPage from "./ErrorPage";
-import Root, { loader } from "./Root";
+import ErrorPage from "./pages/ErrorPage";
+import IndexPage, { loader } from "./pages/IndexPage";
 
 const router = createBrowserRouter([
 	{
 		path: "/",
 		loader: loader,
-		element: <Root />,
+		element: <IndexPage />,
 		errorElement: <ErrorPage />,
 	},
 ]);

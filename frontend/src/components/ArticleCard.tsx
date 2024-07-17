@@ -1,4 +1,4 @@
-import type { Article } from "./types";
+import type { Article } from "../types";
 import TagBadge from "./TagBadge";
 
 export type Props = {

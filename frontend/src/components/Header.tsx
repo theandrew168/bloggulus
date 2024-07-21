@@ -14,14 +14,9 @@ export default function Header({ q }: Props) {
 	return (
 		<nav className="bg-white shadow">
 			<div className="max-w-3xl mx-auto py-3 px-6 md:px-0 flex justify-between items-center gap-x-2">
-				<div className="flex flex-wrap items-baseline gap-2">
-					<Link to="/" className="text-gray-800 text-xl md:text-2xl hover:text-gray-500">
-						Bloggulus
-					</Link>
-					<a href="/api/v1/" className="text-gray-800 text-base md:text-lg hover:text-gray-500">
-						[API]
-					</a>
-				</div>
+				<Link to="/" className="text-gray-800 text-xl md:text-2xl hover:text-gray-500">
+					Bloggulus
+				</Link>
 
 				<Form method="GET" action="/" className="block relative shrink-0">
 					<span className="absolute inset-y-0 left-0 flex items-center pl-3">

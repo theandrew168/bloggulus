@@ -1,5 +1,8 @@
 import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
 
+import LabeledInput from "../components/LabeledInput";
+import Button from "../components/Button";
+
 // TODO: Handle input validation and errors.
 export async function registerPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
@@ -20,25 +23,10 @@ export async function registerPageAction({ request }: ActionFunctionArgs) {
 export default function RegisterPage() {
 	return (
 		<div className="h-full flex items-center justify-center">
-			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-4">
-				<label>
-					Username:
-					<br />
-					<input name="username" placeholder="Username" />
-				</label>
-				<br />
-				<label>
-					Password:
-					<br />
-					<input name="password" placeholder="Password" type="password" />
-				</label>
-				<br />
-				<button
-					className="text-sm font-bold px-3 py-1 bg-gray-700 text-gray-100 rounded hover:bg-gray-500"
-					type="submit"
-				>
-					Register
-				</button>
+			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-6">
+				<LabeledInput name="username" label="Username" />
+				<LabeledInput name="password" label="Password" type="password" />
+				<Button type="submit">Register</Button>
 			</Form>
 		</div>
 	);

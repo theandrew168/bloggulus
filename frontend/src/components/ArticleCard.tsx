@@ -11,7 +11,7 @@ export default function ArticleCard({ article }: Props) {
 			<div className="flex justify-between items-center mb-2">
 				<span className="text-sm font-light text-gray-600">{new Date(article.publishedAt).toLocaleDateString()}</span>
 				<div className="flex items-center gap-x-2">
-					{article.tags.map((tag) => (
+					{article.tags.slice(0, 3).map((tag) => (
 						<TagBadge tag={tag} key={tag} />
 					))}
 				</div>

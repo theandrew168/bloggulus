@@ -7,7 +7,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
-	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 type jsonArticle struct {
@@ -37,22 +36,22 @@ func HandleArticleList(store *storage.Storage) http.Handler {
 		Articles []jsonArticle `json:"articles"`
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
+		e := util.NewErrors()
 		qs := r.URL.Query()
 
 		// check search param
 		q := qs.Get("q")
 
 		// check pagination params
-		page := util.ReadInt(qs, "page", 1, v)
-		v.Check(page >= 1, "page", "must be greater than or equal to 1")
+		page := util.ReadInt(qs, "page", 1, e)
+		e.CheckField(page >= 1, "must be greater than or equal to 1", "page")
 
-		size := util.ReadInt(qs, "size", 20, v)
-		v.Check(size >= 1, "size", "must be greater than or equal to 1")
-		v.Check(size <= 50, "size", "must be less than or equal to 50")
+		size := util.ReadInt(qs, "size", 20, e)
+		e.CheckField(size >= 1, "must be greater than or equal to 1", "size")
+		e.CheckField(size <= 50, "must be less than or equal to 50", "size")
 
-		if !v.Valid() {
-			util.FailedValidationResponse(w, r, v.Errors())
+		if !e.Valid() {
+			util.FailedValidationResponse(w, r, e)
 			return
 		}
 

@@ -10,7 +10,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
-	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 type jsonAccount struct {
@@ -36,7 +35,7 @@ func HandleAccountCreate(store *storage.Storage) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
+		e := util.NewErrors()
 		body := util.ReadBody(w, r)
 
 		var req request
@@ -46,15 +45,15 @@ func HandleAccountCreate(store *storage.Storage) http.Handler {
 			return
 		}
 
-		v.Check(req.Username != "", "username", "must be provided")
-		v.Check(len(req.Username) <= 500, "username", "must not be more than 500 bytes long")
+		e.CheckField(req.Username != "", "must be provided", "username")
+		e.CheckField(len(req.Username) <= 500, "must not be more than 500 bytes long", "username")
 
-		v.Check(req.Password != "", "password", "must be provided")
-		v.Check(len(req.Password) >= 8, "password", "must be at least 8 bytes long")
-		v.Check(len(req.Password) <= 72, "password", "must not be more than 72 bytes long")
+		e.CheckField(req.Password != "", "must be provided", "password")
+		e.CheckField(len(req.Password) >= 8, "must be at least 8 bytes long", "password")
+		e.CheckField(len(req.Password) <= 72, "must not be more than 72 bytes long", "password")
 
-		if !v.Valid() {
-			util.FailedValidationResponse(w, r, v.Errors())
+		if !e.Valid() {
+			util.FailedValidationResponse(w, r, e)
 			return
 		}
 
@@ -68,8 +67,8 @@ func HandleAccountCreate(store *storage.Storage) http.Handler {
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
-				v.AddError("username", "already exists")
-				util.FailedValidationResponse(w, r, v.Errors())
+				e.AddField("already exists", "username")
+				util.FailedValidationResponse(w, r, e)
 			default:
 				util.ServerErrorResponse(w, r, err)
 			}

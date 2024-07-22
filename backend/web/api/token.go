@@ -9,7 +9,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
-	"github.com/theandrew168/bloggulus/backend/web/validator"
 )
 
 // when newly-created (and only then), tokens will include their plaintext value
@@ -52,7 +51,7 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		v := validator.New()
+		e := util.NewErrors()
 		body := util.ReadBody(w, r)
 
 		var req request
@@ -62,11 +61,11 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 			return
 		}
 
-		v.Check(req.Username != "", "username", "must be provided")
-		v.Check(req.Password != "", "password", "must be provided")
+		e.CheckField(req.Username != "", "must be provided", "username")
+		e.CheckField(req.Password != "", "must be provided", "password")
 
-		if !v.Valid() {
-			util.FailedValidationResponse(w, r, v.Errors())
+		if !e.Valid() {
+			util.FailedValidationResponse(w, r, e)
 			return
 		}
 

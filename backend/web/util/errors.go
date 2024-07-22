@@ -8,7 +8,7 @@ import (
 
 type Error struct {
 	Message string `json:"message"`
-	Field   string `json:"field"`
+	Field   string `json:"field,omitempty"`
 }
 
 type Errors struct {

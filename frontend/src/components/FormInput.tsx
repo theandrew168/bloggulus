@@ -5,7 +5,7 @@ export type Props = {
 	required?: boolean;
 };
 
-export default function LabeledInput({ name, label, type, required }: Props) {
+export default function FormInput({ name, label, type, required }: Props) {
 	return (
 		<div>
 			<label htmlFor={name} className="block text-sm font-medium">

@@ -1,7 +1,7 @@
 import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
 
 import type { TokenResponse } from "../types";
-import LabeledInput from "../components/LabeledInput";
+import FormInput from "../components/FormInput";
 import Button from "../components/Button";
 
 // TODO: Handle input validation and errors.
@@ -27,8 +27,8 @@ export default function LoginPage() {
 	return (
 		<div className="h-full flex items-center justify-center">
 			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-6">
-				<LabeledInput name="username" label="Username" />
-				<LabeledInput name="password" label="Password" type="password" />
+				<FormInput name="username" label="Username" />
+				<FormInput name="password" label="Password" type="password" />
 				<Button type="submit">Login</Button>
 			</Form>
 		</div>

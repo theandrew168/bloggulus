@@ -1,16 +1,21 @@
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { isStructuredErrorsResponse, type StructuredError } from "../errors";
 
 export default function ErrorPage() {
 	let statusCode = 500;
 	let statusText = "Internal server error";
-	let message = "Sorry, something went wrong.";
+	const errors: StructuredError[] = [];
 
-	const error = useRouteError();
-	if (isRouteErrorResponse(error)) {
-		statusCode = error.status;
-		statusText = error.statusText;
-		if (error.data?.message) {
-			message = error.data.message + ".";
+	// If the error is an ErrorResponse (react-router-dom)...
+	const resp = useRouteError();
+	if (isRouteErrorResponse(resp)) {
+		// Update the status and status text.
+		statusCode = resp.status;
+		statusText = resp.statusText;
+		// If the error is a StructuredErrorsResponse (bloggulus)...
+		if (isStructuredErrorsResponse(resp.data)) {
+			// Update the list of specific errors.
+			errors.push(...resp.data.errors);
 		}
 	}
 
@@ -20,7 +25,13 @@ export default function ErrorPage() {
 				<p>
 					{statusCode}: {statusText}
 				</p>
-				<p>{message}</p>
+				<ul>
+					{errors.map((e, i) => (
+						<li key={i}>
+							{e.message} - {e.field}
+						</li>
+					))}
+				</ul>
 			</h1>
 		</div>
 	);

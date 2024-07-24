@@ -15,7 +15,7 @@ export async function loginPageAction({ request }: ActionFunctionArgs) {
 	});
 
 	// If the input wasn't valid, return the errors back to the form.
-	if (resp.status === 401 || resp.status === 422) {
+	if (resp.status === 422) {
 		return resp.json();
 	}
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
 	return (
 		<div className="h-full flex items-center justify-center">
 			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-6">
-				{message && <div>{message}</div>}
+				{message && <div className="text-sm text-red-500">{message}</div>}
 				<FormInput name="username" label="Username" error={errorsByField["username"]} />
 				<FormInput name="password" label="Password" type="password" error={errorsByField["password"]} />
 				<Button type="submit">Login</Button>

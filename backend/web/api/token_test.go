@@ -99,7 +99,7 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
-		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
+		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 
 		return postgres.ErrRollback
 	})
@@ -129,7 +129,7 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
-		test.AssertEqual(t, rr.StatusCode, http.StatusUnauthorized)
+		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 
 		return postgres.ErrRollback
 	})

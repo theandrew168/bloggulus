@@ -74,7 +74,8 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 		if err != nil {
 			switch err {
 			case postgres.ErrNotFound:
-				util.UnauthorizedResponse(w, r)
+				e.Add("invalid username or password")
+				util.FailedValidationResponse(w, r, e)
 			default:
 				util.ServerErrorResponse(w, r, err)
 			}
@@ -84,7 +85,8 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 
 		// check that the given password matches the account
 		if !account.PasswordMatches(req.Password) {
-			util.UnauthorizedResponse(w, r)
+			e.Add("invalid username or password")
+			util.FailedValidationResponse(w, r, e)
 			return
 		}
 

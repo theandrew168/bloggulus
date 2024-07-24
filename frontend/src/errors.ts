@@ -29,7 +29,7 @@ export function findFirstGeneralError(errors: StructuredError[]): string | undef
 	return errors.find((e) => !e.field)?.message;
 }
 
-export function groupSpecificErrorsByField(errors: StructuredError[]): Record<string, string> {
+export function findFirstSpecificErrorPerField(errors: StructuredError[]): Record<string, string> {
 	const errorsByField = errors.reduce(
 		(acc, err) => {
 			if (err.field && !acc[err.field]) {

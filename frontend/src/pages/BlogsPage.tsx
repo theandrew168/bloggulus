@@ -9,7 +9,6 @@ import {
 
 import type { BlogsResponse } from "../types";
 import Button from "../components/Button";
-import FormInput from "../components/FormInput";
 
 export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 	const token = localStorage.getItem("token");

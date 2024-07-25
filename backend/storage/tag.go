@@ -142,6 +142,27 @@ func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
 	return tags, nil
 }
 
+func (s *TagStorage) Count() (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM tag`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
 func (repo *TagStorage) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag

@@ -152,6 +152,7 @@ func HandleBlogRead(store *storage.Storage) http.Handler {
 
 func HandleBlogList(store *storage.Storage) http.Handler {
 	type response struct {
+		Count int        `json:"count"`
 		Blogs []jsonBlog `json:"blogs"`
 	}
 
@@ -161,11 +162,11 @@ func HandleBlogList(store *storage.Storage) http.Handler {
 
 		// check pagination params
 		page := util.ReadInt(qs, "page", 1, e)
-		e.CheckField(page >= 1, "must be greater than or equal to 1", "page")
+		e.CheckField(page >= 1, "Page must be greater than or equal to 1", "page")
 
 		size := util.ReadInt(qs, "size", 20, e)
-		e.CheckField(size >= 1, "must be greater than or equal to 1", "size")
-		e.CheckField(size <= 50, "must be less than or equal to 50", "size")
+		e.CheckField(size >= 1, "Size must be greater than or equal to 1", "size")
+		e.CheckField(size <= 50, "Size must be less than or equal to 50", "size")
 
 		if !e.Valid() {
 			util.FailedValidationResponse(w, r, e)
@@ -174,6 +175,12 @@ func HandleBlogList(store *storage.Storage) http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
+		count, err := store.Blog().Count()
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
 		blogs, err := store.Blog().List(limit, offset)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
@@ -181,6 +188,7 @@ func HandleBlogList(store *storage.Storage) http.Handler {
 		}
 
 		resp := response{
+			Count: count,
 			// use make here to encode JSON as "[]" instead of "null" if empty
 			Blogs: make([]jsonBlog, 0),
 		}

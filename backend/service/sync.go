@@ -83,6 +83,7 @@ func (s *SyncService) SyncAllBlogs() error {
 
 	slog.Info("syncing blogs")
 
+	// TODO: Use the paginated List() method?
 	blogs, err := s.store.Blog().ListAll()
 	if err != nil {
 		return err

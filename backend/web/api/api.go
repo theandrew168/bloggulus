@@ -22,16 +22,16 @@ func Handler(store *storage.Storage, syncService *service.SyncService) http.Hand
 	mux.Handle("GET /articles", HandleArticleList(store))
 
 	mux.Handle("POST /blogs", adminRequired(HandleBlogCreate(store, syncService)))
-	mux.Handle("GET /blogs", adminRequired(HandleBlogList(store)))
-	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(store)))
+	mux.Handle("GET /blogs", accountRequired(HandleBlogList(store)))
+	mux.Handle("GET /blogs/{blogID}", accountRequired(HandleBlogRead(store)))
 	mux.Handle("DELETE /blogs/{blogID}", adminRequired(HandleBlogDelete(store)))
 
-	mux.Handle("GET /blogs/{blogID}/posts", adminRequired(HandlePostList(store)))
-	mux.Handle("GET /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostRead(store)))
+	mux.Handle("GET /blogs/{blogID}/posts", accountRequired(HandlePostList(store)))
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", accountRequired(HandlePostRead(store)))
 	mux.Handle("DELETE /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostDelete(store)))
 
 	mux.Handle("POST /tags", adminRequired(HandleTagCreate(store)))
-	mux.Handle("GET /tags", adminRequired(HandleTagList(store)))
+	mux.Handle("GET /tags", accountRequired(HandleTagList(store)))
 	mux.Handle("DELETE /tags/{tagID}", adminRequired(HandleTagDelete(store)))
 
 	mux.Handle("POST /accounts", HandleAccountCreate(store))

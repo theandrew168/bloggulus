@@ -25,6 +25,7 @@ export type BlogResponse = {
 };
 
 export type BlogsResponse = {
+	count: number;
 	blogs: Blog[];
 };
 
@@ -41,6 +42,7 @@ export type PostResponse = {
 };
 
 export type PostsResponse = {
+	count: number;
 	posts: Post[];
 };
 
@@ -54,6 +56,7 @@ export type TagResponse = {
 };
 
 export type TagsResponse = {
+	count: number;
 	tags: Tag[];
 };
 

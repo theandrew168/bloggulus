@@ -163,13 +163,13 @@ func TestHandleBlogList(t *testing.T) {
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp struct {
+			Count int        `json:"count"`
 			Blogs []jsonBlog `json:"blogs"`
 		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got := resp.Blogs
-		if len(got) < 1 {
+		if resp.Count < 1 || len(resp.Blogs) < 1 {
 			t.Fatalf("expected at least one blog")
 		}
 

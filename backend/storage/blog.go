@@ -245,6 +245,27 @@ func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	return blogs, nil
 }
 
+func (s *BlogStorage) Count() (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM blog`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
 func (s *BlogStorage) Update(blog *model.Blog) error {
 	now := timeutil.Now()
 	stmt := `

@@ -81,6 +81,29 @@ func TestTagList(t *testing.T) {
 	})
 }
 
+func TestTagCount(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
+		test.CreateTag(t, store)
+
+		count, err := store.Tag().Count()
+		test.AssertNilError(t, err)
+
+		// We add a bunch of tags via migrations so just ensure there are _at least_ three here.
+		if count < 3 {
+			t.Fatalf("expected at least three tags")
+		}
+
+		return postgres.ErrRollback
+	})
+}
+
 func TestTagDelete(t *testing.T) {
 	t.Parallel()
 

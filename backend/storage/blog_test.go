@@ -120,6 +120,26 @@ func TestBlogListAll(t *testing.T) {
 	})
 }
 
+func TestBlogCount(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+		test.CreateBlog(t, store)
+
+		count, err := store.Blog().Count()
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, count, 3)
+
+		return postgres.ErrRollback
+	})
+}
+
 func TestBlogUpdate(t *testing.T) {
 	t.Parallel()
 

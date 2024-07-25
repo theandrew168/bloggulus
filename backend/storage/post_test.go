@@ -122,6 +122,27 @@ func TestPostList(t *testing.T) {
 	})
 }
 
+func TestPostCount(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	store.WithTransaction(func(store *storage.Storage) error {
+		blog := test.CreateBlog(t, store)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+		test.CreatePost(t, store, blog)
+
+		count, err := store.Post().Count()
+		test.AssertNilError(t, err)
+
+		test.AssertEqual(t, count, 3)
+
+		return postgres.ErrRollback
+	})
+}
+
 func TestPostUpdate(t *testing.T) {
 	t.Parallel()
 

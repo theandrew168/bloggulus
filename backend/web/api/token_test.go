@@ -69,10 +69,6 @@ func TestTokenCreate(t *testing.T) {
 		_, err = store.Token().Read(got.ID)
 		test.AssertNilError(t, err)
 
-		// Ensure the token can be read by value.
-		_, err = store.Token().ReadByValue(got.Value)
-		test.AssertNilError(t, err)
-
 		return postgres.ErrRollback
 	})
 }

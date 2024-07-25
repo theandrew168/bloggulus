@@ -64,25 +64,6 @@ func TestTokenRead(t *testing.T) {
 	})
 }
 
-func TestTokenReadByValue(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.CreateAccount(t, store)
-		token, value := test.CreateToken(t, store, account)
-
-		got, err := store.Token().ReadByValue(value)
-		test.AssertNilError(t, err)
-
-		test.AssertEqual(t, got.ID(), token.ID())
-
-		return postgres.ErrRollback
-	})
-}
-
 func TestTokenDelete(t *testing.T) {
 	t.Parallel()
 

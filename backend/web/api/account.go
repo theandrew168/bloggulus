@@ -45,12 +45,12 @@ func HandleAccountCreate(store *storage.Storage) http.Handler {
 			return
 		}
 
-		e.CheckField(req.Username != "", "must be provided", "username")
-		e.CheckField(len(req.Username) <= 500, "must not be more than 500 bytes long", "username")
+		e.CheckField(req.Username != "", "Username must be provided", "username")
+		e.CheckField(len(req.Username) <= 500, "Username must not be longer than 500 characters", "username")
 
-		e.CheckField(req.Password != "", "must be provided", "password")
-		e.CheckField(len(req.Password) >= 8, "must be at least 8 bytes long", "password")
-		e.CheckField(len(req.Password) <= 72, "must not be more than 72 bytes long", "password")
+		e.CheckField(req.Password != "", "Password must be provided", "password")
+		e.CheckField(len(req.Password) >= 8, "Password must be at least 8 characters", "password")
+		e.CheckField(len(req.Password) <= 72, "Password must not be longer than 72 characters", "password")
 
 		if !e.Valid() {
 			util.FailedValidationResponse(w, r, e)
@@ -67,7 +67,7 @@ func HandleAccountCreate(store *storage.Storage) http.Handler {
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
-				e.AddField("already exists", "username")
+				e.AddField("Username is already taken", "username")
 				util.FailedValidationResponse(w, r, e)
 			default:
 				util.ServerErrorResponse(w, r, err)

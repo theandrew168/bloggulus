@@ -25,11 +25,11 @@ export function isStructuredErrorsResponse(value: any): value is StructuredError
 	return "errors" in value;
 }
 
-export function findFirstGeneralError(errors: StructuredError[]): string | undefined {
+export function findGeneralError(errors: StructuredError[]): string | undefined {
 	return errors.find((e) => !e.field)?.message;
 }
 
-export function findFirstSpecificErrorPerField(errors: StructuredError[]): Record<string, string> {
+export function findSpecificErrors(errors: StructuredError[]): Record<string, string> {
 	const errorsByField = errors.reduce(
 		(acc, err) => {
 			if (err.field && !acc[err.field]) {

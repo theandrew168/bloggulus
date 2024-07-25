@@ -61,8 +61,8 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 			return
 		}
 
-		e.CheckField(req.Username != "", "must be provided", "username")
-		e.CheckField(req.Password != "", "must be provided", "password")
+		e.CheckField(req.Username != "", "Username must be provided", "username")
+		e.CheckField(req.Password != "", "Password must be provided", "password")
 
 		if !e.Valid() {
 			util.FailedValidationResponse(w, r, e)
@@ -74,7 +74,7 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 		if err != nil {
 			switch err {
 			case postgres.ErrNotFound:
-				e.Add("invalid username or password")
+				e.Add("Invalid username or password")
 				util.FailedValidationResponse(w, r, e)
 			default:
 				util.ServerErrorResponse(w, r, err)
@@ -85,7 +85,7 @@ func HandleTokenCreate(store *storage.Storage) http.Handler {
 
 		// check that the given password matches the account
 		if !account.PasswordMatches(req.Password) {
-			e.Add("invalid username or password")
+			e.Add("Invalid username or password")
 			util.FailedValidationResponse(w, r, e)
 			return
 		}

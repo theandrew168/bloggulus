@@ -2,7 +2,7 @@ import { Form, redirect, useActionData, type ActionFunctionArgs } from "react-ro
 
 import FormInput from "../components/FormInput";
 import Button from "../components/Button";
-import { findFirstSpecificErrorPerField, type StructuredErrorsResponse } from "../errors";
+import { findSpecificErrors, type StructuredErrorsResponse } from "../errors";
 
 export async function registerPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
@@ -29,11 +29,11 @@ export async function registerPageAction({ request }: ActionFunctionArgs) {
 export default function RegisterPage() {
 	// https://reactrouter.com/en/main/hooks/use-action-data
 	const errors = useActionData() as StructuredErrorsResponse | undefined;
-	const specificErrors = findFirstSpecificErrorPerField(errors?.errors ?? []);
+	const specificErrors = findSpecificErrors(errors?.errors ?? []);
 
 	return (
 		<div className="h-full flex items-center justify-center">
-			<Form method="POST" className="max-w-xl bg-white p-8 shadow rounded-md flex flex-col gap-6">
+			<Form method="POST" className="bg-white p-8 shadow rounded-md flex flex-col gap-6">
 				<FormInput name="username" label="Username" error={specificErrors["username"]} />
 				<FormInput name="password" label="Password" type="password" error={specificErrors["password"]} />
 				<Button type="submit">Register</Button>

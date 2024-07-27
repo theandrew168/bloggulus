@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -59,32 +61,36 @@ func HandleArticleList(store *storage.Storage) http.Handler {
 
 		var count int
 		var articles []*model.Article
-		var err error
 
+		var g errgroup.Group
 		if q != "" {
-			count, err = store.Article().CountSearch(q)
-			if err != nil {
-				util.ServerErrorResponse(w, r, err)
-				return
-			}
-
-			articles, err = store.Article().ListSearch(q, limit, offset)
-			if err != nil {
-				util.ServerErrorResponse(w, r, err)
-				return
-			}
+			g.Go(func() error {
+				var err error
+				count, err = store.Article().CountSearch(q)
+				return err
+			})
+			g.Go(func() error {
+				var err error
+				articles, err = store.Article().ListSearch(q, limit, offset)
+				return err
+			})
 		} else {
-			count, err = store.Article().Count()
-			if err != nil {
-				util.ServerErrorResponse(w, r, err)
-				return
-			}
+			g.Go(func() error {
+				var err error
+				count, err = store.Article().Count()
+				return err
+			})
+			g.Go(func() error {
+				var err error
+				articles, err = store.Article().List(limit, offset)
+				return err
+			})
+		}
 
-			articles, err = store.Article().List(limit, offset)
-			if err != nil {
-				util.ServerErrorResponse(w, r, err)
-				return
-			}
+		err := g.Wait()
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
 		}
 
 		resp := response{

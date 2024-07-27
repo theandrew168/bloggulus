@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -14,17 +13,13 @@ func TestTokenCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.NewAccount(t)
-		err := store.Account().Create(account)
-		test.AssertNilError(t, err)
+	account, _ := test.NewAccount(t)
+	err := store.Account().Create(account)
+	test.AssertNilError(t, err)
 
-		token, _ := test.NewToken(t, account)
-		err = store.Token().Create(token)
-		test.AssertNilError(t, err)
-
-		return postgres.ErrRollback
-	})
+	token, _ := test.NewToken(t, account)
+	err = store.Token().Create(token)
+	test.AssertNilError(t, err)
 }
 
 func TestTokenCreateAlreadyExists(t *testing.T) {
@@ -33,16 +28,12 @@ func TestTokenCreateAlreadyExists(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.CreateAccount(t, store)
-		token, _ := test.CreateToken(t, store, account)
+	account, _ := test.CreateAccount(t, store)
+	token, _ := test.CreateToken(t, store, account)
 
-		// attempt to create the same token again
-		err := store.Token().Create(token)
-		test.AssertErrorIs(t, err, postgres.ErrConflict)
-
-		return postgres.ErrRollback
-	})
+	// attempt to create the same token again
+	err := store.Token().Create(token)
+	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestTokenRead(t *testing.T) {
@@ -51,17 +42,13 @@ func TestTokenRead(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.CreateAccount(t, store)
-		token, _ := test.CreateToken(t, store, account)
+	account, _ := test.CreateAccount(t, store)
+	token, _ := test.CreateToken(t, store, account)
 
-		got, err := store.Token().Read(token.ID())
-		test.AssertNilError(t, err)
+	got, err := store.Token().Read(token.ID())
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.ID(), token.ID())
-
-		return postgres.ErrRollback
-	})
+	test.AssertEqual(t, got.ID(), token.ID())
 }
 
 func TestTokenDelete(t *testing.T) {
@@ -70,16 +57,12 @@ func TestTokenDelete(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.CreateAccount(t, store)
-		token, _ := test.CreateToken(t, store, account)
+	account, _ := test.CreateAccount(t, store)
+	token, _ := test.CreateToken(t, store, account)
 
-		err := store.Token().Delete(token)
-		test.AssertNilError(t, err)
+	err := store.Token().Delete(token)
+	test.AssertNilError(t, err)
 
-		_, err = store.Token().Read(token.ID())
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
-
-		return postgres.ErrRollback
-	})
+	_, err = store.Token().Read(token.ID())
+	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -27,43 +26,38 @@ func TestHandleTagCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		h := api.HandleTagCreate(store)
+	h := api.HandleTagCreate(store)
 
-		req := struct {
-			Name string `json:"name"`
-		}{
-			Name: "foo",
-		}
+	name := test.RandomString(20)
+	req := map[string]string{
+		"name": name,
+	}
 
-		reqBody, err := json.Marshal(req)
-		test.AssertNilError(t, err)
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp struct {
-			Tag jsonTag `json:"tag"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Tag jsonTag `json:"tag"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		got := resp.Tag
-		test.AssertEqual(t, got.Name, req.Name)
+	got := resp.Tag
+	test.AssertEqual(t, got.Name, name)
 
-		// Ensure the tag got created in the database.
-		_, err = store.Tag().Read(got.ID)
-		test.AssertNilError(t, err)
-
-		return postgres.ErrRollback
-	})
+	// Ensure the tag got created in the database.
+	_, err = store.Tag().Read(got.ID)
+	test.AssertNilError(t, err)
 }
 
 func TestHandleTagList(t *testing.T) {
@@ -72,34 +66,29 @@ func TestHandleTagList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreateTag(t, store)
+	test.CreateTag(t, store)
 
-		h := api.HandleTagList(store)
+	h := api.HandleTagList(store)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/tags", nil)
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tags", nil)
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp struct {
-			Count int       `json:"count"`
-			Tags  []jsonTag `json:"tags"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Count int       `json:"count"`
+		Tags  []jsonTag `json:"tags"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		if resp.Count < 1 || len(resp.Tags) < 1 {
-			t.Fatalf("expected at least one tag")
-		}
-
-		return postgres.ErrRollback
-	})
+	test.AssertAtLeast(t, resp.Count, 1)
+	test.AssertAtLeast(t, len(resp.Tags), 1)
 }
 
 func TestHandleTagListPagination(t *testing.T) {
@@ -108,65 +97,28 @@ func TestHandleTagListPagination(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		// create 5 tags to test with
-		test.CreateTag(t, store)
-		test.CreateTag(t, store)
-		test.CreateTag(t, store)
-		test.CreateTag(t, store)
-		test.CreateTag(t, store)
+	// create 5 tags to test with
+	test.CreateTag(t, store)
+	test.CreateTag(t, store)
+	test.CreateTag(t, store)
+	test.CreateTag(t, store)
+	test.CreateTag(t, store)
 
-		tests := []struct {
-			size int
-			want int
-		}{
-			{1, 1},
-			{3, 3},
-			{5, 5},
-		}
+	tests := []struct {
+		size int
+		want int
+	}{
+		{1, 1},
+		{3, 3},
+		{5, 5},
+	}
 
-		h := api.HandleTagList(store)
+	h := api.HandleTagList(store)
 
-		for _, tt := range tests {
-			url := fmt.Sprintf("/tags?size=%d", tt.size)
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", url, nil)
-			h.ServeHTTP(w, r)
-
-			rr := w.Result()
-			respBody, err := io.ReadAll(rr.Body)
-			test.AssertNilError(t, err)
-
-			test.AssertEqual(t, rr.StatusCode, 200)
-
-			var resp struct {
-				Tags []jsonTag `json:"tags"`
-			}
-			err = json.Unmarshal(respBody, &resp)
-			test.AssertNilError(t, err)
-
-			got := resp.Tags
-			test.AssertEqual(t, len(got), tt.want)
-		}
-		return postgres.ErrRollback
-	})
-}
-
-func TestHandleTagDelete(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		tag := test.CreateTag(t, store)
-
-		h := api.HandleTagDelete(store)
-
-		url := fmt.Sprintf("/tags/%s", tag.ID())
+	for _, tt := range tests {
+		url := fmt.Sprintf("/tags?size=%d", tt.size)
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("DELETE", url, nil)
-		r.SetPathValue("tagID", tag.ID().String())
+		r := httptest.NewRequest("GET", url, nil)
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -176,17 +128,47 @@ func TestHandleTagDelete(t *testing.T) {
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp struct {
-			Tag jsonTag `json:"tag"`
+			Tags []jsonTag `json:"tags"`
 		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got := resp.Tag
-		test.AssertEqual(t, got.ID, tag.ID())
+		got := resp.Tags
+		test.AssertEqual(t, len(got), tt.want)
+	}
+}
 
-		_, err = store.Tag().Read(got.ID)
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
+func TestHandleTagDelete(t *testing.T) {
+	t.Parallel()
 
-		return postgres.ErrRollback
-	})
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	tag := test.CreateTag(t, store)
+
+	h := api.HandleTagDelete(store)
+
+	url := fmt.Sprintf("/tags/%s", tag.ID())
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("DELETE", url, nil)
+	r.SetPathValue("tagID", tag.ID().String())
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, rr.StatusCode, 200)
+
+	var resp struct {
+		Tag jsonTag `json:"tag"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
+
+	got := resp.Tag
+	test.AssertEqual(t, got.ID, tag.ID())
+
+	_, err = store.Tag().Read(got.ID)
+	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

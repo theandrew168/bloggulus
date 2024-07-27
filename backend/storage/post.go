@@ -198,15 +198,16 @@ func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, 
 	return posts, nil
 }
 
-func (s *PostStorage) Count() (int, error) {
+func (s *PostStorage) Count(blog *model.Blog) (int, error) {
 	stmt := `
 		SELECT count(*)
-		FROM post`
+		FROM post
+		WHERE post.blog_id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt)
+	rows, err := s.conn.Query(ctx, stmt, blog.ID())
 	if err != nil {
 		return 0, err
 	}

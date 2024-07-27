@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -14,13 +13,9 @@ func TestBlogCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.NewBlog(t)
-		err := store.Blog().Create(blog)
-		test.AssertNilError(t, err)
-
-		return postgres.ErrRollback
-	})
+	blog := test.NewBlog(t)
+	err := store.Blog().Create(blog)
+	test.AssertNilError(t, err)
 }
 
 func TestBlogCreateAlreadyExists(t *testing.T) {
@@ -29,15 +24,11 @@ func TestBlogCreateAlreadyExists(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, store)
 
-		// attempt to create the same blog again
-		err := store.Blog().Create(blog)
-		test.AssertErrorIs(t, err, postgres.ErrConflict)
-
-		return postgres.ErrRollback
-	})
+	// attempt to create the same blog again
+	err := store.Blog().Create(blog)
+	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestBlogRead(t *testing.T) {
@@ -46,15 +37,11 @@ func TestBlogRead(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
-		got, err := store.Blog().Read(blog.ID())
-		test.AssertNilError(t, err)
+	blog := test.CreateBlog(t, store)
+	got, err := store.Blog().Read(blog.ID())
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.ID(), blog.ID())
-
-		return postgres.ErrRollback
-	})
+	test.AssertEqual(t, got.ID(), blog.ID())
 }
 
 func TestBlogReadByFeedURL(t *testing.T) {
@@ -63,15 +50,11 @@ func TestBlogReadByFeedURL(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
-		got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
-		test.AssertNilError(t, err)
+	blog := test.CreateBlog(t, store)
+	got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.ID(), blog.ID())
-
-		return postgres.ErrRollback
-	})
+	test.AssertEqual(t, got.ID(), blog.ID())
 }
 
 func TestBlogList(t *testing.T) {
@@ -80,22 +63,16 @@ func TestBlogList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
 
-		limit := 5
-		offset := 0
-		blogs, err := store.Blog().List(limit, offset)
-		test.AssertNilError(t, err)
+	limit := 3
+	offset := 0
+	blogs, err := store.Blog().List(limit, offset)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, len(blogs), limit)
-
-		return postgres.ErrRollback
-	})
+	test.AssertEqual(t, len(blogs), limit)
 }
 
 func TestBlogListAll(t *testing.T) {
@@ -104,20 +81,14 @@ func TestBlogListAll(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
 
-		blogs, err := store.Blog().ListAll()
-		test.AssertNilError(t, err)
+	blogs, err := store.Blog().ListAll()
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, len(blogs), 5)
-
-		return postgres.ErrRollback
-	})
+	test.AssertAtLeast(t, len(blogs), 3)
 }
 
 func TestBlogCount(t *testing.T) {
@@ -126,18 +97,14 @@ func TestBlogCount(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
 
-		count, err := store.Blog().Count()
-		test.AssertNilError(t, err)
+	count, err := store.Blog().Count()
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, count, 3)
-
-		return postgres.ErrRollback
-	})
+	test.AssertAtLeast(t, count, 3)
 }
 
 func TestBlogUpdate(t *testing.T) {
@@ -146,26 +113,22 @@ func TestBlogUpdate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, store)
 
-		etag := "foo"
-		blog.SetETag(etag)
+	etag := "foo"
+	blog.SetETag(etag)
 
-		lastModified := "bar"
-		blog.SetLastModified(lastModified)
+	lastModified := "bar"
+	blog.SetLastModified(lastModified)
 
-		err := store.Blog().Update(blog)
-		test.AssertNilError(t, err)
+	err := store.Blog().Update(blog)
+	test.AssertNilError(t, err)
 
-		got, err := store.Blog().Read(blog.ID())
-		test.AssertNilError(t, err)
+	got, err := store.Blog().Read(blog.ID())
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, got.ETag(), etag)
-		test.AssertEqual(t, got.LastModified(), lastModified)
-
-		return postgres.ErrRollback
-	})
+	test.AssertEqual(t, got.ETag(), etag)
+	test.AssertEqual(t, got.LastModified(), lastModified)
 }
 
 func TestBlogDelete(t *testing.T) {
@@ -174,15 +137,11 @@ func TestBlogDelete(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, store)
 
-		err := store.Blog().Delete(blog)
-		test.AssertNilError(t, err)
+	err := store.Blog().Delete(blog)
+	test.AssertNilError(t, err)
 
-		_, err = store.Blog().Read(blog.ID())
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
-
-		return postgres.ErrRollback
-	})
+	_, err = store.Blog().Read(blog.ID())
+	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

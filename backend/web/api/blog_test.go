@@ -13,7 +13,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -43,47 +42,41 @@ func TestHandleBlogCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		syncService := test.NewSyncService(t, store, feeds, nil)
+	syncService := test.NewSyncService(t, store, feeds, nil)
 
-		h := api.HandleBlogCreate(store, syncService)
+	h := api.HandleBlogCreate(store, syncService)
 
-		req := struct {
-			FeedURL string `json:"feedURL"`
-		}{
-			FeedURL: blog.FeedURL,
-		}
+	req := map[string]string{
+		"feedURL": blog.FeedURL,
+	}
 
-		reqBody, err := json.Marshal(req)
-		test.AssertNilError(t, err)
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/blogs", bytes.NewReader(reqBody))
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/blogs", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp struct {
-			Blog jsonBlog `json:"blog"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Blog jsonBlog `json:"blog"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		got := resp.Blog
-		test.AssertEqual(t, got.FeedURL, blog.FeedURL)
-		test.AssertEqual(t, got.SiteURL, blog.SiteURL)
-		test.AssertEqual(t, got.Title, blog.Title)
+	got := resp.Blog
+	test.AssertEqual(t, got.FeedURL, blog.FeedURL)
+	test.AssertEqual(t, got.SiteURL, blog.SiteURL)
+	test.AssertEqual(t, got.Title, blog.Title)
 
-		// Ensure the blog got created in the database.
-		_, err = store.Blog().Read(got.ID)
-		test.AssertNilError(t, err)
-
-		return postgres.ErrRollback
-	})
+	// Ensure the blog got created in the database.
+	_, err = store.Blog().Read(got.ID)
+	test.AssertNilError(t, err)
 }
 
 func TestHandleBlogRead(t *testing.T) {
@@ -92,34 +85,30 @@ func TestHandleBlogRead(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, store)
 
-		h := api.HandleBlogRead(store)
+	h := api.HandleBlogRead(store)
 
-		url := fmt.Sprintf("/blogs/%s", blog.ID())
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", url, nil)
-		r.SetPathValue("blogID", blog.ID().String())
-		h.ServeHTTP(w, r)
+	url := fmt.Sprintf("/blogs/%s", blog.ID())
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", url, nil)
+	r.SetPathValue("blogID", blog.ID().String())
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp struct {
-			Blog jsonBlog `json:"blog"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Blog jsonBlog `json:"blog"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		got := resp.Blog
-		test.AssertEqual(t, got.ID, blog.ID())
-
-		return postgres.ErrRollback
-	})
+	got := resp.Blog
+	test.AssertEqual(t, got.ID, blog.ID())
 }
 
 func TestHandleBlogReadNotFound(t *testing.T) {
@@ -147,34 +136,29 @@ func TestHandleBlogList(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
 
-		h := api.HandleBlogList(store)
+	h := api.HandleBlogList(store)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/blogs", nil)
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/blogs", nil)
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, 200)
 
-		var resp struct {
-			Count int        `json:"count"`
-			Blogs []jsonBlog `json:"blogs"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Count int        `json:"count"`
+		Blogs []jsonBlog `json:"blogs"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		if resp.Count < 1 || len(resp.Blogs) < 1 {
-			t.Fatalf("expected at least one blog")
-		}
-
-		return postgres.ErrRollback
-	})
+	test.AssertAtLeast(t, resp.Count, 1)
+	test.AssertAtLeast(t, len(resp.Blogs), 1)
 }
 
 func TestHandleBlogListPagination(t *testing.T) {
@@ -183,65 +167,28 @@ func TestHandleBlogListPagination(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		// create 5 blogs to test with
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
-		test.CreateBlog(t, store)
+	// create 5 blogs to test with
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
+	test.CreateBlog(t, store)
 
-		tests := []struct {
-			size int
-			want int
-		}{
-			{1, 1},
-			{3, 3},
-			{5, 5},
-		}
+	tests := []struct {
+		size int
+		want int
+	}{
+		{1, 1},
+		{3, 3},
+		{5, 5},
+	}
 
-		h := api.HandleBlogList(store)
+	h := api.HandleBlogList(store)
 
-		for _, tt := range tests {
-			url := fmt.Sprintf("/blogs?size=%d", tt.size)
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", url, nil)
-			h.ServeHTTP(w, r)
-
-			rr := w.Result()
-			respBody, err := io.ReadAll(rr.Body)
-			test.AssertNilError(t, err)
-
-			test.AssertEqual(t, rr.StatusCode, 200)
-
-			var resp struct {
-				Blogs []jsonBlog `json:"blogs"`
-			}
-			err = json.Unmarshal(respBody, &resp)
-			test.AssertNilError(t, err)
-
-			got := resp.Blogs
-			test.AssertEqual(t, len(got), tt.want)
-		}
-		return postgres.ErrRollback
-	})
-}
-
-func TestHandleBlogDelete(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	store.WithTransaction(func(store *storage.Storage) error {
-		blog := test.CreateBlog(t, store)
-
-		h := api.HandleBlogDelete(store)
-
-		url := fmt.Sprintf("/blogs/%s", blog.ID())
+	for _, tt := range tests {
+		url := fmt.Sprintf("/blogs?size=%d", tt.size)
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("DELETE", url, nil)
-		r.SetPathValue("blogID", blog.ID().String())
+		r := httptest.NewRequest("GET", url, nil)
 		h.ServeHTTP(w, r)
 
 		rr := w.Result()
@@ -251,17 +198,47 @@ func TestHandleBlogDelete(t *testing.T) {
 		test.AssertEqual(t, rr.StatusCode, 200)
 
 		var resp struct {
-			Blog jsonBlog `json:"blog"`
+			Blogs []jsonBlog `json:"blogs"`
 		}
 		err = json.Unmarshal(respBody, &resp)
 		test.AssertNilError(t, err)
 
-		got := resp.Blog
-		test.AssertEqual(t, got.ID, blog.ID())
+		got := resp.Blogs
+		test.AssertEqual(t, len(got), tt.want)
+	}
+}
 
-		_, err = store.Blog().Read(got.ID)
-		test.AssertErrorIs(t, err, postgres.ErrNotFound)
+func TestHandleBlogDelete(t *testing.T) {
+	t.Parallel()
 
-		return postgres.ErrRollback
-	})
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	blog := test.CreateBlog(t, store)
+
+	h := api.HandleBlogDelete(store)
+
+	url := fmt.Sprintf("/blogs/%s", blog.ID())
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("DELETE", url, nil)
+	r.SetPathValue("blogID", blog.ID().String())
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, rr.StatusCode, 200)
+
+	var resp struct {
+		Blog jsonBlog `json:"blog"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
+
+	got := resp.Blog
+	test.AssertEqual(t, got.ID, blog.ID())
+
+	_, err = store.Blog().Read(got.ID)
+	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

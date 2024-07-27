@@ -11,8 +11,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
 )
@@ -35,42 +33,38 @@ func TestTokenCreate(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, password := test.CreateAccount(t, store)
+	account, password := test.CreateAccount(t, store)
 
-		h := api.HandleTokenCreate(store)
+	h := api.HandleTokenCreate(store)
 
-		req := map[string]string{
-			"username": account.Username(),
-			"password": password,
-		}
-		reqBody, err := json.Marshal(req)
-		test.AssertNilError(t, err)
+	req := map[string]string{
+		"username": account.Username(),
+		"password": password,
+	}
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
+	test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
-		var resp struct {
-			Token jsonNewToken `json:"token"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
+	var resp struct {
+		Token jsonNewToken `json:"token"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
 
-		got := resp.Token
+	got := resp.Token
 
-		// Ensure the token got created in the database.
-		_, err = store.Token().Read(got.ID)
-		test.AssertNilError(t, err)
-
-		return postgres.ErrRollback
-	})
+	// Ensure the token got created in the database.
+	_, err = store.Token().Read(got.ID)
+	test.AssertNilError(t, err)
 }
 
 func TestTokenCreateInvalidUsername(t *testing.T) {
@@ -79,26 +73,23 @@ func TestTokenCreateInvalidUsername(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		h := api.HandleTokenCreate(store)
+	h := api.HandleTokenCreate(store)
 
-		// specify a username that doesn't exist
-		req := map[string]string{
-			"username": "foo",
-			"password": "password",
-		}
-		reqBody, err := json.Marshal(req)
-		test.AssertNilError(t, err)
+	// specify a username that doesn't exist
+	username := test.RandomString(20)
+	req := map[string]string{
+		"username": username,
+		"password": "password",
+	}
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
-
-		return postgres.ErrRollback
-	})
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 }
 
 func TestTokenCreateInvalidPassword(t *testing.T) {
@@ -107,26 +98,22 @@ func TestTokenCreateInvalidPassword(t *testing.T) {
 	store, closer := test.NewStorage(t)
 	defer closer()
 
-	store.WithTransaction(func(store *storage.Storage) error {
-		account, _ := test.CreateAccount(t, store)
+	account, _ := test.CreateAccount(t, store)
 
-		h := api.HandleTokenCreate(store)
+	h := api.HandleTokenCreate(store)
 
-		// specify a password that isn't correct
-		req := map[string]string{
-			"username": account.Username(),
-			"password": "password",
-		}
-		reqBody, err := json.Marshal(req)
-		test.AssertNilError(t, err)
+	// specify a password that isn't correct
+	req := map[string]string{
+		"username": account.Username(),
+		"password": "password",
+	}
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
 
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
-		h.ServeHTTP(w, r)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tokens", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
 
-		rr := w.Result()
-		test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
-
-		return postgres.ErrRollback
-	})
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 }

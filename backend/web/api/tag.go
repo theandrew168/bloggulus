@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -101,13 +102,22 @@ func HandleTagList(store *storage.Storage) http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		count, err := store.Tag().Count()
-		if err != nil {
-			util.ServerErrorResponse(w, r, err)
-			return
-		}
+		var count int
+		var tags []*model.Tag
 
-		tags, err := store.Tag().List(limit, offset)
+		var g errgroup.Group
+		g.Go(func() error {
+			var err error
+			count, err = store.Tag().Count()
+			return err
+		})
+		g.Go(func() error {
+			var err error
+			tags, err = store.Tag().List(limit, offset)
+			return err
+		})
+
+		err := g.Wait()
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

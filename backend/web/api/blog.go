@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
@@ -175,13 +176,22 @@ func HandleBlogList(store *storage.Storage) http.Handler {
 
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
-		count, err := store.Blog().Count()
-		if err != nil {
-			util.ServerErrorResponse(w, r, err)
-			return
-		}
+		var count int
+		var blogs []*model.Blog
 
-		blogs, err := store.Blog().List(limit, offset)
+		var g errgroup.Group
+		g.Go(func() error {
+			var err error
+			count, err = store.Blog().Count()
+			return err
+		})
+		g.Go(func() error {
+			var err error
+			blogs, err = store.Blog().List(limit, offset)
+			return err
+		})
+
+		err := g.Wait()
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

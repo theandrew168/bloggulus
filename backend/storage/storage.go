@@ -77,7 +77,10 @@ func (s *Storage) WithTransaction(operation func(store *Storage) error) error {
 	// the changes before the function returns.
 	defer tx.Rollback(context.Background())
 
-	// Create a new Storage struct using the pgx.Tx as its Conn.
+	// Create a new Storage struct using the pgx.Tx as its Conn. Note
+	// that this new store will be backed by single connection and not
+	// a pool (therefore only one query can be executed at a time). When
+	// inside of a transaction, the connection is NOT concurrency safe.
 	store := New(tx)
 
 	// Use the pgx.Tx-based Storage struct for this atomic operation.

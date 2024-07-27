@@ -24,6 +24,14 @@ func AssertNotEqual(t *testing.T, got, notwant any) {
 	}
 }
 
+func AssertAtLeast(t *testing.T, got, want int) {
+	t.Helper()
+
+	if got < want {
+		t.Fatalf("got %v; want at least %v", got, want)
+	}
+}
+
 func AssertStringContains(t *testing.T, got, want string) {
 	t.Helper()
 

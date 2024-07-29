@@ -1,6 +1,6 @@
 import { Form, Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
 
-import { authenticatedFetch } from "../utils";
+import { fetchAPI } from "../utils";
 import type { BlogsResponse } from "../types";
 import Button from "../components/Button";
 
@@ -16,7 +16,7 @@ export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const resp = await authenticatedFetch("/api/v1/blogs?" + search);
+	const resp = await fetchAPI("/api/v1/blogs?" + search, { authRequired: true });
 	const blogs: BlogsResponse = await resp.json();
 	return blogs;
 }
@@ -24,7 +24,11 @@ export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 export async function blogsPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
 	const feedURL = form.get("feedURL");
-	const resp = await authenticatedFetch(`/api/v1/blogs`, "POST", JSON.stringify({ feedURL }));
+	const resp = await fetchAPI(`/api/v1/blogs`, {
+		method: "POST",
+		body: JSON.stringify({ feedURL }),
+		authRequired: true,
+	});
 
 	// If the input wasn't valid, return the errors back to the form.
 	if (resp.status === 422) {

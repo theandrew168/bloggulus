@@ -1,6 +1,6 @@
 import { Form, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
 
-import { authenticatedFetch } from "../utils";
+import { fetchAPI } from "../utils";
 import type { TagsResponse } from "../types";
 import Button from "../components/Button";
 
@@ -16,7 +16,7 @@ export async function tagsPageLoader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const resp = await authenticatedFetch("/api/v1/tags?" + search);
+	const resp = await fetchAPI("/api/v1/tags?" + search, { authRequired: true });
 	const tags: TagsResponse = await resp.json();
 	return tags;
 }
@@ -25,7 +25,11 @@ export async function tagsPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
 	const name = form.get("name");
 
-	const resp = await authenticatedFetch(`/api/v1/tags`, "POST", JSON.stringify({ name }));
+	const resp = await fetchAPI(`/api/v1/tags`, {
+		method: "POST",
+		body: JSON.stringify({ name }),
+		authRequired: true,
+	});
 
 	// If the input wasn't valid, return the errors back to the form.
 	if (resp.status === 422) {

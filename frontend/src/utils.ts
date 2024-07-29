@@ -1,23 +1,35 @@
 import { redirect } from "react-router-dom";
 
-// TODO: Make params an object, add "authRequired" field
+export type FetchParams = {
+	method?: string;
+	body?: string;
+	authRequired?: boolean;
+};
 
 /**
- * Perform an authenticated fetch request using the "token" found in the
- * browser's local storage. If a token isn't found (or it is expired), the
- * user will be redirected to the login page.
+ * Perform a fetch request to the backend API using the "token" found in the
+ * browser's local storage. If a token isn't found (or it is expired) but auth
+ * is required, the user will be redirected to the login page.
  */
-export async function authenticatedFetch(url: string, method: string = "GET", body?: string): Promise<Response> {
+export async function fetchAPI(url: string, params?: FetchParams): Promise<Response> {
+	const method = params?.method ?? "GET";
+	const body = params?.body ?? null;
+	const authRequired = params?.authRequired ?? false;
+
+	// If no token is found but auth is required, redirect to the login page.
 	const token = localStorage.getItem("token");
-	if (!token) {
+	if (!token && authRequired) {
 		throw redirect("/login");
 	}
 
+	// Make the fetch request, optionally including the auth token and body.
 	const resp = await fetch(url, {
 		method,
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
+		headers: token
+			? {
+					Authorization: `Bearer ${token}`,
+				}
+			: {},
 		body: body ?? null,
 	});
 

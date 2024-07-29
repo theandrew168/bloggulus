@@ -1,6 +1,7 @@
 import { Link, useLoaderData, useLocation } from "react-router-dom";
 import type { LoaderFunctionArgs } from "react-router-dom";
 
+import { fetchAPI } from "../utils";
 import type { ArticlesResponse } from "../types";
 import ArticleCard from "../components/ArticleCard";
 
@@ -21,11 +22,7 @@ export async function indexPageLoader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const resp = await fetch("/api/v1/articles?" + search);
-	if (!resp.ok) {
-		throw resp;
-	}
-
+	const resp = await fetchAPI("/api/v1/articles?" + search);
 	const articles: ArticlesResponse = await resp.json();
 	return articles;
 }

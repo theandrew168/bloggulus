@@ -1,5 +1,6 @@
 import { Form, redirect, useActionData, type ActionFunctionArgs } from "react-router-dom";
 
+import { fetchAPI } from "../utils";
 import { findSpecificErrors, type StructuredErrorsResponse } from "../errors";
 import FormInput from "../components/FormInput";
 import Button from "../components/Button";
@@ -8,7 +9,8 @@ export async function registerPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
 	const username = form.get("username");
 	const password = form.get("password");
-	const resp = await fetch(`/api/v1/accounts`, {
+
+	const resp = await fetchAPI(`/api/v1/accounts`, {
 		method: "POST",
 		body: JSON.stringify({ username, password }),
 	});
@@ -16,11 +18,6 @@ export async function registerPageAction({ request }: ActionFunctionArgs) {
 	// If the input wasn't valid, return the errors back to the form.
 	if (resp.status === 422) {
 		return resp.json();
-	}
-
-	// For other errors (not related to input validation), throw to the nearest boundary.
-	if (!resp.ok) {
-		throw resp;
 	}
 
 	return redirect("/login");

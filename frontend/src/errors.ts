@@ -22,7 +22,7 @@ export type StructuredErrorsResponse = {
 };
 
 export function isStructuredErrorsResponse(value: any): value is StructuredErrorsResponse {
-	return "errors" in value;
+	return typeof value === "object" && "errors" in value;
 }
 
 export function findGeneralError(errors: StructuredError[]): string | undefined {

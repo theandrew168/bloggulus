@@ -10,6 +10,8 @@ import {
 import type { BlogsResponse } from "../types";
 import Button from "../components/Button";
 
+// TODO: Add a helper for making auth'd requests?
+
 export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 	const token = localStorage.getItem("token");
 	if (!token) {
@@ -32,6 +34,14 @@ export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 			Authorization: `Bearer ${token}`,
 		},
 	});
+	// Check for expired token and redirect if found. Otherwise throw to boundary.
+	if (!resp.ok) {
+		if (resp.status === 401) {
+			return redirect("/login");
+		}
+		throw resp;
+	}
+
 	const blogs: BlogsResponse = await resp.json();
 	return blogs;
 }

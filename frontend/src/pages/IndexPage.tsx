@@ -22,6 +22,10 @@ export async function indexPageLoader({ request }: LoaderFunctionArgs) {
 	}
 
 	const resp = await fetch("/api/v1/articles?" + search);
+	if (!resp.ok) {
+		throw resp;
+	}
+
 	const articles: ArticlesResponse = await resp.json();
 	return articles;
 }

@@ -72,7 +72,7 @@ func HandleBlogCreate(store *storage.Storage, syncService *service.SyncService) 
 				Blog: marshalBlog(blog),
 			}
 
-			code := http.StatusOK
+			code := http.StatusCreated
 			err = util.WriteJSON(w, code, resp, nil)
 			if err != nil {
 				util.ServerErrorResponse(w, r, err)
@@ -105,7 +105,7 @@ func HandleBlogCreate(store *storage.Storage, syncService *service.SyncService) 
 			Blog: marshalBlog(blog),
 		}
 
-		code := http.StatusOK
+		code := http.StatusCreated
 		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)

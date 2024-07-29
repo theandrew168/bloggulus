@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestHandleIndexRedoc(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }
 
 func TestHandleIndexRapidoc(t *testing.T) {
@@ -31,7 +32,7 @@ func TestHandleIndexRapidoc(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }
 
 func TestHandleIndexStoplight(t *testing.T) {
@@ -44,5 +45,5 @@ func TestHandleIndexStoplight(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }

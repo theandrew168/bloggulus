@@ -8,6 +8,7 @@ import SiteLayout from "./layouts/SiteLayout";
 import LoginPage, { loginPageAction } from "./pages/LoginPage";
 import RegisterPage, { registerPageAction } from "./pages/RegisterPage";
 import BlogsPage, { blogsPageAction, blogsPageLoader } from "./pages/BlogsPage";
+import TagsPage, { tagsPageAction, tagsPageLoader } from "./pages/TagsPage";
 
 const router = createBrowserRouter([
 	{
@@ -34,6 +35,12 @@ const router = createBrowserRouter([
 				loader: blogsPageLoader,
 				action: blogsPageAction,
 				element: <BlogsPage />,
+			},
+			{
+				path: "/tags",
+				loader: tagsPageLoader,
+				action: tagsPageAction,
+				element: <TagsPage />,
 			},
 		],
 	},

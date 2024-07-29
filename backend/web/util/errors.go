@@ -48,7 +48,7 @@ func ErrorResponse(w http.ResponseWriter, r *http.Request, status int, errors *E
 	err := WriteJSON(w, status, errors, nil)
 	if err != nil {
 		slog.Error(err.Error())
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }

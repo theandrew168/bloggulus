@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -46,7 +47,7 @@ func TestHandlePostRead(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Post jsonPost `json:"post"`
@@ -77,7 +78,7 @@ func TestHandlePostReadNotFound(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 404)
+	test.AssertEqual(t, rr.StatusCode, http.StatusNotFound)
 }
 
 func TestHandlePostList(t *testing.T) {
@@ -101,7 +102,7 @@ func TestHandlePostList(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Count int        `json:"count"`
@@ -150,7 +151,7 @@ func TestHandlePostListPagination(t *testing.T) {
 		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 		var resp struct {
 			Posts []jsonPost `json:"posts"`
@@ -185,7 +186,7 @@ func TestHandlePostDelete(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Post jsonPost `json:"post"`

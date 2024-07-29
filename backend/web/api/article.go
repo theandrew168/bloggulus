@@ -103,7 +103,8 @@ func HandleArticleList(store *storage.Storage) http.Handler {
 			resp.Articles = append(resp.Articles, marshalArticle(article))
 		}
 
-		err = util.WriteJSON(w, 200, resp, nil)
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)
 			return

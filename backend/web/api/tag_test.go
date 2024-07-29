@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -44,7 +45,7 @@ func TestHandleTagCreate(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 	var resp struct {
 		Tag jsonTag `json:"tag"`
@@ -58,6 +59,36 @@ func TestHandleTagCreate(t *testing.T) {
 	// Ensure the tag got created in the database.
 	_, err = store.Tag().Read(got.ID)
 	test.AssertNilError(t, err)
+}
+
+func TestTagCreateAlreadyExists(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	h := api.HandleTagCreate(store)
+
+	name := test.RandomString(20)
+	req := map[string]string{
+		"name": name,
+	}
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
+
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("POST", "/tags", bytes.NewReader(reqBody))
+	h.ServeHTTP(w, r)
+
+	rr = w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusUnprocessableEntity)
 }
 
 func TestHandleTagList(t *testing.T) {
@@ -78,7 +109,7 @@ func TestHandleTagList(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Count int       `json:"count"`
@@ -125,7 +156,7 @@ func TestHandleTagListPagination(t *testing.T) {
 		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 		var resp struct {
 			Tags []jsonTag `json:"tags"`
@@ -158,7 +189,7 @@ func TestHandleTagDelete(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Tag jsonTag `json:"tag"`

@@ -3,6 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -39,7 +40,7 @@ func TestHandleArticleList(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Count    int           `json:"count"`

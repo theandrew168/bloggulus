@@ -60,7 +60,14 @@ func HandleTagCreate(store *storage.Storage) http.Handler {
 
 		err = store.Tag().Create(tag)
 		if err != nil {
-			util.ServerErrorResponse(w, r, err)
+			switch {
+			case errors.Is(err, postgres.ErrConflict):
+				e.AddField("Tag already exists", "name")
+				util.FailedValidationResponse(w, r, e)
+			default:
+				util.ServerErrorResponse(w, r, err)
+			}
+
 			return
 		}
 
@@ -68,7 +75,7 @@ func HandleTagCreate(store *storage.Storage) http.Handler {
 			Tag: marshalTag(tag),
 		}
 
-		code := http.StatusOK
+		code := http.StatusCreated
 		err = util.WriteJSON(w, code, resp, nil)
 		if err != nil {
 			util.ServerErrorResponse(w, r, err)

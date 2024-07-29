@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -28,8 +29,8 @@ func TestHandleBlogCreate(t *testing.T) {
 	t.Parallel()
 
 	blog := feed.Blog{
-		FeedURL: "https://example.com/index.xml",
-		SiteURL: "https://example.com",
+		FeedURL: test.RandomURL(20),
+		SiteURL: test.RandomURL(20),
 		Title:   "Example Blog",
 	}
 	feed, err := mock.GenerateAtomFeed(blog)
@@ -61,7 +62,7 @@ func TestHandleBlogCreate(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
 
 	var resp struct {
 		Blog jsonBlog `json:"blog"`
@@ -99,7 +100,7 @@ func TestHandleBlogRead(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Blog jsonBlog `json:"blog"`
@@ -127,7 +128,7 @@ func TestHandleBlogReadNotFound(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
-	test.AssertEqual(t, rr.StatusCode, 404)
+	test.AssertEqual(t, rr.StatusCode, http.StatusNotFound)
 }
 
 func TestHandleBlogList(t *testing.T) {
@@ -148,7 +149,7 @@ func TestHandleBlogList(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Count int        `json:"count"`
@@ -195,7 +196,7 @@ func TestHandleBlogListPagination(t *testing.T) {
 		respBody, err := io.ReadAll(rr.Body)
 		test.AssertNilError(t, err)
 
-		test.AssertEqual(t, rr.StatusCode, 200)
+		test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 		var resp struct {
 			Blogs []jsonBlog `json:"blogs"`
@@ -228,7 +229,7 @@ func TestHandleBlogDelete(t *testing.T) {
 	respBody, err := io.ReadAll(rr.Body)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, rr.StatusCode, 200)
+	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 
 	var resp struct {
 		Blog jsonBlog `json:"blog"`

@@ -1,8 +1,8 @@
 import { Form, redirect, useActionData, type ActionFunctionArgs } from "react-router-dom";
 
+import { findSpecificErrors, type StructuredErrorsResponse } from "../errors";
 import FormInput from "../components/FormInput";
 import Button from "../components/Button";
-import { findSpecificErrors, type StructuredErrorsResponse } from "../errors";
 
 export async function registerPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();

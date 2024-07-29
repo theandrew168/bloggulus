@@ -22,14 +22,16 @@ export async function fetchAPI(url: string, params?: FetchParams): Promise<Respo
 		throw redirect("/login");
 	}
 
-	// Make the fetch request, optionally including the auth token and body.
+	// Construct the request headers, optionally including the auth token.
+	const headers: Record<string, string> = {};
+	if (token) {
+		headers["Authorization"] = `Bearer ${token}`;
+	}
+
+	// Make the fetch request, optionally including the body.
 	const resp = await fetch(url, {
 		method,
-		headers: token
-			? {
-					Authorization: `Bearer ${token}`,
-				}
-			: {},
+		headers,
 		body: body ?? null,
 	});
 

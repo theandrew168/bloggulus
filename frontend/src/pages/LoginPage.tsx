@@ -1,7 +1,7 @@
 import { Form, redirect, useActionData, type ActionFunctionArgs } from "react-router-dom";
 
 import { findGeneralError, findSpecificErrors, type StructuredErrorsResponse } from "../errors";
-import { fetchAPI } from "../utils";
+import { fetchAPI } from "../fetch";
 import type { TokenResponse } from "../types";
 import FormInput from "../components/FormInput";
 import Button from "../components/Button";

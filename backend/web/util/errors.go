@@ -69,6 +69,14 @@ func UnauthorizedResponse(w http.ResponseWriter, r *http.Request) {
 	ErrorResponse(w, r, code, errors)
 }
 
+func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
+	code := http.StatusForbidden
+	text := http.StatusText(code)
+	errors := NewErrors()
+	errors.Add(strings.ToLower(text))
+	ErrorResponse(w, r, code, errors)
+}
+
 func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
 	code := http.StatusNotFound
 	text := http.StatusText(code)

@@ -1,6 +1,6 @@
 import { Form, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
 
-import { fetchAPI } from "../utils";
+import { fetchAPI } from "../fetch";
 import type { TagsResponse } from "../types";
 import Button from "../components/Button";
 
@@ -23,17 +23,30 @@ export async function tagsPageLoader({ request }: LoaderFunctionArgs) {
 
 export async function tagsPageAction({ request }: ActionFunctionArgs) {
 	const form = await request.formData();
-	const name = form.get("name");
+	const intent = form.get("intent");
 
-	const resp = await fetchAPI(`/api/v1/tags`, {
-		method: "POST",
-		body: JSON.stringify({ name }),
-		authRequired: true,
-	});
+	if (intent === "add") {
+		const name = form.get("name");
 
-	// If the input wasn't valid, return the errors back to the form.
-	if (resp.status === 422) {
-		return resp.json();
+		const resp = await fetchAPI(`/api/v1/tags`, {
+			method: "POST",
+			body: JSON.stringify({ name }),
+			authRequired: true,
+		});
+
+		// If the input wasn't valid, return the errors back to the form.
+		if (resp.status === 422) {
+			return resp.json();
+		}
+	}
+
+	if (intent === "delete") {
+		const id = form.get("id");
+
+		await fetchAPI(`/api/v1/tags/${id}`, {
+			method: "DELETE",
+			authRequired: true,
+		});
 	}
 
 	return null;
@@ -52,12 +65,22 @@ export default function TagsPage() {
 						placeholder="Add Tag"
 						className="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
 					/>
-					<Button type="submit">Add</Button>
+					<Button type="submit" name="intent" value="add">
+						Add
+					</Button>
 				</Form>
 			</div>
 			<div className="mb-4">
 				{tags.map((tag) => (
-					<div key={tag.id}>{tag.name}</div>
+					<div key={tag.id} className="flex justify-between">
+						<span>{tag.name}</span>
+						<Form method="POST">
+							<input type="hidden" name="id" value={tag.id} />
+							<Button type="submit" name="intent" value="delete">
+								Delete
+							</Button>
+						</Form>
+					</div>
 				))}
 			</div>
 		</div>

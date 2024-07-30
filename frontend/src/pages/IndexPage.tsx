@@ -1,7 +1,7 @@
 import { Link, useLoaderData, useLocation } from "react-router-dom";
 import type { LoaderFunctionArgs } from "react-router-dom";
 
-import { fetchAPI } from "../utils";
+import { fetchAPI } from "../fetch";
 import type { ArticlesResponse } from "../types";
 import ArticleCard from "../components/ArticleCard";
 

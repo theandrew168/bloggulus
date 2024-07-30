@@ -37,6 +37,7 @@ export async function fetchAPI(url: string, params?: FetchParams): Promise<Respo
 
 	// Check for an expired token and redirect if found.
 	if (resp.status === 401) {
+		localStorage.removeItem("token");
 		throw redirect("/login");
 	}
 

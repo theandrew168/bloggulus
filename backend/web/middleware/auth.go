@@ -87,7 +87,7 @@ func AdminRequired() Middleware {
 			}
 
 			if !account.IsAdmin() {
-				util.UnauthorizedResponse(w, r)
+				util.ForbiddenResponse(w, r)
 				return
 			}
 

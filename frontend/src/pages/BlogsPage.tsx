@@ -1,6 +1,6 @@
 import { Form, Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
 
-import { fetchAPI } from "../utils";
+import { fetchAPI } from "../fetch";
 import type { BlogsResponse } from "../types";
 import Button from "../components/Button";
 

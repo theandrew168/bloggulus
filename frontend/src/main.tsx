@@ -10,6 +10,7 @@ import RegisterPage, { registerPageAction } from "./pages/RegisterPage";
 import BlogsPage, { blogsPageAction, blogsPageLoader } from "./pages/BlogsPage";
 import TagsPage, { tagsPageAction, tagsPageLoader } from "./pages/TagsPage";
 import BlogPage, { blogPageAction, blogPageLoader } from "./pages/BlogPage";
+import PostPage, { postPageAction, postPageLoader } from "./pages/PostPage";
 
 const router = createBrowserRouter([
 	{
@@ -42,6 +43,12 @@ const router = createBrowserRouter([
 				loader: blogPageLoader,
 				action: blogPageAction,
 				element: <BlogPage />,
+			},
+			{
+				path: "/blogs/:blogID/posts/:postID",
+				loader: postPageLoader,
+				action: postPageAction,
+				element: <PostPage />,
 			},
 			{
 				path: "/tags",

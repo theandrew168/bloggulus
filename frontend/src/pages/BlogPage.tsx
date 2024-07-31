@@ -11,7 +11,7 @@ import { fetchAPI } from "../fetch";
 import type { BlogResponse, PostsResponse } from "../types";
 import Button from "../components/Button";
 
-export async function blogPageLoader({ request, params }: LoaderFunctionArgs) {
+export async function blogPageLoader({ params }: LoaderFunctionArgs) {
 	// The blogID URL param must exist for this route to match.
 	const blogID = params["blogID"]!;
 

@@ -74,7 +74,7 @@ export default function TagsPage() {
 				{tags.map((tag) => (
 					<div key={tag.id} className="flex justify-between">
 						<span>{tag.name}</span>
-						<Form method="POST">
+						<Form method="DELETE">
 							<input type="hidden" name="id" value={tag.id} />
 							<Button type="submit" name="intent" value="delete">
 								Delete

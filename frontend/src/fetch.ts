@@ -6,6 +6,9 @@ export type FetchParams = {
 	authRequired?: boolean;
 };
 
+// TODO: Fetch initial "redirect to login" w/ expired tokens.
+// Maybe store the expiration client-side and check + clear if expired before fetching?
+
 /**
  * Perform a fetch request to the backend API using the "token" found in the
  * browser's local storage. If a token isn't found (or it is expired) but auth

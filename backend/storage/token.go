@@ -115,7 +115,7 @@ func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
 	return row.unmarshal()
 }
 
-func (repo *TokenStorage) Delete(token *model.Token) error {
+func (s *TokenStorage) Delete(token *model.Token) error {
 	stmt := `
 		DELETE FROM token
 		WHERE id = $1
@@ -129,7 +129,7 @@ func (repo *TokenStorage) Delete(token *model.Token) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := repo.conn.Query(ctx, stmt, token.ID())
+	rows, err := s.conn.Query(ctx, stmt, token.ID())
 	if err != nil {
 		return err
 	}

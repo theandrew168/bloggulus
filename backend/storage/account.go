@@ -50,7 +50,7 @@ type AccountStorage struct {
 	conn postgres.Conn
 }
 
-func NewAccountStoragee(conn postgres.Conn) *AccountStorage {
+func NewAccountStorage(conn postgres.Conn) *AccountStorage {
 	s := AccountStorage{
 		conn: conn,
 	}
@@ -177,7 +177,7 @@ func (s *AccountStorage) ReadByToken(token string) (*model.Account, error) {
 	return row.unmarshal()
 }
 
-func (repo *AccountStorage) Delete(account *model.Account) error {
+func (s *AccountStorage) Delete(account *model.Account) error {
 	stmt := `
 		DELETE FROM account
 		WHERE id = $1
@@ -191,7 +191,7 @@ func (repo *AccountStorage) Delete(account *model.Account) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := repo.conn.Query(ctx, stmt, account.ID())
+	rows, err := s.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return err
 	}

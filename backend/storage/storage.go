@@ -9,24 +9,26 @@ import (
 type Storage struct {
 	conn postgres.Conn
 
-	article *ArticleStorage
-	blog    *BlogStorage
-	post    *PostStorage
-	tag     *TagStorage
-	account *AccountStorage
-	token   *TokenStorage
+	article     *ArticleStorage
+	blog        *BlogStorage
+	post        *PostStorage
+	tag         *TagStorage
+	account     *AccountStorage
+	token       *TokenStorage
+	accountBlog *AccountBlogStorage
 }
 
 func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		article: NewArticleStorage(conn),
-		blog:    NewBlogStorage(conn),
-		post:    NewPostStorage(conn),
-		tag:     NewTagStorage(conn),
-		account: NewAccountStoragee(conn),
-		token:   NewTokenStorage(conn),
+		article:     NewArticleStorage(conn),
+		blog:        NewBlogStorage(conn),
+		post:        NewPostStorage(conn),
+		tag:         NewTagStorage(conn),
+		account:     NewAccountStorage(conn),
+		token:       NewTokenStorage(conn),
+		accountBlog: NewAccountBlogStorage(conn),
 	}
 	return &s
 }
@@ -53,6 +55,10 @@ func (s *Storage) Account() *AccountStorage {
 
 func (s *Storage) Token() *TokenStorage {
 	return s.token
+}
+
+func (s *Storage) AccountBlog() *AccountBlogStorage {
+	return s.accountBlog
 }
 
 func (s *Storage) Exec(ctx context.Context, sql string, args ...any) error {

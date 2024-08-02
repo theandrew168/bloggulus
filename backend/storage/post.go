@@ -266,7 +266,7 @@ func (s *PostStorage) Update(post *model.Post) error {
 	return nil
 }
 
-func (repo *PostStorage) Delete(post *model.Post) error {
+func (s *PostStorage) Delete(post *model.Post) error {
 	stmt := `
 		DELETE FROM post
 		WHERE id = $1
@@ -280,7 +280,7 @@ func (repo *PostStorage) Delete(post *model.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := repo.conn.Query(ctx, stmt, post.ID())
+	rows, err := s.conn.Query(ctx, stmt, post.ID())
 	if err != nil {
 		return err
 	}

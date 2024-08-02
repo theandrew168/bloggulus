@@ -163,7 +163,7 @@ func (s *TagStorage) Count() (int, error) {
 	return count, nil
 }
 
-func (repo *TagStorage) Delete(tag *model.Tag) error {
+func (s *TagStorage) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1
@@ -177,7 +177,7 @@ func (repo *TagStorage) Delete(tag *model.Tag) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := repo.conn.Query(ctx, stmt, tag.ID())
+	rows, err := s.conn.Query(ctx, stmt, tag.ID())
 	if err != nil {
 		return err
 	}

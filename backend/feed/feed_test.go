@@ -234,3 +234,33 @@ func TestHydrate(t *testing.T) {
 		test.AssertEqual(t, feedPost.Content, want)
 	}
 }
+
+func BenchmarkParse(b *testing.B) {
+	feedPostFoo := feed.Post{
+		URL:         "https://example.com/foo",
+		Title:       "Foo",
+		Content:     "content about foo",
+		PublishedAt: time.Now(),
+	}
+	feedPostBar := feed.Post{
+		URL:         "https://example.com/bar",
+		Title:       "Bar",
+		Content:     "content about bar",
+		PublishedAt: time.Now(),
+	}
+	feedBlog := feed.Blog{
+		Title:   "FooBar",
+		SiteURL: "https://example.com",
+		FeedURL: "https://example.com/atom.xml",
+		Posts:   []feed.Post{feedPostFoo, feedPostBar},
+	}
+
+	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	if err != nil {
+		b.Fatalf("got: %v; want: nil", err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		feed.Parse("https://example.com/atom.xml", atomFeed)
+	}
+}

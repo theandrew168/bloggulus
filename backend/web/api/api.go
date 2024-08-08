@@ -22,33 +22,28 @@ func Handler(store *storage.Storage, syncService *service.SyncService) http.Hand
 	mux.Handle("GET /articles", HandleArticleList(store))
 
 	mux.Handle("POST /blogs", adminRequired(HandleBlogCreate(store, syncService)))
-	mux.Handle("GET /blogs", adminRequired(HandleBlogList(store)))
-	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(store)))
+	mux.Handle("GET /blogs", accountRequired(HandleBlogList(store)))
+	mux.Handle("GET /blogs/{blogID}", accountRequired(HandleBlogRead(store)))
 	mux.Handle("DELETE /blogs/{blogID}", adminRequired(HandleBlogDelete(store)))
 
 	// Follow a blog: HandleBlogFollow
 	// POST /blogs/{blogID}/follow -> 204
-	mux.Handle("POST /blogs/{blogID}/follow", adminRequired(HandleBlogFollow(store)))
+	mux.Handle("POST /blogs/{blogID}/follow", accountRequired(HandleBlogFollow(store)))
 
 	// Unfollow a blog: HandleBlogUnfollow
 	// POST /blogs/{blogID}/unfollow -> 204
-	mux.Handle("POST /blogs/{blogID}/unfollow", adminRequired(HandleBlogUnfollow(store)))
+	mux.Handle("POST /blogs/{blogID}/unfollow", accountRequired(HandleBlogUnfollow(store)))
 
-	// Get a blog's followers: HandleBlogFollowers
-	// GET /blogs/{blogID}/followers -> []Account
+	// See what blogs the auth'd account follows (GH style): HandleBlogListFollowing
+	// GET /blogs/following -> []Blog
+	mux.Handle("GET /blogs/following", accountRequired(HandleBlogListFollowing(store)))
 
-	// See what blogs an account follows: HandleAccountFollows
-	// GET /accounts/{accountID}/follows -> []Blog
-
-	// See what blogs the auth'd account follows (GH style?): HandleFollows
-	// GET /accounts/follows -> []Blog
-
-	mux.Handle("GET /blogs/{blogID}/posts", adminRequired(HandlePostList(store)))
-	mux.Handle("GET /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostRead(store)))
+	mux.Handle("GET /blogs/{blogID}/posts", accountRequired(HandlePostList(store)))
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", accountRequired(HandlePostRead(store)))
 	mux.Handle("DELETE /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostDelete(store)))
 
 	mux.Handle("POST /tags", adminRequired(HandleTagCreate(store)))
-	mux.Handle("GET /tags", adminRequired(HandleTagList(store)))
+	mux.Handle("GET /tags", accountRequired(HandleTagList(store)))
 	mux.Handle("DELETE /tags/{tagID}", adminRequired(HandleTagDelete(store)))
 
 	mux.Handle("POST /accounts", HandleAccountCreate(store))

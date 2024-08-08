@@ -52,7 +52,7 @@ func (s *AccountBlogStorage) Delete(account *model.Account, blog *model.Blog) er
 	stmt := `
 		DELETE FROM account_blog
 		WHERE account_id = $1
-		  AND blog_id = $2
+			AND blog_id = $2
 		RETURNING account_id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)

@@ -135,3 +135,12 @@ func CreateToken(t *testing.T, store *storage.Storage, account *model.Account) (
 
 	return token, value
 }
+
+// create an account blog in the database
+func CreateAccountBlog(t *testing.T, store *storage.Storage, account *model.Account, blog *model.Blog) {
+	t.Helper()
+
+	// create an account blog
+	err := store.AccountBlog().Create(account, blog)
+	AssertNilError(t, err)
+}

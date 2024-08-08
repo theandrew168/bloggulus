@@ -216,6 +216,78 @@ func HandleBlogList(store *storage.Storage) http.Handler {
 	})
 }
 
+func HandleBlogListFollowing(store *storage.Storage) http.Handler {
+	type response struct {
+		Count int        `json:"count"`
+		Blogs []jsonBlog `json:"blogs"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		e := util.NewErrors()
+
+		account, ok := util.ContextGetAccount(r)
+		if !ok {
+			util.UnauthorizedResponse(w, r)
+			return
+		}
+
+		qs := r.URL.Query()
+
+		// check pagination params
+		page := util.ReadInt(qs, "page", 1, e)
+		e.CheckField(page >= 1, "Page must be greater than or equal to 1", "page")
+
+		size := util.ReadInt(qs, "size", 20, e)
+		e.CheckField(size >= 1, "Size must be greater than or equal to 1", "size")
+		e.CheckField(size <= 50, "Size must be less than or equal to 50", "size")
+
+		if !e.Valid() {
+			util.FailedValidationResponse(w, r, e)
+			return
+		}
+
+		limit, offset := util.PageSizeToLimitOffset(page, size)
+
+		var count int
+		var blogs []*model.Blog
+
+		var g errgroup.Group
+		g.Go(func() error {
+			var err error
+			count, err = store.Blog().Count()
+			return err
+		})
+		g.Go(func() error {
+			var err error
+			blogs, err = store.Blog().ListByAccount(account, limit, offset)
+			return err
+		})
+
+		err := g.Wait()
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+
+		resp := response{
+			Count: count,
+			// use make here to encode JSON as "[]" instead of "null" if empty
+			Blogs: make([]jsonBlog, 0),
+		}
+
+		for _, blog := range blogs {
+			resp.Blogs = append(resp.Blogs, marshalBlog(blog))
+		}
+
+		code := http.StatusOK
+		err = util.WriteJSON(w, code, resp, nil)
+		if err != nil {
+			util.ServerErrorResponse(w, r, err)
+			return
+		}
+	})
+}
+
 func HandleBlogDelete(store *storage.Storage) http.Handler {
 	type response struct {
 		Blog jsonBlog `json:"blog"`

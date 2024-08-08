@@ -82,12 +82,12 @@ func (s *TagStorage) Create(tag *model.Tag) error {
 func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
 	stmt := `
 		SELECT
-			id,
-			name,
-			created_at,
-			updated_at
+			tag.id,
+			tag.name,
+			tag.created_at,
+			tag.updated_at
 		FROM tag
-		WHERE id = $1`
+		WHERE tag.id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -108,12 +108,12 @@ func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
 func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
 	stmt := `
 		SELECT
-			id,
-			name,
-			created_at,
-			updated_at
+			tag.id,
+			tag.name,
+			tag.created_at,
+			tag.updated_at
 		FROM tag
-		ORDER BY created_at DESC
+		ORDER BY tag.created_at DESC
 		LIMIT $1 OFFSET $2`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)

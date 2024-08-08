@@ -99,16 +99,16 @@ func (s *PostStorage) Create(post *model.Post) error {
 func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
 	stmt := `
 		SELECT
-			id,
-			blog_id,
-			url,
-			title,
-			content,
-			published_at,
-			created_at,
-			updated_at
+			post.id,
+			post.blog_id,
+			post.url,
+			post.title,
+			post.content,
+			post.published_at,
+			post.created_at,
+			post.updated_at
 		FROM post
-		WHERE id = $1`
+		WHERE post.id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -129,16 +129,16 @@ func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
 func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 	stmt := `
 		SELECT
-			id,
-			blog_id,
-			url,
-			title,
-			content,
-			published_at,
-			created_at,
-			updated_at
+			post.id,
+			post.blog_id,
+			post.url,
+			post.title,
+			post.content,
+			post.published_at,
+			post.created_at,
+			post.updated_at
 		FROM post
-		WHERE url = $1`
+		WHERE post.url = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -159,17 +159,17 @@ func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
-			id,
-			blog_id,
-			url,
-			title,
-			content,
-			published_at,
-			created_at,
-			updated_at
+			post.id,
+			post.blog_id,
+			post.url,
+			post.title,
+			post.content,
+			post.published_at,
+			post.created_at,
+			post.updated_at
 		FROM post
 		WHERE post.blog_id = $1
-		ORDER BY published_at DESC
+		ORDER BY post.published_at DESC
 		LIMIT $2 OFFSET $3`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)

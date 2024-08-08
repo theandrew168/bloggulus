@@ -91,14 +91,14 @@ func (s *AccountStorage) Create(account *model.Account) error {
 func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
 	stmt := `
 		SELECT
-			id,
-			username,
-			password_hash,
-			is_admin,
-			created_at,
-			updated_at
+			account.id,
+			account.username,
+			account.password_hash,
+			account.is_admin,
+			account.created_at,
+			account.updated_at
 		FROM account
-		WHERE id = $1`
+		WHERE account.id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -119,14 +119,14 @@ func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
 func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error) {
 	stmt := `
 		SELECT
-			id,
-			username,
-			password_hash,
-			is_admin,
-			created_at,
-			updated_at
+			account.id,
+			account.username,
+			account.password_hash,
+			account.is_admin,
+			account.created_at,
+			account.updated_at
 		FROM account
-		WHERE username = $1`
+		WHERE account.username = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()

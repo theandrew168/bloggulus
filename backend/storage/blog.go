@@ -103,15 +103,15 @@ func (s *BlogStorage) Create(blog *model.Blog) error {
 func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
 	stmt := `
 		SELECT
-			id,
-			feed_url,
-			site_url,
-			title,
-			etag,
-			last_modified,
-			synced_at,
-			created_at,
-			updated_at
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title,
+			blog.etag,
+			blog.last_modified,
+			blog.synced_at,
+			blog.created_at,
+			blog.updated_at
 		FROM blog
 		WHERE id = $1`
 
@@ -134,17 +134,17 @@ func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
 func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	stmt := `
 		SELECT
-			id,
-			feed_url,
-			site_url,
-			title,
-			etag,
-			last_modified,
-			synced_at,
-			created_at,
-			updated_at
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title,
+			blog.etag,
+			blog.last_modified,
+			blog.synced_at,
+			blog.created_at,
+			blog.updated_at
 		FROM blog
-		WHERE feed_url = $1`
+		WHERE blog.feed_url = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -165,17 +165,17 @@ func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
 	stmt := `
 		SELECT
-			id,
-			feed_url,
-			site_url,
-			title,
-			etag,
-			last_modified,
-			synced_at,
-			created_at,
-			updated_at
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title,
+			blog.etag,
+			blog.last_modified,
+			blog.synced_at,
+			blog.created_at,
+			blog.updated_at
 		FROM blog
-		ORDER BY created_at DESC
+		ORDER BY blog.created_at DESC
 		LIMIT $1 OFFSET $2`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
@@ -220,7 +220,7 @@ func (s *BlogStorage) ListByAccount(account *model.Account, limit, offset int) (
 		INNER JOIN account_blog
 			ON account_blog.blog_id = blog.id
 		WHERE account_blog.account_id = $1
-		ORDER BY created_at DESC
+		ORDER BY blog.created_at DESC
 		LIMIT $2 OFFSET $3`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
@@ -249,20 +249,21 @@ func (s *BlogStorage) ListByAccount(account *model.Account, limit, offset int) (
 	return blogs, nil
 }
 
+// DEPRECATED
 func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	stmt := `
 		SELECT
-			id,
-			feed_url,
-			site_url,
-			title,
-			etag,
-			last_modified,
-			synced_at,
-			created_at,
-			updated_at
+			blog.id,
+			blog.feed_url,
+			blog.site_url,
+			blog.title,
+			blog.etag,
+			blog.last_modified,
+			blog.synced_at,
+			blog.created_at,
+			blog.updated_at
 		FROM blog
-		ORDER BY created_at DESC`
+		ORDER BY blog.created_at DESC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -324,7 +325,7 @@ func (s *BlogStorage) Update(blog *model.Blog) error {
 			synced_at = $6,
 			updated_at = $7
 		WHERE id = $8
-		  AND updated_at = $9
+			AND updated_at = $9
 		RETURNING updated_at`
 
 	row, err := marshalBlog(blog)

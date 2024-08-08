@@ -90,14 +90,14 @@ func (s *TokenStorage) Create(token *model.Token) error {
 func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
 	stmt := `
 		SELECT
-			id,
-			account_id,
-			hash,
-			expires_at,
-			created_at,
-			updated_at
+			token.id,
+			token.account_id,
+			token.hash,
+			token.expires_at,
+			token.created_at,
+			token.updated_at
 		FROM token
-		WHERE id = $1`
+		WHERE token.id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()

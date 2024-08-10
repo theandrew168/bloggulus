@@ -3,7 +3,6 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
@@ -71,31 +70,6 @@ func TestBlogList(t *testing.T) {
 	limit := 3
 	offset := 0
 	blogs, err := store.Blog().List(limit, offset)
-	test.AssertNilError(t, err)
-
-	test.AssertEqual(t, len(blogs), limit)
-}
-
-func TestBlogListByAccount(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	account, _ := test.CreateAccount(t, store)
-
-	blogs := []*model.Blog{
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-	}
-	for _, blog := range blogs {
-		test.CreateAccountBlog(t, store, account, blog)
-	}
-
-	limit := 3
-	offset := 0
-	blogs, err := store.Blog().ListByAccount(account, limit, offset)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(blogs), limit)

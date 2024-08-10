@@ -204,51 +204,6 @@ func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
 	return blogs, nil
 }
 
-func (s *BlogStorage) ListByAccount(account *model.Account, limit, offset int) ([]*model.Blog, error) {
-	stmt := `
-		SELECT
-			blog.id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title,
-			blog.etag,
-			blog.last_modified,
-			blog.synced_at,
-			blog.created_at,
-			blog.updated_at
-		FROM blog
-		INNER JOIN account_blog
-			ON account_blog.blog_id = blog.id
-		WHERE account_blog.account_id = $1
-		ORDER BY blog.created_at DESC
-		LIMIT $2 OFFSET $3`
-
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := s.conn.Query(ctx, stmt, account.ID(), limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	blogRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbBlog])
-	if err != nil {
-		return nil, postgres.CheckListError(err)
-	}
-
-	var blogs []*model.Blog
-	for _, row := range blogRows {
-		blog, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		blogs = append(blogs, blog)
-	}
-
-	return blogs, nil
-}
-
 // DEPRECATED
 func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	stmt := `

@@ -13,11 +13,9 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/feed/mock"
-	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
-	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 type jsonBlog struct {
@@ -193,93 +191,6 @@ func TestHandleBlogListPagination(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", url, nil)
 		h.ServeHTTP(w, r)
-
-		rr := w.Result()
-		respBody, err := io.ReadAll(rr.Body)
-		test.AssertNilError(t, err)
-
-		test.AssertEqual(t, rr.StatusCode, http.StatusOK)
-
-		var resp struct {
-			Blogs []jsonBlog `json:"blogs"`
-		}
-		err = json.Unmarshal(respBody, &resp)
-		test.AssertNilError(t, err)
-
-		got := resp.Blogs
-		test.AssertEqual(t, len(got), tt.want)
-	}
-}
-
-func TestHandleBlogListFollowing(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	account, _ := test.CreateAccount(t, store)
-	blog := test.CreateBlog(t, store)
-	test.CreateAccountBlog(t, store, account, blog)
-
-	h := api.HandleBlogListFollowing(store)
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/blogs/following", nil)
-	h.ServeHTTP(w, util.ContextSetAccount(r, account))
-
-	rr := w.Result()
-	respBody, err := io.ReadAll(rr.Body)
-	test.AssertNilError(t, err)
-
-	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
-
-	var resp struct {
-		Count int        `json:"count"`
-		Blogs []jsonBlog `json:"blogs"`
-	}
-	err = json.Unmarshal(respBody, &resp)
-	test.AssertNilError(t, err)
-
-	test.AssertAtLeast(t, resp.Count, 1)
-	test.AssertAtLeast(t, len(resp.Blogs), 1)
-}
-
-func TestHandleBlogListFollowingPagination(t *testing.T) {
-	t.Parallel()
-
-	store, closer := test.NewStorage(t)
-	defer closer()
-
-	account, _ := test.CreateAccount(t, store)
-
-	// create 5 blogs to test with
-	blogs := []*model.Blog{
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-		test.CreateBlog(t, store),
-	}
-	for _, blog := range blogs {
-		test.CreateAccountBlog(t, store, account, blog)
-	}
-
-	tests := []struct {
-		size int
-		want int
-	}{
-		{1, 1},
-		{3, 3},
-		{5, 5},
-	}
-
-	h := api.HandleBlogListFollowing(store)
-
-	for _, tt := range tests {
-		url := fmt.Sprintf("/blogs/following?size=%d", tt.size)
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", url, nil)
-		h.ServeHTTP(w, util.ContextSetAccount(r, account))
 
 		rr := w.Result()
 		respBody, err := io.ReadAll(rr.Body)

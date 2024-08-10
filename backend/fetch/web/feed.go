@@ -22,6 +22,7 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 	if err != nil {
 		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
+	req.Header.Set("User-Agent", UserAgent)
 
 	if etag != "" {
 		req.Header.Set("If-None-Match", etag)

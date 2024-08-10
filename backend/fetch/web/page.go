@@ -46,7 +46,13 @@ func NewPageFetcher() *PageFetcher {
 }
 
 func (f *PageFetcher) FetchPage(url string) (string, error) {
-	resp, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fetch.ErrUnreachablePage
+	}
+	req.Header.Set("User-Agent", UserAgent)
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", fetch.ErrUnreachablePage
 	}

@@ -4,6 +4,7 @@ export type FetchParams = {
 	method?: string;
 	body?: string;
 	authRequired?: boolean;
+	ignoreNotFound?: boolean;
 };
 
 // TODO: Fetch initial "redirect to login" w/ expired tokens.
@@ -42,6 +43,11 @@ export async function fetchAPI(url: string, params?: FetchParams): Promise<Respo
 	if (resp.status === 401) {
 		localStorage.removeItem("token");
 		throw redirect("/login");
+	}
+
+	// If ignoring 404s, return the response without throwing.
+	if (params?.ignoreNotFound && resp.status === 404) {
+		return resp;
 	}
 
 	// If the input wasn't valid, return the errors back to the form.

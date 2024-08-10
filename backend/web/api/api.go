@@ -27,16 +27,20 @@ func Handler(store *storage.Storage, syncService *service.SyncService) http.Hand
 	mux.Handle("DELETE /blogs/{blogID}", adminRequired(HandleBlogDelete(store)))
 
 	// Follow a blog: HandleBlogFollow
-	// POST /blogs/{blogID}/follow -> 204
+	// POST /blogs/{blogID}/follow -> 204 / 422
 	mux.Handle("POST /blogs/{blogID}/follow", accountRequired(HandleBlogFollow(store)))
 
 	// Unfollow a blog: HandleBlogUnfollow
-	// POST /blogs/{blogID}/unfollow -> 204
+	// POST /blogs/{blogID}/unfollow -> 204 / 422
 	mux.Handle("POST /blogs/{blogID}/unfollow", accountRequired(HandleBlogUnfollow(store)))
 
 	// See what blogs the auth'd account follows (GH style): HandleBlogListFollowing
 	// GET /blogs/following -> []Blog
 	mux.Handle("GET /blogs/following", accountRequired(HandleBlogListFollowing(store)))
+
+	// Check if the account follows a specific blog: HandleBlogFollowing
+	// GET /blogs/{blogID}/following -> 204 / 404
+	// mux.Handle("GET /blogs/{blogID}/following", accountRequired(HandleBlogFollowing(store)))
 
 	mux.Handle("GET /blogs/{blogID}/posts", accountRequired(HandlePostList(store)))
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", accountRequired(HandlePostRead(store)))

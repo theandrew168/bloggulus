@@ -48,6 +48,34 @@ func (s *AccountBlogStorage) Create(account *model.Account, blog *model.Blog) er
 	return nil
 }
 
+func (s *AccountBlogStorage) Count(account *model.Account, blog *model.Blog) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM account_blog
+		WHERE account_id = $1
+			AND blog_id = $2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	args := []any{
+		account.ID(),
+		blog.ID(),
+	}
+
+	rows, err := s.conn.Query(ctx, stmt, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
 func (s *AccountBlogStorage) Delete(account *model.Account, blog *model.Blog) error {
 	stmt := `
 		DELETE FROM account_blog

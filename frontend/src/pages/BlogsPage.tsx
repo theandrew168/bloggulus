@@ -9,6 +9,15 @@ type BlogsAllAndFollowing = {
 	following: BlogsResponse;
 };
 
+// type BlogWithFollowing = Blog & {
+// 	isFollowing: boolean;
+// };
+
+// type BlogsWithFollowing = {
+// 	count: number;
+// 	blogs: BlogWithFollowing[];
+// };
+
 export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 	const search = new URLSearchParams();
 	const url = new URL(request.url);

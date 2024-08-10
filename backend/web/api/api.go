@@ -40,7 +40,7 @@ func Handler(store *storage.Storage, syncService *service.SyncService) http.Hand
 
 	// Check if the account follows a specific blog: HandleBlogFollowing
 	// GET /blogs/{blogID}/following -> 204 / 404
-	// mux.Handle("GET /blogs/{blogID}/following", accountRequired(HandleBlogFollowing(store)))
+	mux.Handle("GET /blogs/{blogID}/following", accountRequired(HandleBlogFollowing(store)))
 
 	mux.Handle("GET /blogs/{blogID}/posts", accountRequired(HandlePostList(store)))
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", accountRequired(HandlePostRead(store)))

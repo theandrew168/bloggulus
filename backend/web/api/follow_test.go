@@ -55,3 +55,34 @@ func TestHandleBlogUnfollow(t *testing.T) {
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusNoContent)
 }
+
+func TestHandleBlogFollowing(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	h := api.HandleBlogFollowing(store)
+
+	account, _ := test.CreateAccount(t, store)
+	blog := test.CreateBlog(t, store)
+
+	url := fmt.Sprintf("/blogs/%s/following", blog.ID())
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", url, nil)
+	r.SetPathValue("blogID", blog.ID().String())
+	h.ServeHTTP(w, util.ContextSetAccount(r, account))
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusNotFound)
+
+	test.CreateAccountBlog(t, store, account, blog)
+
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest("GET", url, nil)
+	r.SetPathValue("blogID", blog.ID().String())
+	h.ServeHTTP(w, util.ContextSetAccount(r, account))
+
+	rr = w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusNoContent)
+}

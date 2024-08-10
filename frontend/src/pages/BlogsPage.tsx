@@ -4,6 +4,11 @@ import { fetchAPI } from "../fetch";
 import type { BlogsResponse } from "../types";
 import Button from "../components/Button";
 
+type BlogsAllAndFollowing = {
+	all: BlogsResponse;
+	following: BlogsResponse;
+};
+
 export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 	const search = new URLSearchParams();
 	const url = new URL(request.url);
@@ -16,9 +21,12 @@ export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const resp = await fetchAPI("/api/v1/blogs?" + search, { authRequired: true });
-	const blogs: BlogsResponse = await resp.json();
-	return blogs;
+	const allResp = await fetchAPI("/api/v1/blogs?" + search, { authRequired: true });
+	const allBlogs: BlogsResponse = await allResp.json();
+
+	const followingResp = await fetchAPI("/api/v1/blogs/following?" + search, { authRequired: true });
+	const followingBlogs: BlogsResponse = await followingResp.json();
+	return { all: allBlogs, following: followingBlogs };
 }
 
 export async function blogsPageAction({ request }: ActionFunctionArgs) {
@@ -39,7 +47,7 @@ export async function blogsPageAction({ request }: ActionFunctionArgs) {
 }
 
 export default function BlogsPage() {
-	const { blogs } = useLoaderData() as BlogsResponse;
+	const { all, following } = useLoaderData() as BlogsAllAndFollowing;
 	return (
 		<div className="container mx-auto">
 			<h1 className="text-lg font-semibold mt-6 mb-2">Blogs</h1>
@@ -54,8 +62,17 @@ export default function BlogsPage() {
 					<Button type="submit">Add</Button>
 				</Form>
 			</div>
+			<h2 className="text-lg font-semibold">Following Blogs</h2>
 			<div className="mb-4">
-				{blogs.map((blog) => (
+				{following.blogs.map((blog) => (
+					<div key={blog.id}>
+						<Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+					</div>
+				))}
+			</div>
+			<h2 className="text-lg font-semibold">All Blogs</h2>
+			<div className="mb-4">
+				{all.blogs.map((blog) => (
 					<div key={blog.id}>
 						<Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
 					</div>

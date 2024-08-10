@@ -48,7 +48,7 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 	fetchFeedResponse := fetch.FetchFeedResponse{
 		Feed:         string(body),
 		ETag:         resp.Header.Get("ETag"),
-		LastModified: resp.Header.Get("LastModified"),
+		LastModified: resp.Header.Get("Last-Modified"),
 	}
 
 	return fetchFeedResponse, nil

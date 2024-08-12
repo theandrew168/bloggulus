@@ -109,7 +109,7 @@ func (s *SyncService) SyncAllBlogs() error {
 			}
 
 			slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
-			_, err = s.SyncBlog(blog.FeedURL())
+			_, err := s.SyncBlog(blog.FeedURL())
 			if err != nil {
 				slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
 				return

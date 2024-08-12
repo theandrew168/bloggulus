@@ -20,8 +20,6 @@ import (
 const (
 	// Check for new posts every SyncInterval.
 	SyncInterval = 2 * time.Hour
-	// Since blogs are synced at startup, ensure they don't get synced more often than every SyncCooldown.
-	SyncCooldown = 1 * time.Hour
 
 	// How many blogs to sync at once.
 	SyncConcurrency = 8
@@ -101,9 +99,9 @@ func (s *SyncService) SyncAllBlogs() error {
 		go func(blog *model.Blog) {
 			defer sem.Release(1)
 
-			// don't sync a given blog more than once per SyncCooldown
+			// don't sync a given blog more than once per SyncInterval
 			delta := now.Sub(blog.SyncedAt())
-			if delta < SyncCooldown {
+			if delta < SyncInterval {
 				slog.Info("skipping blog", "title", blog.Title(), "id", blog.ID())
 				return
 			}

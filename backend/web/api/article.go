@@ -38,6 +38,8 @@ func HandleArticleList(store *storage.Storage) http.Handler {
 		Articles []jsonArticle `json:"articles"`
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		account, isLoggedIn := util.ContextGetAccount(r)
+
 		e := util.NewErrors()
 		qs := r.URL.Query()
 
@@ -62,29 +64,58 @@ func HandleArticleList(store *storage.Storage) http.Handler {
 		var count int
 		var articles []*model.Article
 
+		// Two levels of decision making here:
+		// 1. Is the user logged in?
+		// 2. Is the user searching?
 		var g errgroup.Group
-		if q != "" {
-			g.Go(func() error {
-				var err error
-				count, err = store.Article().CountSearch(q)
-				return err
-			})
-			g.Go(func() error {
-				var err error
-				articles, err = store.Article().ListSearch(q, limit, offset)
-				return err
-			})
+		if isLoggedIn {
+			if q != "" {
+				g.Go(func() error {
+					var err error
+					count, err = store.Article().CountSearchByAccount(account, q)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = store.Article().ListSearchByAccount(account, q, limit, offset)
+					return err
+				})
+			} else {
+				g.Go(func() error {
+					var err error
+					count, err = store.Article().CountByAccount(account)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = store.Article().ListByAccount(account, limit, offset)
+					return err
+				})
+			}
 		} else {
-			g.Go(func() error {
-				var err error
-				count, err = store.Article().Count()
-				return err
-			})
-			g.Go(func() error {
-				var err error
-				articles, err = store.Article().List(limit, offset)
-				return err
-			})
+			if q != "" {
+				g.Go(func() error {
+					var err error
+					count, err = store.Article().CountSearch(q)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = store.Article().ListSearch(q, limit, offset)
+					return err
+				})
+			} else {
+				g.Go(func() error {
+					var err error
+					count, err = store.Article().Count()
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = store.Article().List(limit, offset)
+					return err
+				})
+			}
 		}
 
 		err := g.Wait()

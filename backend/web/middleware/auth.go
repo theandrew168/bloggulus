@@ -29,9 +29,7 @@ func Authenticate(store *storage.Storage) Middleware {
 
 			// Otherwise, we expect the value of the Authorization header to be in the format
 			// "Bearer <token>". We try to split this into its constituent parts, and if the
-			// header isn't in the expected format we return a 401 Unauthorized response
-			// using the invalidAuthenticationTokenResponse() helper (which we will create
-			// in a moment).
+			// header isn't in the expected format we return a 401 Unauthorized response.
 			headerParts := strings.Split(authorizationHeader, " ")
 			if len(headerParts) != 2 || headerParts[0] != "Bearer" {
 				util.UnauthorizedResponse(w, r)

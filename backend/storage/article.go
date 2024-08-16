@@ -94,6 +94,63 @@ func (s *ArticleStorage) List(limit, offset int) ([]*model.Article, error) {
 	return articles, nil
 }
 
+func (s *ArticleStorage) ListByAccount(account *model.Account, limit, offset int) ([]*model.Article, error) {
+	stmt := `
+		WITH latest AS (
+			SELECT
+				post.id
+			FROM post
+			INNER JOIN blog
+				ON blog.id = post.blog_id
+			INNER JOIN account_blog
+				ON account_blog.blog_id = blog.id
+				AND account_blog.account_id = $1
+			ORDER BY post.published_at DESC
+			LIMIT $2 OFFSET $3
+		)
+		SELECT
+			post.title,
+			post.url,
+			blog.title as blog_title,
+			blog.site_url as blog_url,
+			post.published_at,
+			array_remove(array_agg(tag.name ORDER BY ts_rank_cd(post.fts_data, plainto_tsquery('english', tag.name)) DESC), NULL) as tags
+		FROM latest
+		INNER JOIN post
+			ON post.id = latest.id
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		LEFT JOIN tag
+			ON plainto_tsquery('english', tag.name) @@ post.fts_data
+		GROUP BY 1,2,3,4,5
+		ORDER BY post.published_at DESC`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, account.ID(), limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
+	if err != nil {
+		return nil, postgres.CheckListError(err)
+	}
+
+	var articles []*model.Article
+	for _, row := range articleRows {
+		article, err := row.unmarshal()
+		if err != nil {
+			return nil, err
+		}
+
+		articles = append(articles, article)
+	}
+
+	return articles, nil
+}
+
 func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*model.Article, error) {
 	stmt := `
 		WITH relevant AS (
@@ -156,6 +213,32 @@ func (s *ArticleStorage) Count() (int, error) {
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
+func (s *ArticleStorage) CountByAccount(account *model.Account) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		INNER JOIN account_blog
+			ON account_blog.blog_id = blog.id
+			AND account_blog.account_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := s.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return 0, err
 	}

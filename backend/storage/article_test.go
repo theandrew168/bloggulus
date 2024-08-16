@@ -23,6 +23,34 @@ func TestArticleList(t *testing.T) {
 	test.AssertEqual(t, len(articles), 1)
 }
 
+func TestArticleListByAccount(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	account, _ := test.CreateAccount(t, store)
+
+	followedBlog := test.CreateBlog(t, store)
+	test.CreatePost(t, store, followedBlog)
+	test.CreatePost(t, store, followedBlog)
+	test.CreatePost(t, store, followedBlog)
+
+	unfollowedBlog := test.CreateBlog(t, store)
+	test.CreatePost(t, store, unfollowedBlog)
+	test.CreatePost(t, store, unfollowedBlog)
+	test.CreatePost(t, store, unfollowedBlog)
+
+	test.CreateAccountBlog(t, store, account, followedBlog)
+
+	// Query for 5 posts from blogs followed by this account.
+	articles, err := store.Article().ListByAccount(account, 5, 0)
+	test.AssertNilError(t, err)
+
+	// We should only get the three posts associated with the followed blog.
+	test.AssertEqual(t, len(articles), 3)
+}
+
 func TestArticleListSearch(t *testing.T) {
 	t.Parallel()
 
@@ -82,6 +110,32 @@ func TestArticleCount(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
+}
+
+func TestArticleCountByAccount(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	account, _ := test.CreateAccount(t, store)
+
+	followedBlog := test.CreateBlog(t, store)
+	test.CreatePost(t, store, followedBlog)
+	test.CreatePost(t, store, followedBlog)
+	test.CreatePost(t, store, followedBlog)
+
+	unfollowedBlog := test.CreateBlog(t, store)
+	test.CreatePost(t, store, unfollowedBlog)
+	test.CreatePost(t, store, unfollowedBlog)
+	test.CreatePost(t, store, unfollowedBlog)
+
+	test.CreateAccountBlog(t, store, account, followedBlog)
+
+	// We should only count the three posts associated with the followed blog.
+	count, err := store.Article().CountByAccount(account)
+	test.AssertNilError(t, err)
+	test.AssertEqual(t, count, 3)
 }
 
 func TestArticleCountSearch(t *testing.T) {

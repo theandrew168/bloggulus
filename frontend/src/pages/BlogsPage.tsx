@@ -1,16 +1,22 @@
-import { Form, Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
+import React from "react";
+import {
+	Await,
+	defer,
+	Form,
+	Link,
+	useLoaderData,
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+} from "react-router-dom";
 
 import { fetchAPI } from "../fetch";
 import type { Blog, BlogsResponse } from "../types";
 import Button from "../components/Button";
 
-type BlogWithFollowing = Blog & {
-	isFollowing: boolean;
-};
-
-type BlogsWithFollowingResponse = {
+type BlogsWithDeferredFollowing = {
 	count: number;
-	blogs: BlogWithFollowing[];
+	blogs: Blog[];
+	following: Record<string, Promise<Response>>;
 };
 
 export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
@@ -29,22 +35,21 @@ export async function blogsPageLoader({ request }: LoaderFunctionArgs) {
 	const blogsResp = await fetchAPI("/api/v1/blogs?" + search, { authRequired: true });
 	const blogs: BlogsResponse = await blogsResp.json();
 
-	// For each blog, check if it is being followed.
-	const blogsWithFollowing: BlogWithFollowing[] = await Promise.all(
-		blogs.blogs.map(async (blog) => {
-			const followingResp = await fetchAPI(`/api/v1/blogs/${blog.id}/following`, {
-				authRequired: true,
-				ignoreNotFound: true,
-			});
-			if (followingResp.status === 204) {
-				return { ...blog, isFollowing: true };
-			} else {
-				return { ...blog, isFollowing: false };
-			}
-		}),
+	// Build a mapping of blog IDs to their deferred following status (204 vs 404).
+	const following = blogs.blogs.reduce(
+		(acc, blog) => {
+			return {
+				...acc,
+				[blog.id]: fetchAPI(`/api/v1/blogs/${blog.id}/following`, {
+					authRequired: true,
+					ignoreNotFound: true,
+				}),
+			};
+		},
+		{} as Record<string, Promise<Response>>,
 	);
 
-	return { count: blogs.count, blogs: blogsWithFollowing };
+	return defer({ count: blogs.count, blogs: blogs.blogs, following });
 }
 
 export async function blogsPageAction({ request }: ActionFunctionArgs) {
@@ -86,8 +91,32 @@ export async function blogsPageAction({ request }: ActionFunctionArgs) {
 	return null;
 }
 
+// type FollowUnfollowButtonProps = {
+// 	blog: Blog;
+// };
+
+// function FollowUnfollowButton({ blog }: FollowUnfollowButtonProps) {
+// 	// Use useAsyncValue to get the awaited response.
+// 	const followingResponse = useAsyncValue() as Response;
+// 	return followingResponse.ok ? (
+// 		<Form method="POST">
+// 			<input type="hidden" name="id" value={blog.id} />
+// 			<Button type="submit" name="intent" value="unfollow">
+// 				Unfollow
+// 			</Button>
+// 		</Form>
+// 	) : (
+// 		<Form method="POST">
+// 			<input type="hidden" name="id" value={blog.id} />
+// 			<Button type="submit" name="intent" value="follow">
+// 				Follow
+// 			</Button>
+// 		</Form>
+// 	);
+// }
+
 export default function BlogsPage() {
-	const { blogs } = useLoaderData() as BlogsWithFollowingResponse;
+	const { blogs, following } = useLoaderData() as BlogsWithDeferredFollowing;
 	return (
 		<div className="container mx-auto">
 			<h1 className="text-lg font-semibold mt-6 mb-2">Blogs</h1>
@@ -108,21 +137,28 @@ export default function BlogsPage() {
 				{blogs.map((blog) => (
 					<div key={blog.id} className="mt-2 flex gap-4 items-center justify-between">
 						<Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
-						{blog.isFollowing ? (
-							<Form method="POST">
-								<input type="hidden" name="id" value={blog.id} />
-								<Button type="submit" name="intent" value="unfollow">
-									Unfollow
-								</Button>
-							</Form>
-						) : (
-							<Form method="POST">
-								<input type="hidden" name="id" value={blog.id} />
-								<Button type="submit" name="intent" value="follow">
-									Follow
-								</Button>
-							</Form>
-						)}
+						<React.Suspense fallback={<p>LOADING</p>}>
+							<Await resolve={following[blog.id]}>
+								{/* <FollowUnfollowButton blog={blog} /> */}
+								{(followingResponse: Response) =>
+									followingResponse.ok ? (
+										<Form method="POST">
+											<input type="hidden" name="id" value={blog.id} />
+											<Button type="submit" name="intent" value="unfollow">
+												Unfollow
+											</Button>
+										</Form>
+									) : (
+										<Form method="POST">
+											<input type="hidden" name="id" value={blog.id} />
+											<Button type="submit" name="intent" value="follow">
+												Follow
+											</Button>
+										</Form>
+									)
+								}
+							</Await>
+						</React.Suspense>
 					</div>
 				))}
 			</div>

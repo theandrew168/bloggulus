@@ -13,6 +13,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/feed/mock"
+	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
@@ -36,8 +37,8 @@ func TestHandleBlogCreate(t *testing.T) {
 	feed, err := mock.GenerateAtomFeed(blog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]string{
-		blog.FeedURL: feed,
+	feeds := map[string]fetch.FetchFeedResponse{
+		blog.FeedURL: {Feed: feed},
 	}
 
 	store, closer := test.NewStorage(t)

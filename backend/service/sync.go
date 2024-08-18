@@ -197,22 +197,28 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
-	if resp.Feed == "" {
-		slog.Info("no new content", "title", blog.Title(), "id", blog.ID())
-		return blog, nil
-	}
-
-	if resp.ETag != "" {
+	headersChanged := false
+	if resp.ETag != "" && resp.ETag != blog.ETag() {
+		headersChanged = true
 		blog.SetETag(resp.ETag)
 	}
 
-	if resp.LastModified != "" {
+	if resp.LastModified != "" && resp.LastModified != blog.LastModified() {
+		headersChanged = true
 		blog.SetLastModified(resp.LastModified)
 	}
 
-	err = s.store.Blog().Update(blog)
-	if err != nil {
-		return nil, err
+	// Update the blog's cache headers if changed.
+	if headersChanged {
+		err = s.store.Blog().Update(blog)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if resp.Feed == "" {
+		slog.Info("no new content", "title", blog.Title(), "id", blog.ID())
+		return blog, nil
 	}
 
 	feedBlog, err := feed.Parse(blog.FeedURL(), resp.Feed)

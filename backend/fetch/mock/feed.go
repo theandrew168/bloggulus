@@ -8,10 +8,10 @@ import (
 var _ fetch.FeedFetcher = (*FeedFetcher)(nil)
 
 type FeedFetcher struct {
-	feeds map[string]string
+	feeds map[string]fetch.FetchFeedResponse
 }
 
-func NewFeedFetcher(feeds map[string]string) *FeedFetcher {
+func NewFeedFetcher(feeds map[string]fetch.FetchFeedResponse) *FeedFetcher {
 	f := FeedFetcher{feeds: feeds}
 	return &f
 }
@@ -22,8 +22,5 @@ func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeed
 		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 
-	resp := fetch.FetchFeedResponse{
-		Feed: feed,
-	}
-	return resp, nil
+	return feed, nil
 }

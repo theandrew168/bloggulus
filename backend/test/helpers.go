@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	fetch "github.com/theandrew168/bloggulus/backend/fetch/mock"
+	"github.com/theandrew168/bloggulus/backend/fetch"
+	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
@@ -43,11 +44,11 @@ func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
 func NewSyncService(
 	t *testing.T,
 	store *storage.Storage,
-	feeds map[string]string,
+	feeds map[string]fetch.FetchFeedResponse,
 	pages map[string]string,
 ) *service.SyncService {
 	t.Helper()
 
-	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(feeds), fetch.NewPageFetcher(pages))
+	syncService := service.NewSyncService(store, fetchMock.NewFeedFetcher(feeds), fetchMock.NewPageFetcher(pages))
 	return syncService
 }

@@ -11,7 +11,7 @@ require (
 	github.com/klauspost/compress v1.17.9
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/prometheus/client_golang v1.20.0
+	github.com/prometheus/client_golang v1.20.1
 	github.com/slok/go-http-metrics v0.12.0
 	golang.org/x/crypto v0.26.0
 	golang.org/x/sync v0.8.0

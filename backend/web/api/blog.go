@@ -48,6 +48,8 @@ func HandleBlogCreate(store *storage.Storage, syncService *service.SyncService) 
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		account, isLoggedIn := util.ContextGetAccount(r)
+
 		e := util.NewErrors()
 		body := util.ReadBody(w, r)
 
@@ -99,6 +101,18 @@ func HandleBlogCreate(store *storage.Storage, syncService *service.SyncService) 
 				util.ServerErrorResponse(w, r, err)
 			}
 			return
+		}
+
+		// If the blog is being added by an auth'd user, have them follow it.
+		if isLoggedIn {
+			err = store.AccountBlog().Create(account, blog)
+			if err != nil {
+				// If the error is anything but a conflict (already followed), return a 500.
+				if !errors.Is(err, postgres.ErrConflict) {
+					util.ServerErrorResponse(w, r, err)
+					return
+				}
+			}
 		}
 
 		resp := response{

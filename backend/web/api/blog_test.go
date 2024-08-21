@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/api"
+	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
 type jsonBlog struct {
@@ -79,6 +81,72 @@ func TestHandleBlogCreate(t *testing.T) {
 	// Ensure the blog got created in the database.
 	_, err = store.Blog().Read(got.ID)
 	test.AssertNilError(t, err)
+}
+
+func TestHandleBlogCreateAndFollow(t *testing.T) {
+	t.Parallel()
+
+	feedBlog := feed.Blog{
+		FeedURL: test.RandomURL(20),
+		SiteURL: test.RandomURL(20),
+		Title:   "Example Blog",
+	}
+	feed, err := mock.GenerateAtomFeed(feedBlog)
+	test.AssertNilError(t, err)
+
+	feeds := map[string]fetch.FetchFeedResponse{
+		feedBlog.FeedURL: {Feed: feed},
+	}
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	account, _ := test.CreateAccount(t, store)
+	_, token := test.CreateToken(t, store, account)
+
+	// Make the account an admin via manual SQL.
+	err = store.Exec(context.Background(), "UPDATE account SET is_admin = TRUE WHERE id = $1", account.ID())
+	test.AssertNilError(t, err)
+
+	syncService := test.NewSyncService(t, store, feeds, nil)
+
+	// The authentication middleware is required to test this.
+	h := middleware.Use(api.HandleBlogCreate(store, syncService),
+		middleware.Authenticate(store),
+	)
+
+	req := map[string]string{
+		"feedURL": feedBlog.FeedURL,
+	}
+
+	reqBody, err := json.Marshal(req)
+	test.AssertNilError(t, err)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/blogs", bytes.NewReader(reqBody))
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	respBody, err := io.ReadAll(rr.Body)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, rr.StatusCode, http.StatusCreated)
+
+	var resp struct {
+		Blog jsonBlog `json:"blog"`
+	}
+	err = json.Unmarshal(respBody, &resp)
+	test.AssertNilError(t, err)
+
+	// Ensure the blog got created in the database.
+	blog, err := store.Blog().Read(resp.Blog.ID)
+	test.AssertNilError(t, err)
+
+	// Ensure the account follows the new blog.
+	count, err := store.AccountBlog().Count(account, blog)
+	test.AssertNilError(t, err)
+	test.AssertEqual(t, count, 1)
 }
 
 func TestHandleBlogRead(t *testing.T) {

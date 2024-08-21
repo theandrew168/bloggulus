@@ -2,8 +2,8 @@ import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 
 export type Props = {
 	type?: ButtonHTMLAttributes<HTMLButtonElement>["type"];
-	name?: ButtonHTMLAttributes<HTMLButtonElement>["name"];
-	value?: ButtonHTMLAttributes<HTMLButtonElement>["value"];
+	name?: string;
+	value?: string;
 };
 
 export default function Button({ type, name, value, children }: PropsWithChildren<Props>) {

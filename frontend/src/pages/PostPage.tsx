@@ -38,8 +38,12 @@ export default function PostPage() {
 		<div className="container mx-auto">
 			<h1 className="text-2xl mt-6 mb-2">{post.title}</h1>
 			<div className="mb-4">
-				<a href={post.url}>(URL)</a>
-				<Link to={`/blogs/${post.blogID}`}>(Blog)</Link>
+				<a className="hover:underline" href={post.url}>
+					(URL)
+				</a>
+				<Link className="hover:underline" to={`/blogs/${post.blogID}`}>
+					(Blog)
+				</Link>
 			</div>
 			<div className="mb-4">
 				<h2 className="text-2xl">Updated</h2>

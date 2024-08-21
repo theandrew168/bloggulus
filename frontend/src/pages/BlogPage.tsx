@@ -38,11 +38,15 @@ export async function blogPageAction({ request }: ActionFunctionArgs) {
 export default function BlogPage() {
 	const { blog, posts } = useLoaderData() as BlogResponse & PostsResponse;
 	return (
-		<div className="container mx-auto">
+		<div className="max-w-3xl px-6 md:px-0  mx-auto">
 			<h1 className="text-2xl mt-6 mb-2">{blog.title}</h1>
 			<div className="mb-4">
-				<a href={blog.siteURL}>(Site URL)</a>
-				<a href={blog.feedURL}>(Feed URL)</a>
+				<a className="hover:underline" href={blog.siteURL}>
+					(Site URL)
+				</a>
+				<a className="hover:underline" href={blog.feedURL}>
+					(Feed URL)
+				</a>
 			</div>
 			<div className="times">
 				<h2>Synced at:</h2>
@@ -63,7 +67,9 @@ export default function BlogPage() {
 				<h2 className="text-2xl">{posts.length} Posts</h2>
 				{posts.map((post) => (
 					<div key={post.id} className="flex justify-between">
-						<Link to={`/blogs/${blog.id}/posts/${post.id}`}>{post.title}</Link>
+						<Link className="hover:underline" to={`/blogs/${blog.id}/posts/${post.id}`}>
+							{post.title}
+						</Link>
 						<span>{new Date(post.publishedAt).toDateString()}</span>
 					</div>
 				))}

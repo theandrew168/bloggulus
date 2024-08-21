@@ -2,8 +2,8 @@ import React from "react";
 import {
 	Await,
 	defer,
-	Form,
 	Link,
+	useFetcher,
 	useLoaderData,
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
@@ -12,6 +12,8 @@ import {
 import { fetchAPI } from "../fetch";
 import type { Blog, BlogsResponse } from "../types";
 import Button from "../components/Button";
+import Toggle from "../components/Toggle";
+import DisabledToggle from "../components/DisabledToggle";
 
 type BlogsWithDeferredFollowing = {
 	count: number;
@@ -91,37 +93,14 @@ export async function blogsPageAction({ request }: ActionFunctionArgs) {
 	return null;
 }
 
-// type FollowUnfollowButtonProps = {
-// 	blog: Blog;
-// };
-
-// function FollowUnfollowButton({ blog }: FollowUnfollowButtonProps) {
-// 	// Use useAsyncValue to get the awaited response.
-// 	const followingResponse = useAsyncValue() as Response;
-// 	return followingResponse.ok ? (
-// 		<Form method="POST">
-// 			<input type="hidden" name="id" value={blog.id} />
-// 			<Button type="submit" name="intent" value="unfollow">
-// 				Unfollow
-// 			</Button>
-// 		</Form>
-// 	) : (
-// 		<Form method="POST">
-// 			<input type="hidden" name="id" value={blog.id} />
-// 			<Button type="submit" name="intent" value="follow">
-// 				Follow
-// 			</Button>
-// 		</Form>
-// 	);
-// }
-
 export default function BlogsPage() {
+	const fetcher = useFetcher();
 	const { blogs, following } = useLoaderData() as BlogsWithDeferredFollowing;
 	return (
-		<div className="container mx-auto">
+		<div className="max-w-3xl px-6 md:px-0 mx-auto">
 			<h1 className="text-lg font-semibold mt-6 mb-2">Blogs</h1>
 			<div className="mb-4">
-				<Form method="POST" className="flex flex-row gap-4">
+				<fetcher.Form method="POST" className="flex flex-row gap-4">
 					<input
 						id="feedURL"
 						name="feedURL"
@@ -131,32 +110,33 @@ export default function BlogsPage() {
 					<Button type="submit" name="intent" value="add">
 						Add
 					</Button>
-				</Form>
+				</fetcher.Form>
 			</div>
-			<div className="mb-4">
+			<div className="divide-y divide-gray-200">
 				{blogs.map((blog) => (
-					<div key={blog.id} className="mt-2 flex gap-4 items-center justify-between">
-						<Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
-						<React.Suspense fallback={<p>LOADING</p>}>
+					<div key={blog.id} className="py-2 flex gap-4 items-center justify-between">
+						<Link className="hover:underline" to={`/blogs/${blog.id}`}>
+							{blog.title}
+						</Link>
+						<React.Suspense fallback={<DisabledToggle />}>
 							<Await resolve={following[blog.id]}>
-								{/* <FollowUnfollowButton blog={blog} /> */}
-								{(followingResponse: Response) =>
-									followingResponse.ok ? (
-										<Form method="POST">
-											<input type="hidden" name="id" value={blog.id} />
-											<Button type="submit" name="intent" value="unfollow">
-												Unfollow
-											</Button>
-										</Form>
-									) : (
-										<Form method="POST">
-											<input type="hidden" name="id" value={blog.id} />
-											<Button type="submit" name="intent" value="follow">
-												Follow
-											</Button>
-										</Form>
-									)
-								}
+								{(followingResponse: Response) => (
+									<fetcher.Form method="POST">
+										<input type="hidden" name="id" value={blog.id} />
+										<Toggle
+											initiallyEnabled={followingResponse.ok}
+											onToggle={(enabled) => {
+												fetcher.submit(
+													{
+														id: blog.id,
+														intent: enabled ? "follow" : "unfollow",
+													},
+													{ method: "POST" },
+												);
+											}}
+										/>
+									</fetcher.Form>
+								)}
 							</Await>
 						</React.Suspense>
 					</div>

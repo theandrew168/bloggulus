@@ -1,4 +1,5 @@
 import { redirect } from "react-router-dom";
+import type { Token } from "./types";
 
 export type FetchParams = {
 	method?: string;
@@ -6,9 +7,6 @@ export type FetchParams = {
 	authRequired?: boolean;
 	ignoreNotFound?: boolean;
 };
-
-// TODO: Fetch initial "redirect to login" w/ expired tokens.
-// Maybe store the expiration client-side and check + clear if expired before fetching?
 
 /**
  * Perform a fetch request to the backend API using the "token" found in the
@@ -20,8 +18,23 @@ export async function fetchAPI(url: string, params?: FetchParams): Promise<Respo
 	const body = params?.body ?? null;
 	const authRequired = params?.authRequired ?? false;
 
+	// Lookup the token from localStorage and parse (if present).
+	const tokenRaw = localStorage.getItem("token");
+	let token: Token | undefined = tokenRaw ? JSON.parse(tokenRaw) : undefined;
+
+	// If a token exists but is expired (or will expire within the minute), clear it.
+	if (token) {
+		const now = new Date();
+		const expiresAt = new Date(token.expiresAt);
+		const expiresInMS = expiresAt.getTime() - now.getTime();
+		const oneMinuteMS = 60 * 1000;
+		if (expiresInMS < oneMinuteMS) {
+			localStorage.removeItem("token");
+			token = undefined;
+		}
+	}
+
 	// If no token is found but auth is required, redirect to the login page.
-	const token = localStorage.getItem("token");
 	if (!token && authRequired) {
 		throw redirect("/login");
 	}
@@ -29,7 +42,7 @@ export async function fetchAPI(url: string, params?: FetchParams): Promise<Respo
 	// Construct the request headers, optionally including the auth token.
 	const headers: Record<string, string> = {};
 	if (token) {
-		headers["Authorization"] = `Bearer ${token}`;
+		headers["Authorization"] = `Bearer ${token.value}`;
 	}
 
 	// Make the fetch request, optionally including the body.

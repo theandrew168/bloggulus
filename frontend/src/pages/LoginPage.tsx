@@ -22,7 +22,7 @@ export async function loginPageAction({ request }: ActionFunctionArgs) {
 	}
 
 	const token: TokenResponse = await resp.json();
-	localStorage.setItem("token", token.token.value);
+	localStorage.setItem("token", JSON.stringify(token.token));
 	return redirect("/");
 }
 

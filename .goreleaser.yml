@@ -2,7 +2,7 @@ version: 2
 
 before:
   hooks:
-    - make frontend
+    - make css
     - go mod tidy
 
 builds:

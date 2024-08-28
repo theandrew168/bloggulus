@@ -18,8 +18,10 @@ import (
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
-	"github.com/theandrew168/bloggulus/frontend"
 )
+
+//go:embed public
+var publicFS embed.FS
 
 //go:embed migrations
 var migrationsFS embed.FS
@@ -87,7 +89,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(frontend.Frontend, store, syncService)
+	webHandler := web.Handler(publicFS, store, syncService)
 
 	// let port be overridden by an env var
 	port := cfg.Port

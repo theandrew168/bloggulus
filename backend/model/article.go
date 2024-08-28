@@ -46,5 +46,8 @@ func (a *Article) PublishedAt() time.Time {
 }
 
 func (a *Article) Tags() []string {
+	if len(a.tags) > 3 {
+		return a.tags[:3]
+	}
 	return a.tags
 }

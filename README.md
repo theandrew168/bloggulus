@@ -10,7 +10,7 @@ Check out the [releases page](https://github.com/theandrew168/bloggulus/releases
 
 ### Setup
 
-This project depends on [Go](https://golang.org/dl/) and [NodeJS](https://nodejs.org/en).
+This project depends on [Go](https://golang.org/dl/) and the [Tailwind CLI](https://tailwindcss.com/blog/standalone-cli).
 
 ### Database
 
@@ -32,7 +32,7 @@ docker compose down
 
 ### Running
 
-Run the backend API and frontend SPA at the same time:
+Run the application and Tailwind CSS watcher at the same time:
 
 ```bash
 make -j run

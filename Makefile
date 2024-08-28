@@ -5,29 +5,23 @@
 default: build
 
 .PHONY: build
-build: frontend backend
+build: css
+	go build -o bloggulus main.go
 
-frontend/node_modules:
-	cd frontend && npm install
+.PHONY: css
+css:
+	tailwindcss -o public/css/tailwind.min.css --minify
 
-.PHONY: frontend
-frontend: frontend/node_modules
-	cd frontend && npm run build
-
-.PHONY: backend
-backend: frontend
-	go build -tags embed -o bloggulus main.go
-
-# run the backend and frontend concurrently (requires "-j" to work correctly)
+# run the application and tailwind watcher concurrently (requires "-j" to work correctly)
 .PHONY: run
-run: run-frontend run-backend
+run: run-app run-css
 
-.PHONY: run-frontend
-run-frontend:
-	cd frontend && npm run dev
+.PHONY: run-css
+run-css:
+	tailwindcss -o public/css/tailwind.min.css --minify --watch
 
-.PHONY: run-backend
-run-backend:
+.PHONY: run-app
+run-app:
 	go run main.go
 
 .PHONY: migrate
@@ -54,29 +48,14 @@ deploy: release
 	ssh -t derz@bloggulus.com sudo install /tmp/bloggulus /usr/local/bin/bloggulus
 	ssh -t derz@bloggulus.com sudo systemctl restart bloggulus
 
-.PHONY: format
-format: format-frontend format-backend
-
-.PHONY: format-frontend
-format-frontend: frontend/node_modules
-	cd frontend && npm run format
-
-.PHONY: format-backend
-format-backend:
+format:
 	gofmt -l -s -w .
 
 .PHONY: update
-update: update-frontend update-backend
-
-.PHONY: update-frontend
-update-frontend:
-	cd frontend && npm update --save
-
-.PHONY: update-backend
-update-backend:
+update:
 	go get -u ./...
 	go mod tidy
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus c.out dist/ frontend/dist/
+	rm -fr bloggulus c.out

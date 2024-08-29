@@ -13,7 +13,7 @@ import (
 )
 
 //go:embed index.html
-var html string
+var indexHTML string
 
 type IndexData struct {
 	Search       string
@@ -24,7 +24,7 @@ type IndexData struct {
 
 func HandleIndex(store *storage.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("index").Parse(html)
+		tmpl, err := template.New("index").Parse(indexHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

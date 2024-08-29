@@ -40,6 +40,12 @@ func Handler(
 	mux.Handle("/fonts/", publicHandler)
 
 	mux.Handle("/{$}", page.HandleIndex(store))
+	mux.Handle("GET /register", page.HandleRegister())
+	mux.Handle("POST /register", page.HandleRegisterForm(store))
 
-	return middleware.Use(mux, middleware.RecoverPanic())
+	return middleware.Use(mux,
+		middleware.RecoverPanic(),
+		middleware.SecureHeaders(),
+		middleware.LimitRequestBodySize(),
+	)
 }

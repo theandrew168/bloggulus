@@ -22,9 +22,6 @@ func Use(h http.Handler, mws ...Middleware) http.Handler {
 // Chain multiple middleware together (in the provided order).
 func Chain(mws ...Middleware) Middleware {
 	return func(h http.Handler) http.Handler {
-		for i := len(mws) - 1; i >= 0; i-- {
-			h = mws[i](h)
-		}
-		return h
+		return Use(h, mws...)
 	}
 }

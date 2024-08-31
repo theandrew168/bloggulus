@@ -51,6 +51,7 @@ func Handler(
 		w.Write([]byte("<h1>Bloggulus - Not Found</h1>"))
 	})
 
+	// Apply global middleware to all routes.
 	return middleware.Use(mux,
 		middleware.RecoverPanic(),
 		middleware.SecureHeaders(),

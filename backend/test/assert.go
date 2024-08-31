@@ -68,6 +68,18 @@ func AssertErrorIs(t *testing.T, got error, want error) {
 	}
 }
 
+func AssertErrorAs(t *testing.T, got error, want any) {
+	t.Helper()
+
+	if got == nil {
+		t.Fatalf("got: nil; want: %T", want)
+	}
+
+	if !errors.As(got, want) {
+		t.Fatalf("got %q; want: %T", got, want)
+	}
+}
+
 func AssertErrorContains(t *testing.T, got error, want string) {
 	t.Helper()
 

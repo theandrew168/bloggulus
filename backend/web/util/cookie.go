@@ -18,6 +18,8 @@ func NewSessionCookie(name, value string) http.Cookie {
 		Domain:   "",   // An empty domain will default to the server's base domain.
 		Secure:   true, // Only send cookies on secure connections (includes localhost).
 		HttpOnly: true, // Only send cookies via HTTP requests (not JS).
+		// Don't send cookies with cross-site requests but include when navigating
+		// to the origin site from an external site (like following a link).
 		SameSite: http.SameSiteLaxMode,
 	}
 	return cookie
@@ -25,9 +27,9 @@ func NewSessionCookie(name, value string) http.Cookie {
 
 // Create a permanent (not session) cookie with a given expiry.
 func NewPermanentCookie(name, value string, expiry time.Time) http.Cookie {
-	// Round the cookie's expiration up to nearest second.
+	// Round the cookie's expiration up to the nearest second.
 	cookie := NewSessionCookie(name, value)
-	cookie.Expires = time.Unix(expiry.Unix()+1, 0)
+	cookie.Expires = expiry
 	cookie.MaxAge = int(time.Until(expiry).Seconds() + 1)
 	return cookie
 }

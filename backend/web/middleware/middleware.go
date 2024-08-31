@@ -13,6 +13,9 @@ type Middleware func(http.Handler) http.Handler
 
 // Apply a sequence of middleware to a handler (in the provided order).
 func Use(h http.Handler, mws ...Middleware) http.Handler {
+	// Due to how these functions wrap the handler, we apply them
+	// in reverse order so that the first one supplied is the first
+	// one that runs.
 	for i := len(mws) - 1; i >= 0; i-- {
 		h = mws[i](h)
 	}

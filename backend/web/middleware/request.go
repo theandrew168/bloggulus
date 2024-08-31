@@ -2,9 +2,8 @@ package middleware
 
 import "net/http"
 
-const (
-	MaxRequestBodySize = 4096
-)
+// Limit the size of the request body to 4KB.
+const MaxRequestBodySize = 4 * 1024
 
 func LimitRequestBodySize() Middleware {
 	return func(next http.Handler) http.Handler {

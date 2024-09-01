@@ -1,4 +1,4 @@
-package query
+package finder
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type Article struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (q *Query) ListArticles(limit, offset int) ([]Article, error) {
+func (f *Finder) ListArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -51,7 +51,7 @@ func (q *Query) ListArticles(limit, offset int) ([]Article, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, limit, offset)
+	rows, err := f.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (q *Query) ListArticles(limit, offset int) ([]Article, error) {
 	return articles, nil
 }
 
-func (q *Query) ListArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
+func (f *Finder) ListArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -98,7 +98,7 @@ func (q *Query) ListArticlesByAccount(account *model.Account, limit, offset int)
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, account.ID(), limit, offset)
+	rows, err := f.conn.Query(ctx, stmt, account.ID(), limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (q *Query) ListArticlesByAccount(account *model.Account, limit, offset int)
 	return articles, nil
 }
 
-func (q *Query) SearchArticles(search string, limit, offset int) ([]Article, error) {
+func (f *Finder) SearchArticles(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -141,7 +141,7 @@ func (q *Query) SearchArticles(search string, limit, offset int) ([]Article, err
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, search, limit, offset)
+	rows, err := f.conn.Query(ctx, stmt, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (q *Query) SearchArticles(search string, limit, offset int) ([]Article, err
 	return articles, nil
 }
 
-func (q *Query) SearchArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
+func (f *Finder) SearchArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -189,7 +189,7 @@ func (q *Query) SearchArticlesByAccount(account *model.Account, search string, l
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, account.ID(), search, limit, offset)
+	rows, err := f.conn.Query(ctx, stmt, account.ID(), search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (q *Query) SearchArticlesByAccount(account *model.Account, search string, l
 	return articles, nil
 }
 
-func (q *Query) CountArticles() (int, error) {
+func (f *Finder) CountArticles() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -210,7 +210,7 @@ func (q *Query) CountArticles() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt)
+	rows, err := f.conn.Query(ctx, stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -223,7 +223,7 @@ func (q *Query) CountArticles() (int, error) {
 	return count, nil
 }
 
-func (q *Query) CountArticlesByAccount(account *model.Account) (int, error) {
+func (f *Finder) CountArticlesByAccount(account *model.Account) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -236,7 +236,7 @@ func (q *Query) CountArticlesByAccount(account *model.Account) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, account.ID())
+	rows, err := f.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return 0, err
 	}
@@ -249,7 +249,7 @@ func (q *Query) CountArticlesByAccount(account *model.Account) (int, error) {
 	return count, nil
 }
 
-func (q *Query) CountSearchArticles(search string) (int, error) {
+func (f *Finder) CountSearchArticles(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -258,7 +258,7 @@ func (q *Query) CountSearchArticles(search string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, search)
+	rows, err := f.conn.Query(ctx, stmt, search)
 	if err != nil {
 		return 0, err
 	}
@@ -271,7 +271,7 @@ func (q *Query) CountSearchArticles(search string) (int, error) {
 	return count, nil
 }
 
-func (q *Query) CountSearchArticlesByAccount(account *model.Account, search string) (int, error) {
+func (f *Finder) CountSearchArticlesByAccount(account *model.Account, search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -285,7 +285,7 @@ func (q *Query) CountSearchArticlesByAccount(account *model.Account, search stri
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := q.conn.Query(ctx, stmt, account.ID(), search)
+	rows, err := f.conn.Query(ctx, stmt, account.ID(), search)
 	if err != nil {
 		return 0, err
 	}

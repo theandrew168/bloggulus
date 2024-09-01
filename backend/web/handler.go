@@ -7,7 +7,7 @@ import (
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
@@ -17,7 +17,7 @@ import (
 func Handler(
 	public fs.FS,
 	store *storage.Storage,
-	query *query.Query,
+	find *finder.Finder,
 	syncService *service.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
@@ -41,7 +41,7 @@ func Handler(
 	mux.Handle("/css/", publicHandler)
 
 	// The main application routes start here.
-	mux.Handle("/{$}", page.HandleIndex(query))
+	mux.Handle("/{$}", page.HandleIndex(find))
 	mux.Handle("GET /register", page.HandleRegister())
 	mux.Handle("POST /register", page.HandleRegisterForm(store))
 	mux.Handle("GET /signin", page.HandleSignin())

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"golang.org/x/sync/errgroup"
 )
@@ -16,12 +16,12 @@ var indexHTML string
 
 type IndexData struct {
 	Search       string
-	Articles     []query.Article
+	Articles     []finder.Article
 	HasMorePages bool
 	NextPage     int
 }
 
-func HandleIndex(q *query.Query) http.Handler {
+func HandleIndex(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("index").Parse(indexHTML)
 		if err != nil {
@@ -46,29 +46,29 @@ func HandleIndex(q *query.Query) http.Handler {
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
 		var count int
-		var articles []query.Article
+		var articles []finder.Article
 
 		var g errgroup.Group
 		if search != "" {
 			g.Go(func() error {
 				var err error
-				count, err = q.CountSearchArticles(search)
+				count, err = find.CountSearchArticles(search)
 				return err
 			})
 			g.Go(func() error {
 				var err error
-				articles, err = q.SearchArticles(search, limit, offset)
+				articles, err = find.SearchArticles(search, limit, offset)
 				return err
 			})
 		} else {
 			g.Go(func() error {
 				var err error
-				count, err = q.CountArticles()
+				count, err = find.CountArticles()
 				return err
 			})
 			g.Go(func() error {
 				var err error
-				articles, err = q.ListArticles(limit, offset)
+				articles, err = find.ListArticles(limit, offset)
 				return err
 			})
 		}

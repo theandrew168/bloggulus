@@ -55,7 +55,7 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 		password := r.PostForm.Get("password")
 
 		// Validate the form values.
-		e := NewErrors()
+		e := util.NewErrors()
 		e.CheckRequired("username", username)
 		e.CheckRequired("password", password)
 

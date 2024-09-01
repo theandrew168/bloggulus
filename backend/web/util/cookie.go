@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	SessionIDCookieName = "session_id"
+	SessionCookieName = "bloggulus_session"
+	SessionCookieTTL  = 7 * 24 * time.Hour
 )
 
 // Create a session (not permanent) cookie that expires when the user's session ends.
@@ -25,19 +26,16 @@ func NewSessionCookie(name, value string) http.Cookie {
 	return cookie
 }
 
-// Create a permanent (not session) cookie with a given expiry.
-func NewPermanentCookie(name, value string, expiry time.Time) http.Cookie {
-	// Round the cookie's expiration up to the nearest second.
+// Create a permanent (not session) cookie with a given time-to-live.
+func NewPermanentCookie(name, value string, ttl time.Duration) http.Cookie {
 	cookie := NewSessionCookie(name, value)
-	cookie.Expires = expiry
-	cookie.MaxAge = int(time.Until(expiry).Seconds() + 1)
+	cookie.MaxAge = int(ttl.Seconds())
 	return cookie
 }
 
 // Create a cookie that is instantly expired.
 func NewExpiredCookie(name string) http.Cookie {
 	cookie := NewSessionCookie(name, "")
-	cookie.Expires = time.Unix(1, 0)
 	cookie.MaxAge = -1
 	return cookie
 }

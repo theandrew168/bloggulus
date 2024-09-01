@@ -51,6 +51,21 @@ func TestSessionRead(t *testing.T) {
 	test.AssertEqual(t, got.ID(), session.ID())
 }
 
+func TestSessionReadBySessionID(t *testing.T) {
+	t.Parallel()
+
+	store, closer := test.NewStorage(t)
+	defer closer()
+
+	account, _ := test.CreateAccount(t, store)
+	session, sessionID := test.CreateSession(t, store, account)
+
+	got, err := store.Session().ReadBySessionID(sessionID)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, got.ID(), session.ID())
+}
+
 func TestSessionDelete(t *testing.T) {
 	t.Parallel()
 

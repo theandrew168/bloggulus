@@ -13,31 +13,31 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-//go:embed register.html
-var registerHTML string
+//go:embed signin.html
+var signinHTML string
 
-type RegisterData struct {
+type SigninData struct {
 	Search   string
 	Username string
 	Errors   map[string]string
 }
 
-func HandleRegister() http.Handler {
+func HandleSignin() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("register").Parse(registerHTML)
+		tmpl, err := template.New("signin").Parse(signinHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		data := RegisterData{}
+		data := SigninData{}
 		tmpl.Execute(w, data)
 	})
 }
 
-func HandleRegisterForm(store *storage.Storage) http.Handler {
+func HandleSigninForm(store *storage.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("register").Parse(registerHTML)
+		tmpl, err := template.New("signin").Parse(signinHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -61,7 +61,7 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !e.OK() {
-			data := RegisterData{
+			data := SigninData{
 				Username: username,
 				Errors:   e,
 			}
@@ -69,21 +69,13 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		// Create a new account.
-		account, err := model.NewAccount(username, password)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		// Save the new the account in the database.
-		err = store.Account().Create(account)
+		account, err := store.Account().ReadByUsername(username)
 		if err != nil {
 			switch {
-			case errors.Is(err, postgres.ErrConflict):
-				// If a conflict occurs, re-render the form with an error.
-				e.Add("username", "Username is already taken")
-				data := RegisterData{
+			case errors.Is(err, postgres.ErrNotFound):
+				e.Add("username", "Invalid username or password")
+				e.Add("password", "Invalid username or password")
+				data := SigninData{
 					Username: username,
 					Errors:   e,
 				}
@@ -91,11 +83,20 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 			default:
 				http.Error(w, err.Error(), 500)
 			}
-
 			return
 		}
 
-		slog.Info("register", "username", username, "account_id", account.ID())
+		ok := account.PasswordMatches(password)
+		if !ok {
+			e.Add("username", "Invalid username or password")
+			e.Add("password", "Invalid username or password")
+			data := SigninData{
+				Username: username,
+				Errors:   e,
+			}
+			tmpl.Execute(w, data)
+			return
+		}
 
 		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
 		if err != nil {
@@ -109,11 +110,11 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		// Just set a session cookie (not a permanent one) after registration.
-		cookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
+		// Set a permanent cookie after signin.
+		cookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &cookie)
 
-		slog.Info("signin", "username", username, "account_id", account.ID(), "session_id", session.ID())
+		slog.Info("account signin", "username", username, "account_id", account.ID(), "session_id", session.ID())
 
 		// Redirect back to the index page.
 		http.Redirect(w, r, "/", http.StatusSeeOther)

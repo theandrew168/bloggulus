@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,6 +105,37 @@ func (s *SessionStorage) Read(id uuid.UUID) (*model.Session, error) {
 	defer cancel()
 
 	rows, err := s.conn.Query(ctx, stmt, id)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbSession])
+	if err != nil {
+		return nil, postgres.CheckReadError(err)
+	}
+
+	return row.unmarshal()
+}
+
+func (s *SessionStorage) ReadBySessionID(sessionID string) (*model.Session, error) {
+	stmt := `
+		SELECT
+			session.id,
+			session.account_id,
+			session.hash,
+			session.expires_at,
+			session.created_at,
+			session.updated_at
+		FROM session
+		WHERE session.hash = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	hashBytes := sha256.Sum256([]byte(sessionID))
+	hash := hex.EncodeToString(hashBytes[:])
+
+	rows, err := s.conn.Query(ctx, stmt, hash)
 	if err != nil {
 		return nil, err
 	}

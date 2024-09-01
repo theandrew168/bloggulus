@@ -42,6 +42,9 @@ func Handler(
 	mux.Handle("/{$}", page.HandleIndex(store))
 	mux.Handle("GET /register", page.HandleRegister())
 	mux.Handle("POST /register", page.HandleRegisterForm(store))
+	mux.Handle("GET /signin", page.HandleSignin())
+	mux.Handle("POST /signin", page.HandleSigninForm(store))
+	mux.Handle("POST /signout", page.HandleSignoutForm(store))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

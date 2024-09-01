@@ -57,16 +57,16 @@ func TestAccountReadByUsername(t *testing.T) {
 	test.AssertEqual(t, got.ID(), account.ID())
 }
 
-func TestAccountReadByToken(t *testing.T) {
+func TestAccountReadBySessionIDn(t *testing.T) {
 	t.Parallel()
 
 	store, closer := test.NewStorage(t)
 	defer closer()
 
 	account, _ := test.CreateAccount(t, store)
-	_, token := test.CreateToken(t, store, account)
+	_, sessionID := test.CreateSession(t, store, account)
 
-	got, err := store.Account().ReadByToken(token)
+	got, err := store.Account().ReadBySessionID(sessionID)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())

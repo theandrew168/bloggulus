@@ -144,7 +144,7 @@ func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error)
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) ReadByToken(token string) (*model.Account, error) {
+func (s *AccountStorage) ReadBySessionID(sessionID string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -154,14 +154,14 @@ func (s *AccountStorage) ReadByToken(token string) (*model.Account, error) {
 			account.created_at,
 			account.updated_at
 		FROM account
-		INNER JOIN token
-			ON token.account_id = account.id
-		WHERE token.hash = $1`
+		INNER JOIN session
+			ON session.account_id = account.id
+		WHERE session.hash = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	hashBytes := sha256.Sum256([]byte(token))
+	hashBytes := sha256.Sum256([]byte(sessionID))
 	hash := hex.EncodeToString(hashBytes[:])
 
 	rows, err := s.conn.Query(ctx, stmt, hash)

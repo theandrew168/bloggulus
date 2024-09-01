@@ -14,7 +14,7 @@ type Storage struct {
 	post        *PostStorage
 	tag         *TagStorage
 	account     *AccountStorage
-	token       *TokenStorage
+	session     *SessionStorage
 	accountBlog *AccountBlogStorage
 }
 
@@ -27,7 +27,7 @@ func New(conn postgres.Conn) *Storage {
 		post:        NewPostStorage(conn),
 		tag:         NewTagStorage(conn),
 		account:     NewAccountStorage(conn),
-		token:       NewTokenStorage(conn),
+		session:     NewSessionStorage(conn),
 		accountBlog: NewAccountBlogStorage(conn),
 	}
 	return &s
@@ -53,8 +53,8 @@ func (s *Storage) Account() *AccountStorage {
 	return s.account
 }
 
-func (s *Storage) Token() *TokenStorage {
-	return s.token
+func (s *Storage) Session() *SessionStorage {
+	return s.session
 }
 
 func (s *Storage) AccountBlog() *AccountBlogStorage {

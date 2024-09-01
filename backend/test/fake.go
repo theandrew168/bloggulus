@@ -55,15 +55,15 @@ func NewAccount(t *testing.T) (*model.Account, string) {
 	return account, password
 }
 
-func NewToken(t *testing.T, account *model.Account) (*model.Token, string) {
-	token, value, err := model.NewToken(
+func NewSession(t *testing.T, account *model.Account) (*model.Session, string) {
+	session, sessionID, err := model.NewSession(
 		account,
 		// expire in 24 hours
 		24*time.Hour,
 	)
 	AssertNilError(t, err)
 
-	return token, value
+	return session, sessionID
 }
 
 // mocks a blog and creates it in the database
@@ -122,18 +122,18 @@ func CreateAccount(t *testing.T, store *storage.Storage) (*model.Account, string
 	return account, password
 }
 
-// mocks a token and creates it in the database
-func CreateToken(t *testing.T, store *storage.Storage, account *model.Account) (*model.Token, string) {
+// mocks a session and creates it in the database
+func CreateSession(t *testing.T, store *storage.Storage, account *model.Account) (*model.Session, string) {
 	t.Helper()
 
-	// generate some random token data
-	token, value := NewToken(t, account)
+	// generate some random session data
+	session, sessionID := NewSession(t, account)
 
-	// create an example token
-	err := store.Token().Create(token)
+	// create an example session
+	err := store.Session().Create(session)
 	AssertNilError(t, err)
 
-	return token, value
+	return session, sessionID
 }
 
 // create an account blog in the database

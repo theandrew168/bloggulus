@@ -11,7 +11,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
-type dbToken struct {
+type dbSession struct {
 	ID        uuid.UUID `db:"id"`
 	AccountID uuid.UUID `db:"account_id"`
 	Hash      string    `db:"hash"`
@@ -20,49 +20,49 @@ type dbToken struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func marshalToken(token *model.Token) (dbToken, error) {
-	t := dbToken{
-		ID:        token.ID(),
-		AccountID: token.AccountID(),
-		Hash:      token.Hash(),
-		ExpiresAt: token.ExpiresAt(),
-		CreatedAt: token.CreatedAt(),
-		UpdatedAt: token.UpdatedAt(),
+func marshalSession(session *model.Session) (dbSession, error) {
+	s := dbSession{
+		ID:        session.ID(),
+		AccountID: session.AccountID(),
+		Hash:      session.Hash(),
+		ExpiresAt: session.ExpiresAt(),
+		CreatedAt: session.CreatedAt(),
+		UpdatedAt: session.UpdatedAt(),
 	}
-	return t, nil
+	return s, nil
 }
 
-func (t dbToken) unmarshal() (*model.Token, error) {
-	token := model.LoadToken(
-		t.ID,
-		t.AccountID,
-		t.Hash,
-		t.ExpiresAt,
-		t.CreatedAt,
-		t.UpdatedAt,
+func (s dbSession) unmarshal() (*model.Session, error) {
+	session := model.LoadSession(
+		s.ID,
+		s.AccountID,
+		s.Hash,
+		s.ExpiresAt,
+		s.CreatedAt,
+		s.UpdatedAt,
 	)
-	return token, nil
+	return session, nil
 }
 
-type TokenStorage struct {
+type SessionStorage struct {
 	conn postgres.Conn
 }
 
-func NewTokenStorage(conn postgres.Conn) *TokenStorage {
-	s := TokenStorage{
+func NewSessionStorage(conn postgres.Conn) *SessionStorage {
+	s := SessionStorage{
 		conn: conn,
 	}
 	return &s
 }
 
-func (s *TokenStorage) Create(token *model.Token) error {
+func (s *SessionStorage) Create(session *model.Session) error {
 	stmt := `
-		INSERT INTO token
+		INSERT INTO session
 			(id, account_id, hash, expires_at, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4, $5, $6)`
 
-	row, err := marshalToken(token)
+	row, err := marshalSession(session)
 	if err != nil {
 		return err
 	}
@@ -87,17 +87,17 @@ func (s *TokenStorage) Create(token *model.Token) error {
 	return nil
 }
 
-func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
+func (s *SessionStorage) Read(id uuid.UUID) (*model.Session, error) {
 	stmt := `
 		SELECT
-			token.id,
-			token.account_id,
-			token.hash,
-			token.expires_at,
-			token.created_at,
-			token.updated_at
-		FROM token
-		WHERE token.id = $1`
+			session.id,
+			session.account_id,
+			session.hash,
+			session.expires_at,
+			session.created_at,
+			session.updated_at
+		FROM session
+		WHERE session.id = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -107,7 +107,7 @@ func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
 		return nil, err
 	}
 
-	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbToken])
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbSession])
 	if err != nil {
 		return nil, postgres.CheckReadError(err)
 	}
@@ -115,13 +115,13 @@ func (s *TokenStorage) Read(id uuid.UUID) (*model.Token, error) {
 	return row.unmarshal()
 }
 
-func (s *TokenStorage) Delete(token *model.Token) error {
+func (s *SessionStorage) Delete(session *model.Session) error {
 	stmt := `
-		DELETE FROM token
+		DELETE FROM session
 		WHERE id = $1
 		RETURNING id`
 
-	err := token.CheckDelete()
+	err := session.CheckDelete()
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (s *TokenStorage) Delete(token *model.Token) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, token.ID())
+	rows, err := s.conn.Query(ctx, stmt, session.ID())
 	if err != nil {
 		return err
 	}

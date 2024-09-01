@@ -94,9 +94,8 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		slog.Info("account created", "username", username)
-
-		// TODO: Generate session ID, store session in DB, set session cookie.
+		slog.Info("account create", "username", username, "account_id", account.ID())
+		slog.Info("account login", "username", username, "account_id", account.ID())
 
 		// Redirect back to the index page.
 		http.Redirect(w, r, "/", http.StatusSeeOther)

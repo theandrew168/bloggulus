@@ -16,8 +16,8 @@ import (
 	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
 )
 
@@ -76,11 +76,11 @@ func run() error {
 	}
 
 	// init database storage
-	store := storage.New(pool)
+	repo := repository.New(pool)
 	find := finder.New(pool)
 
 	// init the sync service and do an initial sync
-	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
+	syncService := service.NewSyncService(repo, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
 	// let systemd know that we are good to go (no-op if not using systemd)
 	daemon.SdNotify(false, daemon.SdNotifyReady)
@@ -91,7 +91,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, store, find, syncService)
+	webHandler := web.Handler(publicFS, repo, find, syncService)
 
 	// let port be overridden by an env var
 	port := cfg.Port

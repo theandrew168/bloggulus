@@ -8,15 +8,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
-	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 )
 
 func Handler(
 	public fs.FS,
-	store *storage.Storage,
+	repo *repository.Repository,
 	find *finder.Finder,
 	syncService *service.SyncService,
 ) http.Handler {
@@ -43,10 +43,10 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("/{$}", page.HandleIndex(find))
 	mux.Handle("GET /register", page.HandleRegister())
-	mux.Handle("POST /register", page.HandleRegisterForm(store))
+	mux.Handle("POST /register", page.HandleRegisterForm(repo))
 	mux.Handle("GET /signin", page.HandleSignin())
-	mux.Handle("POST /signin", page.HandleSigninForm(store))
-	mux.Handle("POST /signout", page.HandleSignoutForm(store))
+	mux.Handle("POST /signin", page.HandleSigninForm(repo))
+	mux.Handle("POST /signout", page.HandleSignoutForm(repo))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

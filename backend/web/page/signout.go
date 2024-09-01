@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleSignoutForm(store *storage.Storage) http.Handler {
+func HandleSignoutForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionID, err := r.Cookie(util.SessionCookieName)
 		if err != nil {
@@ -22,7 +22,7 @@ func HandleSignoutForm(store *storage.Storage) http.Handler {
 		http.SetCookie(w, &cookie)
 
 		// Lookup the session by it's client-side session ID.
-		session, err := store.Session().ReadBySessionID(sessionID.Value)
+		session, err := repo.Session().ReadBySessionID(sessionID.Value)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -34,7 +34,7 @@ func HandleSignoutForm(store *storage.Storage) http.Handler {
 		}
 
 		// Delete the session from the database.
-		err = store.Session().Delete(session)
+		err = repo.Session().Delete(session)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):

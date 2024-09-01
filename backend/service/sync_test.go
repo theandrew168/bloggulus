@@ -15,7 +15,7 @@ import (
 func TestNewBlog(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedPost := feed.Post{
@@ -42,7 +42,7 @@ func TestNewBlog(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -55,7 +55,7 @@ func TestNewBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 	// fetch posts and verify count
-	posts, err := store.Post().List(blog, 20, 0)
+	posts, err := repo.Post().List(blog, 20, 0)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -69,7 +69,7 @@ func TestNewBlog(t *testing.T) {
 func TestExistingBlog(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedBlog := feed.Blog{
@@ -89,7 +89,7 @@ func TestExistingBlog(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -102,7 +102,7 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 	// fetch posts and verify count (should be none)
-	posts, err := store.Post().List(blog, 20, 0)
+	posts, err := repo.Post().List(blog, 20, 0)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 0)
 
@@ -126,7 +126,7 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err = store.Post().List(blog, 20, 0)
+	posts, err = repo.Post().List(blog, 20, 0)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -140,7 +140,7 @@ func TestExistingBlog(t *testing.T) {
 func TestUnreachableFeed(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedURL := test.RandomURL(20)
@@ -151,7 +151,7 @@ func TestUnreachableFeed(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	_, err := syncService.SyncBlog(feedURL)
 	test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
@@ -160,7 +160,7 @@ func TestUnreachableFeed(t *testing.T) {
 func TestSyncCooldown(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedBlog := feed.Blog{
@@ -180,7 +180,7 @@ func TestSyncCooldown(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// add a blog (sync now)
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -194,7 +194,7 @@ func TestSyncCooldown(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// refetch the blog's data
-	blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err = repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// syncedAt should not have changed
@@ -204,7 +204,7 @@ func TestSyncCooldown(t *testing.T) {
 func TestUpdatePostContent(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedPost := feed.Post{
@@ -230,14 +230,14 @@ func TestUpdatePostContent(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err := store.Post().List(blog, 20, 0)
+	posts, err := repo.Post().List(blog, 20, 0)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -260,7 +260,7 @@ func TestUpdatePostContent(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// refetch posts and verify count
-	posts, err = store.Post().List(blog, 20, 0)
+	posts, err = repo.Post().List(blog, 20, 0)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -273,7 +273,7 @@ func TestUpdatePostContent(t *testing.T) {
 func TestCacheHeaderOverwrite(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedBlog := feed.Blog{
@@ -293,7 +293,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -302,7 +302,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	// update the blog's ETag and LastModified to something non-empty
 	blog.SetETag("foo")
 	blog.SetLastModified("bar")
-	err = store.Blog().Update(blog)
+	err = repo.Blog().Update(blog)
 	test.AssertNilError(t, err)
 
 	// sync the blog again (will see empty ETag and LastModified values)
@@ -310,7 +310,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err = repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the existing ETag and LastModified values haven't been wiped out
@@ -322,7 +322,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 func TestCacheHeaderUpdate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	feedBlog := feed.Blog{
@@ -346,7 +346,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	pages := map[string]string{}
 	pageFetcher := fetchMock.NewPageFetcher(pages)
 
-	syncService := service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -363,14 +363,14 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher = fetchMock.NewFeedFetcher(feeds)
 
-	syncService = service.NewSyncService(store, feedFetcher, pageFetcher)
+	syncService = service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
 	_, err = syncService.SyncBlog(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = store.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err = repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the ETag and LastModified values got updated

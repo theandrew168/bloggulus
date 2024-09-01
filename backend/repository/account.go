@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -46,18 +46,18 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 	return account, nil
 }
 
-type AccountStorage struct {
+type AccountRepository struct {
 	conn postgres.Conn
 }
 
-func NewAccountStorage(conn postgres.Conn) *AccountStorage {
-	s := AccountStorage{
+func NewAccountRepository(conn postgres.Conn) *AccountRepository {
+	r := AccountRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *AccountStorage) Create(account *model.Account) error {
+func (r *AccountRepository) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
 			(id, username, password_hash, created_at, updated_at)
@@ -80,7 +80,7 @@ func (s *AccountStorage) Create(account *model.Account) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err = s.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -88,7 +88,7 @@ func (s *AccountStorage) Create(account *model.Account) error {
 	return nil
 }
 
-func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
+func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -103,7 +103,7 @@ func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (s *AccountStorage) Read(id uuid.UUID) (*model.Account, error) {
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error) {
+func (r *AccountRepository) ReadByUsername(username string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -131,7 +131,7 @@ func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error)
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, username)
+	rows, err := r.conn.Query(ctx, stmt, username)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (s *AccountStorage) ReadByUsername(username string) (*model.Account, error)
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) ReadBySessionID(sessionID string) (*model.Account, error) {
+func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -164,7 +164,7 @@ func (s *AccountStorage) ReadBySessionID(sessionID string) (*model.Account, erro
 	hashBytes := sha256.Sum256([]byte(sessionID))
 	hash := hex.EncodeToString(hashBytes[:])
 
-	rows, err := s.conn.Query(ctx, stmt, hash)
+	rows, err := r.conn.Query(ctx, stmt, hash)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (s *AccountStorage) ReadBySessionID(sessionID string) (*model.Account, erro
 	return row.unmarshal()
 }
 
-func (s *AccountStorage) Delete(account *model.Account) error {
+func (r *AccountRepository) Delete(account *model.Account) error {
 	stmt := `
 		DELETE FROM account
 		WHERE id = $1
@@ -191,7 +191,7 @@ func (s *AccountStorage) Delete(account *model.Account) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, account.ID())
+	rows, err := r.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return err
 	}

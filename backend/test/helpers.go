@@ -8,8 +8,8 @@ import (
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
-	"github.com/theandrew168/bloggulus/backend/storage"
 )
 
 type CloserFunc func()
@@ -34,12 +34,12 @@ func NewDatabase(t *testing.T) (postgres.Conn, CloserFunc) {
 	return pool, pool.Close
 }
 
-func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
+func NewRepository(t *testing.T) (*repository.Repository, CloserFunc) {
 	t.Helper()
 
 	db, closer := NewDatabase(t)
-	store := storage.New(db)
-	return store, closer
+	repo := repository.New(db)
+	return repo, closer
 }
 
 func NewFinder(t *testing.T) (*finder.Finder, CloserFunc) {
@@ -52,12 +52,12 @@ func NewFinder(t *testing.T) (*finder.Finder, CloserFunc) {
 
 func NewSyncService(
 	t *testing.T,
-	store *storage.Storage,
+	repo *repository.Repository,
 	feeds map[string]fetch.FetchFeedResponse,
 	pages map[string]string,
 ) *service.SyncService {
 	t.Helper()
 
-	syncService := service.NewSyncService(store, fetchMock.NewFeedFetcher(feeds), fetchMock.NewPageFetcher(pages))
+	syncService := service.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds), fetchMock.NewPageFetcher(pages))
 	return syncService
 }

@@ -9,7 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
@@ -35,7 +35,7 @@ func HandleRegister() http.Handler {
 	})
 }
 
-func HandleRegisterForm(store *storage.Storage) http.Handler {
+func HandleRegisterForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("register").Parse(registerHTML)
 		if err != nil {
@@ -77,7 +77,7 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 		}
 
 		// Save the new the account in the database.
-		err = store.Account().Create(account)
+		err = repo.Account().Create(account)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
@@ -103,7 +103,7 @@ func HandleRegisterForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		err = store.Session().Create(session)
+		err = repo.Session().Create(session)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

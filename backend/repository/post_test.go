@@ -1,4 +1,4 @@
-package storage_test
+package repository_test
 
 import (
 	"testing"
@@ -10,41 +10,41 @@ import (
 func TestPostCreate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	blog := test.NewBlog(t)
-	err := store.Blog().Create(blog)
+	err := repo.Blog().Create(blog)
 	test.AssertNilError(t, err)
 
 	post := test.NewPost(t, blog)
-	err = store.Post().Create(post)
+	err = repo.Post().Create(post)
 	test.AssertNilError(t, err)
 }
 
 func TestPostCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	post := test.CreatePost(t, store, blog)
+	blog := test.CreateBlog(t, repo)
+	post := test.CreatePost(t, repo, blog)
 
 	// attempt to create the same post again
-	err := store.Post().Create(post)
+	err := repo.Post().Create(post)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestPostRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	post := test.CreatePost(t, store, blog)
-	got, err := store.Post().Read(post.ID())
+	blog := test.CreateBlog(t, repo)
+	post := test.CreatePost(t, repo, blog)
+	got, err := repo.Post().Read(post.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), post.ID())
@@ -53,12 +53,12 @@ func TestPostRead(t *testing.T) {
 func TestPostReadByURL(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	post := test.CreatePost(t, store, blog)
-	got, err := store.Post().ReadByURL(post.URL())
+	blog := test.CreateBlog(t, repo)
+	post := test.CreatePost(t, repo, blog)
+	got, err := repo.Post().ReadByURL(post.URL())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), post.ID())
@@ -67,17 +67,17 @@ func TestPostReadByURL(t *testing.T) {
 func TestPostList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
+	blog := test.CreateBlog(t, repo)
+	test.CreatePost(t, repo, blog)
+	test.CreatePost(t, repo, blog)
+	test.CreatePost(t, repo, blog)
 
 	limit := 3
 	offset := 0
-	posts, err := store.Post().List(blog, limit, offset)
+	posts, err := repo.Post().List(blog, limit, offset)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(posts), limit)
@@ -86,15 +86,15 @@ func TestPostList(t *testing.T) {
 func TestPostCount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
+	blog := test.CreateBlog(t, repo)
+	test.CreatePost(t, repo, blog)
+	test.CreatePost(t, repo, blog)
+	test.CreatePost(t, repo, blog)
 
-	count, err := store.Post().Count(blog)
+	count, err := repo.Post().Count(blog)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, count, 3)
@@ -103,19 +103,19 @@ func TestPostCount(t *testing.T) {
 func TestPostUpdate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	post := test.CreatePost(t, store, blog)
+	blog := test.CreateBlog(t, repo)
+	post := test.CreatePost(t, repo, blog)
 
 	content := "foobar"
 	post.SetContent(content)
 
-	err := store.Post().Update(post)
+	err := repo.Post().Update(post)
 	test.AssertNilError(t, err)
 
-	got, err := store.Post().Read(post.ID())
+	got, err := repo.Post().Read(post.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.Content(), content)
@@ -124,15 +124,15 @@ func TestPostUpdate(t *testing.T) {
 func TestPostDelete(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	post := test.CreatePost(t, store, blog)
+	blog := test.CreateBlog(t, repo)
+	post := test.CreatePost(t, repo, blog)
 
-	err := store.Post().Delete(post)
+	err := repo.Post().Delete(post)
 	test.AssertNilError(t, err)
 
-	_, err = store.Post().Read(post.ID())
+	_, err = repo.Post().Read(post.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

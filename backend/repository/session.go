@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -46,18 +46,18 @@ func (s dbSession) unmarshal() (*model.Session, error) {
 	return session, nil
 }
 
-type SessionStorage struct {
+type SessionRepository struct {
 	conn postgres.Conn
 }
 
-func NewSessionStorage(conn postgres.Conn) *SessionStorage {
-	s := SessionStorage{
+func NewSessionRepository(conn postgres.Conn) *SessionRepository {
+	r := SessionRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *SessionStorage) Create(session *model.Session) error {
+func (r *SessionRepository) Create(session *model.Session) error {
 	stmt := `
 		INSERT INTO session
 			(id, account_id, hash, expires_at, created_at, updated_at)
@@ -81,7 +81,7 @@ func (s *SessionStorage) Create(session *model.Session) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err = s.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -89,7 +89,7 @@ func (s *SessionStorage) Create(session *model.Session) error {
 	return nil
 }
 
-func (s *SessionStorage) Read(id uuid.UUID) (*model.Session, error) {
+func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 	stmt := `
 		SELECT
 			session.id,
@@ -104,7 +104,7 @@ func (s *SessionStorage) Read(id uuid.UUID) (*model.Session, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (s *SessionStorage) Read(id uuid.UUID) (*model.Session, error) {
 	return row.unmarshal()
 }
 
-func (s *SessionStorage) ReadBySessionID(sessionID string) (*model.Session, error) {
+func (r *SessionRepository) ReadBySessionID(sessionID string) (*model.Session, error) {
 	stmt := `
 		SELECT
 			session.id,
@@ -135,7 +135,7 @@ func (s *SessionStorage) ReadBySessionID(sessionID string) (*model.Session, erro
 	hashBytes := sha256.Sum256([]byte(sessionID))
 	hash := hex.EncodeToString(hashBytes[:])
 
-	rows, err := s.conn.Query(ctx, stmt, hash)
+	rows, err := r.conn.Query(ctx, stmt, hash)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (s *SessionStorage) ReadBySessionID(sessionID string) (*model.Session, erro
 	return row.unmarshal()
 }
 
-func (s *SessionStorage) Delete(session *model.Session) error {
+func (r *SessionRepository) Delete(session *model.Session) error {
 	stmt := `
 		DELETE FROM session
 		WHERE id = $1
@@ -162,7 +162,7 @@ func (s *SessionStorage) Delete(session *model.Session) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, session.ID())
+	rows, err := r.conn.Query(ctx, stmt, session.ID())
 	if err != nil {
 		return err
 	}

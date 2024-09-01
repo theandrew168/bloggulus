@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -11,18 +11,18 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
-type AccountBlogStorage struct {
+type AccountBlogRepository struct {
 	conn postgres.Conn
 }
 
-func NewAccountBlogStorage(conn postgres.Conn) *AccountBlogStorage {
-	s := AccountBlogStorage{
+func NewAccountBlogRepository(conn postgres.Conn) *AccountBlogRepository {
+	r := AccountBlogRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *AccountBlogStorage) Create(account *model.Account, blog *model.Blog) error {
+func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog) error {
 	stmt := `
 		INSERT INTO account_blog
 			(account_id, blog_id, created_at, updated_at)
@@ -40,7 +40,7 @@ func (s *AccountBlogStorage) Create(account *model.Account, blog *model.Blog) er
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err := s.conn.Exec(ctx, stmt, args...)
+	_, err := r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -48,7 +48,7 @@ func (s *AccountBlogStorage) Create(account *model.Account, blog *model.Blog) er
 	return nil
 }
 
-func (s *AccountBlogStorage) Count(account *model.Account, blog *model.Blog) (int, error) {
+func (r *AccountBlogRepository) Count(account *model.Account, blog *model.Blog) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM account_blog
@@ -63,7 +63,7 @@ func (s *AccountBlogStorage) Count(account *model.Account, blog *model.Blog) (in
 		blog.ID(),
 	}
 
-	rows, err := s.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(ctx, stmt, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +76,7 @@ func (s *AccountBlogStorage) Count(account *model.Account, blog *model.Blog) (in
 	return count, nil
 }
 
-func (s *AccountBlogStorage) Delete(account *model.Account, blog *model.Blog) error {
+func (r *AccountBlogRepository) Delete(account *model.Account, blog *model.Blog) error {
 	stmt := `
 		DELETE FROM account_blog
 		WHERE account_id = $1
@@ -91,7 +91,7 @@ func (s *AccountBlogStorage) Delete(account *model.Account, blog *model.Blog) er
 		blog.ID(),
 	}
 
-	rows, err := s.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}

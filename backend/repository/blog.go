@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -54,18 +54,18 @@ func (b dbBlog) unmarshal() (*model.Blog, error) {
 	return blog, nil
 }
 
-type BlogStorage struct {
+type BlogRepository struct {
 	conn postgres.Conn
 }
 
-func NewBlogStorage(conn postgres.Conn) *BlogStorage {
-	s := BlogStorage{
+func NewBlogRepository(conn postgres.Conn) *BlogRepository {
+	r := BlogRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *BlogStorage) Create(blog *model.Blog) error {
+func (r *BlogRepository) Create(blog *model.Blog) error {
 	stmt := `
 		INSERT INTO blog
 			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
@@ -92,7 +92,7 @@ func (s *BlogStorage) Create(blog *model.Blog) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err = s.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -100,7 +100,7 @@ func (s *BlogStorage) Create(blog *model.Blog) error {
 	return nil
 }
 
-func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
+func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -118,7 +118,7 @@ func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (s *BlogStorage) Read(id uuid.UUID) (*model.Blog, error) {
 	return row.unmarshal()
 }
 
-func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
+func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -149,7 +149,7 @@ func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, feedURL)
+	rows, err := r.conn.Query(ctx, stmt, feedURL)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (s *BlogStorage) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	return row.unmarshal()
 }
 
-func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
+func (r *BlogRepository) List(limit, offset int) ([]*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -181,7 +181,7 @@ func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, limit, offset)
+	rows, err := r.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (s *BlogStorage) List(limit, offset int) ([]*model.Blog, error) {
 }
 
 // DEPRECATED
-func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
+func (r *BlogRepository) ListAll() ([]*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -223,7 +223,7 @@ func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt)
+	rows, err := r.conn.Query(ctx, stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (s *BlogStorage) ListAll() ([]*model.Blog, error) {
 	return blogs, nil
 }
 
-func (s *BlogStorage) Count() (int, error) {
+func (r *BlogRepository) Count() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM blog`
@@ -254,7 +254,7 @@ func (s *BlogStorage) Count() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt)
+	rows, err := r.conn.Query(ctx, stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -267,7 +267,7 @@ func (s *BlogStorage) Count() (int, error) {
 	return count, nil
 }
 
-func (s *BlogStorage) Update(blog *model.Blog) error {
+func (r *BlogRepository) Update(blog *model.Blog) error {
 	now := timeutil.Now()
 	stmt := `
 		UPDATE blog
@@ -303,7 +303,7 @@ func (s *BlogStorage) Update(blog *model.Blog) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func (s *BlogStorage) Update(blog *model.Blog) error {
 	return nil
 }
 
-func (s *BlogStorage) Delete(blog *model.Blog) error {
+func (r *BlogRepository) Delete(blog *model.Blog) error {
 	stmt := `
 		DELETE FROM blog
 		WHERE id = $1
@@ -331,7 +331,7 @@ func (s *BlogStorage) Delete(blog *model.Blog) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, blog.ID())
+	rows, err := r.conn.Query(ctx, stmt, blog.ID())
 	if err != nil {
 		return err
 	}

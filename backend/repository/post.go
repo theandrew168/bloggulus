@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -51,18 +51,18 @@ func (p dbPost) unmarshal() (*model.Post, error) {
 	return post, nil
 }
 
-type PostStorage struct {
+type PostRepository struct {
 	conn postgres.Conn
 }
 
-func NewPostStorage(conn postgres.Conn) *PostStorage {
-	s := PostStorage{
+func NewPostRepository(conn postgres.Conn) *PostRepository {
+	r := PostRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *PostStorage) Create(post *model.Post) error {
+func (r *PostRepository) Create(post *model.Post) error {
 	stmt := `
 		INSERT INTO post
 			(id, blog_id, url, title, content, published_at, created_at, updated_at)
@@ -88,7 +88,7 @@ func (s *PostStorage) Create(post *model.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err = s.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -96,7 +96,7 @@ func (s *PostStorage) Create(post *model.Post) error {
 	return nil
 }
 
-func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
+func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -113,7 +113,7 @@ func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (s *PostStorage) Read(id uuid.UUID) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
+func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -143,7 +143,7 @@ func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, url)
+	rows, err := r.conn.Query(ctx, stmt, url)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (s *PostStorage) ReadByURL(url string) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
+func (r *PostRepository) List(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -175,7 +175,7 @@ func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, blog.ID(), limit, offset)
+	rows, err := r.conn.Query(ctx, stmt, blog.ID(), limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (s *PostStorage) List(blog *model.Blog, limit, offset int) ([]*model.Post, 
 	return posts, nil
 }
 
-func (s *PostStorage) Count(blog *model.Blog) (int, error) {
+func (r *PostRepository) Count(blog *model.Blog) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -207,7 +207,7 @@ func (s *PostStorage) Count(blog *model.Blog) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, blog.ID())
+	rows, err := r.conn.Query(ctx, stmt, blog.ID())
 	if err != nil {
 		return 0, err
 	}
@@ -220,7 +220,7 @@ func (s *PostStorage) Count(blog *model.Blog) (int, error) {
 	return count, nil
 }
 
-func (s *PostStorage) Update(post *model.Post) error {
+func (r *PostRepository) Update(post *model.Post) error {
 	now := timeutil.Now()
 	stmt := `
 		UPDATE post
@@ -252,7 +252,7 @@ func (s *PostStorage) Update(post *model.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}
@@ -266,7 +266,7 @@ func (s *PostStorage) Update(post *model.Post) error {
 	return nil
 }
 
-func (s *PostStorage) Delete(post *model.Post) error {
+func (r *PostRepository) Delete(post *model.Post) error {
 	stmt := `
 		DELETE FROM post
 		WHERE id = $1
@@ -280,7 +280,7 @@ func (s *PostStorage) Delete(post *model.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, post.ID())
+	rows, err := r.conn.Query(ctx, stmt, post.ID())
 	if err != nil {
 		return err
 	}

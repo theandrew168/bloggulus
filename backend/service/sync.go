@@ -13,7 +13,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
@@ -27,14 +27,14 @@ const (
 
 type SyncService struct {
 	mu          sync.Mutex
-	store       *storage.Storage
+	repo        *repository.Repository
 	feedFetcher fetch.FeedFetcher
 	pageFetcher fetch.PageFetcher
 }
 
-func NewSyncService(store *storage.Storage, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
+func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
 	s := SyncService{
-		store:       store,
+		repo:        repo,
 		feedFetcher: feedFetcher,
 		pageFetcher: pageFetcher,
 	}
@@ -82,7 +82,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	slog.Info("syncing blogs")
 
 	// TODO: Use the paginated List() method?
-	blogs, err := s.store.Blog().ListAll()
+	blogs, err := s.repo.Blog().ListAll()
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (s *SyncService) SyncAllBlogs() error {
 }
 
 func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
-	blog, err := s.store.Blog().ReadByFeedURL(feedURL)
+	blog, err := s.repo.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return nil, err
@@ -168,7 +168,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	err = s.store.Blog().Create(blog)
+	err = s.repo.Blog().Create(blog)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 	now := timeutil.Now()
 	blog.SetSyncedAt(now)
 
-	err := s.store.Blog().Update(blog)
+	err := s.repo.Blog().Update(blog)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 
 	// Update the blog's cache headers if changed.
 	if headersChanged {
-		err = s.store.Blog().Update(blog)
+		err = s.repo.Blog().Update(blog)
 		if err != nil {
 			return nil, err
 		}
@@ -242,7 +242,7 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Post, error) {
-	post, err := s.store.Post().ReadByURL(feedPost.URL)
+	post, err := s.repo.Post().ReadByURL(feedPost.URL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return nil, err
@@ -259,7 +259,7 @@ func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Pos
 			return nil, err
 		}
 
-		err = s.store.Post().Create(post)
+		err = s.repo.Post().Create(post)
 		if err != nil {
 			return nil, err
 		}
@@ -270,7 +270,7 @@ func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Pos
 	// update the post's content (if available)
 	if feedPost.Content != "" {
 		post.SetContent(feedPost.Content)
-		err = s.store.Post().Update(post)
+		err = s.repo.Post().Update(post)
 		if err != nil {
 			return nil, err
 		}

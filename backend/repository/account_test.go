@@ -1,4 +1,4 @@
-package storage_test
+package repository_test
 
 import (
 	"testing"
@@ -10,35 +10,35 @@ import (
 func TestAccountCreate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	account, _ := test.NewAccount(t)
-	err := store.Account().Create(account)
+	err := repo.Account().Create(account)
 	test.AssertNilError(t, err)
 }
 
 func TestAccountCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, store)
+	account, _ := test.CreateAccount(t, repo)
 
 	// attempt to create the same account again
-	err := store.Account().Create(account)
+	err := repo.Account().Create(account)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestAccountRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, store)
-	got, err := store.Account().Read(account.ID())
+	account, _ := test.CreateAccount(t, repo)
+	got, err := repo.Account().Read(account.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())
@@ -47,11 +47,11 @@ func TestAccountRead(t *testing.T) {
 func TestAccountReadByUsername(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, store)
-	got, err := store.Account().ReadByUsername(account.Username())
+	account, _ := test.CreateAccount(t, repo)
+	got, err := repo.Account().ReadByUsername(account.Username())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())
@@ -60,13 +60,13 @@ func TestAccountReadByUsername(t *testing.T) {
 func TestAccountReadBySessionIDn(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, store)
-	_, sessionID := test.CreateSession(t, store, account)
+	account, _ := test.CreateAccount(t, repo)
+	_, sessionID := test.CreateSession(t, repo, account)
 
-	got, err := store.Account().ReadBySessionID(sessionID)
+	got, err := repo.Account().ReadBySessionID(sessionID)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())
@@ -75,14 +75,14 @@ func TestAccountReadBySessionIDn(t *testing.T) {
 func TestAccountDelete(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, store)
+	account, _ := test.CreateAccount(t, repo)
 
-	err := store.Account().Delete(account)
+	err := repo.Account().Delete(account)
 	test.AssertNilError(t, err)
 
-	_, err = store.Account().Read(account.ID())
+	_, err = repo.Account().Read(account.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

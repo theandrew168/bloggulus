@@ -1,4 +1,4 @@
-package storage_test
+package repository_test
 
 import (
 	"testing"
@@ -10,35 +10,35 @@ import (
 func TestBlogCreate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	blog := test.NewBlog(t)
-	err := store.Blog().Create(blog)
+	err := repo.Blog().Create(blog)
 	test.AssertNilError(t, err)
 }
 
 func TestBlogCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, repo)
 
 	// attempt to create the same blog again
-	err := store.Blog().Create(blog)
+	err := repo.Blog().Create(blog)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestBlogRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	got, err := store.Blog().Read(blog.ID())
+	blog := test.CreateBlog(t, repo)
+	got, err := repo.Blog().Read(blog.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), blog.ID())
@@ -47,11 +47,11 @@ func TestBlogRead(t *testing.T) {
 func TestBlogReadByFeedURL(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
-	got, err := store.Blog().ReadByFeedURL(blog.FeedURL())
+	blog := test.CreateBlog(t, repo)
+	got, err := repo.Blog().ReadByFeedURL(blog.FeedURL())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), blog.ID())
@@ -60,16 +60,16 @@ func TestBlogReadByFeedURL(t *testing.T) {
 func TestBlogList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
 
 	limit := 3
 	offset := 0
-	blogs, err := store.Blog().List(limit, offset)
+	blogs, err := repo.Blog().List(limit, offset)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(blogs), limit)
@@ -78,14 +78,14 @@ func TestBlogList(t *testing.T) {
 func TestBlogListAll(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
 
-	blogs, err := store.Blog().ListAll()
+	blogs, err := repo.Blog().ListAll()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, len(blogs), 3)
@@ -94,14 +94,14 @@ func TestBlogListAll(t *testing.T) {
 func TestBlogCount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
-	test.CreateBlog(t, store)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
+	test.CreateBlog(t, repo)
 
-	count, err := store.Blog().Count()
+	count, err := repo.Blog().Count()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -110,10 +110,10 @@ func TestBlogCount(t *testing.T) {
 func TestBlogUpdate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, repo)
 
 	etag := "foo"
 	blog.SetETag(etag)
@@ -121,10 +121,10 @@ func TestBlogUpdate(t *testing.T) {
 	lastModified := "bar"
 	blog.SetLastModified(lastModified)
 
-	err := store.Blog().Update(blog)
+	err := repo.Blog().Update(blog)
 	test.AssertNilError(t, err)
 
-	got, err := store.Blog().Read(blog.ID())
+	got, err := repo.Blog().Read(blog.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ETag(), etag)
@@ -134,14 +134,14 @@ func TestBlogUpdate(t *testing.T) {
 func TestBlogDelete(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.CreateBlog(t, store)
+	blog := test.CreateBlog(t, repo)
 
-	err := store.Blog().Delete(blog)
+	err := repo.Blog().Delete(blog)
 	test.AssertNilError(t, err)
 
-	_, err = store.Blog().Read(blog.ID())
+	_, err = repo.Blog().Read(blog.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

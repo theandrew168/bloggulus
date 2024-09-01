@@ -9,7 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
@@ -35,7 +35,7 @@ func HandleSignin() http.Handler {
 	})
 }
 
-func HandleSigninForm(store *storage.Storage) http.Handler {
+func HandleSigninForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("signin").Parse(signinHTML)
 		if err != nil {
@@ -69,7 +69,7 @@ func HandleSigninForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		account, err := store.Account().ReadByUsername(username)
+		account, err := repo.Account().ReadByUsername(username)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -104,7 +104,7 @@ func HandleSigninForm(store *storage.Storage) http.Handler {
 			return
 		}
 
-		err = store.Session().Create(session)
+		err = repo.Session().Create(session)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

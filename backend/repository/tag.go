@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -38,18 +38,18 @@ func (t dbTag) unmarshal() (*model.Tag, error) {
 	return tag, nil
 }
 
-type TagStorage struct {
+type TagRepository struct {
 	conn postgres.Conn
 }
 
-func NewTagStorage(conn postgres.Conn) *TagStorage {
-	s := TagStorage{
+func NewTagRepository(conn postgres.Conn) *TagRepository {
+	r := TagRepository{
 		conn: conn,
 	}
-	return &s
+	return &r
 }
 
-func (s *TagStorage) Create(tag *model.Tag) error {
+func (r *TagRepository) Create(tag *model.Tag) error {
 	stmt := `
 		INSERT INTO tag
 			(id, name, created_at, updated_at)
@@ -71,7 +71,7 @@ func (s *TagStorage) Create(tag *model.Tag) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	_, err = s.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(ctx, stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -79,7 +79,7 @@ func (s *TagStorage) Create(tag *model.Tag) error {
 	return nil
 }
 
-func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
+func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 	stmt := `
 		SELECT
 			tag.id,
@@ -92,7 +92,7 @@ func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(ctx, stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (s *TagStorage) Read(id uuid.UUID) (*model.Tag, error) {
 	return row.unmarshal()
 }
 
-func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
+func (r *TagRepository) List(limit, offset int) ([]*model.Tag, error) {
 	stmt := `
 		SELECT
 			tag.id,
@@ -119,7 +119,7 @@ func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, limit, offset)
+	rows, err := r.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (s *TagStorage) List(limit, offset int) ([]*model.Tag, error) {
 	return tags, nil
 }
 
-func (s *TagStorage) Count() (int, error) {
+func (r *TagRepository) Count() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM tag`
@@ -150,7 +150,7 @@ func (s *TagStorage) Count() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt)
+	rows, err := r.conn.Query(ctx, stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -163,7 +163,7 @@ func (s *TagStorage) Count() (int, error) {
 	return count, nil
 }
 
-func (s *TagStorage) Delete(tag *model.Tag) error {
+func (r *TagRepository) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1
@@ -177,7 +177,7 @@ func (s *TagStorage) Delete(tag *model.Tag) error {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, tag.ID())
+	rows, err := r.conn.Query(ctx, stmt, tag.ID())
 	if err != nil {
 		return err
 	}

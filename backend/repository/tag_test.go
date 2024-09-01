@@ -1,4 +1,4 @@
-package storage_test
+package repository_test
 
 import (
 	"testing"
@@ -10,35 +10,35 @@ import (
 func TestTagCreate(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	tag := test.NewTag(t)
-	err := store.Tag().Create(tag)
+	err := repo.Tag().Create(tag)
 	test.AssertNilError(t, err)
 }
 
 func TestTagCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	tag := test.CreateTag(t, store)
+	tag := test.CreateTag(t, repo)
 
 	// attempt to create the same tag again
-	err := store.Tag().Create(tag)
+	err := repo.Tag().Create(tag)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
 func TestTagRead(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	tag := test.CreateTag(t, store)
-	got, err := store.Tag().Read(tag.ID())
+	tag := test.CreateTag(t, repo)
+	got, err := repo.Tag().Read(tag.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), tag.ID())
@@ -47,16 +47,16 @@ func TestTagRead(t *testing.T) {
 func TestTagList(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	test.CreateTag(t, store)
-	test.CreateTag(t, store)
-	test.CreateTag(t, store)
+	test.CreateTag(t, repo)
+	test.CreateTag(t, repo)
+	test.CreateTag(t, repo)
 
 	limit := 3
 	offset := 0
-	tags, err := store.Tag().List(limit, offset)
+	tags, err := repo.Tag().List(limit, offset)
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, len(tags), limit)
@@ -65,14 +65,14 @@ func TestTagList(t *testing.T) {
 func TestTagCount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	test.CreateTag(t, store)
-	test.CreateTag(t, store)
-	test.CreateTag(t, store)
+	test.CreateTag(t, repo)
+	test.CreateTag(t, repo)
+	test.CreateTag(t, repo)
 
-	count, err := store.Tag().Count()
+	count, err := repo.Tag().Count()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -81,14 +81,14 @@ func TestTagCount(t *testing.T) {
 func TestTagDelete(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
+	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	tag := test.CreateTag(t, store)
+	tag := test.CreateTag(t, repo)
 
-	err := store.Tag().Delete(tag)
+	err := repo.Tag().Delete(tag)
 	test.AssertNilError(t, err)
 
-	_, err = store.Tag().Read(tag.ID())
+	_, err = repo.Tag().Read(tag.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

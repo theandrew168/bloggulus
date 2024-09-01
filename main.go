@@ -15,6 +15,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 	"github.com/theandrew168/bloggulus/backend/web"
@@ -76,6 +77,7 @@ func run() error {
 
 	// init database storage
 	store := storage.New(pool)
+	query := query.New(pool)
 
 	// init the sync service and do an initial sync
 	syncService := service.NewSyncService(store, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
@@ -89,7 +91,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, store, syncService)
+	webHandler := web.Handler(publicFS, store, query, syncService)
 
 	// let port be overridden by an env var
 	port := cfg.Port

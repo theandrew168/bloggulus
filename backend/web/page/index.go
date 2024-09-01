@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/theandrew168/bloggulus/backend/model"
-	"github.com/theandrew168/bloggulus/backend/storage"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 	"golang.org/x/sync/errgroup"
 )
@@ -17,12 +16,12 @@ var indexHTML string
 
 type IndexData struct {
 	Search       string
-	Articles     []*model.Article
+	Articles     []query.Article
 	HasMorePages bool
 	NextPage     int
 }
 
-func HandleIndex(store *storage.Storage) http.Handler {
+func HandleIndex(q *query.Query) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("index").Parse(indexHTML)
 		if err != nil {
@@ -31,7 +30,7 @@ func HandleIndex(store *storage.Storage) http.Handler {
 		}
 
 		// check search param
-		q := r.URL.Query().Get("q")
+		search := r.URL.Query().Get("q")
 
 		// check page param
 		page, err := strconv.Atoi(r.URL.Query().Get("p"))
@@ -47,29 +46,29 @@ func HandleIndex(store *storage.Storage) http.Handler {
 		limit, offset := util.PageSizeToLimitOffset(page, size)
 
 		var count int
-		var articles []*model.Article
+		var articles []query.Article
 
 		var g errgroup.Group
-		if q != "" {
+		if search != "" {
 			g.Go(func() error {
 				var err error
-				count, err = store.Article().CountSearch(q)
+				count, err = q.CountSearchArticles(search)
 				return err
 			})
 			g.Go(func() error {
 				var err error
-				articles, err = store.Article().ListSearch(q, limit, offset)
+				articles, err = q.SearchArticles(search, limit, offset)
 				return err
 			})
 		} else {
 			g.Go(func() error {
 				var err error
-				count, err = store.Article().Count()
+				count, err = q.CountArticles()
 				return err
 			})
 			g.Go(func() error {
 				var err error
-				articles, err = store.Article().List(limit, offset)
+				articles, err = q.ListArticles(limit, offset)
 				return err
 			})
 		}
@@ -81,7 +80,7 @@ func HandleIndex(store *storage.Storage) http.Handler {
 		}
 
 		data := IndexData{
-			Search:       q,
+			Search:       search,
 			Articles:     articles,
 			HasMorePages: page*size < count,
 			NextPage:     page + 1,

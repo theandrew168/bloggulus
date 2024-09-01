@@ -1,4 +1,4 @@
-package storage_test
+package query_test
 
 import (
 	"testing"
@@ -8,56 +8,65 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
-func TestArticleList(t *testing.T) {
+func TestListArticles(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
 
-	blog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, blog)
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
-	articles, err := store.Article().List(1, 0)
+	blog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, blog)
+
+	articles, err := q.ListArticles(1, 0)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(articles), 1)
 }
 
-func TestArticleListByAccount(t *testing.T) {
+func TestListArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
 
-	followedBlog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, followedBlog)
-	test.CreatePost(t, store, followedBlog)
-	test.CreatePost(t, store, followedBlog)
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
-	unfollowedBlog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, unfollowedBlog)
-	test.CreatePost(t, store, unfollowedBlog)
-	test.CreatePost(t, store, unfollowedBlog)
+	followedBlog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, followedBlog)
+	test.CreatePost(t, s, followedBlog)
+	test.CreatePost(t, s, followedBlog)
 
-	account, _ := test.CreateAccount(t, store)
-	test.CreateAccountBlog(t, store, account, followedBlog)
+	unfollowedBlog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, unfollowedBlog)
+	test.CreatePost(t, s, unfollowedBlog)
+	test.CreatePost(t, s, unfollowedBlog)
+
+	account, _ := test.CreateAccount(t, s)
+	test.CreateAccountBlog(t, s, account, followedBlog)
 
 	// List posts from blogs followed by this account.
-	articles, err := store.Article().ListByAccount(account, 5, 0)
+	articles, err := q.ListArticlesByAccount(account, 5, 0)
 	test.AssertNilError(t, err)
 
 	// We should only get the three posts associated with the followed blog.
 	test.AssertEqual(t, len(articles), 3)
 }
 
-func TestArticleListSearch(t *testing.T) {
+func TestSearchArticles(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
+
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
 	blog := test.NewBlog(t)
-	err := store.Blog().Create(blog)
+	err := s.Blog().Create(blog)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -70,7 +79,7 @@ func TestArticleListSearch(t *testing.T) {
 	)
 	test.AssertNilError(t, err)
 
-	err = store.Post().Create(pythonPost)
+	err = s.Post().Create(pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -83,25 +92,28 @@ func TestArticleListSearch(t *testing.T) {
 	)
 	test.AssertNilError(t, err)
 
-	err = store.Post().Create(boringPost)
+	err = s.Post().Create(boringPost)
 	test.AssertNilError(t, err)
 
 	// list articles that relate to python
-	articles, err := store.Article().ListSearch("python", 1, 0)
+	articles, err := q.SearchArticles("python", 1, 0)
 	test.AssertNilError(t, err)
 
 	// should find at least one
 	test.AssertEqual(t, len(articles), 1)
 }
 
-func TestArticleListSearchByAccount(t *testing.T) {
+func TestSearchArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
+
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
 	// Create some followed posts about python.
-	followedBlog := test.CreateBlog(t, store)
+	followedBlog := test.CreateBlog(t, s)
 	for i := 0; i < 3; i++ {
 		post, err := model.NewPost(
 			followedBlog,
@@ -112,12 +124,12 @@ func TestArticleListSearchByAccount(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Post().Create(post)
+		err = s.Post().Create(post)
 		test.AssertNilError(t, err)
 	}
 
 	// Create some unfollowed posts about python.
-	unfollowedBlog := test.CreateBlog(t, store)
+	unfollowedBlog := test.CreateBlog(t, s)
 	for i := 0; i < 3; i++ {
 		post, err := model.NewPost(
 			unfollowedBlog,
@@ -128,70 +140,79 @@ func TestArticleListSearchByAccount(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Post().Create(post)
+		err = s.Post().Create(post)
 		test.AssertNilError(t, err)
 	}
 
-	account, _ := test.CreateAccount(t, store)
-	test.CreateAccountBlog(t, store, account, followedBlog)
+	account, _ := test.CreateAccount(t, s)
+	test.CreateAccountBlog(t, s, account, followedBlog)
 
 	// List posts (from followed blogs) that relate to python.
-	articles, err := store.Article().ListSearchByAccount(account, "python", 5, 0)
+	articles, err := q.SearchArticlesByAccount(account, "python", 5, 0)
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.
 	test.AssertEqual(t, len(articles), 3)
 }
 
-func TestArticleCount(t *testing.T) {
+func TestCountArticles(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
 
-	blog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
-	test.CreatePost(t, store, blog)
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
-	count, err := store.Article().Count()
+	blog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, blog)
+	test.CreatePost(t, s, blog)
+	test.CreatePost(t, s, blog)
+
+	count, err := q.CountArticles()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
 }
 
-func TestArticleCountByAccount(t *testing.T) {
+func TestCountArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
 
-	followedBlog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, followedBlog)
-	test.CreatePost(t, store, followedBlog)
-	test.CreatePost(t, store, followedBlog)
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
-	unfollowedBlog := test.CreateBlog(t, store)
-	test.CreatePost(t, store, unfollowedBlog)
-	test.CreatePost(t, store, unfollowedBlog)
-	test.CreatePost(t, store, unfollowedBlog)
+	followedBlog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, followedBlog)
+	test.CreatePost(t, s, followedBlog)
+	test.CreatePost(t, s, followedBlog)
 
-	account, _ := test.CreateAccount(t, store)
-	test.CreateAccountBlog(t, store, account, followedBlog)
+	unfollowedBlog := test.CreateBlog(t, s)
+	test.CreatePost(t, s, unfollowedBlog)
+	test.CreatePost(t, s, unfollowedBlog)
+	test.CreatePost(t, s, unfollowedBlog)
+
+	account, _ := test.CreateAccount(t, s)
+	test.CreateAccountBlog(t, s, account, followedBlog)
 
 	// We should only count the three posts associated with the followed blog.
-	count, err := store.Article().CountByAccount(account)
+	count, err := q.CountArticlesByAccount(account)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, count, 3)
 }
 
-func TestArticleCountSearch(t *testing.T) {
+func TestCountSearchArticles(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
 
-	blog := test.CreateBlog(t, store)
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
+
+	blog := test.CreateBlog(t, s)
 
 	// create a post about python
 	pythonPost, err := model.NewPost(
@@ -203,7 +224,7 @@ func TestArticleCountSearch(t *testing.T) {
 	)
 	test.AssertNilError(t, err)
 
-	err = store.Post().Create(pythonPost)
+	err = s.Post().Create(pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -216,25 +237,28 @@ func TestArticleCountSearch(t *testing.T) {
 	)
 	test.AssertNilError(t, err)
 
-	err = store.Post().Create(boringPost)
+	err = s.Post().Create(boringPost)
 	test.AssertNilError(t, err)
 
 	// count posts that relate to python
-	count, err := store.Article().CountSearch("python")
+	count, err := q.CountSearchArticles("python")
 	test.AssertNilError(t, err)
 
 	// should find at least one
 	test.AssertAtLeast(t, count, 1)
 }
 
-func TestArticleCountSearchByAccount(t *testing.T) {
+func TestCountSearchArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	store, closer := test.NewStorage(t)
-	defer closer()
+	s, sCloser := test.NewStorage(t)
+	defer sCloser()
+
+	q, qCloser := test.NewQuery(t)
+	defer qCloser()
 
 	// Create some followed posts about python.
-	followedBlog := test.CreateBlog(t, store)
+	followedBlog := test.CreateBlog(t, s)
 	for i := 0; i < 3; i++ {
 		post, err := model.NewPost(
 			followedBlog,
@@ -245,12 +269,12 @@ func TestArticleCountSearchByAccount(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Post().Create(post)
+		err = s.Post().Create(post)
 		test.AssertNilError(t, err)
 	}
 
 	// Create some unfollowed posts about python.
-	unfollowedBlog := test.CreateBlog(t, store)
+	unfollowedBlog := test.CreateBlog(t, s)
 	for i := 0; i < 3; i++ {
 		post, err := model.NewPost(
 			unfollowedBlog,
@@ -261,15 +285,15 @@ func TestArticleCountSearchByAccount(t *testing.T) {
 		)
 		test.AssertNilError(t, err)
 
-		err = store.Post().Create(post)
+		err = s.Post().Create(post)
 		test.AssertNilError(t, err)
 	}
 
-	account, _ := test.CreateAccount(t, store)
-	test.CreateAccountBlog(t, store, account, followedBlog)
+	account, _ := test.CreateAccount(t, s)
+	test.CreateAccountBlog(t, s, account, followedBlog)
 
 	// Count posts (from followed blogs) that relate to python.
-	count, err := store.Article().CountSearchByAccount(account, "python")
+	count, err := q.CountSearchArticlesByAccount(account, "python")
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.

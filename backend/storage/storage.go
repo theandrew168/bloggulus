@@ -9,7 +9,6 @@ import (
 type Storage struct {
 	conn postgres.Conn
 
-	article     *ArticleStorage
 	blog        *BlogStorage
 	post        *PostStorage
 	tag         *TagStorage
@@ -22,7 +21,6 @@ func New(conn postgres.Conn) *Storage {
 	s := Storage{
 		conn: conn,
 
-		article:     NewArticleStorage(conn),
 		blog:        NewBlogStorage(conn),
 		post:        NewPostStorage(conn),
 		tag:         NewTagStorage(conn),
@@ -31,10 +29,6 @@ func New(conn postgres.Conn) *Storage {
 		accountBlog: NewAccountBlogStorage(conn),
 	}
 	return &s
-}
-
-func (s *Storage) Article() *ArticleStorage {
-	return s.article
 }
 
 func (s *Storage) Blog() *BlogStorage {

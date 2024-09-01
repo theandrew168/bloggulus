@@ -7,6 +7,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/storage"
 )
@@ -37,8 +38,16 @@ func NewStorage(t *testing.T) (*storage.Storage, CloserFunc) {
 	t.Helper()
 
 	db, closer := NewDatabase(t)
-	store := storage.New(db)
-	return store, closer
+	s := storage.New(db)
+	return s, closer
+}
+
+func NewQuery(t *testing.T) (*query.Query, CloserFunc) {
+	t.Helper()
+
+	db, closer := NewDatabase(t)
+	q := query.New(db)
+	return q, closer
 }
 
 func NewSyncService(

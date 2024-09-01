@@ -1,4 +1,4 @@
-package storage
+package query
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 // List: recent, recent by account, search, search by account
 // Count: all, all by account, search, search by account
 
-type dbArticle struct {
+type Article struct {
 	Title       string    `db:"title"`
 	URL         string    `db:"url"`
 	BlogTitle   string    `db:"blog_title"`
@@ -22,30 +22,7 @@ type dbArticle struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (a dbArticle) unmarshal() (*model.Article, error) {
-	article := model.LoadArticle(
-		a.Title,
-		a.URL,
-		a.BlogTitle,
-		a.BlogURL,
-		a.PublishedAt,
-		a.Tags,
-	)
-	return article, nil
-}
-
-type ArticleStorage struct {
-	conn postgres.Conn
-}
-
-func NewArticleStorage(conn postgres.Conn) *ArticleStorage {
-	s := ArticleStorage{
-		conn: conn,
-	}
-	return &s
-}
-
-func (s *ArticleStorage) List(limit, offset int) ([]*model.Article, error) {
+func (q *Query) ListArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -74,30 +51,20 @@ func (s *ArticleStorage) List(limit, offset int) ([]*model.Article, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, limit, offset)
+	rows, err := q.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
+	articles, err := pgx.CollectRows(rows, pgx.RowToStructByName[Article])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
-	}
-
-	var articles []*model.Article
-	for _, row := range articleRows {
-		article, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		articles = append(articles, article)
 	}
 
 	return articles, nil
 }
 
-func (s *ArticleStorage) ListByAccount(account *model.Account, limit, offset int) ([]*model.Article, error) {
+func (q *Query) ListArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -131,30 +98,20 @@ func (s *ArticleStorage) ListByAccount(account *model.Account, limit, offset int
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, account.ID(), limit, offset)
+	rows, err := q.conn.Query(ctx, stmt, account.ID(), limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
+	articles, err := pgx.CollectRows(rows, pgx.RowToStructByName[Article])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
-	}
-
-	var articles []*model.Article
-	for _, row := range articleRows {
-		article, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		articles = append(articles, article)
 	}
 
 	return articles, nil
 }
 
-func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*model.Article, error) {
+func (q *Query) SearchArticles(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -184,30 +141,20 @@ func (s *ArticleStorage) ListSearch(search string, limit, offset int) ([]*model.
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, search, limit, offset)
+	rows, err := q.conn.Query(ctx, stmt, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
+	articles, err := pgx.CollectRows(rows, pgx.RowToStructByName[Article])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
-	}
-
-	var articles []*model.Article
-	for _, row := range articleRows {
-		article, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		articles = append(articles, article)
 	}
 
 	return articles, nil
 }
 
-func (s *ArticleStorage) ListSearchByAccount(account *model.Account, search string, limit, offset int) ([]*model.Article, error) {
+func (q *Query) SearchArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -242,30 +189,20 @@ func (s *ArticleStorage) ListSearchByAccount(account *model.Account, search stri
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, account.ID(), search, limit, offset)
+	rows, err := q.conn.Query(ctx, stmt, account.ID(), search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	articleRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbArticle])
+	articles, err := pgx.CollectRows(rows, pgx.RowToStructByName[Article])
 	if err != nil {
 		return nil, postgres.CheckListError(err)
-	}
-
-	var articles []*model.Article
-	for _, row := range articleRows {
-		article, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		articles = append(articles, article)
 	}
 
 	return articles, nil
 }
 
-func (s *ArticleStorage) Count() (int, error) {
+func (q *Query) CountArticles() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -273,7 +210,7 @@ func (s *ArticleStorage) Count() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt)
+	rows, err := q.conn.Query(ctx, stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -286,7 +223,7 @@ func (s *ArticleStorage) Count() (int, error) {
 	return count, nil
 }
 
-func (s *ArticleStorage) CountByAccount(account *model.Account) (int, error) {
+func (q *Query) CountArticlesByAccount(account *model.Account) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -299,7 +236,7 @@ func (s *ArticleStorage) CountByAccount(account *model.Account) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, account.ID())
+	rows, err := q.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return 0, err
 	}
@@ -312,7 +249,7 @@ func (s *ArticleStorage) CountByAccount(account *model.Account) (int, error) {
 	return count, nil
 }
 
-func (s *ArticleStorage) CountSearch(search string) (int, error) {
+func (q *Query) CountSearchArticles(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -321,7 +258,7 @@ func (s *ArticleStorage) CountSearch(search string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, search)
+	rows, err := q.conn.Query(ctx, stmt, search)
 	if err != nil {
 		return 0, err
 	}
@@ -334,7 +271,7 @@ func (s *ArticleStorage) CountSearch(search string) (int, error) {
 	return count, nil
 }
 
-func (s *ArticleStorage) CountSearchByAccount(account *model.Account, search string) (int, error) {
+func (q *Query) CountSearchArticlesByAccount(account *model.Account, search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -348,7 +285,7 @@ func (s *ArticleStorage) CountSearchByAccount(account *model.Account, search str
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := s.conn.Query(ctx, stmt, account.ID(), search)
+	rows, err := q.conn.Query(ctx, stmt, account.ID(), search)
 	if err != nil {
 		return 0, err
 	}

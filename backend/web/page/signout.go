@@ -17,14 +17,15 @@ func HandleSignoutForm(store *storage.Storage) http.Handler {
 			return
 		}
 
+		// Delete the existing session cookie.
+		cookie := util.NewExpiredCookie(util.SessionCookieName)
+		http.SetCookie(w, &cookie)
+
 		// Lookup the session by it's client-side session ID.
 		session, err := store.Session().ReadBySessionID(sessionID.Value)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
-				// Delete the existing session cookie.
-				cookie := util.NewExpiredCookie(util.SessionCookieName)
-				http.SetCookie(w, &cookie)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			default:
 				http.Error(w, err.Error(), 500)
@@ -37,19 +38,12 @@ func HandleSignoutForm(store *storage.Storage) http.Handler {
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
-				// Delete the existing session cookie.
-				cookie := util.NewExpiredCookie(util.SessionCookieName)
-				http.SetCookie(w, &cookie)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			default:
 				http.Error(w, err.Error(), 500)
 			}
 			return
 		}
-
-		// Delete the existing session cookie.
-		cookie := util.NewExpiredCookie(util.SessionCookieName)
-		http.SetCookie(w, &cookie)
 
 		// Redirect back to the index page.
 		http.Redirect(w, r, "/", http.StatusSeeOther)

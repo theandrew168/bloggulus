@@ -35,10 +35,8 @@ func Handler(
 
 	// Serve public (static) files from the embedded FS.
 	mux.Handle("/favicon.ico", publicHandler)
-	mux.Handle("/favicon.png", publicHandler)
 	mux.Handle("/robots.txt", publicHandler)
 	mux.Handle("/css/", publicHandler)
-	mux.Handle("/fonts/", publicHandler)
 
 	// The main application routes start here.
 	mux.Handle("/{$}", page.HandleIndex(store))

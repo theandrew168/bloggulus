@@ -41,7 +41,7 @@
 	<main class="flex-grow basis-0">
 		<!-- articles heading -->
 		<div class="max-w-3xl mx-auto flex justify-start items-center my-6 px-6 md:px-0">
-			<h1 class="text-xl font-bold text-gray-700 md:text-2xl">Recent Articles</h1>
+			<h1 class="text-xl font-semibold text-gray-700 md:text-2xl">Recent Articles</h1>
 		</div>
 		
 		<!-- articles -->
@@ -53,16 +53,16 @@
 					<span class="text-sm font-light text-gray-600">{{.PublishedAt.Format "Jan 2, 2006"}}</span>
 					<div class="flex items-center gap-x-2">
 						{{range .Tags}}
-						<a href="/?q={{.}}" class="text-sm font-bold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500">{{.}}</a>
+						<a href="/?q={{.}}" class="text-sm font-semibold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500">{{.}}</a>
 						{{end}}
 					</div>
 				</div>
 		
 				<!-- post title -->
-				<a href="{{.URL}}" class="text-2xl text-gray-700 font-bold hover:underline block mb-2">{{.Title}}</a>
+				<a href="{{.URL}}" class="text-2xl text-gray-700 font-semibold hover:underline block mb-2">{{.Title}}</a>
 		
 				<!-- blog title -->
-				<a href="{{.BlogURL}}" class="text-gray-700 font-bold hover:underline block">{{.BlogTitle}}</a>
+				<a href="{{.BlogURL}}" class="text-gray-700 font-semibold hover:underline block">{{.BlogTitle}}</a>
 			</div>
 			{{end}}
 		</div>
@@ -71,9 +71,9 @@
 		{{if .HasMorePages}}
 		<div class="mx-auto mb-6 px-16 md:px-0 flex justify-center items-center gap-x-4">
 			{{if .Search}}
-			<a href="/?p={{.NextPage}}&q={{.Search}}" class="bg-white text-gray-700 font-bold shadow hover:shadow-md rounded px-6 py-2">See More</a>
+			<a href="/?p={{.NextPage}}&q={{.Search}}" class="bg-white text-gray-700 font-semibold shadow hover:shadow-md rounded px-6 py-2">See More</a>
 			{{else}}
-			<a href="/?p={{.NextPage}}" class="bg-white text-gray-700 font-bold shadow hover:shadow-md rounded px-6 py-2">See More</a>
+			<a href="/?p={{.NextPage}}" class="bg-white text-gray-700 font-semibold shadow hover:shadow-md rounded px-6 py-2">See More</a>
 			{{end}}
 		</div>
 		{{end}}
@@ -83,7 +83,7 @@
 	<footer class="text-gray-100 bg-gray-800">
 		<div class="max-w-3xl mx-auto py-4">
 			<div class="flex flex-col items-center justify-between md:flex-row space-y-1 md:space-y-0">
-				<a href="/" class="text-xl font-bold text-gray-100 hover:text-gray-400">Bloggulus</a>
+				<a href="/" class="text-xl font-semibold text-gray-100 hover:text-gray-400">Bloggulus</a>
 				<a href="https://shallowbrooksoftware.com" class="text-gray-100 hover:text-gray-400">Shallow Brook Software</a>
 			</div>
 		</div>

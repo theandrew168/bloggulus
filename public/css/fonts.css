@@ -1,21 +1,6 @@
-@font-face {
-	src: url("/fonts/karla/Karla-VariableFont_wght.ttf") format("truetype-variations");
-	font-family: "Karla";
-	font-style: normal;
-	font-weight: 1 999;
-}
-
-@font-face {
-	src: url("/fonts/karla/Karla-Italic-VariableFont_wght.ttf") format("truetype-variations");
-	font-family: "Karla";
-	font-style: italic;
-	font-weight: 1 999;
-}
-
 /* https://systemfontstack.com/ */
 .sans-serif {
 	font-family:
-		Karla,
 		-apple-system,
 		BlinkMacSystemFont,
 		avenir next,

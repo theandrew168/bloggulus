@@ -16,13 +16,13 @@ import (
 //go:embed register.html
 var registerHTML string
 
-type RegisterData struct {
+type RegisterPageData struct {
 	Search   string
 	Username string
 	Errors   map[string]string
 }
 
-func HandleRegister() http.Handler {
+func HandleRegisterPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("register").Parse(registerHTML)
 		if err != nil {
@@ -30,7 +30,7 @@ func HandleRegister() http.Handler {
 			return
 		}
 
-		data := RegisterData{}
+		data := RegisterPageData{}
 		tmpl.Execute(w, data)
 	})
 }
@@ -61,7 +61,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !e.OK() {
-			data := RegisterData{
+			data := RegisterPageData{
 				Username: username,
 				Errors:   e,
 			}
@@ -83,7 +83,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 			case errors.Is(err, postgres.ErrConflict):
 				// If a conflict occurs, re-render the form with an error.
 				e.Add("username", "Username is already taken")
-				data := RegisterData{
+				data := RegisterPageData{
 					Username: username,
 					Errors:   e,
 				}

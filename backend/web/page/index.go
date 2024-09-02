@@ -14,14 +14,14 @@ import (
 //go:embed index.html
 var indexHTML string
 
-type IndexData struct {
+type IndexPageData struct {
 	Search       string
 	Articles     []finder.Article
 	HasMorePages bool
 	NextPage     int
 }
 
-func HandleIndex(find *finder.Finder) http.Handler {
+func HandleIndexPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("index").Parse(indexHTML)
 		if err != nil {
@@ -79,7 +79,7 @@ func HandleIndex(find *finder.Finder) http.Handler {
 			return
 		}
 
-		data := IndexData{
+		data := IndexPageData{
 			Search:       search,
 			Articles:     articles,
 			HasMorePages: page*size < count,

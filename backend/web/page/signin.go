@@ -16,13 +16,13 @@ import (
 //go:embed signin.html
 var signinHTML string
 
-type SigninData struct {
+type SigninPageData struct {
 	Search   string
 	Username string
 	Errors   map[string]string
 }
 
-func HandleSignin() http.Handler {
+func HandleSigninPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.New("signin").Parse(signinHTML)
 		if err != nil {
@@ -30,7 +30,7 @@ func HandleSignin() http.Handler {
 			return
 		}
 
-		data := SigninData{}
+		data := SigninPageData{}
 		tmpl.Execute(w, data)
 	})
 }
@@ -61,7 +61,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !e.OK() {
-			data := SigninData{
+			data := SigninPageData{
 				Username: username,
 				Errors:   e,
 			}
@@ -75,7 +75,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 			case errors.Is(err, postgres.ErrNotFound):
 				e.Add("username", "Invalid username or password")
 				e.Add("password", "Invalid username or password")
-				data := SigninData{
+				data := SigninPageData{
 					Username: username,
 					Errors:   e,
 				}
@@ -90,7 +90,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 		if !ok {
 			e.Add("username", "Invalid username or password")
 			e.Add("password", "Invalid username or password")
-			data := SigninData{
+			data := SigninPageData{
 				Username: username,
 				Errors:   e,
 			}

@@ -33,18 +33,19 @@ func Handler(
 
 	// Compress and serve the embedded public (static) files.
 	publicFiles, _ := fs.Sub(public, "public")
-	publicHandler := gzhttp.GzipHandler(http.FileServer(http.FS(publicFiles)))
+	publicFilesHandler := gzhttp.GzipHandler(http.FileServer(http.FS(publicFiles)))
 
 	// Serve public (static) files from the embedded FS.
-	mux.Handle("/favicon.ico", publicHandler)
-	mux.Handle("/robots.txt", publicHandler)
-	mux.Handle("/css/", publicHandler)
+	mux.Handle("/favicon.ico", publicFilesHandler)
+	mux.Handle("/robots.txt", publicFilesHandler)
+	mux.Handle("/css/", publicFilesHandler)
 
 	// The main application routes start here.
-	mux.Handle("/{$}", page.HandleIndex(find))
-	mux.Handle("GET /register", page.HandleRegister())
+	mux.Handle("GET /{$}", page.HandleIndexPage(find))
+	mux.Handle("GET /blogs", page.HandleBlogsPage(find))
+	mux.Handle("GET /register", page.HandleRegisterPage())
 	mux.Handle("POST /register", page.HandleRegisterForm(repo))
-	mux.Handle("GET /signin", page.HandleSignin())
+	mux.Handle("GET /signin", page.HandleSigninPage())
 	mux.Handle("POST /signin", page.HandleSigninForm(repo))
 	mux.Handle("POST /signout", page.HandleSignoutForm(repo))
 

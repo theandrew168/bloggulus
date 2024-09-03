@@ -42,6 +42,7 @@ func Handler(
 	mux.Handle("/favicon.ico", publicFilesHandler)
 	mux.Handle("/robots.txt", publicFilesHandler)
 	mux.Handle("/css/", publicFilesHandler)
+	mux.Handle("/js/", publicFilesHandler)
 
 	// The main application routes start here.
 	mux.Handle("GET /{$}", page.HandleIndexPage(find))

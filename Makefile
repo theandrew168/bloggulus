@@ -52,9 +52,22 @@ format:
 	gofmt -l -s -w .
 
 .PHONY: update
-update:
+update: update-deps update-htmx update-alpine
+
+.PHONY: update-deps
+update-deps:
 	go get -u ./...
 	go mod tidy
+
+# https://htmx.org/docs/#installing
+.PHONY: update-htmx
+update-htmx:
+	curl -L -o public/js/htmx.min.js https://unpkg.com/htmx.org@2.x.x/dist/htmx.min.js
+
+# https://alpinejs.dev/essentials/installation
+.PHONY: update-alpine
+update-alpine:
+	curl -L -o public/js/alpine.min.js https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js
 
 .PHONY: clean
 clean:

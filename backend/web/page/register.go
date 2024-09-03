@@ -95,7 +95,10 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		slog.Info("register", "username", username, "account_id", account.ID())
+		slog.Info("register",
+			"account_id", account.ID(),
+			"account_username", username,
+		)
 
 		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
 		if err != nil {
@@ -113,7 +116,11 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		cookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 		http.SetCookie(w, &cookie)
 
-		slog.Info("signin", "username", username, "account_id", account.ID(), "session_id", session.ID())
+		slog.Info("signin",
+			"account_id", account.ID(),
+			"account_username", username,
+			"session_id", session.ID(),
+		)
 
 		// Redirect back to the index page.
 		http.Redirect(w, r, "/", http.StatusSeeOther)

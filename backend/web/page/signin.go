@@ -114,7 +114,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 		cookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &cookie)
 
-		slog.Info("account signin", "username", username, "account_id", account.ID(), "session_id", session.ID())
+		slog.Info("signin",
+			"account_id", account.ID(),
+			"account_username", username,
+			"session_id", session.ID(),
+		)
 
 		// Redirect back to the index page.
 		http.Redirect(w, r, "/", http.StatusSeeOther)

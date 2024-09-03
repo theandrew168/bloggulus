@@ -45,13 +45,13 @@ func Handler(
 	mux.Handle("/js/", publicFilesHandler)
 
 	// The main application routes start here.
-	mux.Handle("GET /{$}", page.HandleIndexPage(find))
+	mux.Handle("GET /{$}", HandleIndexPage(find))
 
-	mux.Handle("GET /register", page.HandleRegisterPage())
-	mux.Handle("POST /register", page.HandleRegisterForm(repo))
-	mux.Handle("GET /signin", page.HandleSigninPage())
-	mux.Handle("POST /signin", page.HandleSigninForm(repo))
-	mux.Handle("POST /signout", page.HandleSignoutForm(repo))
+	mux.Handle("GET /register", HandleRegisterPage())
+	mux.Handle("POST /register", HandleRegisterForm(repo))
+	mux.Handle("GET /signin", HandleSigninPage())
+	mux.Handle("POST /signin", HandleSigninForm(repo))
+	mux.Handle("POST /signout", HandleSignoutForm(repo))
 
 	mux.Handle("GET /blogs", accountRequired(page.HandleBlogsPage(find)))
 	mux.Handle("POST /blogs", accountRequired(page.HandleBlogsForm(repo, find, syncService)))

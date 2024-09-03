@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/google/uuid"
-
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 //go:embed blogs.html
@@ -26,16 +25,16 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 			return
 		}
 
-		// blogs, err := find.ListBlogsForAccount(nil)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), 500)
-		// 	return
-		// }
+		account, ok := util.ContextGetAccount(r)
+		if !ok {
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			return
+		}
 
-		blogs := []finder.BlogForAccount{
-			{ID: uuid.New(), Title: "Nice blog", IsFollowing: true},
-			{ID: uuid.New(), Title: "Other blog", IsFollowing: true},
-			{ID: uuid.New(), Title: "Bad blog", IsFollowing: false},
+		blogs, err := find.ListBlogsForAccount(account)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
 		}
 
 		data := BlogsPageData{

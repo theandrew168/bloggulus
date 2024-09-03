@@ -22,6 +22,9 @@ func Handler(
 ) http.Handler {
 	mux := http.NewServeMux()
 
+	accountRequired := middleware.AccountRequired()
+	// adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
+
 	// Host prometheus metrics on "/metrics".
 	mux.Handle("GET /metrics", promhttp.Handler())
 
@@ -42,12 +45,14 @@ func Handler(
 
 	// The main application routes start here.
 	mux.Handle("GET /{$}", page.HandleIndexPage(find))
-	mux.Handle("GET /blogs", page.HandleBlogsPage(find))
+
 	mux.Handle("GET /register", page.HandleRegisterPage())
 	mux.Handle("POST /register", page.HandleRegisterForm(repo))
 	mux.Handle("GET /signin", page.HandleSigninPage())
 	mux.Handle("POST /signin", page.HandleSigninForm(repo))
 	mux.Handle("POST /signout", page.HandleSignoutForm(repo))
+
+	mux.Handle("GET /blogs", accountRequired(page.HandleBlogsPage(find)))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -60,5 +65,6 @@ func Handler(
 		middleware.RecoverPanic(),
 		middleware.SecureHeaders(),
 		middleware.LimitRequestBodySize(),
+		middleware.Authenticate(repo),
 	)
 }

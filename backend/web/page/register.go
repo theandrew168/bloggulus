@@ -14,29 +14,29 @@ import (
 )
 
 //go:embed register.html
-var registerHTML string
+var RegisterHTML string
 
-type RegisterPageData struct {
+type RegisterData struct {
 	Username string
 	Errors   map[string]string
 }
 
 func HandleRegisterPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("register").Parse(registerHTML)
+		tmpl, err := template.New("register").Parse(RegisterHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		data := RegisterPageData{}
+		data := RegisterData{}
 		tmpl.Execute(w, data)
 	})
 }
 
 func HandleRegisterForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(registerHTML)
+		tmpl, err := template.New("page").Parse(RegisterHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -60,7 +60,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !e.OK() {
-			data := RegisterPageData{
+			data := RegisterData{
 				Username: username,
 				Errors:   e,
 			}
@@ -82,7 +82,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 			case errors.Is(err, postgres.ErrConflict):
 				// If a conflict occurs, re-render the form with an error.
 				e.Add("username", "Username is already taken")
-				data := RegisterPageData{
+				data := RegisterData{
 					Username: username,
 					Errors:   e,
 				}

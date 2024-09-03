@@ -18,15 +18,15 @@ import (
 )
 
 //go:embed blogs.html
-var blogsHTML string
+var BlogsHTML string
 
-type BlogsPageData struct {
+type BlogsData struct {
 	Blogs []finder.BlogForAccount
 }
 
 func HandleBlogsPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(blogsHTML)
+		tmpl, err := template.New("page").Parse(BlogsHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -44,7 +44,7 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 			return
 		}
 
-		data := BlogsPageData{
+		data := BlogsData{
 			Blogs: blogs,
 		}
 		tmpl.Execute(w, data)
@@ -55,7 +55,7 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 // TODO: Make a helper for checking for HTMX requests.
 func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(blogsHTML)
+		tmpl, err := template.New("page").Parse(BlogsHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -141,7 +141,7 @@ func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncServi
 					http.Error(w, err.Error(), 500)
 					return
 				}
-				data := BlogsPageData{
+				data := BlogsData{
 					Blogs: blogs,
 				}
 				tmpl.ExecuteTemplate(w, "blogs", data)

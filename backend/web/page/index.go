@@ -12,9 +12,9 @@ import (
 )
 
 //go:embed index.html
-var indexHTML string
+var IndexHTML string
 
-type IndexPageData struct {
+type IndexData struct {
 	Search       string
 	Articles     []finder.Article
 	HasMorePages bool
@@ -23,7 +23,7 @@ type IndexPageData struct {
 
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(indexHTML)
+		tmpl, err := template.New("page").Parse(IndexHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -79,7 +79,7 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			return
 		}
 
-		data := IndexPageData{
+		data := IndexData{
 			Search:       search,
 			Articles:     articles,
 			HasMorePages: page*size < count,

@@ -11,7 +11,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
-	"github.com/theandrew168/bloggulus/backend/web/page"
 )
 
 func Handler(
@@ -53,8 +52,8 @@ func Handler(
 	mux.Handle("POST /signin", HandleSigninForm(repo))
 	mux.Handle("POST /signout", HandleSignoutForm(repo))
 
-	mux.Handle("GET /blogs", accountRequired(page.HandleBlogsPage(find)))
-	mux.Handle("POST /blogs", accountRequired(page.HandleBlogsForm(repo, find, syncService)))
+	mux.Handle("GET /blogs", accountRequired(HandleBlogsPage(find)))
+	mux.Handle("POST /blogs", accountRequired(HandleBlogsForm(repo, find, syncService)))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

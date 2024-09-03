@@ -37,7 +37,7 @@ func HandleRegisterPage() http.Handler {
 
 func HandleRegisterForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("register").Parse(registerHTML)
+		tmpl, err := template.New("page").Parse(registerHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

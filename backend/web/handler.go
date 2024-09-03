@@ -54,7 +54,7 @@ func Handler(
 	mux.Handle("POST /signout", page.HandleSignoutForm(repo))
 
 	mux.Handle("GET /blogs", accountRequired(page.HandleBlogsPage(find)))
-	mux.Handle("POST /blogs", accountRequired(page.HandleBlogsForm(repo, syncService)))
+	mux.Handle("POST /blogs", accountRequired(page.HandleBlogsForm(repo, find, syncService)))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

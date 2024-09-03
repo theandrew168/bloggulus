@@ -23,7 +23,7 @@ type IndexPageData struct {
 
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("index").Parse(indexHTML)
+		tmpl, err := template.New("page").Parse(indexHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

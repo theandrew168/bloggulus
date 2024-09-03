@@ -24,7 +24,7 @@ type SigninPageData struct {
 
 func HandleSigninPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("signin").Parse(signinHTML)
+		tmpl, err := template.New("page").Parse(signinHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -37,7 +37,7 @@ func HandleSigninPage() http.Handler {
 
 func HandleSigninForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("signin").Parse(signinHTML)
+		tmpl, err := template.New("page").Parse(signinHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

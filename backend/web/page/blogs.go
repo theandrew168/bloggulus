@@ -27,7 +27,7 @@ type BlogsPageData struct {
 
 func HandleBlogsPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("blogs").Parse(blogsHTML)
+		tmpl, err := template.New("page").Parse(blogsHTML)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -52,9 +52,17 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 	})
 }
 
-func HandleBlogsForm(repo *repository.Repository, syncService *service.SyncService) http.Handler {
+// TODO: Split the three intents into separate funcs.
+// TODO: Make a helper for checking for HTMX requests.
+func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
+		tmpl, err := template.New("page").Parse(blogsHTML)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		err = r.ParseForm()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -127,6 +135,20 @@ func HandleBlogsForm(repo *repository.Repository, syncService *service.SyncServi
 				"blog_title", blog.Title(),
 			)
 
+			// If the request came in via HTMX, re-render the list of blogs.
+			if r.Header.Get("HX-Request") != "" {
+				blogs, err := find.ListBlogsForAccount(account)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+				data := BlogsPageData{
+					Blogs: blogs,
+				}
+				tmpl.ExecuteTemplate(w, "blogs", data)
+				return
+			}
+
 			// This intent is done now.
 			http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 			return
@@ -190,6 +212,17 @@ func HandleBlogsForm(repo *repository.Repository, syncService *service.SyncServi
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
+		}
+
+		// If the request came in via HTMX, re-render the individual row.
+		if r.Header.Get("HX-Request") != "" {
+			data := finder.BlogForAccount{
+				ID:          blog.ID(),
+				Title:       blog.Title(),
+				IsFollowing: intent == "follow",
+			}
+			tmpl.ExecuteTemplate(w, "blog", data)
+			return
 		}
 
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)

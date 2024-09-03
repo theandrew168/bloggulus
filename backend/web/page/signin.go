@@ -17,7 +17,6 @@ import (
 var signinHTML string
 
 type SigninPageData struct {
-	Search   string
 	Username string
 	Errors   map[string]string
 }

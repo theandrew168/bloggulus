@@ -21,8 +21,7 @@ import (
 var blogsHTML string
 
 type BlogsPageData struct {
-	Search string
-	Blogs  []finder.BlogForAccount
+	Blogs []finder.BlogForAccount
 }
 
 func HandleBlogsPage(find *finder.Finder) http.Handler {

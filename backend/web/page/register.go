@@ -17,7 +17,6 @@ import (
 var registerHTML string
 
 type RegisterPageData struct {
-	Search   string
 	Username string
 	Errors   map[string]string
 }

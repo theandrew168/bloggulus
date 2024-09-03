@@ -3,7 +3,6 @@ package web
 import (
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"golang.org/x/sync/errgroup"
 
@@ -14,7 +13,7 @@ import (
 
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.IndexHTML)
+		tmpl, err := page.Index()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

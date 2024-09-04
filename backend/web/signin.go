@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"html/template"
 	"log/slog"
 	"net/http"
 
@@ -15,20 +14,24 @@ import (
 
 func HandleSigninPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.SigninHTML)
+		tmpl, err := page.NewSignin()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
 		data := page.SigninData{}
-		tmpl.Execute(w, data)
+		err = tmpl.Render(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	})
 }
 
 func HandleSigninForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.SigninHTML)
+		tmpl, err := page.NewSignin()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -56,7 +59,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 				Username: username,
 				Errors:   e,
 			}
-			tmpl.Execute(w, data)
+			err = tmpl.Render(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			return
 		}
 
@@ -70,7 +77,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 					Username: username,
 					Errors:   e,
 				}
-				tmpl.Execute(w, data)
+				err = tmpl.Render(w, data)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 			default:
 				http.Error(w, err.Error(), 500)
 			}
@@ -85,7 +96,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 				Username: username,
 				Errors:   e,
 			}
-			tmpl.Execute(w, data)
+			err = tmpl.Render(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			return
 		}
 

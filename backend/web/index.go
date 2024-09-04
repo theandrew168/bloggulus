@@ -13,7 +13,7 @@ import (
 
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.Index()
+		tmpl, err := page.NewIndex()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -75,6 +75,10 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			HasMorePages: p*s < count,
 			NextPage:     p + 1,
 		}
-		tmpl.Execute(w, data)
+		err = tmpl.Render(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	})
 }

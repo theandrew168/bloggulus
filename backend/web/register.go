@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"text/template"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -16,20 +15,24 @@ import (
 
 func HandleRegisterPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("register").Parse(page.RegisterHTML)
+		tmpl, err := page.NewRegister()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
 		data := page.RegisterData{}
-		tmpl.Execute(w, data)
+		err = tmpl.Render(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	})
 }
 
 func HandleRegisterForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.RegisterHTML)
+		tmpl, err := page.NewRegister()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -57,7 +60,11 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 				Username: username,
 				Errors:   e,
 			}
-			tmpl.Execute(w, data)
+			err = tmpl.Render(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			return
 		}
 
@@ -79,7 +86,11 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 					Username: username,
 					Errors:   e,
 				}
-				tmpl.Execute(w, data)
+				err = tmpl.Render(w, data)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 			default:
 				http.Error(w, err.Error(), 500)
 			}

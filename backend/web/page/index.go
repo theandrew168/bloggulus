@@ -21,9 +21,15 @@ type IndexData struct {
 	NextPage     int
 }
 
-func Index() (*template.Template, error) {
-	// Create the template and list necessary sources.
+type IndexPage struct {
+	tmpl *template.Template
+}
+
+func NewIndex() (*IndexPage, error) {
+	// Create the template.
 	tmpl := template.New("page")
+
+	// List all required sources.
 	sources := []string{
 		layout.BaseHTML,
 		IndexHTML,
@@ -37,18 +43,12 @@ func Index() (*template.Template, error) {
 		}
 	}
 
-	return tmpl, nil
+	page := IndexPage{
+		tmpl: tmpl,
+	}
+	return &page, nil
 }
 
-// TODO: Cache the parsed template? Lazy parse it?
-// I almost think each page should be an object with methods?
-// That way you can namespace the top-level and sub-level renders.
-// Things like: Render(), RenderBlogs(), or RenderBlogRow().
-func RenderIndex(wr io.Writer, data IndexData) error {
-	tmpl, err := Index()
-	if err != nil {
-		return err
-	}
-
-	return tmpl.Execute(wr, data)
+func (p *IndexPage) Render(w io.Writer, data IndexData) error {
+	return p.tmpl.ExecuteTemplate(w, "page", data)
 }

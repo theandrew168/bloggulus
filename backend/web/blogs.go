@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"text/template"
 
 	"github.com/google/uuid"
 
@@ -20,7 +19,7 @@ import (
 
 func HandleBlogsPage(find *finder.Finder) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.BlogsHTML)
+		tmpl, err := page.NewBlogs()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -41,7 +40,11 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 		data := page.BlogsData{
 			Blogs: blogs,
 		}
-		tmpl.Execute(w, data)
+		err = tmpl.Render(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	})
 }
 
@@ -49,7 +52,7 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 // TODO: Make a helper for checking for HTMX requests.
 func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.New("page").Parse(page.BlogsHTML)
+		tmpl, err := page.NewBlogs()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -138,7 +141,11 @@ func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncServi
 				data := page.BlogsData{
 					Blogs: blogs,
 				}
-				tmpl.ExecuteTemplate(w, "blogs", data)
+				err = tmpl.RenderBlogs(w, data)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
 				return
 			}
 
@@ -214,7 +221,11 @@ func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncServi
 				Title:       blog.Title(),
 				IsFollowing: intent == "follow",
 			}
-			tmpl.ExecuteTemplate(w, "blog", data)
+			err = tmpl.RenderBlog(w, data)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
 			return
 		}
 

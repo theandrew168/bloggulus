@@ -22,7 +22,7 @@ type SigninPage struct {
 	tmpl *template.Template
 }
 
-func NewSignin() (*SigninPage, error) {
+func NewSignin() *SigninPage {
 	// Create the template.
 	tmpl := template.New("page")
 
@@ -36,14 +36,14 @@ func NewSignin() (*SigninPage, error) {
 	for _, source := range sources {
 		_, err := tmpl.Parse(source)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
 	page := SigninPage{
 		tmpl: tmpl,
 	}
-	return &page, nil
+	return &page
 }
 
 func (p *SigninPage) Render(w io.Writer, data SigninData) error {

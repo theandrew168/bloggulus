@@ -22,7 +22,7 @@ type BlogsPage struct {
 	tmpl *template.Template
 }
 
-func NewBlogs() (*BlogsPage, error) {
+func NewBlogs() *BlogsPage {
 	// Create the template.
 	tmpl := template.New("page")
 
@@ -36,14 +36,14 @@ func NewBlogs() (*BlogsPage, error) {
 	for _, source := range sources {
 		_, err := tmpl.Parse(source)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
 	page := BlogsPage{
 		tmpl: tmpl,
 	}
-	return &page, nil
+	return &page
 }
 
 func (p *BlogsPage) Render(w io.Writer, data BlogsData) error {

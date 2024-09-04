@@ -18,13 +18,8 @@ import (
 )
 
 func HandleBlogsPage(find *finder.Finder) http.Handler {
+	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewBlogs()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		account, ok := util.ContextGetAccount(r)
 		if !ok {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
@@ -51,14 +46,9 @@ func HandleBlogsPage(find *finder.Finder) http.Handler {
 // TODO: Split the three intents into separate funcs.
 // TODO: Make a helper for checking for HTMX requests.
 func HandleBlogsForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
+	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewBlogs()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		err = r.ParseForm()
+		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

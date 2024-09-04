@@ -14,15 +14,10 @@ import (
 )
 
 func HandleRegisterPage() http.Handler {
+	tmpl := page.NewRegister()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewRegister()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		data := page.RegisterData{}
-		err = tmpl.Render(w, data)
+		err := tmpl.Render(w, data)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -31,15 +26,10 @@ func HandleRegisterPage() http.Handler {
 }
 
 func HandleRegisterForm(repo *repository.Repository) http.Handler {
+	tmpl := page.NewRegister()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewRegister()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		// Parse the form data.
-		err = r.ParseForm()
+		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

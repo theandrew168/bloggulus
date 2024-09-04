@@ -12,13 +12,8 @@ import (
 )
 
 func HandleIndexPage(find *finder.Finder) http.Handler {
+	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewIndex()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		// check search param
 		search := r.URL.Query().Get("q")
 

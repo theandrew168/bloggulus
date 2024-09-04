@@ -25,7 +25,7 @@ type IndexPage struct {
 	tmpl *template.Template
 }
 
-func NewIndex() (*IndexPage, error) {
+func NewIndex() *IndexPage {
 	// Create the template.
 	tmpl := template.New("page")
 
@@ -39,14 +39,14 @@ func NewIndex() (*IndexPage, error) {
 	for _, source := range sources {
 		_, err := tmpl.Parse(source)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
 	page := IndexPage{
 		tmpl: tmpl,
 	}
-	return &page, nil
+	return &page
 }
 
 func (p *IndexPage) Render(w io.Writer, data IndexData) error {

@@ -22,7 +22,7 @@ type RegisterPage struct {
 	tmpl *template.Template
 }
 
-func NewRegister() (*RegisterPage, error) {
+func NewRegister() *RegisterPage {
 	// Create the template.
 	tmpl := template.New("page")
 
@@ -36,14 +36,14 @@ func NewRegister() (*RegisterPage, error) {
 	for _, source := range sources {
 		_, err := tmpl.Parse(source)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
 
 	page := RegisterPage{
 		tmpl: tmpl,
 	}
-	return &page, nil
+	return &page
 }
 
 func (p *RegisterPage) Render(w io.Writer, data RegisterData) error {

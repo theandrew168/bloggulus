@@ -13,15 +13,10 @@ import (
 )
 
 func HandleSigninPage() http.Handler {
+	tmpl := page.NewSignin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewSignin()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		data := page.SigninData{}
-		err = tmpl.Render(w, data)
+		err := tmpl.Render(w, data)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -30,15 +25,10 @@ func HandleSigninPage() http.Handler {
 }
 
 func HandleSigninForm(repo *repository.Repository) http.Handler {
+	tmpl := page.NewSignin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := page.NewSignin()
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
 		// Parse the form data.
-		err = r.ParseForm()
+		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

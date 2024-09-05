@@ -10,9 +10,7 @@
 				placeholder="Add Feed"
 				class="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
 			/>
-			<button type="submit" name="intent" value="add" class="rounded-md px-3 py-1.5 text-sm font-semibold bg-gray-700 text-gray-100 shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700">
-				Add
-			</button>
+			{{template "button" dict "Contents" "Add" "Name" "intent" "Value" "add"}}
 		</form>
 	</div>
 	{{block "blogs" .}}
@@ -24,9 +22,9 @@
 			<form method="POST" action="/blogs" hx-post="/blogs">
 				<input type="hidden" name="blogID" value="{{.ID}}" />
 				{{if .IsFollowing}}
-				<button type="submit" name="intent" value="unfollow" class="rounded-md px-3 py-1.5 text-sm font-semibold bg-gray-700 text-gray-100 shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700">Unfollow</button>
+					{{template "button" dict "Contents" "Unfollow" "Name" "intent" "Value" "unfollow"}}
 				{{else}}
-				<button type="submit" name="intent" value="follow" class="rounded-md px-3 py-1.5 text-sm font-semibold bg-gray-700 text-gray-100 shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700">Follow</button>
+					{{template "button" dict "Contents" "Follow" "Name" "intent" "Value" "follow"}}
 				{{end}}
 			</form>
 			{{end}}

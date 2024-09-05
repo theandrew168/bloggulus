@@ -7,13 +7,7 @@
 				Username
 			</label>
 			<div class="mt-2">
-				<input
-					name="username"
-					type="text"
-					value="{{.Username}}"
-					placeholder="Username"
-					class="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
-				/>
+				{{template "input" dict "Type" "text" "Name" "username" "Value" .Username "Placeholder" "Username"}}
 				{{with .Errors.username}}
 					<p class="text-red-500">{{.}}</p>
 				{{end}}
@@ -25,22 +19,14 @@
 				Password
 			</label>
 			<div class="mt-2">
-				<input
-					name="password"
-					type="password"
-					placeholder="Password"
-					class="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
-				/>
+				{{template "input" dict "Type" "password" "Name" "password" "Placeholder" "Password"}}
 				{{with .Errors.password}}
 					<p class="text-red-500">{{.}}</p>
 				{{end}}
 			</div>
 		</div>
 
-		<button
-			type="submit"
-			class="rounded-md px-3 py-1.5 text-sm font-semibold bg-gray-700 text-gray-100 shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700"
-		>Sign In</button>
+		{{template "button" dict "Contents" "Sign In"}}
 	</form>
 </div>
 

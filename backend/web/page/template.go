@@ -14,6 +14,7 @@ func newTemplate(name string, sources []string) *template.Template {
 
 	partials := []string{
 		partial.ButtonHTML,
+		partial.InputHTML,
 	}
 
 	// Parse each partial into the template

@@ -4,7 +4,6 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/klauspost/compress/gzhttp"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/theandrew168/bloggulus/backend/finder"
@@ -35,7 +34,7 @@ func Handler(
 
 	// Compress and serve the embedded public (static) files.
 	publicFiles, _ := fs.Sub(public, "public")
-	publicFilesHandler := gzhttp.GzipHandler(http.FileServer(http.FS(publicFiles)))
+	publicFilesHandler := http.FileServer(http.FS(publicFiles))
 
 	// Serve public (static) files from the embedded FS.
 	mux.Handle("/favicon.ico", publicFilesHandler)
@@ -62,10 +61,13 @@ func Handler(
 	})
 
 	// Apply global middleware to all routes.
-	return middleware.Use(mux,
+	handler := middleware.Use(mux,
 		middleware.RecoverPanic(),
+		middleware.CompressFiles(),
 		middleware.SecureHeaders(),
 		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(repo),
 	)
+
+	return handler
 }

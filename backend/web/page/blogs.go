@@ -23,23 +23,12 @@ type BlogsPage struct {
 }
 
 func NewBlogs() *BlogsPage {
-	// Create the template.
-	tmpl := template.New("page")
-
-	// List all required sources.
 	sources := []string{
 		layout.BaseHTML,
 		BlogsHTML,
 	}
 
-	// Parse each source required to render this page.
-	for _, source := range sources {
-		_, err := tmpl.Parse(source)
-		if err != nil {
-			panic(err)
-		}
-	}
-
+	tmpl := newTemplate("page", sources)
 	page := BlogsPage{
 		tmpl: tmpl,
 	}

@@ -32,10 +32,10 @@ docker compose down
 
 ### Running
 
-Run the application and Tailwind CSS watcher at the same time:
+Run the application (with automatic Go and Tailwind CSS rebuilding via [air](https://github.com/air-verse/air)):
 
 ```bash
-make -j run
+make run
 ```
 
 ### Testing

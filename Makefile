@@ -12,17 +12,10 @@ build: css
 css:
 	tailwindcss -o public/css/tailwind.min.css --minify
 
-# run the application and tailwind watcher concurrently (requires "-j" to work correctly)
+# use air to watch for code changes and subsequently rebuild the app (including CSS)
 .PHONY: run
-run: run-app run-css
-
-.PHONY: run-css
-run-css:
-	tailwindcss -o public/css/tailwind.min.css --minify --watch
-
-.PHONY: run-app
-run-app:
-	go run main.go
+run:
+	go run github.com/air-verse/air@latest
 
 .PHONY: migrate
 migrate:

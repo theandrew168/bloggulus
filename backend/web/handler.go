@@ -12,6 +12,28 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
+// Redirects:
+// 303 See Other         - for GETs after POSTs (like a login / register form)
+// 302 Found             - all other temporary redirects
+// 301 Moved Permanently - permanent redirects
+
+// Route Handler Naming Ideas:
+//
+// basic page handlers:
+// GET - handleIndex
+// GET - handleDashboard
+//
+// basic page w/ form handlers:
+// GET  - handleLogin
+// POST - handleLoginForm
+//
+// CRUD handlers:
+// C POST - handleFooCreate[Form]
+// R GET  - handleFooRead
+// U POST - handleFooUpdate[Form]
+// D POST - handleFooDelete[Form]
+// L GET  - handleFooList
+
 func Handler(
 	public fs.FS,
 	repo *repository.Repository,
@@ -21,7 +43,7 @@ func Handler(
 	mux := http.NewServeMux()
 
 	accountRequired := middleware.AccountRequired()
-	// adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
+	adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
 
 	// Host prometheus metrics on "/metrics".
 	mux.Handle("GET /metrics", promhttp.Handler())
@@ -45,14 +67,20 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(find))
 
+	// Authenication routes.
 	mux.Handle("GET /register", HandleRegisterPage())
 	mux.Handle("POST /register", HandleRegisterForm(repo))
 	mux.Handle("GET /signin", HandleSigninPage())
 	mux.Handle("POST /signin", HandleSigninForm(repo))
 	mux.Handle("POST /signout", HandleSignoutForm(repo))
 
-	mux.Handle("GET /blogs", accountRequired(HandleBlogsPage(find)))
-	mux.Handle("POST /blogs", accountRequired(HandleBlogsForm(repo, find, syncService)))
+	// Blog and post routes.
+	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))
+	mux.Handle("POST /blogs/create", accountRequired(HandleBlogCreateForm(repo, find, syncService)))
+	mux.Handle("POST /blogs/follow", accountRequired(HandleBlogFollowForm(repo, find)))
+	mux.Handle("POST /blogs/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
+	mux.Handle("GET /blogs/{blogID}", accountRequired(HandleBlogRead(repo)))
+	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

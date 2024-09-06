@@ -3,14 +3,14 @@
 <div class="max-w-3xl px-6 md:px-0 mx-auto">
 	<h1 class="text-lg font-semibold mt-6 mb-2">Blogs</h1>
 	<div class="mb-4">
-		<form method="POST" action="/blogs" hx-post="/blogs" hx-target="#blogs" class="flex flex-row gap-4">
+		<form method="POST" action="/blogs/create" hx-post="/blogs/create" hx-target="#blogs" class="flex flex-row gap-4">
 			<input
 				type="text"
 				name="feedURL"
 				placeholder="Add Feed"
 				class="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
 			/>
-			{{template "button" dict "Contents" "Add" "Name" "intent" "Value" "add"}}
+			{{template "button" dict "Contents" "Add"}}
 		</form>
 	</div>
 	{{block "blogs" .}}
@@ -19,14 +19,17 @@
 		<div class="py-2 flex gap-4 items-center justify-between">
 			<a class="hover:underline" href="/blogs/{{.ID}}">{{.Title}}</a>
 			{{block "blog" .}}
-			<form method="POST" action="/blogs" hx-post="/blogs">
-				<input type="hidden" name="blogID" value="{{.ID}}" />
 				{{if .IsFollowing}}
-					{{template "button" dict "Contents" "Unfollow" "Name" "intent" "Value" "unfollow"}}
+				<form method="POST" action="/blogs/unfollow" hx-post="/blogs/unfollow">
+					<input type="hidden" name="blogID" value="{{.ID}}" />
+					{{template "button" dict "Contents" "Unfollow"}}
+				</form>
 				{{else}}
-					{{template "button" dict "Contents" "Follow" "Name" "intent" "Value" "follow"}}
+				<form method="POST" action="/blog/follows" hx-post="/blogs/follow">
+					<input type="hidden" name="blogID" value="{{.ID}}" />
+					{{template "button" dict "Contents" "Follow"}}
+				</form>
 				{{end}}
-			</form>
 			{{end}}
 		</div>
 		{{end}}

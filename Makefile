@@ -64,4 +64,4 @@ update-alpine:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus c.out
+	rm -fr bloggulus c.out dist/ tmp/

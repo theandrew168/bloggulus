@@ -79,7 +79,7 @@ func Handler(
 	mux.Handle("POST /blogs/create", accountRequired(HandleBlogCreateForm(repo, find, syncService)))
 	mux.Handle("POST /blogs/follow", accountRequired(HandleBlogFollowForm(repo, find)))
 	mux.Handle("POST /blogs/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
-	mux.Handle("GET /blogs/{blogID}", accountRequired(HandleBlogRead(repo)))
+	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
 
 	// Requests that don't match any of the above handlers get a 404.

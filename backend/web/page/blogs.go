@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -15,7 +16,8 @@ var BlogsHTML string
 type BlogsData struct {
 	layout.BaseData
 
-	Blogs []finder.BlogForAccount
+	Account *model.Account
+	Blogs   []finder.BlogForAccount
 }
 
 type BlogsPage struct {

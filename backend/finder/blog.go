@@ -12,6 +12,7 @@ import (
 type BlogForAccount struct {
 	ID          uuid.UUID `db:"id"`
 	Title       string    `db:"title"`
+	SiteURL     string    `db:"site_url"`
 	IsFollowing bool      `db:"is_following"`
 }
 
@@ -20,6 +21,7 @@ func (f *Finder) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, 
 		SELECT
 			blog.id,
 			blog.title,
+			blog.site_url,
 			account_blog IS NOT NULL AS is_following
 		FROM blog
 		LEFT JOIN account_blog

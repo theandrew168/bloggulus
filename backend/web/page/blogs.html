@@ -17,7 +17,11 @@
 	<div id="blogs" class="divide-y divide-gray-200">
 		{{range .Blogs}}
 		<div class="py-2 flex gap-4 items-center justify-between">
+			{{if $.Account.IsAdmin}}
 			<a class="hover:underline" href="/blogs/{{.ID}}">{{.Title}}</a>
+			{{else}}
+			<a class="hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
+			{{end}}
 			{{block "blog" .}}
 				{{if .IsFollowing}}
 				<form method="POST" action="/blogs/unfollow" hx-post="/blogs/unfollow">

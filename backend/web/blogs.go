@@ -33,7 +33,8 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 		}
 
 		data := page.BlogsData{
-			Blogs: blogs,
+			Account: account,
+			Blogs:   blogs,
 		}
 		err = tmpl.Render(w, data)
 		if err != nil {
@@ -120,7 +121,8 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 				return
 			}
 			data := page.BlogsData{
-				Blogs: blogs,
+				Account: account,
+				Blogs:   blogs,
 			}
 			err = tmpl.RenderBlogs(w, data)
 			if err != nil {
@@ -193,6 +195,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 			data := finder.BlogForAccount{
 				ID:          blog.ID(),
 				Title:       blog.Title(),
+				SiteURL:     blog.SiteURL(),
 				IsFollowing: true,
 			}
 			err = tmpl.RenderBlog(w, data)
@@ -265,6 +268,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 			data := finder.BlogForAccount{
 				ID:          blog.ID(),
 				Title:       blog.Title(),
+				SiteURL:     blog.SiteURL(),
 				IsFollowing: false,
 			}
 			err = tmpl.RenderBlog(w, data)

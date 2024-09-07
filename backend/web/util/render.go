@@ -13,7 +13,7 @@ type RenderFunc func(w io.Writer) error
 // Render an HTML template based on a given RenderFunc.
 func Render(w http.ResponseWriter, r *http.Request, code int, render RenderFunc) {
 	// Write the template to the buffer, instead of straight to the http.ResponseWriter.
-	// If there's an error, call our serverError() helper and then return.
+	// If there's an error, call our InternalServerErrorResponse() helper and then return.
 	var buf bytes.Buffer
 	err := render(&buf)
 	if err != nil {

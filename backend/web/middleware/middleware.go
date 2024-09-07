@@ -22,7 +22,7 @@ func Use(h http.Handler, mws ...Middleware) http.Handler {
 	return h
 }
 
-// Chain multiple middleware together (in the provided order).
+// Chain multiple middleware together for delayed application to a handler.
 func Chain(mws ...Middleware) Middleware {
 	return func(h http.Handler) http.Handler {
 		return Use(h, mws...)

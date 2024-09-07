@@ -19,8 +19,8 @@ func NewSessionCookie(name, value string) http.Cookie {
 		Domain:   "",   // An empty domain will default to the server's base domain.
 		Secure:   true, // Only send cookies on secure connections (includes localhost).
 		HttpOnly: true, // Only send cookies via HTTP requests (not JS).
-		// Don't send cookies with cross-site requests but include when navigating
-		// to the origin site from an external site (like following a link).
+		// Don't send cookies with cross-site requests but include them when navigating
+		// to the origin site from an external location (like when following a link).
 		SameSite: http.SameSiteLaxMode,
 	}
 	return cookie

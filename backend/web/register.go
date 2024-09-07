@@ -3,6 +3,7 @@ package web
 import (
 	_ "embed"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -17,11 +18,9 @@ func HandleRegisterPage() http.Handler {
 	tmpl := page.NewRegister()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		data := page.RegisterData{}
-		err := tmpl.Render(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
+			return tmpl.Render(w, data)
+		})
 	})
 }
 
@@ -31,7 +30,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		// Parse the form data.
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -50,18 +49,16 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 				Username: username,
 				Errors:   e,
 			}
-			err = tmpl.Render(w, data)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
+				return tmpl.Render(w, data)
+			})
 			return
 		}
 
 		// Create a new account.
 		account, err := model.NewAccount(username, password)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -76,13 +73,11 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 					Username: username,
 					Errors:   e,
 				}
-				err = tmpl.Render(w, data)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-					return
-				}
+				util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
+					return tmpl.Render(w, data)
+				})
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
 
 			return
@@ -95,13 +90,13 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 
 		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
 		err = repo.Session().Create(session)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.CreateErrorResponse(w, r, err)
 			return
 		}
 

@@ -3,6 +3,7 @@ package web
 import (
 	_ "embed"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -20,15 +21,15 @@ import (
 func HandleBlogList(find *finder.Finder) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		account, ok := util.ContextGetAccount(r)
-		if !ok {
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		account, isLoggedIn := util.ContextGetAccount(r)
+		if !isLoggedIn {
+			util.ForbiddenResponse(w, r)
 			return
 		}
 
 		blogs, err := find.ListBlogsForAccount(account)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.ListErrorResponse(w, r, err)
 			return
 		}
 
@@ -36,11 +37,10 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 			Account: account,
 			Blogs:   blogs,
 		}
-		err = tmpl.Render(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+
+		util.Render(w, r, 200, func(w io.Writer) error {
+			return tmpl.Render(w, data)
+		})
 	})
 }
 
@@ -49,19 +49,19 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.BadRequestResponse(w, r)
 			return
 		}
 
 		account, isLoggedIn := util.ContextGetAccount(r)
 		if !isLoggedIn {
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			util.ForbiddenResponse(w, r)
 			return
 		}
 
 		feedURL := r.PostForm.Get("feedURL")
 
-		// Check if the blog already exists. If it does, return its details.
+		// Check if the blog already exists. If it does, nothing further is required.
 		_, err = repo.Blog().ReadByFeedURL(feedURL)
 		if err == nil {
 			return
@@ -69,7 +69,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 		// At this point, the only "expected" error is ErrNotFound.
 		if !errors.Is(err, postgres.ErrNotFound) {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -78,9 +78,9 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 		if err != nil {
 			switch {
 			case errors.Is(err, fetch.ErrUnreachableFeed):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				util.BadRequestResponse(w, r)
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
 
 			return
@@ -93,16 +93,9 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 			"blog_title", blog.Title(),
 		)
 
-		// Follow the blog and check for ErrConflict (already following).
 		err = repo.AccountBlog().Create(account, blog)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrConflict):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.CreateErrorResponse(w, r, err)
 			return
 		}
 
@@ -117,22 +110,19 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 		if util.IsHTMXRequest(r) {
 			blogs, err := find.ListBlogsForAccount(account)
 			if err != nil {
-				http.Error(w, err.Error(), 500)
+				util.ListErrorResponse(w, r, err)
 				return
 			}
 			data := page.BlogsData{
 				Account: account,
 				Blogs:   blogs,
 			}
-			err = tmpl.RenderBlogs(w, data)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+			util.Render(w, r, 200, func(w io.Writer) error {
+				return tmpl.RenderBlogs(w, data)
+			})
 			return
 		}
 
-		// This intent is done now.
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 	})
 }
@@ -142,31 +132,25 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.BadRequestResponse(w, r)
 			return
 		}
 
 		account, isLoggedIn := util.ContextGetAccount(r)
 		if !isLoggedIn {
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			util.ForbiddenResponse(w, r)
 			return
 		}
 
 		blogID, err := uuid.Parse(r.PostForm.Get("blogID"))
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			util.BadRequestResponse(w, r)
 			return
 		}
 
 		blog, err := repo.Blog().Read(blogID)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
@@ -175,11 +159,10 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				util.BadRequestResponse(w, r)
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
-
 			return
 		}
 
@@ -190,7 +173,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 			"blog_title", blog.Title(),
 		)
 
-		// If the request came in via HTMX, re-render the individual row.
+		// If the request came in via HTMX, re-render the individual blog row.
 		if util.IsHTMXRequest(r) {
 			data := finder.BlogForAccount{
 				ID:          blog.ID(),
@@ -198,11 +181,9 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 				SiteURL:     blog.SiteURL(),
 				IsFollowing: true,
 			}
-			err = tmpl.RenderBlog(w, data)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+			util.Render(w, r, 200, func(w io.Writer) error {
+				return tmpl.RenderBlog(w, data)
+			})
 			return
 		}
 
@@ -215,31 +196,25 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.BadRequestResponse(w, r)
 			return
 		}
 
 		account, isLoggedIn := util.ContextGetAccount(r)
 		if !isLoggedIn {
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			util.ForbiddenResponse(w, r)
 			return
 		}
 
 		blogID, err := uuid.Parse(r.PostForm.Get("blogID"))
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			util.BadRequestResponse(w, r)
 			return
 		}
 
 		blog, err := repo.Blog().Read(blogID)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
@@ -248,11 +223,10 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				util.BadRequestResponse(w, r)
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
-
 			return
 		}
 
@@ -271,11 +245,9 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 				SiteURL:     blog.SiteURL(),
 				IsFollowing: false,
 			}
-			err = tmpl.RenderBlog(w, data)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
+			util.Render(w, r, 200, func(w io.Writer) error {
+				return tmpl.RenderBlog(w, data)
+			})
 			return
 		}
 

@@ -1,6 +1,7 @@
 package web
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 
@@ -60,7 +61,7 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 
 		err = g.Wait()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -70,10 +71,9 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			HasMorePages: p*s < count,
 			NextPage:     p + 1,
 		}
-		err = tmpl.Render(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+
+		util.Render(w, r, 200, func(w io.Writer) error {
+			return tmpl.Render(w, data)
+		})
 	})
 }

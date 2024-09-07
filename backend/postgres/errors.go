@@ -89,9 +89,10 @@ func CheckUpdateError(err error) error {
 	var pgErr *pgconn.PgError
 
 	switch {
-	// ErrNoRows in an update indicates a TOCTOU race condition (conflict)
+	// ErrNoRows in an update indicates a TOCTOU race condition (not found).
 	case errors.Is(err, pgx.ErrNoRows):
 		return ErrNotFound
+	// Otherwise check for actual constraint violations (conflict).
 	case errors.As(err, &pgErr):
 		switch {
 		case pgerrcode.IsIntegrityConstraintViolation(pgErr.Code):

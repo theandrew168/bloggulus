@@ -10,6 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
+	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 // Redirects:
@@ -83,7 +84,9 @@ func Handler(
 	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
 
 	// Requests that don't match any of the above handlers get a 404.
-	mux.Handle("/", HandleNotFoundPage())
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		util.NotFoundResponse(w, r)
+	})
 
 	// Apply global middleware to all routes.
 	handler := middleware.Use(mux,

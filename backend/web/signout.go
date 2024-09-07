@@ -11,6 +11,7 @@ import (
 
 func HandleSignoutForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check for a session ID. If there isn't one, just redirect back home.
 		sessionID, err := r.Cookie(util.SessionCookieName)
 		if err != nil {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -21,14 +22,14 @@ func HandleSignoutForm(repo *repository.Repository) http.Handler {
 		cookie := util.NewExpiredCookie(util.SessionCookieName)
 		http.SetCookie(w, &cookie)
 
-		// Lookup the session by it's client-side session ID.
+		// Lookup the session by its client-side session ID.
 		session, err := repo.Session().ReadBySessionID(sessionID.Value)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
 			return
 		}
@@ -40,7 +41,7 @@ func HandleSignoutForm(repo *repository.Repository) http.Handler {
 			case errors.Is(err, postgres.ErrNotFound):
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			default:
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 			}
 			return
 		}

@@ -32,7 +32,7 @@ func Authenticate(repo *repository.Repository) Middleware {
 					return
 				}
 
-				http.Error(w, err.Error(), 500)
+				util.InternalServerErrorResponse(w, r, err)
 				return
 			}
 
@@ -71,7 +71,7 @@ func AdminRequired() Middleware {
 
 			// If the account exists but is not an admin account, show a 403 Forbidden page.
 			if !account.IsAdmin() {
-				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+				util.ForbiddenResponse(w, r)
 				return
 			}
 

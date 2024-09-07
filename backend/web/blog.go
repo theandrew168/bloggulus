@@ -1,14 +1,14 @@
 package web
 
 import (
-	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 func HandleBlogRead(repo *repository.Repository) http.Handler {
@@ -16,25 +16,19 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			http.Error(w, "Not Found", 404)
+			util.NotFoundResponse(w, r)
 			return
 		}
 
 		blog, err := repo.Blog().Read(blogID)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, "Not Found", 404)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
 		posts, err := repo.Post().List(blog, 20, 0)
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
@@ -55,11 +49,9 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 			data.Posts = append(data.Posts, blogPost)
 		}
 
-		err = tmpl.Render(w, data)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+		util.Render(w, r, 200, func(w io.Writer) error {
+			return tmpl.Render(w, data)
+		})
 	})
 }
 
@@ -67,31 +59,19 @@ func HandleBlogDeleteForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			http.Error(w, "Not Found", 404)
+			util.NotFoundResponse(w, r)
 			return
 		}
 
 		blog, err := repo.Blog().Read(blogID)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, "Not Found", 404)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
 		err = repo.Blog().Delete(blog)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Error(w, "Not Found", 404)
-			default:
-				http.Error(w, err.Error(), 500)
-			}
-
+			util.DeleteErrorResponse(w, r, err)
 			return
 		}
 

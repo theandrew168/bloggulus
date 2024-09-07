@@ -13,6 +13,7 @@ import (
 //go:embed blog.html
 var BlogHTML string
 
+// TODO: Come up with a better name for this? BlogPagePost? BlogPost?
 type BlogDataPost struct {
 	ID          uuid.UUID
 	BlogID      uuid.UUID

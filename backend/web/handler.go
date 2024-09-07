@@ -83,10 +83,7 @@ func Handler(
 	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
 
 	// Requests that don't match any of the above handlers get a 404.
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(404)
-		w.Write([]byte("<h1>Bloggulus - Not Found</h1>"))
-	})
+	mux.Handle("/", HandleNotFoundPage())
 
 	// Apply global middleware to all routes.
 	handler := middleware.Use(mux,

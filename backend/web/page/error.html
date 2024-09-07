@@ -1,0 +1,14 @@
+{{define "main"}}
+
+<div class="h-full flex items-center justify-center">
+	<div class="text-center">
+		<p class="font-semibold text-gray-700">{{.StatusCode}}</p>
+		<h1 class="mt-4 text-3xl font-bold text-gray-900">{{.StatusText}}</h1>
+		<p class="mt-6">{{.Message}}</p>
+		<div class="mt-10">
+			<a href="/" class="rounded-md px-4 py-2 font-semibold bg-gray-700 text-gray-100 shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700">Go back home</a>
+		</div>
+	</div>
+</div>
+
+{{end}}

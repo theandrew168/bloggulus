@@ -21,7 +21,7 @@ import (
 func HandleBlogList(find *finder.Finder) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		account, isLoggedIn := util.ContextGetAccount(r)
+		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
 			return
@@ -34,6 +34,8 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 		}
 
 		data := page.BlogsData{
+			BaseData: util.TemplateBaseData(r, w),
+
 			Account: account,
 			Blogs:   blogs,
 		}
@@ -44,6 +46,11 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 	})
 }
 
+// How this should work:
+// 1. Check if the blog exists (by URL)
+// 2. If it does, follow and return
+// 3. If it doesn't, submit for initial sync + follow (background)
+// 4. Notify the user of submission via toast
 func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +60,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 			return
 		}
 
-		account, isLoggedIn := util.ContextGetAccount(r)
+		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
 			return
@@ -136,7 +143,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 			return
 		}
 
-		account, isLoggedIn := util.ContextGetAccount(r)
+		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
 			return
@@ -200,7 +207,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 			return
 		}
 
-		account, isLoggedIn := util.ContextGetAccount(r)
+		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
 			return

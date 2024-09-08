@@ -17,7 +17,9 @@ import (
 func HandleRegisterPage() http.Handler {
 	tmpl := page.NewRegister()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data := page.RegisterData{}
+		data := page.RegisterData{
+			BaseData: util.TemplateBaseData(r, w),
+		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

@@ -16,7 +16,9 @@ import (
 func HandleSigninPage() http.Handler {
 	tmpl := page.NewSignin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data := page.SigninData{}
+		data := page.SigninData{
+			BaseData: util.TemplateBaseData(r, w),
+		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

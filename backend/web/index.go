@@ -66,6 +66,8 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 		}
 
 		data := page.IndexData{
+			BaseData: util.TemplateBaseData(r, w),
+
 			Search:       search,
 			Articles:     articles,
 			HasMorePages: p*s < count,

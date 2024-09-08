@@ -10,21 +10,21 @@ import (
 // Define a custom contextKey type, with the underlying type string.
 type contextKey string
 
-// Convert the string "account" to a contextKey type and assign it to the contextKeyAccount
+// Convert the string "account" to a contextKey type and assign it to the accountContextKey
 // constant. We'll use this constant as the key for getting and setting account information
 // in the request context.
-const contextKeyAccount = contextKey("account")
+const accountContextKey = contextKey("account")
 
-// The ContextSetAccount() method returns a new copy of the request with the provided
+// The SetContextAccount() method returns a new copy of the request with the provided
 // model.Account added to the context. Note that we use our accountContextKey constant
 // as the key.
-func ContextSetAccount(r *http.Request, account *model.Account) *http.Request {
-	ctx := context.WithValue(r.Context(), contextKeyAccount, account)
+func SetContextAccount(r *http.Request, account *model.Account) *http.Request {
+	ctx := context.WithValue(r.Context(), accountContextKey, account)
 	return r.WithContext(ctx)
 }
 
-// The ContextGetAccount() retrieves the model.Account and an "exists" bool from the request context.
-func ContextGetAccount(r *http.Request) (*model.Account, bool) {
-	account, ok := r.Context().Value(contextKeyAccount).(*model.Account)
+// The GetContextAccount() retrieves the model.Account and an "exists" bool from the request context.
+func GetContextAccount(r *http.Request) (*model.Account, bool) {
+	account, ok := r.Context().Value(accountContextKey).(*model.Account)
 	return account, ok
 }

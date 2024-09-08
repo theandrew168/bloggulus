@@ -26,7 +26,7 @@ func TestAuthenticate(t *testing.T) {
 	r.AddCookie(&sessionCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		got, ok := util.ContextGetAccount(r)
+		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
 		test.AssertEqual(t, got.ID(), account.ID())
 	})
@@ -95,7 +95,7 @@ func TestAccountRequired(t *testing.T) {
 	r.AddCookie(&sessionCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		got, ok := util.ContextGetAccount(r)
+		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
 		test.AssertEqual(t, got.ID(), account.ID())
 	})
@@ -180,7 +180,7 @@ func TestAdminRequired(t *testing.T) {
 	r.AddCookie(&sessionCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		got, ok := util.ContextGetAccount(r)
+		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
 		test.AssertEqual(t, got.ID(), account.ID())
 	})

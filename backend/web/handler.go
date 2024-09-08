@@ -83,6 +83,12 @@ func Handler(
 	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
 
+	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
+		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/register", http.StatusSeeOther)
+	})
+
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		util.NotFoundResponse(w, r)

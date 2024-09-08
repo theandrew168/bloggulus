@@ -11,10 +11,10 @@
 	<link rel="stylesheet" href="/css/fonts.css" />
 	<link rel="stylesheet" href="/css/tailwind.min.css" />
 	<script src="/js/htmx.min.js" defer></script>
+	<script src="/js/alpine.min.js" defer></script>
 </head>
 
 <body class="bg-gray-100 sans-serif flex flex-col items-stretch min-h-screen">
-
 	<!-- nav bar -->
 	<nav class="bg-white shadow">
 		<div class="max-w-3xl mx-auto py-4 px-6 md:px-0 flex justify-between items-center gap-x-2">
@@ -23,13 +23,20 @@
 		</div>
 	</nav>
 
+	<!-- toast -->
+	{{with .Toast}}
+	<div class="bg-gray-800 text-white p-4 flex items-center justify-center">
+		<div>{{.}}</div>
+	</div>
+	{{end}}
+
 	<!-- main content -->
 	<main class="flex-grow basis-0">
 		{{template "main" .}}
 	</main>
 
 	<!-- footer -->
-	<footer class="text-gray-100 bg-gray-800">
+	<footer class="bg-gray-800 text-gray-100">
 		<div class="max-w-3xl mx-auto py-4">
 			<div class="flex flex-col items-center justify-between md:flex-row space-y-1 md:space-y-0">
 				<a href="/" class="text-xl font-semibold text-gray-100 hover:text-gray-400">Bloggulus</a>

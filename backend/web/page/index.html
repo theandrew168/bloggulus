@@ -25,16 +25,20 @@
 			<span class="text-sm font-light text-gray-600">{{.PublishedAt.Format "Jan 2, 2006"}}</span>
 			<div class="flex items-center gap-x-2">
 				{{range .Tags}}
-				<a href="/?q={{.}}" class="text-sm font-semibold px-3 py-1 bg-gray-600 text-gray-100 rounded hover:bg-gray-500">{{.}}</a>
+				<a href="/?q={{.}}" class="text-sm font-semibold px-3 py-1 bg-gray-700 text-gray-100 rounded hover:bg-gray-500">{{.}}</a>
 				{{end}}
 			</div>
 		</div>
 
 		<!-- post title -->
-		<a href="{{.URL}}" class="text-2xl text-gray-700 font-semibold hover:underline block mb-2">{{.Title}}</a>
+		<div class="mb-2">
+			<a href="{{.URL}}" class="text-2xl text-gray-700 font-semibold hover:underline">{{.Title}}</a>
+		</div>
 
 		<!-- blog title -->
-		<a href="{{.BlogURL}}" class="text-gray-700 font-semibold hover:underline block">{{.BlogTitle}}</a>
+		<div>
+			<a href="{{.BlogURL}}" class="text-gray-700 font-semibold hover:underline">{{.BlogTitle}}</a>
+		</div>
 	</div>
 	{{end}}
 </div>

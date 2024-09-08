@@ -8,6 +8,8 @@ import (
 var (
 	SessionCookieName = "bloggulus_session"
 	SessionCookieTTL  = 7 * 24 * time.Hour
+
+	ToastCookieName = "bloggulus_toast"
 )
 
 // Create a session (not permanent) cookie that expires when the user's session ends.

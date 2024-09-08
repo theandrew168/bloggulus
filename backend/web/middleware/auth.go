@@ -37,7 +37,7 @@ func Authenticate(repo *repository.Repository) Middleware {
 			}
 
 			// If it exists, attach the account to the request context.
-			r = util.ContextSetAccount(r, account)
+			r = util.SetContextAccount(r, account)
 
 			next.ServeHTTP(w, r)
 		})
@@ -48,7 +48,7 @@ func AccountRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// If the request context has no account, then the user is not signed in (redirect).
-			_, ok := util.ContextGetAccount(r)
+			_, ok := util.GetContextAccount(r)
 			if !ok {
 				http.Redirect(w, r, "/signin", http.StatusSeeOther)
 				return
@@ -63,7 +63,7 @@ func AdminRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// If the request context has no account, then the user is not signed in (redirect).
-			account, ok := util.ContextGetAccount(r)
+			account, ok := util.GetContextAccount(r)
 			if !ok {
 				http.Redirect(w, r, "/signin", http.StatusSeeOther)
 				return

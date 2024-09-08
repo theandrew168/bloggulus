@@ -86,7 +86,7 @@ func Handler(
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
 		http.SetCookie(w, &cookie)
-		http.Redirect(w, r, "/register", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
 	// Requests that don't match any of the above handlers get a 404.

@@ -39,15 +39,15 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		password := r.PostForm.Get("password")
 
 		// Validate the form values.
-		e := util.NewErrors()
-		e.CheckRequired("username", username)
-		e.CheckRequired("password", password)
+		v := util.NewValidator()
+		v.CheckRequired("username", username)
+		v.CheckRequired("password", password)
 
 		// If the form isn't valid, re-render the template with existing input values.
-		if !e.OK() {
+		if !v.IsValid() {
 			data := page.RegisterData{
 				Username: username,
-				Errors:   e,
+				Errors:   v,
 			}
 			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
 				return tmpl.Render(w, data)
@@ -68,10 +68,10 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
 				// If a conflict occurs, re-render the form with an error.
-				e.Add("username", "Username is already taken")
+				v.Add("username", "Username is already taken")
 				data := page.RegisterData{
 					Username: username,
-					Errors:   e,
+					Errors:   v,
 				}
 				util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
 					return tmpl.Render(w, data)

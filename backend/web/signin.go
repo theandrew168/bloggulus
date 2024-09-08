@@ -38,15 +38,15 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 		password := r.PostForm.Get("password")
 
 		// Validate the form values.
-		e := util.NewErrors()
-		e.CheckRequired("username", username)
-		e.CheckRequired("password", password)
+		v := util.NewValidator()
+		v.CheckRequired("username", username)
+		v.CheckRequired("password", password)
 
 		// If the form isn't valid, re-render the template with existing input values.
-		if !e.OK() {
+		if !v.IsValid() {
 			data := page.SigninData{
 				Username: username,
-				Errors:   e,
+				Errors:   v,
 			}
 			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
 				return tmpl.Render(w, data)
@@ -58,11 +58,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
-				e.Add("username", "Invalid username or password")
-				e.Add("password", "Invalid username or password")
+				v.Add("username", "Invalid username or password")
+				v.Add("password", "Invalid username or password")
 				data := page.SigninData{
 					Username: username,
-					Errors:   e,
+					Errors:   v,
 				}
 				util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
 					return tmpl.Render(w, data)
@@ -75,11 +75,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 
 		ok := account.PasswordMatches(password)
 		if !ok {
-			e.Add("username", "Invalid username or password")
-			e.Add("password", "Invalid username or password")
+			v.Add("username", "Invalid username or password")
+			v.Add("password", "Invalid username or password")
 			data := page.SigninData{
 				Username: username,
-				Errors:   e,
+				Errors:   v,
 			}
 			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
 				return tmpl.Render(w, data)

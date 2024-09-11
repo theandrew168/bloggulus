@@ -5,14 +5,10 @@
 default: build
 
 .PHONY: build
-build: css
+build:
 	go build -o bloggulus main.go
 
-.PHONY: css
-css:
-	tailwindcss -o public/css/tailwind.min.css --minify
-
-# use air to watch for code changes and subsequently rebuild the app (including CSS)
+# use air to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
 	go run github.com/air-verse/air@latest

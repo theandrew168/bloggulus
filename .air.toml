@@ -3,10 +3,9 @@ tmp_dir = "tmp"
 
 [build]
 bin = "tmp/bloggulus"
-pre_cmd = ["tailwindcss -o public/css/tailwind.min.css --minify"]
 cmd = "go build -o ./tmp/bloggulus main.go"
-include_ext = ["go", "html"]
-include_dir = ["backend"]
+include_ext = ["go", "html", "css"]
+include_dir = ["backend", "public"]
 include_file = ["main.go"]
 
 [proxy]

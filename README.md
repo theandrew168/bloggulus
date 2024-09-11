@@ -10,7 +10,7 @@ Check out the [releases page](https://github.com/theandrew168/bloggulus/releases
 
 ### Setup
 
-This project depends on [Go](https://golang.org/dl/) and the [Tailwind CLI](https://tailwindcss.com/blog/standalone-cli).
+This project depends on the [Go](https://golang.org/dl/) programming language.
 
 ### Database
 
@@ -32,7 +32,7 @@ docker compose down
 
 ### Running
 
-Run the application (with automatic Go and Tailwind CSS rebuilding via [air](https://github.com/air-verse/air)):
+Run the application (with automatic restarts via [air](https://github.com/air-verse/air)):
 
 ```bash
 make run

@@ -8,43 +8,39 @@
 	<meta name="description" content="Bloggulus - A website for avid blog readers" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+	<link rel="stylesheet" href="/css/reset.css" />
 	<link rel="stylesheet" href="/css/fonts.css" />
-	<link rel="stylesheet" href="/css/tailwind.min.css" />
+	<link rel="stylesheet" href="/css/style.css" />
 	<script src="/js/htmx.min.js" defer></script>
-	<!-- <script src="/js/alpine.min.js" defer></script> -->
 </head>
 
-<body class="bg-gray-100 sans-serif flex flex-col items-stretch min-h-screen">
-	<!-- nav bar -->
-	<nav class="bg-white shadow">
-		<div class="max-w-3xl mx-auto py-4 px-6 md:px-0 flex justify-between items-center gap-x-2">
-			<!-- brand -->
-			<a href="/" class="block text-gray-800 text-xl md:text-2xl hover:text-gray-500">Bloggulus</a>
-		</div>
-	</nav>
+<body class="sans-serif">
+	<header class="header">
+		<nav>
+			<ul class="header-links">
+				<li><a class="header-link header-link-home" href="/">Bloggulus</a></li>
+			</ul>
+		</nav>
+	</header>
 
-	<!-- toast -->
 	{{with .Toast}}
-	<div class="bg-gray-800 text-white p-4 flex items-center justify-center">
+	<div class="toast">
 		<div>{{.}}</div>
 	</div>
 	{{end}}
 
-	<!-- main content -->
-	<main class="flex-grow basis-0">
+	<main>
 		{{template "main" .}}
 	</main>
 
-	<!-- footer -->
-	<footer class="bg-gray-800 text-gray-100">
-		<div class="max-w-3xl mx-auto py-4">
-			<div class="flex flex-col items-center justify-between md:flex-row space-y-1 md:space-y-0">
-				<a href="/" class="text-xl font-semibold text-gray-100 hover:text-gray-400">Bloggulus</a>
-				<a href="https://shallowbrooksoftware.com" class="text-gray-100 hover:text-gray-400">Shallow Brook Software</a>
-			</div>
-		</div>
+	<footer class="footer">
+		<nav>
+			<ul class="footer-links">
+				<li><a class="footer-link footer-link-home" href="/">Bloggulus</a></li>
+				<li><a class="footer-link" href="https://shallowbrooksoftware.com">Shallow Brook Software</a></li>
+			</ul>
+		</nav>
 	</footer>
-
 </body>
 
 </html>

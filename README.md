@@ -32,7 +32,7 @@ docker compose down
 
 ### Running
 
-Run the application (with automatic restarts via [air](https://github.com/air-verse/air)):
+Run the application (with automatic restarts via [wgo](https://github.com/bokwoon95/wgo)):
 
 ```bash
 make run

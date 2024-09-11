@@ -8,10 +8,10 @@ default: build
 build:
 	go build -o bloggulus main.go
 
-# use air to watch for code changes and subsequently rebuild the app
+# use wgo to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
-	go run github.com/air-verse/air@latest
+	go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go
 
 .PHONY: migrate
 migrate:
@@ -60,4 +60,4 @@ update-alpine:
 
 .PHONY: clean
 clean:
-	rm -fr bloggulus c.out dist/ tmp/
+	rm -fr bloggulus c.out dist/

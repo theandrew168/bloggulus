@@ -1,33 +1,46 @@
 {{define "main"}}
 
-<div class="h-full flex items-center justify-center">
-	<form method="POST" action="/register" class="bg-white p-8 shadow rounded-md flex flex-col gap-6">
-		<div>
-			<label for="username" class="block text-sm font-medium">
+<section class="register">
+	<form method="POST" action="/register" class="register-form">
+		<h2 class="register-heading">Register a New Account</h2>
+
+		<div class="register-field">
+			<label for="username" class="register-label">
 				Username
 			</label>
-			<div class="mt-2">
-				{{template "input" dict "Type" "text" "Name" "username" "Value" .Username "Placeholder" "Username"}}
-				{{with .Errors.username}}
-					<p class="text-red-500">{{.}}</p>
-				{{end}}
-			</div>
+			<input
+				id="username"
+				name="username"
+				type="text"
+				value="{{.Username}}"
+				placeholder="Username"
+				class="register-input"
+			/>
+			{{with .Errors.username}}
+			<p class="register-error">{{.}}</p>
+			{{end}}
 		</div>
 
-		<div>
-			<label for="password" class="block text-sm font-medium">
+		<div class="register-field">
+			<label for="password" class="register-label">
 				Password
 			</label>
-			<div class="mt-2">
-				{{template "input" dict "Type" "password" "Name" "password" "Placeholder" "Password"}}
-				{{with .Errors.password}}
-					<p class="text-red-500">{{.}}</p>
-				{{end}}
-			</div>
+			<input
+				id="password"
+				name="password"
+				type="password"
+				placeholder="Password"
+				class="register-input"
+			/>
+			{{with .Errors.password}}
+			<p class="register-error">{{.}}</p>
+			{{end}}
 		</div>
 
-		{{template "button" dict "Contents" "Register"}}
+		<button type="submit" class="register-button">
+			Register
+		</button>
 	</form>
-</div>
+</section>
 
 {{end}}

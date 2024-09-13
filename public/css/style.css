@@ -31,7 +31,7 @@ svg {
 
 .toast {
 	background-color: var(--color-dark);
-	color: white;
+	color: var(--color-light);
 	padding: 1rem;
 	display: flex;
 	align-items: center;
@@ -43,7 +43,7 @@ svg {
 
 
 .header {
-	background-color: white;
+	background-color: var(--color-light);
 	box-shadow: var(--shadow);
 }
 
@@ -97,6 +97,7 @@ svg {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+	padding: 0 0.5rem;
 }
 
 .article {
@@ -181,6 +182,10 @@ svg {
 	box-shadow: var(--shadow);
 }
 
+.articles-footer-link:hover {
+	color: var(--color-medium);
+}
+
 
 
 .footer {
@@ -208,4 +213,61 @@ svg {
 .footer-link-home {
 	font-size: 1.25rem;
 	font-weight: 500;
+}
+
+
+
+.register, .login {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.register-form, .login-form {
+	background-color: var(--color-light);
+	padding: 2rem;
+	box-shadow: var(--shadow);
+	border-radius: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.register-heading, .login-heading {
+	text-align: center;
+	font-weight: 500;
+}
+
+.register-label, .login-label {
+	display: inline-block;
+	font-weight: 500;
+	margin-bottom: 0.5rem;
+}
+
+.register-input, .login-input {
+	display: block;
+	border-radius: 0.25rem;
+	padding: 0.5rem 0.5rem;
+	border: 1px solid var(--color-gray);
+}
+
+.register-error, .login-error {
+	font-size: 0.75rem;
+	color: red;
+	margin-top: 0.25rem;
+}
+
+.register-button, .login-button {
+	color: var(--color-light);
+	background-color: var(--color-dark);
+	padding: 0.5rem 0.5rem;
+	font-weight: 500;
+	border-radius: 0.5rem;
+	border-width: 0;
+}
+
+.register-button:hover, .login-button:hover {
+	background-color: var(--color-medium);
+	cursor: pointer;
 }

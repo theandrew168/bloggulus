@@ -8,33 +8,33 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
-//go:embed signin.html
-var SigninHTML string
+//go:embed login.html
+var LoginHTML string
 
-type SigninData struct {
+type LoginData struct {
 	layout.BaseData
 
 	Username string
 	Errors   map[string]string
 }
 
-type SigninPage struct {
+type LoginPage struct {
 	tmpl *template.Template
 }
 
-func NewSignin() *SigninPage {
+func NewLogin() *LoginPage {
 	sources := []string{
 		layout.BaseHTML,
-		SigninHTML,
+		LoginHTML,
 	}
 
 	tmpl := newTemplate("page", sources)
-	page := SigninPage{
+	page := LoginPage{
 		tmpl: tmpl,
 	}
 	return &page
 }
 
-func (p *SigninPage) Render(w io.Writer, data SigninData) error {
+func (p *LoginPage) Render(w io.Writer, data LoginData) error {
 	return p.tmpl.ExecuteTemplate(w, "page", data)
 }

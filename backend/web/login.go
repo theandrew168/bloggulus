@@ -13,10 +13,10 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleSigninPage() http.Handler {
-	tmpl := page.NewSignin()
+func HandleLoginPage() http.Handler {
+	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data := page.SigninData{
+		data := page.LoginData{
 			BaseData: util.TemplateBaseData(r, w),
 		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
@@ -25,8 +25,8 @@ func HandleSigninPage() http.Handler {
 	})
 }
 
-func HandleSigninForm(repo *repository.Repository) http.Handler {
-	tmpl := page.NewSignin()
+func HandleLoginForm(repo *repository.Repository) http.Handler {
+	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Parse the form data.
 		err := r.ParseForm()
@@ -46,7 +46,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !v.IsValid() {
-			data := page.SigninData{
+			data := page.LoginData{
 				Username: username,
 				Errors:   v,
 			}
@@ -62,7 +62,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 			case errors.Is(err, postgres.ErrNotFound):
 				v.Add("username", "Invalid username or password")
 				v.Add("password", "Invalid username or password")
-				data := page.SigninData{
+				data := page.LoginData{
 					Username: username,
 					Errors:   v,
 				}
@@ -79,7 +79,7 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 		if !ok {
 			v.Add("username", "Invalid username or password")
 			v.Add("password", "Invalid username or password")
-			data := page.SigninData{
+			data := page.LoginData{
 				Username: username,
 				Errors:   v,
 			}
@@ -101,11 +101,11 @@ func HandleSigninForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		// Set a permanent cookie after signin.
+		// Set a permanent cookie after login.
 		cookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &cookie)
 
-		slog.Info("signin",
+		slog.Info("login",
 			"account_id", account.ID(),
 			"account_username", username,
 			"session_id", session.ID(),

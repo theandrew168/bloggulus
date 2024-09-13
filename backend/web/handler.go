@@ -71,9 +71,9 @@ func Handler(
 	// Authenication routes.
 	mux.Handle("GET /register", HandleRegisterPage())
 	mux.Handle("POST /register", HandleRegisterForm(repo))
-	mux.Handle("GET /signin", HandleSigninPage())
-	mux.Handle("POST /signin", HandleSigninForm(repo))
-	mux.Handle("POST /signout", HandleSignoutForm(repo))
+	mux.Handle("GET /login", HandleLoginPage())
+	mux.Handle("POST /login", HandleLoginForm(repo))
+	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
 	// Blog and post routes.
 	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))

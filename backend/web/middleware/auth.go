@@ -47,10 +47,10 @@ func Authenticate(repo *repository.Repository) Middleware {
 func AccountRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// If the request context has no account, then the user is not signed in (redirect).
+			// If the request context has no account, then the user is not logged in (redirect).
 			_, ok := util.GetContextAccount(r)
 			if !ok {
-				http.Redirect(w, r, "/signin", http.StatusSeeOther)
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
@@ -62,10 +62,10 @@ func AccountRequired() Middleware {
 func AdminRequired() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// If the request context has no account, then the user is not signed in (redirect).
+			// If the request context has no account, then the user is not logged in (redirect).
 			account, ok := util.GetContextAccount(r)
 			if !ok {
-				http.Redirect(w, r, "/signin", http.StatusSeeOther)
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 

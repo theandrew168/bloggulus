@@ -131,7 +131,7 @@ func TestAccountRequiredNoSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/signin")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
 }
 
 func TestAccountRequiredInvalidSession(t *testing.T) {
@@ -158,7 +158,7 @@ func TestAccountRequiredInvalidSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/signin")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
 }
 
 func TestAdminRequired(t *testing.T) {
@@ -218,7 +218,7 @@ func TestAdminRequiredNoSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/signin")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
 }
 
 func TestAdminRequiredInvalidSession(t *testing.T) {
@@ -246,7 +246,7 @@ func TestAdminRequiredInvalidSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/signin")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
 }
 
 func TestAdminRequiredNotAdmin(t *testing.T) {

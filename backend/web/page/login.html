@@ -1,0 +1,46 @@
+{{define "main"}}
+
+<section class="login">
+	<form method="POST" action="/login" class="login-form">
+		<h2 class="login-heading">Log In to Your Account</h2>
+
+		<div class="login-field">
+			<label for="username" class="login-label">
+				Username
+			</label>
+			<input
+				id="username"
+				name="username"
+				type="text"
+				value="{{.Username}}"
+				placeholder="Username"
+				class="login-input"
+			/>
+			{{with .Errors.username}}
+			<p class="login-error">{{.}}</p>
+			{{end}}
+		</div>
+
+		<div class="login-field">
+			<label for="password" class="login-label">
+				Password
+			</label>
+			<input
+				id="password"
+				name="password"
+				type="password"
+				placeholder="Password"
+				class="login-input"
+			/>
+			{{with .Errors.password}}
+			<p class="login-error">{{.}}</p>
+			{{end}}
+		</div>
+
+		<button type="submit" class="login-button">
+			Log In
+		</button>
+	</form>
+</section>
+
+{{end}}

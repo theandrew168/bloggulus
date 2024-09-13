@@ -106,7 +106,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		cookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 		http.SetCookie(w, &cookie)
 
-		slog.Info("signin",
+		slog.Info("login",
 			"account_id", account.ID(),
 			"account_username", username,
 			"session_id", session.ID(),

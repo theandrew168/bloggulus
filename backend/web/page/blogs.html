@@ -1,44 +1,51 @@
 {{define "main"}}
 
-<div class="max-w-3xl px-6 md:px-0 mx-auto">
-	<h1 class="text-lg font-semibold mt-6 mb-2">Blogs</h1>
-	<div class="mb-4">
-		<form method="POST" action="/blogs/create" hx-post="/blogs/create" hx-target="#blogs" class="flex flex-row gap-4">
+<section class="blogs">
+	<header class="blogs-header">
+		<h1 class="blogs-header__title">Blogs</h1>
+		<form method="POST" action="/blogs/create" hx-post="/blogs/create" hx-target="#blogs">
 			<input
+				class="blogs-header__input"
 				type="text"
 				name="feedURL"
 				placeholder="Add Feed"
-				class="block rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-800"
 			/>
-			{{template "button" dict "Contents" "Add"}}
+			<button class="blogs-header__button" type="submit">
+				Add
+			</button>
 		</form>
-	</div>
+	</header>
 	{{block "blogs" .}}
-	<div id="blogs" class="divide-y divide-gray-200">
+	<ul class="blogs-list" id="blogs">
 		{{range .Blogs}}
-		<div class="py-2 flex gap-4 items-center justify-between">
+		<li class="blogs-list__item">
 			{{if $.Account.IsAdmin}}
-			<a class="hover:underline" href="/blogs/{{.ID}}">{{.Title}}</a>
+			<a class="blogs-list__link" href="/blogs/{{.ID}}">{{.Title}}</a>
 			{{else}}
-			<a class="hover:underline" href="{{.SiteURL}}">{{.Title}}</a>
+			<a class="blogs-list__link" href="{{.SiteURL}}">{{.Title}}</a>
 			{{end}}
+
 			{{block "blog" .}}
-				{{if .IsFollowing}}
-				<form method="POST" action="/blogs/unfollow" hx-post="/blogs/unfollow">
-					<input type="hidden" name="blogID" value="{{.ID}}" />
-					{{template "button" dict "Contents" "Unfollow"}}
-				</form>
-				{{else}}
-				<form method="POST" action="/blog/follows" hx-post="/blogs/follow">
-					<input type="hidden" name="blogID" value="{{.ID}}" />
-					{{template "button" dict "Contents" "Follow"}}
-				</form>
-				{{end}}
+			{{if .IsFollowing}}
+			<form method="POST" action="/blogs/unfollow" hx-post="/blogs/unfollow">
+				<input type="hidden" name="blogID" value="{{.ID}}" />
+				<button class="blogs-list__button" type="submit">
+					Unfollow
+				</button>
+			</form>
+			{{else}}
+			<form method="POST" action="/blog/follows" hx-post="/blogs/follow">
+				<input type="hidden" name="blogID" value="{{.ID}}" />
+				<button class="blogs-list__button" type="submit">
+					Follow
+				</button>
+			</form>
 			{{end}}
-		</div>
+			{{end}}
+		</li>
 		{{end}}
-	</div>
+	</ul>
 	{{end}}
-</div>
+</section>
 
 {{end}}

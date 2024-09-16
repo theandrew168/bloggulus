@@ -76,6 +76,7 @@ svg {
 
 .error__link:hover {
 	background-color: var(--color-medium);
+	cursor: pointer;
 }
 
 
@@ -125,17 +126,18 @@ svg {
 
 .articles-header-search {
 	padding: 0.75rem 1rem;
-	border: 1px solid var(--color-gray);
+	border: none;
+	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
 	border-radius: 0.375rem;
 }
 
 .articles {
 	max-width: var(--container-width);
 	margin: 0 auto;
+	padding: 0 0.5rem;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-	padding: 0 0.5rem;
 }
 
 .article {
@@ -287,7 +289,8 @@ svg {
 	display: block;
 	border-radius: 0.25rem;
 	padding: 0.75rem 1rem;
-	border: 1px solid var(--color-gray);
+	border: none;
+	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
 }
 
 .register-error, .login-error {
@@ -306,6 +309,79 @@ svg {
 }
 
 .register-button:hover, .login-button:hover {
+	background-color: var(--color-medium);
+	cursor: pointer;
+}
+
+
+
+.blogs {
+	max-width: var(--container-width);
+	margin: 0 auto;
+	padding: 1rem 0.5rem;
+}
+
+.blogs-header {
+	margin-bottom: 1rem;
+}
+
+.blogs-header__title {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+}
+
+.blogs-header__input {
+	border-radius: 0.25rem;
+	padding: 0.5rem 1rem;
+	border: none;
+	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
+	width: 70%;
+}
+
+.blogs-header__button {
+	color: var(--color-light);
+	background-color: var(--color-dark);
+	padding: 0.5rem 1rem;
+	font-weight: 500;
+	border-radius: 0.5rem;
+	border-width: 0;
+}
+
+.blogs-header__button:hover {
+	background-color: var(--color-medium);
+	cursor: pointer;
+}
+
+.blogs-list {
+
+}
+
+.blogs-list__item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.blogs-list__link {
+	color: var(--color-dark);
+	text-decoration: none;
+}
+
+.blogs-list__link:hover {
+	text-decoration: underline;
+}
+
+.blogs-list__button {
+	color: var(--color-light);
+	background-color: var(--color-dark);
+	padding: 0.5rem 1rem;
+	font-weight: 500;
+	border-radius: 0.5rem;
+	border-width: 0;
+}
+
+.blogs-list__button:hover {
 	background-color: var(--color-medium);
 	cursor: pointer;
 }

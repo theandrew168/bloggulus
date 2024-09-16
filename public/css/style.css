@@ -40,6 +40,44 @@ svg {
 
 
 
+.error {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.error__code {
+	font-weight: 500;
+	color: var(--color-medium);
+	margin-bottom: 1rem;
+}
+
+.error__status {
+	font-size: 2rem;
+	font-weight: 700;
+	color: var(--color-dark);
+	margin-bottom: 1.5rem;
+}
+
+.error__message {
+	margin-bottom: 2.5rem;
+}
+
+.error__link {
+	color: var(--color-light);
+	background-color: var(--color-dark);
+	text-decoration: none;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+	box-shadow: var(--shadow);
+}
+
+.error__link:hover {
+	background-color: var(--color-medium);
+}
+
 
 
 .header {
@@ -86,7 +124,7 @@ svg {
 }
 
 .articles-header-search {
-	padding: 0.5rem;
+	padding: 0.75rem 1rem;
 	border: 1px solid var(--color-gray);
 	border-radius: 0.375rem;
 }
@@ -248,7 +286,7 @@ svg {
 .register-input, .login-input {
 	display: block;
 	border-radius: 0.25rem;
-	padding: 0.5rem 0.5rem;
+	padding: 0.75rem 1rem;
 	border: 1px solid var(--color-gray);
 }
 
@@ -261,7 +299,7 @@ svg {
 .register-button, .login-button {
 	color: var(--color-light);
 	background-color: var(--color-dark);
-	padding: 0.5rem 0.5rem;
+	padding: 0.75rem 0.5rem;
 	font-weight: 500;
 	border-radius: 0.5rem;
 	border-width: 0;

@@ -16,7 +16,7 @@
 		</form>
 	</header>
 	{{block "blogs" .}}
-	<ul id="blogs">
+	<ul class="blogs-list" id="blogs">
 		{{range .Blogs}}
 		<li class="blogs-list__item">
 			{{if $.Account.IsAdmin}}

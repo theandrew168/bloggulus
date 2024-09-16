@@ -1,41 +1,37 @@
 {{define "main"}}
 
-<div class="max-w-3xl px-6 md:px-0 mx-auto">
-	<h1 class="text-2xl mt-6 mb-2">{{.Title}}</h1>
-	<div class="mb-4">
-		<a class="hover:underline" href={{.SiteURL}}>
-			(Site URL)
-		</a>
-		<a class="hover:underline" href={{.FeedURL}}>
-			(Feed URL)
-		</a>
-	</div>
-	<div class="mb-4">
-		<h2>Synced at:</h2>
-		<div>{{.SyncedAt.Format "Jan 2, 2006 - 03:04:05PM"}}</div>
-	</div>
-
-	<div class="mb-4">
-		<h2 class="text-2xl">Actions</h2>
-		<div class="flex gap-2">
-			<form method="POST" action="/blogs/{{.ID}}/delete">
-				<input type="hidden" name="blogID" value={{.ID}} />
-				{{template "button" dict "Contents" "Delete"}}
-			</form>
-		</div>
-	</div>
-
-	<div class="mb-4">
-		<h2 class="text-2xl">{{len .Posts}} Posts</h2>
-		{{range .Posts}}
-			<div key={{.ID}} class="flex justify-between">
-				<a class="hover:underline" href="/blogs/{{.BlogID}}/posts/{{.ID}}">
-					{{.Title}}
-				</a>
-				<span>{{.PublishedAt.Format "Jan 2, 2006"}}</span>
-			</div>
-		{{end}}
-	</div>
-</div>
+<section class="blog">
+	<article class="blog-links">
+		<h1 class="blog-links__title">{{.Title}}</h1>
+		<ul class="blog-links__list">
+			<li><a class="blog-links__link" href={{.SiteURL}}>(Site URL)</a></li>
+			<li><a class="blog-links__link" href={{.FeedURL}}>(Feed URL)</a></li>
+		</ul>
+	</article>
+	<article class="blog-synced">
+		<h2 class="blog-synced__title">Synced at:</h2>
+		<time datetime="{{.SyncedAt}}">{{.SyncedAt.Format "Jan 2, 2006 - 03:04:05PM"}}</time>
+	</article>
+	<article class="blog-actions">
+		<h2 class="blog-actions__title">Actions</h2>
+		<form method="POST" action="/blogs/{{.ID}}/delete">
+			<input type="hidden" name="blogID" value={{.ID}} />
+			<button class="blog-actions__button" type="submit">
+				Delete
+			</button>
+		</form>
+	</article>
+	<article class="blog-posts">
+		<h2 class="blog-posts__title">{{len .Posts}} Posts</h2>
+		<ul class="blog-posts__list">
+			{{range .Posts}}
+			<li class="blog-post">
+				<a class="blog-post__link" href="/blogs/{{.BlogID}}/posts/{{.ID}}">{{.Title}}</a>
+				<time datetime=".PublishedAt">{{.PublishedAt.Format "Jan 2, 2006"}}</time>
+			</li>
+			{{end}}
+		</ul>
+	</article>
+</section>
 
 {{end}}

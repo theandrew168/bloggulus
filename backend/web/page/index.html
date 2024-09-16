@@ -4,7 +4,13 @@
 	<h1 class="articles-header-title">Recent Articles</h1>
 	<search>
 		<form method="GET" action="/">
-			<input class="articles-header-search" name="q" type="text" placeholder="Search" />
+			<input
+				class="articles-header-search"
+				type="text"
+				name="q"
+				value="{{.Search}}"
+				placeholder="Search"
+			/>
 		</form>
 	</search>
 </header>

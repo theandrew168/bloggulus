@@ -86,23 +86,23 @@ svg {
 	box-shadow: var(--shadow);
 }
 
-.header-links {
+.header__links {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem 0.5rem;
 }
 
-.header-link {
+.header__link {
 	display: inline-block;
 	font-size: 1.25rem;
 	color: var(--color-dark);
 }
 
-.header-link:hover {
+.header__link:hover {
 	color: var(--color-medium);
 }
 
-.header-link-home {
+.header__link--home {
 	font-size: 1.5rem;
 	text-decoration: none;
 }
@@ -232,7 +232,7 @@ svg {
 	background-color: var(--color-dark);
 }
 
-.footer-links {
+.footer__links {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem 0.5rem;
@@ -241,16 +241,16 @@ svg {
 	align-items: center;
 }
 
-.footer-link {
+.footer__link {
 	color: var(--color-light);
 	text-decoration: none;
 }
 
-.footer-link:hover {
+.footer__link:hover {
 	color: var(--color-gray);
 }
 
-.footer-link-home {
+.footer__link--home {
 	font-size: 1.25rem;
 	font-weight: 500;
 }
@@ -351,10 +351,6 @@ svg {
 .blogs-header__button:hover {
 	background-color: var(--color-medium);
 	cursor: pointer;
-}
-
-.blogs-list {
-
 }
 
 .blogs-list__item {

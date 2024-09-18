@@ -384,7 +384,7 @@ svg {
 
 
 
-.blog {
+.blog, .post {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem 0.5rem;
@@ -393,37 +393,37 @@ svg {
 	gap: 1rem;
 }
 
-.blog-links__title {
+.blog-links__title, .post-links__title {
 	font-size: 2rem;
 	margin-bottom: 0.5rem;
 }
 
-.blog-links__list {
+.blog-links__list,  .post-links__list {
 	display: flex;
 	gap: 0.5rem;
 }
 
-.blog-links__link {
+.blog-links__link,  .post-links__link {
 	color: var(--color-dark);
 	text-decoration: none;
 }
 
-.blog-links__link:hover {
+.blog-links__link:hover, .post-links__link:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
 
-.blog-synced__title {
+.blog-synced__title, .post-publised__title {
 	font-size: 1.5rem;
 	margin-bottom: 0.5rem;
 }
 
-.blog-actions__title {
+.blog-actions__title, .post-actions__title {
 	font-size: 1.5rem;
 	margin-bottom: 0.5rem;
 }
 
-.blog-actions__button {
+.blog-actions__button, .post-actions__button {
 	color: var(--color-light);
 	background-color: var(--color-dark);
 	padding: 0.5rem 1rem;
@@ -432,7 +432,7 @@ svg {
 	border-width: 0;
 }
 
-.blog-actions__button:hover {
+.blog-actions__button:hover, .post-actions__button:hover {
 	cursor: pointer;
 	background-color: var(--color-medium);
 }

@@ -75,13 +75,17 @@ func Handler(
 	mux.Handle("POST /login", HandleLoginForm(repo))
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
-	// Blog and post routes.
+	// Public blog routes.
 	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))
 	mux.Handle("POST /blogs/create", accountRequired(HandleBlogCreateForm(repo, find, syncService)))
 	mux.Handle("POST /blogs/follow", accountRequired(HandleBlogFollowForm(repo, find)))
 	mux.Handle("POST /blogs/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
+
+	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostRead(repo)))
+	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", adminRequired(HandlePostDeleteForm(repo)))
 
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")

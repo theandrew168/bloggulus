@@ -42,7 +42,7 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 			SyncedAt: blog.SyncedAt(),
 		}
 		for _, post := range posts {
-			blogPost := page.BlogDataPost{
+			blogPost := page.PostData{
 				ID:          post.ID(),
 				BlogID:      post.BlogID(),
 				Title:       post.Title(),

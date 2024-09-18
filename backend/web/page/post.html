@@ -1,0 +1,26 @@
+{{define "main"}}
+
+<section class="post">
+	<article class="post-links">
+		<h1 class="post-links__title">{{.Title}}</h1>
+		<ul class="post-links__list">
+			<li><a class="post-links__link" href="{{.URL}}">(URL)</a></li>
+			<li><a class="post-links__link" href="/blogs/{{.BlogID}}">(Blog)</a></li>
+		</ul>
+	</article>
+	<article class="post-published">
+		<h2  class="blog-synced__title">Updated</h2>
+		<time datetime="{{.PublishedAt}}">{{.PublishedAt.Format "Jan 2, 2006 - 03:04:05PM"}}</time>
+	</article>
+	<article class="post-actions">
+		<h2 class="blog-actions__title">Actions</h2>
+		<form method="POST" action="/blogs/{{.BlogID}}/posts/{{.ID}}/delete">
+			<input type="hidden" name="postID" value={{.ID}} />
+			<button class="post-actions__button" type="submit">
+				Delete
+			</button>
+		</form>
+	</article>
+</section>
+
+{{end}}

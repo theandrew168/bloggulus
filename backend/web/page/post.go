@@ -10,37 +10,36 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
-//go:embed blog.html
-var BlogHTML string
+//go:embed post.html
+var PostHTML string
 
-type BlogData struct {
+type PostData struct {
 	layout.BaseData
 
-	ID       uuid.UUID
-	Title    string
-	SiteURL  string
-	FeedURL  string
-	SyncedAt time.Time
-	Posts    []PostData
+	ID          uuid.UUID
+	BlogID      uuid.UUID
+	Title       string
+	URL         string
+	PublishedAt time.Time
 }
 
-type BlogPage struct {
+type PostPage struct {
 	tmpl *template.Template
 }
 
-func NewBlog() *BlogPage {
+func NewPost() *PostPage {
 	sources := []string{
 		layout.BaseHTML,
-		BlogHTML,
+		PostHTML,
 	}
 
 	tmpl := newTemplate("page", sources)
-	page := BlogPage{
+	page := PostPage{
 		tmpl: tmpl,
 	}
 	return &page
 }
 
-func (p *BlogPage) Render(w io.Writer, data BlogData) error {
+func (p *PostPage) Render(w io.Writer, data PostData) error {
 	return p.tmpl.ExecuteTemplate(w, "page", data)
 }

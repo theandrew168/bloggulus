@@ -353,6 +353,12 @@ svg {
 	cursor: pointer;
 }
 
+.blogs-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
 .blogs-list__item {
 	display: flex;
 	align-items: center;

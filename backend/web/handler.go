@@ -78,8 +78,8 @@ func Handler(
 	// Public blog routes.
 	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))
 	mux.Handle("POST /blogs/create", accountRequired(HandleBlogCreateForm(repo, find, syncService)))
-	mux.Handle("POST /blogs/follow", accountRequired(HandleBlogFollowForm(repo, find)))
-	mux.Handle("POST /blogs/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
+	mux.Handle("POST /blogs/{blogID}/follow", accountRequired(HandleBlogFollowForm(repo, find)))
+	mux.Handle("POST /blogs/{blogID}/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))

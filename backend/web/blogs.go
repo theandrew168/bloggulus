@@ -149,9 +149,9 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 			return
 		}
 
-		blogID, err := uuid.Parse(r.PostForm.Get("blogID"))
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			util.BadRequestResponse(w, r)
+			util.NotFoundResponse(w, r)
 			return
 		}
 
@@ -213,9 +213,9 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 			return
 		}
 
-		blogID, err := uuid.Parse(r.PostForm.Get("blogID"))
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
-			util.BadRequestResponse(w, r)
+			util.NotFoundResponse(w, r)
 			return
 		}
 

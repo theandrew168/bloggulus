@@ -27,15 +27,13 @@
 
 			{{block "blog" .}}
 			{{if .IsFollowing}}
-			<form method="POST" action="/blogs/unfollow" hx-post="/blogs/unfollow">
-				<input type="hidden" name="blogID" value="{{.ID}}" />
+			<form method="POST" action="/blogs/{{.ID}}/unfollow" hx-post="/blogs/{{.ID}}/unfollow">
 				<button class="blogs-list__button" type="submit">
 					Unfollow
 				</button>
 			</form>
 			{{else}}
-			<form method="POST" action="/blog/follows" hx-post="/blogs/follow">
-				<input type="hidden" name="blogID" value="{{.ID}}" />
+			<form method="POST" action="/blog/{{.ID}}/follows" hx-post="/blogs/{{.ID}}/follow">
 				<button class="blogs-list__button" type="submit">
 					Follow
 				</button>

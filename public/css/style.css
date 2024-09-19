@@ -29,6 +29,41 @@ svg {
 	height: 1.25rem;
 }
 
+.input {
+	border: none;
+	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
+	border-radius: 0.375rem;
+	padding: 0.75rem 1rem;
+}
+
+.input--block {
+	display: block;
+}
+
+.button {
+	color: var(--color-light);
+	background-color: var(--color-dark);
+	padding: 0.75rem 1rem;
+	font-weight: 600;
+	border-radius: 0.5rem;
+	border-width: 0;
+}
+
+.button:hover {
+	background-color: var(--color-medium);
+	cursor: pointer;
+}
+
+.button--outline {
+	color: var(--color-dark);
+	background-color: var(--color-light);
+	border: 1px solid var(--color-dark);
+}
+
+.button--outline:hover {
+	background-color: var(--color-gray);
+}
+
 .toast {
 	background-color: var(--color-dark);
 	color: var(--color-light);
@@ -122,13 +157,6 @@ svg {
 	color: var(--color-dark);
 	font-size: 24px;
 	font-weight: 600;
-}
-
-.articles-header__search {
-	padding: 0.75rem 1rem;
-	border: none;
-	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
-	border-radius: 0.375rem;
 }
 
 .articles {
@@ -285,32 +313,10 @@ svg {
 	margin-bottom: 0.5rem;
 }
 
-.register__input, .login__input {
-	display: block;
-	border-radius: 0.25rem;
-	padding: 0.75rem 1rem;
-	border: none;
-	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
-}
-
 .register__error, .login__error {
 	font-size: 0.75rem;
 	color: red;
 	margin-top: 0.25rem;
-}
-
-.register__button, .login__button {
-	color: var(--color-light);
-	background-color: var(--color-dark);
-	padding: 0.75rem 0.5rem;
-	font-weight: 500;
-	border-radius: 0.5rem;
-	border-width: 0;
-}
-
-.register__button:hover, .login__button:hover {
-	background-color: var(--color-medium);
-	cursor: pointer;
 }
 
 
@@ -332,25 +338,8 @@ svg {
 }
 
 .blogs-header__input {
-	border-radius: 0.25rem;
 	padding: 0.5rem 1rem;
-	border: none;
-	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
 	width: 70%;
-}
-
-.blogs-header__button {
-	color: var(--color-light);
-	background-color: var(--color-dark);
-	padding: 0.5rem 1rem;
-	font-weight: 500;
-	border-radius: 0.5rem;
-	border-width: 0;
-}
-
-.blogs-header__button:hover {
-	background-color: var(--color-medium);
-	cursor: pointer;
 }
 
 .blogs-list {
@@ -372,20 +361,6 @@ svg {
 
 .blogs-list__link:hover {
 	text-decoration: underline;
-}
-
-.blogs-list__button {
-	color: var(--color-light);
-	background-color: var(--color-dark);
-	padding: 0.5rem 1rem;
-	font-weight: 500;
-	border-radius: 0.5rem;
-	border-width: 0;
-}
-
-.blogs-list__button:hover {
-	background-color: var(--color-medium);
-	cursor: pointer;
 }
 
 
@@ -427,20 +402,6 @@ svg {
 .blog-actions__title, .post-actions__title {
 	font-size: 1.5rem;
 	margin-bottom: 0.5rem;
-}
-
-.blog-actions__button, .post-actions__button {
-	color: var(--color-light);
-	background-color: var(--color-dark);
-	padding: 0.5rem 1rem;
-	font-weight: 500;
-	border-radius: 0.5rem;
-	border-width: 0;
-}
-
-.blog-actions__button:hover, .post-actions__button:hover {
-	cursor: pointer;
-	background-color: var(--color-medium);
 }
 
 .blog-posts__title {

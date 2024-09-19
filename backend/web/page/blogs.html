@@ -5,12 +5,12 @@
 		<h1 class="blogs-header__title">Blogs</h1>
 		<form method="POST" action="/blogs/create" hx-post="/blogs/create" hx-target="#blogs">
 			<input
-				class="blogs-header__input"
+				class="input"
 				type="text"
 				name="feedURL"
 				placeholder="Add Feed"
 			/>
-			<button class="blogs-header__button" type="submit">
+			<button class="button" type="submit">
 				Add
 			</button>
 		</form>
@@ -28,13 +28,13 @@
 			{{block "blog" .}}
 			{{if .IsFollowing}}
 			<form method="POST" action="/blogs/{{.ID}}/unfollow" hx-post="/blogs/{{.ID}}/unfollow">
-				<button class="blogs-list__button" type="submit">
+				<button class="button button--outline" type="submit">
 					Unfollow
 				</button>
 			</form>
 			{{else}}
 			<form method="POST" action="/blog/{{.ID}}/follows" hx-post="/blogs/{{.ID}}/follow">
-				<button class="blogs-list__button" type="submit">
+				<button class="button" type="submit">
 					Follow
 				</button>
 			</form>

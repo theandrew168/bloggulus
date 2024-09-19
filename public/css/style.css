@@ -118,13 +118,13 @@ svg {
 	justify-content: space-between;
 }
 
-.articles-header-title {
+.articles-header__title {
 	color: var(--color-dark);
 	font-size: 24px;
 	font-weight: 600;
 }
 
-.articles-header-search {
+.articles-header__search {
 	padding: 0.75rem 1rem;
 	border: none;
 	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
@@ -151,26 +151,26 @@ svg {
 	gap: 1rem;
 }
 
-.article-header {
+.article__header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.5rem;
 }
 
-.article-date {
+.article__date {
 	color: var(--color-medium);
 	font-size: 0.875rem;
 	font-weight: 300;
 }
 
-.article-tags {
+.article__tags {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 }
 
-.article-tag {
+.article__tag {
 	color: var(--color-light);
 	background-color: var(--color-dark);
 	font-weight: 600;
@@ -179,11 +179,11 @@ svg {
 	text-decoration: none;
 }
 
-.article-tag:hover {
+.article__tag:hover {
 	background-color: var(--color-medium);
 }
 
-.article-title {
+.article__title {
 	color: var(--color-dark);
 	font-size: 1.5rem;
 	font-weight: 600;
@@ -191,17 +191,17 @@ svg {
 	text-decoration: none;
 }
 
-.article-title:hover {
+.article__title:hover {
 	text-decoration: underline;
 }
 
-.article-blog-title {
+.article__blog-title {
 	color: var(--color-dark);
 	font-weight: 600;
 	text-decoration: none;
 }
 
-.article-blog-title:hover {
+.article__blog-title:hover {
 	text-decoration: underline;
 }
 
@@ -212,7 +212,7 @@ svg {
 	padding: 1.5rem 0.5rem;
 }
 
-.articles-footer-link {
+.articles-footer__link {
 	color: var(--color-dark);
 	background-color: var(--color-light);
 	font-weight: 600;
@@ -222,7 +222,7 @@ svg {
 	box-shadow: var(--shadow);
 }
 
-.articles-footer-link:hover {
+.articles-footer__link:hover {
 	color: var(--color-medium);
 }
 

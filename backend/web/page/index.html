@@ -1,11 +1,11 @@
 {{define "main"}}
 
 <header class="articles-header">
-	<h1 class="articles-header-title">Recent Articles</h1>
+	<h1 class="articles-header__title">Recent Articles</h1>
 	<search>
 		<form method="GET" action="/">
 			<input
-				class="articles-header-search"
+				class="articles-header__search"
 				type="text"
 				name="q"
 				value="{{.Search}}"
@@ -18,16 +18,16 @@
 <section class="articles">
 	{{range .Articles}}
 	<article class="article">
-		<header class="article-header">
-			<span class="article-date">{{.PublishedAt.Format "Jan 2, 2006"}}</span>
-			<ul class="article-tags">
+		<header class="article__header">
+			<span class="article__date">{{.PublishedAt.Format "Jan 2, 2006"}}</span>
+			<ul class="article__tags">
 				{{range .Tags}}
-				<li><a class="article-tag" href="/?q={{.}}">{{.}}</a></li>
+				<li><a class="article__tag" href="/?q={{.}}">{{.}}</a></li>
 				{{end}}
 			</ul>
 		</header>
-		<p><a class="article-title" href="{{.URL}}">{{.Title}}</a></p>
-		<p><a class="article-blog-title" href="{{.BlogURL}}">{{.BlogTitle}}</a></p>
+		<p><a class="article__title" href="{{.URL}}">{{.Title}}</a></p>
+		<p><a class="article__blog-title" href="{{.BlogURL}}">{{.BlogTitle}}</a></p>
 	</article>
 	{{end}}
 </section>
@@ -36,9 +36,9 @@
 {{if .HasMorePages}}
 <footer class="articles-footer">
 	{{if .Search}}
-	<a class="articles-footer-link" href="/?p={{.NextPage}}&q={{.Search}}">See More</a>
+	<a class="articles-footer__link" href="/?p={{.NextPage}}&q={{.Search}}">See More</a>
 	{{else}}
-	<a class="articles-footer-link" href="/?p={{.NextPage}}" >See More</a>
+	<a class="articles-footer__link" href="/?p={{.NextPage}}" >See More</a>
 	{{end}}
 </footer>
 {{end}}

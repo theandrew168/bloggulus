@@ -1,13 +1,13 @@
 {{define "main"}}
 
 <section class="login">
-	<form method="POST" action="/login" class="login-form">
-		<h2 class="login-heading">Log In to Your Account</h2>
+	<form method="POST" action="/login" class="login__form">
+		<h2 class="login__heading">Log In to Your Account</h2>
 
 		<hr />
 
-		<div class="login-field">
-			<label for="username" class="login-label">
+		<div class="login__field">
+			<label for="username" class="login__label">
 				Username
 			</label>
 			<input
@@ -16,15 +16,15 @@
 				type="text"
 				value="{{.Username}}"
 				placeholder="Username"
-				class="login-input"
+				class="login__input"
 			/>
 			{{with .Errors.username}}
-			<p class="login-error">{{.}}</p>
+			<p class="login__error">{{.}}</p>
 			{{end}}
 		</div>
 
-		<div class="login-field">
-			<label for="password" class="login-label">
+		<div class="login__field">
+			<label for="password" class="login__label">
 				Password
 			</label>
 			<input
@@ -32,14 +32,14 @@
 				name="password"
 				type="password"
 				placeholder="Password"
-				class="login-input"
+				class="login__input"
 			/>
 			{{with .Errors.password}}
-			<p class="login-error">{{.}}</p>
+			<p class="login__error">{{.}}</p>
 			{{end}}
 		</div>
 
-		<button type="submit" class="login-button">
+		<button type="submit" class="login__button">
 			Log In
 		</button>
 	</form>

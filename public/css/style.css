@@ -264,7 +264,7 @@ svg {
 	justify-content: center;
 }
 
-.register-form, .login-form {
+.register__form, .login__form {
 	background-color: var(--color-light);
 	padding: 2rem;
 	box-shadow: var(--shadow);
@@ -274,18 +274,18 @@ svg {
 	gap: 1.5rem;
 }
 
-.register-heading, .login-heading {
+.register__heading, .login__heading {
 	text-align: center;
 	font-weight: 500;
 }
 
-.register-label, .login-label {
+.register__label, .login__label {
 	display: inline-block;
 	font-weight: 500;
 	margin-bottom: 0.5rem;
 }
 
-.register-input, .login-input {
+.register__input, .login__input {
 	display: block;
 	border-radius: 0.25rem;
 	padding: 0.75rem 1rem;
@@ -293,13 +293,13 @@ svg {
 	box-shadow: inset 0px 0px 0px 1px var(--color-gray);
 }
 
-.register-error, .login-error {
+.register__error, .login__error {
 	font-size: 0.75rem;
 	color: red;
 	margin-top: 0.25rem;
 }
 
-.register-button, .login-button {
+.register__button, .login__button {
 	color: var(--color-light);
 	background-color: var(--color-dark);
 	padding: 0.75rem 0.5rem;
@@ -308,7 +308,7 @@ svg {
 	border-width: 0;
 }
 
-.register-button:hover, .login-button:hover {
+.register__button:hover, .login__button:hover {
 	background-color: var(--color-medium);
 	cursor: pointer;
 }

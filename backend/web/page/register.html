@@ -1,13 +1,13 @@
 {{define "main"}}
 
 <section class="register">
-	<form method="POST" action="/register" class="register-form">
-		<h2 class="register-heading">Register a New Account</h2>
+	<form method="POST" action="/register" class="register__form">
+		<h2 class="register__heading">Register a New Account</h2>
 
 		<hr />
 
-		<div class="register-field">
-			<label for="username" class="register-label">
+		<div class="register__field">
+			<label for="username" class="register__label">
 				Username
 			</label>
 			<input
@@ -16,15 +16,15 @@
 				type="text"
 				value="{{.Username}}"
 				placeholder="Username"
-				class="register-input"
+				class="register__input"
 			/>
 			{{with .Errors.username}}
-			<p class="register-error">{{.}}</p>
+			<p class="register__error">{{.}}</p>
 			{{end}}
 		</div>
 
-		<div class="register-field">
-			<label for="password" class="register-label">
+		<div class="register__field">
+			<label for="password" class="register__label">
 				Password
 			</label>
 			<input
@@ -32,14 +32,14 @@
 				name="password"
 				type="password"
 				placeholder="Password"
-				class="register-input"
+				class="register__input"
 			/>
 			{{with .Errors.password}}
-			<p class="register-error">{{.}}</p>
+			<p class="register__error">{{.}}</p>
 			{{end}}
 		</div>
 
-		<button type="submit" class="register-button">
+		<button type="submit" class="register__button">
 			Register
 		</button>
 	</form>

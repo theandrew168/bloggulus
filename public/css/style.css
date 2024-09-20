@@ -144,6 +144,47 @@ svg {
 
 
 
+.footer {
+	background-color: var(--color-dark);
+}
+
+/* On mobile devices, stack and center the footer links. */
+.footer__links {
+	max-width: var(--container-width);
+	margin: 0 auto;
+	padding: 1rem 0.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+/* On larger screens, show footer links as a single row with space between. */
+@media only screen and (min-width: 768px) {
+	.footer__links {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+}
+
+.footer__link {
+	color: var(--color-light);
+	text-decoration: none;
+}
+
+.footer__link:hover {
+	color: var(--color-gray);
+}
+
+.footer__link--home {
+	font-size: 1.25rem;
+	font-weight: 500;
+}
+
+
+
 .articles-header {
 	max-width: var(--container-width);
 	margin: 0 auto;
@@ -252,35 +293,6 @@ svg {
 
 .articles-footer__link:hover {
 	color: var(--color-medium);
-}
-
-
-
-.footer {
-	background-color: var(--color-dark);
-}
-
-.footer__links {
-	max-width: var(--container-width);
-	margin: 0 auto;
-	padding: 1rem 0.5rem;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.footer__link {
-	color: var(--color-light);
-	text-decoration: none;
-}
-
-.footer__link:hover {
-	color: var(--color-gray);
-}
-
-.footer__link--home {
-	font-size: 1.25rem;
-	font-weight: 500;
 }
 
 

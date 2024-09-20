@@ -36,9 +36,9 @@
 {{if .HasMorePages}}
 <footer class="articles-footer">
 	{{if .Search}}
-	<a class="articles-footer__link" href="/?p={{.NextPage}}&q={{.Search}}">See More</a>
+	<a class="button button--outline" href="/?p={{.NextPage}}&q={{.Search}}">See More</a>
 	{{else}}
-	<a class="articles-footer__link" href="/?p={{.NextPage}}" >See More</a>
+	<a class="button button--outline" href="/?p={{.NextPage}}" >See More</a>
 	{{end}}
 </footer>
 {{end}}

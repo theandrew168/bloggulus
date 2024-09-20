@@ -57,7 +57,7 @@ svg {
 .button--outline {
 	color: var(--color-dark);
 	background-color: var(--color-light);
-	border: 1px solid var(--color-dark);
+	box-shadow: var(--shadow);
 }
 
 .button--outline:hover {
@@ -350,7 +350,6 @@ svg {
 }
 
 .blogs-header__input {
-	padding: 0.5rem 1rem;
 	width: 70%;
 }
 

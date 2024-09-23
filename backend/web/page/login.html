@@ -1,7 +1,7 @@
 {{define "main"}}
 
 <section class="login">
-	<form method="POST" action="/login" class="login__form">
+	<form method="POST" action="/login?next={{.NextPath}}" class="login__form">
 		<h2 class="login__heading">Log In to Your Account</h2>
 
 		<hr />

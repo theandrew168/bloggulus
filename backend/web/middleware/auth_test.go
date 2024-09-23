@@ -131,7 +131,7 @@ func TestAccountRequiredNoSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login?next=%2F")
 }
 
 func TestAccountRequiredInvalidSession(t *testing.T) {
@@ -158,7 +158,31 @@ func TestAccountRequiredInvalidSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login?next=%2F")
+}
+
+func TestAccountRequiredRedirect(t *testing.T) {
+	t.Parallel()
+
+	repo, closer := test.NewRepository(t)
+	defer closer()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/foobar", nil)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	h := middleware.Use(next,
+		middleware.Authenticate(repo),
+		middleware.AccountRequired(),
+	)
+	h.ServeHTTP(w, r)
+
+	rr := w.Result()
+	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login?next=%2Ffoobar")
 }
 
 func TestAdminRequired(t *testing.T) {
@@ -218,7 +242,7 @@ func TestAdminRequiredNoSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login?next=%2F")
 }
 
 func TestAdminRequiredInvalidSession(t *testing.T) {
@@ -246,7 +270,7 @@ func TestAdminRequiredInvalidSession(t *testing.T) {
 
 	rr := w.Result()
 	test.AssertEqual(t, rr.StatusCode, http.StatusSeeOther)
-	test.AssertEqual(t, rr.Header.Get("Location"), "/login")
+	test.AssertEqual(t, rr.Header.Get("Location"), "/login?next=%2F")
 }
 
 func TestAdminRequiredNotAdmin(t *testing.T) {

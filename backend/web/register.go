@@ -48,6 +48,8 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		// If the form isn't valid, re-render the template with existing input values.
 		if !v.IsValid() {
 			data := page.RegisterData{
+				BaseData: util.TemplateBaseData(r, w),
+
 				Username: username,
 				Errors:   v,
 			}
@@ -72,6 +74,8 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 				// If a conflict occurs, re-render the form with an error.
 				v.Add("username", "Username is already taken")
 				data := page.RegisterData{
+					BaseData: util.TemplateBaseData(r, w),
+
 					Username: username,
 					Errors:   v,
 				}
@@ -112,7 +116,7 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 			"session_id", session.ID(),
 		)
 
-		// Redirect back to the index page.
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		// Redirect new users to the blogs page.
+		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 	})
 }

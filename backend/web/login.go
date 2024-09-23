@@ -16,8 +16,16 @@ import (
 func HandleLoginPage() http.Handler {
 	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check for a "next" query param for post-auth redirecting.
+		next := r.URL.Query().Get("next")
+		if next == "" {
+			next = "/"
+		}
+
 		data := page.LoginData{
 			BaseData: util.TemplateBaseData(r, w),
+
+			NextPath: next,
 		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)
@@ -28,6 +36,12 @@ func HandleLoginPage() http.Handler {
 func HandleLoginForm(repo *repository.Repository) http.Handler {
 	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check for a "next" query param for post-auth redirecting.
+		next := r.URL.Query().Get("next")
+		if next == "" {
+			next = "/"
+		}
+
 		// Parse the form data.
 		err := r.ParseForm()
 		if err != nil {
@@ -47,6 +61,9 @@ func HandleLoginForm(repo *repository.Repository) http.Handler {
 		// If the form isn't valid, re-render the template with existing input values.
 		if !v.IsValid() {
 			data := page.LoginData{
+				BaseData: util.TemplateBaseData(r, w),
+
+				NextPath: next,
 				Username: username,
 				Errors:   v,
 			}
@@ -63,6 +80,9 @@ func HandleLoginForm(repo *repository.Repository) http.Handler {
 				v.Add("username", "Invalid username or password")
 				v.Add("password", "Invalid username or password")
 				data := page.LoginData{
+					BaseData: util.TemplateBaseData(r, w),
+
+					NextPath: next,
 					Username: username,
 					Errors:   v,
 				}
@@ -80,6 +100,9 @@ func HandleLoginForm(repo *repository.Repository) http.Handler {
 			v.Add("username", "Invalid username or password")
 			v.Add("password", "Invalid username or password")
 			data := page.LoginData{
+				BaseData: util.TemplateBaseData(r, w),
+
+				NextPath: next,
 				Username: username,
 				Errors:   v,
 			}
@@ -111,7 +134,6 @@ func HandleLoginForm(repo *repository.Repository) http.Handler {
 			"session_id", session.ID(),
 		)
 
-		// Redirect back to the index page.
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, next, http.StatusSeeOther)
 	})
 }

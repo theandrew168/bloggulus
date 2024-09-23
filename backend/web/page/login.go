@@ -14,6 +14,7 @@ var LoginHTML string
 type LoginData struct {
 	layout.BaseData
 
+	NextPath string
 	Username string
 	Errors   map[string]string
 }

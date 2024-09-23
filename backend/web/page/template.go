@@ -2,13 +2,11 @@ package page
 
 import (
 	"html/template"
-
-	"github.com/Masterminds/sprig/v3"
 )
 
 func newTemplate(name string, sources []string) *template.Template {
 	// Create the template and add helpers.
-	tmpl := template.New(name).Funcs(sprig.FuncMap())
+	tmpl := template.New(name)
 
 	// Parse each source required to render this page.
 	for _, source := range sources {

@@ -1,7 +1,11 @@
 {{define "main"}}
 
 <header class="articles-header">
+	{{if .Search}}
+	<h1 class="articles-header__title">Relevant Articles</h1>
+	{{else}}
 	<h1 class="articles-header__title">Recent Articles</h1>
+	{{end}}
 	<search>
 		<form method="GET" action="/">
 			<input

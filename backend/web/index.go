@@ -16,10 +16,12 @@ import (
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		account, isLoggedIn := util.GetContextAccount(r)
+
 		// check search param
 		search := r.URL.Query().Get("q")
 
-		// check p param
+		// check page param
 		p, err := strconv.Atoi(r.URL.Query().Get("p"))
 		if err != nil {
 			p = 1
@@ -29,35 +31,65 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			p = 1
 		}
 
+		// assume size is always 20 (for now...)
 		s := 20
 		limit, offset := util.PageSizeToLimitOffset(p, s)
 
 		var count int
 		var articles []finder.Article
 
+		// Two levels of decision making here:
+		// 1. Is the user logged in?
+		// 2. Is the user searching?
 		var g errgroup.Group
-		if search != "" {
-			g.Go(func() error {
-				var err error
-				count, err = find.CountSearchArticles(search)
-				return err
-			})
-			g.Go(func() error {
-				var err error
-				articles, err = find.SearchArticles(search, limit, offset)
-				return err
-			})
+		if isLoggedIn {
+			if search != "" {
+				g.Go(func() error {
+					var err error
+					count, err = find.CountSearchArticlesByAccount(account, search)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = find.SearchArticlesByAccount(account, search, limit, offset)
+					return err
+				})
+			} else {
+				g.Go(func() error {
+					var err error
+					count, err = find.CountArticlesByAccount(account)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = find.ListArticlesByAccount(account, limit, offset)
+					return err
+				})
+			}
 		} else {
-			g.Go(func() error {
-				var err error
-				count, err = find.CountArticles()
-				return err
-			})
-			g.Go(func() error {
-				var err error
-				articles, err = find.ListArticles(limit, offset)
-				return err
-			})
+			if search != "" {
+				g.Go(func() error {
+					var err error
+					count, err = find.CountSearchArticles(search)
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = find.SearchArticles(search, limit, offset)
+					return err
+				})
+			} else {
+				g.Go(func() error {
+					var err error
+					count, err = find.CountArticles()
+					return err
+				})
+				g.Go(func() error {
+					var err error
+					articles, err = find.ListArticles(limit, offset)
+					return err
+				})
+			}
 		}
 
 		err = g.Wait()

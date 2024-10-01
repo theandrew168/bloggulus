@@ -3,6 +3,7 @@ package feed
 import (
 	"log/slog"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -28,6 +29,29 @@ type Post struct {
 	PublishedAt time.Time
 }
 
+// Normalize post URLs, ensuring they are full URLs with valid schemes.
+func NormalizePostURL(blogURL, postURL string) string {
+	url := postURL
+
+	// Ensure post URLs include the site's domain.
+	if strings.HasPrefix(postURL, "/") {
+		// Omit any duplicate slashes when joining the URLs.
+		if strings.HasSuffix(blogURL, "/") {
+			url = blogURL + postURL[1:]
+		} else {
+			url = blogURL + postURL
+		}
+	}
+
+	// Ensure post URLs include a scheme (assume https if necessary).
+	hasScheme := schemeRegexp.MatchString(url)
+	if !hasScheme {
+		url = "https://" + url
+	}
+
+	return url
+}
+
 func Parse(feedURL string, feedBody string) (Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseString(feedBody)
@@ -42,18 +66,7 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 			continue
 		}
 
-		url := item.Link
-
-		// ensure url includes the site's domain
-		if url[0] == '/' {
-			url = feed.Link + url
-		}
-
-		// ensure url includes a scheme (assume https if necessary)
-		hasScheme := schemeRegexp.MatchString(url)
-		if !hasScheme {
-			url = "https://" + url
-		}
+		url := NormalizePostURL(feed.Link, item.Link)
 
 		// check for a publish date, else default to now
 		publishedAt := time.Now()

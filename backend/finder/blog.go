@@ -16,6 +16,7 @@ type BlogForAccount struct {
 	IsFollowing bool      `db:"is_following"`
 }
 
+// TODO: Paginate this.
 func (f *Finder) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
 	stmt := `
 		SELECT

@@ -10,6 +10,27 @@ import (
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
+func TestNormalizePostURL(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		blogURL string
+		postURL string
+		want    string
+	}{
+		{blogURL: "https://example.com", postURL: "/example", want: "https://example.com/example"},
+		{blogURL: "https://example.com/", postURL: "/example", want: "https://example.com/example"},
+		{blogURL: "http://example.com", postURL: "/example", want: "http://example.com/example"},
+		{blogURL: "http://example.com/", postURL: "/example", want: "http://example.com/example"},
+		{blogURL: "example.com", postURL: "/example", want: "https://example.com/example"},
+		{blogURL: "example.com/", postURL: "/example", want: "https://example.com/example"},
+	}
+	for _, tt := range tests {
+		got := feed.NormalizePostURL(tt.blogURL, tt.postURL)
+		test.AssertEqual(t, got, tt.want)
+	}
+}
+
 func TestParse(t *testing.T) {
 	t.Parallel()
 

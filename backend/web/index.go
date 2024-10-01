@@ -12,6 +12,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
+// TODO: Rename p / s to page / size.
 func HandleIndexPage(find *finder.Finder) http.Handler {
 	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

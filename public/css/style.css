@@ -136,6 +136,7 @@ svg {
 	display: inline-block;
 	color: var(--color-dark);
 	text-decoration: none;
+	font-size: 1rem;
 	/* Make buttons look like links, if necessary (like for the logout form). */
 	background: none;
 	border: none;

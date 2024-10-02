@@ -9,6 +9,11 @@ import (
 func TemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
 	data := layout.BaseData{}
 
+	account, isLoggedIn := GetContextAccount(r)
+	if isLoggedIn {
+		data.Account = account
+	}
+
 	toastCookie, err := r.Cookie(ToastCookieName)
 	if err == nil {
 		data.Toast = toastCookie.Value

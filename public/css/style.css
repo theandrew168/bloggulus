@@ -127,21 +127,32 @@ svg {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
 }
 
 .header__link {
 	display: inline-block;
-	font-size: 1.25rem;
 	color: var(--color-dark);
+	text-decoration: none;
+	/* Make buttons look like links, if necessary (like for the logout form). */
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
 }
 
 .header__link:hover {
 	color: var(--color-medium);
 }
 
+.header__link--first {
+	margin-right: auto;
+}
+
 .header__link--home {
 	font-size: 1.5rem;
-	text-decoration: none;
 }
 
 

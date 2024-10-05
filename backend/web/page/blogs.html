@@ -33,7 +33,7 @@
 				</button>
 			</form>
 			{{else}}
-			<form method="POST" action="/blog/{{.ID}}/follows" hx-post="/blogs/{{.ID}}/follow">
+			<form method="POST" action="/blogs/{{.ID}}/follow" hx-post="/blogs/{{.ID}}/follow">
 				<button class="button" type="submit">
 					Follow
 				</button>

@@ -39,6 +39,22 @@
 			{{end}}
 		</div>
 
+		<div class="register__field">
+			<label for="confirm" class="register__label">
+				Confirm Password
+			</label>
+			<input
+				class="input input--block"
+				id="confirm"
+				name="confirm"
+				type="password"
+				placeholder="Confirm Password"
+			/>
+			{{with .Errors.confirm}}
+			<p class="register__error">{{.}}</p>
+			{{end}}
+		</div>
+
 		<button type="submit" class="button">
 			Register
 		</button>

@@ -39,11 +39,14 @@ func HandleRegisterForm(repo *repository.Repository) http.Handler {
 		// Pull out the expected form fields
 		username := r.PostForm.Get("username")
 		password := r.PostForm.Get("password")
+		confirm := r.PostForm.Get("confirm")
 
 		// Validate the form values.
 		v := util.NewValidator()
 		v.CheckRequired("username", username)
 		v.CheckRequired("password", password)
+		v.Check("confirm", "Passwords must match", confirm == password)
+		v.CheckRequired("confirm", confirm)
 
 		// If the form isn't valid, re-render the template with existing input values.
 		if !v.IsValid() {

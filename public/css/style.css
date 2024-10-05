@@ -126,7 +126,7 @@ svg {
 .header__links {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1rem 0.5rem;
+	padding: 1rem;
 	display: flex;
 	align-items: center;
 	gap: 1rem;
@@ -166,7 +166,7 @@ svg {
 .footer__links {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1rem 0.5rem;
+	padding: 1rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -202,7 +202,7 @@ svg {
 .articles-header {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1.5rem 0.5rem;
+	padding: 1.5rem 1rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -217,7 +217,7 @@ svg {
 .articles {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 0 0.5rem;
+	padding: 0 1rem;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
@@ -336,7 +336,7 @@ svg {
 .blogs {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1rem 0.5rem;
+	padding: 1rem;
 }
 
 .blogs-header {
@@ -379,7 +379,7 @@ svg {
 .blog, .post {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1rem 0.5rem;
+	padding: 1rem;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;

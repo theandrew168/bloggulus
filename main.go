@@ -40,27 +40,27 @@ func main() {
 }
 
 func run() error {
-	// check for config file flag
+	// Check for the config file path flag.
 	conf := flag.String("conf", "bloggulus.conf", "app config file")
 
-	// check for action flags
+	// Check for any specific action flags.
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")
 	flag.Parse()
 
-	// load user-defined config (if specified), else use defaults
+	// Load the application's config file.
 	cfg, err := config.ReadFile(*conf)
 	if err != nil {
 		return err
 	}
 
-	// open a database connection pool
+	// Open a database connection pool.
 	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
 
-	// apply database migrations
+	// Apply any pending database migrations.
 	applied, err := postgres.Migrate(pool, migrationsFS)
 	if err != nil {
 		return err
@@ -70,22 +70,22 @@ func run() error {
 		slog.Info("applied migration", "name", migration)
 	}
 
-	// exit now if just applying migrations
+	// Exit now if just applying migrations.
 	if *migrate {
 		return nil
 	}
 
-	// init database storage
+	// Init the database storage interfaces.
 	repo := repository.New(pool)
 	find := finder.New(pool)
 
-	// init the sync service and do an initial sync
+	// Init the sync service and do an initial sync.
 	syncService := service.NewSyncService(repo, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
-	// let systemd know that we are good to go (no-op if not using systemd)
+	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
-	// create a context that cancels upon receiving an interrupt signal
+	// Create a context that cancels upon receiving an interrupt signal.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -93,7 +93,7 @@ func run() error {
 
 	webHandler := web.Handler(publicFS, repo, find, syncService)
 
-	// let port be overridden by an env var
+	// Let the web server port be overridden by an env var.
 	port := cfg.Port
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
@@ -101,7 +101,7 @@ func run() error {
 
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
-	// start the web server in the background
+	// Start the web server in the background.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -112,7 +112,7 @@ func run() error {
 		}
 	}()
 
-	// start the sync service in the background
+	// Start the sync service in the background.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -123,7 +123,13 @@ func run() error {
 		}
 	}()
 
-	// wait for the web server and sync service to stop
+	// TODO: Start the session cleanup service in the background.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+	}()
+
+	// Wait for all services to stop.
 	wg.Wait()
 
 	return nil

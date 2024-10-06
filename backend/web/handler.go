@@ -102,6 +102,7 @@ func Handler(
 	handler := middleware.Use(mux,
 		middleware.RecoverPanic(),
 		middleware.CompressFiles(),
+		middleware.PreventCSRF(),
 		middleware.SecureHeaders(),
 		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(repo),

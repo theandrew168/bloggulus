@@ -2,6 +2,8 @@
 
 <section class="register">
 	<form method="POST" action="/register" class="register__form">
+		<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+
 		<h2 class="register__heading">Register a New Account</h2>
 
 		<hr />

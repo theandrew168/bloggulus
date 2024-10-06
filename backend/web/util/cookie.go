@@ -12,11 +12,9 @@ var (
 	ToastCookieName = "bloggulus_toast"
 )
 
-// Create a session (not permanent) cookie that expires when the user's session ends.
-func NewSessionCookie(name, value string) http.Cookie {
+// Return a base cookie with secure defaults.
+func NewBaseCookie() http.Cookie {
 	cookie := http.Cookie{
-		Name:     name,
-		Value:    value,
 		Path:     "/",  // This path makes the cookie apply to the whole site.
 		Domain:   "",   // An empty domain will default to the server's base domain.
 		Secure:   true, // Only send cookies on secure connections (includes localhost).
@@ -25,6 +23,14 @@ func NewSessionCookie(name, value string) http.Cookie {
 		// to the origin site from an external location (like when following a link).
 		SameSite: http.SameSiteLaxMode,
 	}
+	return cookie
+}
+
+// Create a session (not permanent) cookie that expires when the user's session ends.
+func NewSessionCookie(name, value string) http.Cookie {
+	cookie := NewBaseCookie()
+	cookie.Name = name
+	cookie.Value = value
 	return cookie
 }
 

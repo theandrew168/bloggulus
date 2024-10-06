@@ -37,7 +37,13 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 			BaseData: util.TemplateBaseData(r, w),
 
 			Account: account,
-			Blogs:   blogs,
+		}
+		for _, blog := range blogs {
+			data.Blogs = append(data.Blogs, page.BlogsBlogData{
+				BaseData: util.TemplateBaseData(r, w),
+
+				BlogForAccount: blog,
+			})
 		}
 
 		util.Render(w, r, 200, func(w io.Writer) error {
@@ -122,7 +128,13 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 			}
 			data := page.BlogsData{
 				Account: account,
-				Blogs:   blogs,
+			}
+			for _, blog := range blogs {
+				data.Blogs = append(data.Blogs, page.BlogsBlogData{
+					BaseData: util.TemplateBaseData(r, w),
+
+					BlogForAccount: blog,
+				})
 			}
 			util.Render(w, r, 200, func(w io.Writer) error {
 				return tmpl.RenderBlogs(w, data)
@@ -182,11 +194,15 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 
 		// If the request came in via HTMX, re-render the individual blog row.
 		if util.IsHTMXRequest(r) {
-			data := finder.BlogForAccount{
-				ID:          blog.ID(),
-				Title:       blog.Title(),
-				SiteURL:     blog.SiteURL(),
-				IsFollowing: true,
+			data := page.BlogsBlogData{
+				BaseData: util.TemplateBaseData(r, w),
+
+				BlogForAccount: finder.BlogForAccount{
+					ID:          blog.ID(),
+					Title:       blog.Title(),
+					SiteURL:     blog.SiteURL(),
+					IsFollowing: true,
+				},
 			}
 			util.Render(w, r, 200, func(w io.Writer) error {
 				return tmpl.RenderBlog(w, data)
@@ -246,11 +262,15 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 
 		// If the request came in via HTMX, re-render the individual row.
 		if util.IsHTMXRequest(r) {
-			data := finder.BlogForAccount{
-				ID:          blog.ID(),
-				Title:       blog.Title(),
-				SiteURL:     blog.SiteURL(),
-				IsFollowing: false,
+			data := page.BlogsBlogData{
+				BaseData: util.TemplateBaseData(r, w),
+
+				BlogForAccount: finder.BlogForAccount{
+					ID:          blog.ID(),
+					Title:       blog.Title(),
+					SiteURL:     blog.SiteURL(),
+					IsFollowing: false,
+				},
 			}
 			util.Render(w, r, 200, func(w io.Writer) error {
 				return tmpl.RenderBlog(w, data)

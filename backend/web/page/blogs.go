@@ -17,7 +17,14 @@ type BlogsData struct {
 	layout.BaseData
 
 	Account *model.Account
-	Blogs   []finder.BlogForAccount
+	Blogs   []BlogsBlogData
+}
+
+// Since this data might be re-rendered per-row via HTMX, we have to include
+// the layout.BaseData to ensure CSRF prevention still works.
+type BlogsBlogData struct {
+	layout.BaseData
+	finder.BlogForAccount
 }
 
 type BlogsPage struct {
@@ -41,7 +48,7 @@ func (p *BlogsPage) Render(w io.Writer, data BlogsData) error {
 	return p.tmpl.ExecuteTemplate(w, "page", data)
 }
 
-func (p *BlogsPage) RenderBlog(w io.Writer, data finder.BlogForAccount) error {
+func (p *BlogsPage) RenderBlog(w io.Writer, data BlogsBlogData) error {
 	return p.tmpl.ExecuteTemplate(w, "blog", data)
 }
 

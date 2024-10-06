@@ -10,6 +10,7 @@ import (
 var BaseHTML string
 
 type BaseData struct {
-	Account *model.Account
-	Toast   string
+	Account   *model.Account
+	CSRFToken string
+	Toast     string
 }

@@ -2,6 +2,8 @@
 
 <section class="login">
 	<form method="POST" action="/login?next={{.NextPath}}" class="login__form">
+		<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+
 		<h2 class="login__heading">Log In to Your Account</h2>
 
 		<hr />

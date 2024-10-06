@@ -3,6 +3,8 @@ package util
 import (
 	"net/http"
 
+	"github.com/justinas/nosurf"
+
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -12,6 +14,11 @@ func TemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
 	account, isLoggedIn := GetContextAccount(r)
 	if isLoggedIn {
 		data.Account = account
+	}
+
+	csrfToken := nosurf.Token(r)
+	if csrfToken != "" {
+		data.CSRFToken = csrfToken
 	}
 
 	toastCookie, err := r.Cookie(ToastCookieName)

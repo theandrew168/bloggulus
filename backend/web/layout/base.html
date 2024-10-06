@@ -21,7 +21,12 @@
 				<li class="header__link--first"><a class="header__link header__link--home" href="/">Bloggulus</a></li>
 				{{if .Account}}
 				<li><a class="header__link" href="/blogs">Blogs</a></li>
-				<li><form action="/logout" method="post"><button class="header__link" type="submit">Logout</button></form></li>
+				<li>
+					<form action="/logout" method="post">
+						<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+						<button class="header__link" type="submit">Logout</button>
+					</form>
+				</li>
 				{{else}}
 				<li><a class="header__link" href="/login">Login</a></li>
 				<li><a class="header__link" href="/register">Register</a></li>

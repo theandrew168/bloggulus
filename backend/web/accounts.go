@@ -14,7 +14,7 @@ import (
 func HandleAccountList(repo *repository.Repository) http.Handler {
 	tmpl := page.NewAccounts()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accounts, err := repo.Account().List(20, 0)
+		accounts, err := repo.Account().List(100, 0)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return

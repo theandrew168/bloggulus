@@ -72,6 +72,24 @@ func TestAccountReadBySessionIDn(t *testing.T) {
 	test.AssertEqual(t, got.ID(), account.ID())
 }
 
+func TestAccountList(t *testing.T) {
+	t.Parallel()
+
+	repo, closer := test.NewRepository(t)
+	defer closer()
+
+	test.CreateAccount(t, repo)
+	test.CreateAccount(t, repo)
+	test.CreateAccount(t, repo)
+
+	limit := 3
+	offset := 0
+	accounts, err := repo.Account().List(limit, offset)
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, len(accounts), limit)
+}
+
 func TestAccountDelete(t *testing.T) {
 	t.Parallel()
 

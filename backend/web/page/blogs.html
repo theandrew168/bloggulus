@@ -4,7 +4,7 @@
 	<header class="blogs-header">
 		<h1 class="blogs-header__title">Blogs</h1>
 		<form method="POST" action="/blogs/create" hx-post="/blogs/create" hx-target="#blogs">
-			<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 			<input
 				class="input blogs-header__input"
 				type="text"
@@ -29,14 +29,14 @@
 			{{block "blog" .}}
 			{{if .IsFollowing}}
 			<form method="POST" action="/blogs/{{.ID}}/unfollow" hx-post="/blogs/{{.ID}}/unfollow">
-				<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+				<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 				<button class="button button--outline" type="submit">
 					Unfollow
 				</button>
 			</form>
 			{{else}}
 			<form method="POST" action="/blogs/{{.ID}}/follow" hx-post="/blogs/{{.ID}}/follow">
-				<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+				<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 				<button class="button" type="submit">
 					Follow
 				</button>

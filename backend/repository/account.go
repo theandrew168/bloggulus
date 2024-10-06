@@ -177,6 +177,45 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 	return row.unmarshal()
 }
 
+func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
+	stmt := `
+		SELECT
+			account.id,
+			account.username,
+			account.password_hash,
+			account.is_admin,
+			account.created_at,
+			account.updated_at
+		FROM account
+		ORDER BY account.created_at DESC
+		LIMIT $1 OFFSET $2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := r.conn.Query(ctx, stmt, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	accountRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbAccount])
+	if err != nil {
+		return nil, postgres.CheckListError(err)
+	}
+
+	var accounts []*model.Account
+	for _, row := range accountRows {
+		account, err := row.unmarshal()
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
+}
+
 func (r *AccountRepository) Delete(account *model.Account) error {
 	stmt := `
 		DELETE FROM account

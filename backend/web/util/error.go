@@ -62,6 +62,8 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusBadRequest
 	data := page.ErrorData{
+		BaseData: TemplateBaseData(r, w),
+
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, we cannot understand what you sent.",
@@ -77,6 +79,8 @@ func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusForbidden
 	data := page.ErrorData{
+		BaseData: TemplateBaseData(r, w),
+
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, you are not allowed to access this page.",
@@ -92,6 +96,8 @@ func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusNotFound
 	data := page.ErrorData{
+		BaseData: TemplateBaseData(r, w),
+
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, this page could not be found.",
@@ -109,6 +115,8 @@ func InternalServerErrorResponse(w http.ResponseWriter, r *http.Request, err err
 	tmpl := page.NewError()
 	code := http.StatusInternalServerError
 	data := page.ErrorData{
+		BaseData: TemplateBaseData(r, w),
+
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, something went wrong.",

@@ -87,6 +87,10 @@ func Handler(
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", adminRequired(HandlePostDeleteForm(repo)))
 
+	// Private (admin only) account routes.
+	mux.Handle("GET /accounts", adminRequired(HandleAccountList(repo)))
+	mux.Handle("POST /accounts/{accountID}/delete", adminRequired(HandleAccountDeleteForm(repo)))
+
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
 		http.SetCookie(w, &cookie)

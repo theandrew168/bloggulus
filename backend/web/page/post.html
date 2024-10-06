@@ -15,7 +15,7 @@
 	<article class="post-actions">
 		<h2 class="blog-actions__title">Actions</h2>
 		<form method="POST" action="/blogs/{{.BlogID}}/posts/{{.ID}}/delete">
-			<input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 			<input type="hidden" name="postID" value={{.ID}} />
 			<button class="button" type="submit">
 				Delete

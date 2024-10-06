@@ -333,17 +333,17 @@ svg {
 
 
 
-.blogs {
+.blogs, .accounts {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem;
 }
 
-.blogs-header {
+.blogs-header, .accounts-header {
 	margin-bottom: 1rem;
 }
 
-.blogs-header__title {
+.blogs-header__title, .accounts-header__title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	margin-bottom: 0.5rem;
@@ -353,13 +353,13 @@ svg {
 	width: 70%;
 }
 
-.blogs-list {
+.blogs-list, .accounts-list {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
 
-.blogs-list__item {
+.blogs-list__item, .accounts-list__item {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;

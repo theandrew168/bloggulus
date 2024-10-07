@@ -1,3 +1,3 @@
 package web
 
-const UserAgent = "Bloggulus/0.3.7 (+https://bloggulus.com)"
+const UserAgent = "Bloggulus/0.4.0 (+https://bloggulus.com)"

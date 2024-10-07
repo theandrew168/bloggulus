@@ -45,7 +45,9 @@ func (s *SyncService) Run(ctx context.Context) error {
 	// perform an initial sync at service startup
 	err := s.SyncAllBlogs()
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("error syncing blogs",
+			"error", err.Error(),
+		)
 	}
 
 	// then again every "internal" until stopped
@@ -61,7 +63,9 @@ func (s *SyncService) Run(ctx context.Context) error {
 		case <-ticker.C:
 			err := s.SyncAllBlogs()
 			if err != nil {
-				slog.Error(err.Error())
+				slog.Error("error syncing blogs",
+					"error", err.Error(),
+				)
 			}
 		}
 	}

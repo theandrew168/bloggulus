@@ -29,7 +29,9 @@ func (s *SessionService) Run(ctx context.Context) error {
 	// Clear out any expired sessions at service startup.
 	err := s.ClearExpiredSessions()
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("error clearing expired sessions",
+			"error", err.Error(),
+		)
 	}
 
 	// Then run again every "internal" until stopped (by the context being canceled).
@@ -45,7 +47,9 @@ func (s *SessionService) Run(ctx context.Context) error {
 		case <-ticker.C:
 			err := s.ClearExpiredSessions()
 			if err != nil {
-				slog.Error(err.Error())
+				slog.Error("error clearing expired sessions",
+					"error", err.Error(),
+				)
 			}
 		}
 	}

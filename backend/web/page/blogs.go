@@ -51,7 +51,3 @@ func (p *BlogsPage) Render(w io.Writer, data BlogsData) error {
 func (p *BlogsPage) RenderBlog(w io.Writer, data BlogsBlogData) error {
 	return p.tmpl.ExecuteTemplate(w, "blog", data)
 }
-
-func (p *BlogsPage) RenderBlogs(w io.Writer, data BlogsData) error {
-	return p.tmpl.ExecuteTemplate(w, "blogs", data)
-}

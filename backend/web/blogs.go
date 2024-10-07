@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -52,13 +51,7 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 	})
 }
 
-// How this should work:
-// 1. Check if the blog exists (by URL)
-// 2. If it does, follow and return
-// 3. If it doesn't, submit for initial sync + follow (background)
-// 4. Notify the user of submission via toast
 func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
-	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
@@ -74,9 +67,34 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 		feedURL := r.PostForm.Get("feedURL")
 
-		// Check if the blog already exists. If it does, nothing further is required.
-		_, err = repo.Blog().ReadByFeedURL(feedURL)
+		// Check if the blog already exists.
+		blog, err := repo.Blog().ReadByFeedURL(feedURL)
 		if err == nil {
+			// If it does, follow it for the current user.
+			err = repo.AccountBlog().Create(account, blog)
+			if err != nil {
+				slog.Error("error following blog",
+					"error", err.Error(),
+					"account_id", account.ID(),
+					"account_username", account.Username(),
+					"blog_id", blog.ID(),
+					"blog_title", blog.Title(),
+				)
+				return
+			}
+
+			slog.Info("blog followed",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+				"blog_id", blog.ID(),
+				"blog_title", blog.Title(),
+			)
+
+			// Show a toast explaining that the blog already exists but is now being followed.
+			cookie := util.NewSessionCookie(util.ToastCookieName, "This blog is now being followed!")
+			http.SetCookie(w, &cookie)
+
+			http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 			return
 		}
 
@@ -87,60 +105,47 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 		}
 
 		// Use the SyncService to add the new blog.
-		blog, err := syncService.SyncBlog(feedURL)
-		if err != nil {
-			switch {
-			case errors.Is(err, fetch.ErrUnreachableFeed):
-				util.BadRequestResponse(w, r)
-			default:
-				util.InternalServerErrorResponse(w, r, err)
-			}
-
-			return
-		}
-
-		slog.Info("blog added",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
-			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
-		)
-
-		err = repo.AccountBlog().Create(account, blog)
-		if err != nil {
-			util.CreateErrorResponse(w, r, err)
-			return
-		}
-
-		slog.Info("blog followed",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
-			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
-		)
-
-		// If the request came in via HTMX, re-render the list of blogs.
-		if util.IsHTMXRequest(r) {
-			blogs, err := find.ListBlogsForAccount(account)
+		// TODO: Make this respect graceful shutdowns.
+		go func() {
+			blog, err := syncService.SyncBlog(feedURL)
 			if err != nil {
-				util.ListErrorResponse(w, r, err)
+				slog.Error("error adding blog",
+					"error", err.Error(),
+					"feedURL", feedURL,
+				)
 				return
 			}
-			data := page.BlogsData{
-				Account: account,
-			}
-			for _, blog := range blogs {
-				data.Blogs = append(data.Blogs, page.BlogsBlogData{
-					BaseData: util.TemplateBaseData(r, w),
 
-					BlogForAccount: blog,
-				})
+			slog.Info("blog added",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+				"blog_id", blog.ID(),
+				"blog_title", blog.Title(),
+			)
+
+			err = repo.AccountBlog().Create(account, blog)
+			if err != nil {
+				slog.Error("error following blog",
+					"error", err.Error(),
+					"account_id", account.ID(),
+					"account_username", account.Username(),
+					"blog_id", blog.ID(),
+					"blog_title", blog.Title(),
+				)
+				return
 			}
-			util.Render(w, r, 200, func(w io.Writer) error {
-				return tmpl.RenderBlogs(w, data)
-			})
-			return
-		}
+
+			slog.Info("blog followed",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+				"blog_id", blog.ID(),
+				"blog_title", blog.Title(),
+			)
+		}()
+
+		// Show a toast explaining that the blog will be processed in the background.
+		cookie := util.NewSessionCookie(util.ToastCookieName, "Once processed, this blog will be added and followed. Check back soon!")
+		http.SetCookie(w, &cookie)
 
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
 	})

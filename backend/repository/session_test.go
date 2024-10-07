@@ -2,9 +2,12 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 func TestSessionCreate(t *testing.T) {
@@ -80,4 +83,41 @@ func TestSessionDelete(t *testing.T) {
 
 	_, err = repo.Session().Read(session.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
+}
+
+func TestSessionDeleteExpired(t *testing.T) {
+	t.Parallel()
+
+	repo, closer := test.NewRepository(t)
+	defer closer()
+
+	account, _ := test.CreateAccount(t, repo)
+
+	sessionOld, _, err := model.NewSession(
+		account,
+		-1*time.Hour,
+	)
+	test.AssertNilError(t, err)
+
+	err = repo.Session().Create(sessionOld)
+	test.AssertNilError(t, err)
+
+	sessionNew, _, err := model.NewSession(
+		account,
+		1*time.Hour,
+	)
+	test.AssertNilError(t, err)
+
+	err = repo.Session().Create(sessionNew)
+	test.AssertNilError(t, err)
+
+	now := timeutil.Now()
+	err = repo.Session().DeleteExpired(now)
+	test.AssertNilError(t, err)
+
+	_, err = repo.Session().Read(sessionOld.ID())
+	test.AssertErrorIs(t, err, postgres.ErrNotFound)
+
+	_, err = repo.Session().Read(sessionNew.ID())
+	test.AssertNilError(t, err)
 }

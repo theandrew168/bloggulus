@@ -65,7 +65,6 @@ func (s *SyncService) Run(ctx context.Context) error {
 			}
 		}
 	}
-
 }
 
 // Start with the current time and a list of all known blogs. For each blog,

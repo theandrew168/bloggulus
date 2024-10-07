@@ -174,3 +174,19 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 
 	return nil
 }
+
+func (r *SessionRepository) DeleteExpired(now time.Time) error {
+	stmt := `
+		DELETE FROM session
+		WHERE expires_at <= $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	_, err := r.conn.Exec(ctx, stmt, now)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

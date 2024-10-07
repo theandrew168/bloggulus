@@ -82,6 +82,9 @@ func run() error {
 	// Init the sync service and do an initial sync.
 	syncService := service.NewSyncService(repo, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
 
+	// Init the session service and clear any expired session tokens.
+	sessionService := service.NewSessionService(repo)
+
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
@@ -123,10 +126,15 @@ func run() error {
 		}
 	}()
 
-	// TODO: Start the session cleanup service in the background.
+	// Start the session cleanup service in the background.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
+		err := sessionService.Run(ctx)
+		if err != nil {
+			slog.Error(err.Error())
+		}
 	}()
 
 	// Wait for all services to stop.

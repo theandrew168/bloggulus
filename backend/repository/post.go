@@ -156,7 +156,7 @@ func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (r *PostRepository) List(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
+func (r *PostRepository) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,

@@ -64,7 +64,7 @@ func TestPostReadByURL(t *testing.T) {
 	test.AssertEqual(t, got.ID(), post.ID())
 }
 
-func TestPostList(t *testing.T) {
+func TestPostListByBlog(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -77,7 +77,7 @@ func TestPostList(t *testing.T) {
 
 	limit := 3
 	offset := 0
-	posts, err := repo.Post().List(blog, limit, offset)
+	posts, err := repo.Post().ListByBlog(blog, limit, offset)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(posts), limit)

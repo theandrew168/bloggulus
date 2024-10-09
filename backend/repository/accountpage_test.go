@@ -7,60 +7,60 @@ import (
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
-func TestAccountBlogCreate(t *testing.T) {
+func TestAccountPageCreate(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	account, _ := test.CreateAccount(t, repo)
-	blog := test.CreateBlog(t, repo)
+	page := test.CreatePage(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountPage().Create(account, page)
 	test.AssertNilError(t, err)
 }
 
-func TestAccountBlogCreateAlreadyExists(t *testing.T) {
+func TestAccountPageCreateAlreadyExists(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	account, _ := test.CreateAccount(t, repo)
-	blog := test.CreateBlog(t, repo)
+	page := test.CreatePage(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountPage().Create(account, page)
 	test.AssertNilError(t, err)
 
-	err = repo.AccountBlog().Create(account, blog)
+	err = repo.AccountPage().Create(account, page)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
-func TestAccountBlogDelete(t *testing.T) {
+func TestAccountPageDelete(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	account, _ := test.CreateAccount(t, repo)
-	blog := test.CreateBlog(t, repo)
+	page := test.CreatePage(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountPage().Create(account, page)
 	test.AssertNilError(t, err)
 
-	err = repo.AccountBlog().Delete(account, blog)
+	err = repo.AccountPage().Delete(account, page)
 	test.AssertNilError(t, err)
 }
 
-func TestAccountBlogDeleteDoesNotExist(t *testing.T) {
+func TestAccountPageDeleteDoesNotExist(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
 	account, _ := test.NewAccount(t)
-	blog := test.NewBlog(t)
+	page := test.CreatePage(t, repo)
 
-	err := repo.AccountBlog().Delete(account, blog)
+	err := repo.AccountPage().Delete(account, page)
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

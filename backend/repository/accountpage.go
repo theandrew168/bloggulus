@@ -11,28 +11,28 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
-type AccountBlogRepository struct {
+type AccountPageRepository struct {
 	conn postgres.Conn
 }
 
-func NewAccountBlogRepository(conn postgres.Conn) *AccountBlogRepository {
-	r := AccountBlogRepository{
+func NewAccountPageRepository(conn postgres.Conn) *AccountPageRepository {
+	r := AccountPageRepository{
 		conn: conn,
 	}
 	return &r
 }
 
-func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog) error {
+func (r *AccountPageRepository) Create(account *model.Account, page *model.Page) error {
 	stmt := `
-		INSERT INTO account_blog
-			(account_id, blog_id, created_at, updated_at)
+		INSERT INTO account_page
+			(account_id, page_id, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4)`
 
 	now := timeutil.Now()
 	args := []any{
 		account.ID(),
-		blog.ID(),
+		page.ID(),
 		now,
 		now,
 	}
@@ -48,11 +48,11 @@ func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog)
 	return nil
 }
 
-func (r *AccountBlogRepository) Delete(account *model.Account, blog *model.Blog) error {
+func (r *AccountPageRepository) Delete(account *model.Account, page *model.Page) error {
 	stmt := `
-		DELETE FROM account_blog
+		DELETE FROM account_page
 		WHERE account_id = $1
-			AND blog_id = $2
+			AND page_id = $2
 		RETURNING account_id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
@@ -60,7 +60,7 @@ func (r *AccountBlogRepository) Delete(account *model.Account, blog *model.Blog)
 
 	args := []any{
 		account.ID(),
-		blog.ID(),
+		page.ID(),
 	}
 
 	rows, err := r.conn.Query(ctx, stmt, args...)

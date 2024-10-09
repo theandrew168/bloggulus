@@ -198,7 +198,7 @@ func (r *PostRepository) ListByBlog(blog *model.Blog, limit, offset int) ([]*mod
 	return posts, nil
 }
 
-func (r *PostRepository) Count(blog *model.Blog) (int, error) {
+func (r *PostRepository) CountByBlog(blog *model.Blog) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post

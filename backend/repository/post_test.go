@@ -83,7 +83,7 @@ func TestPostListByBlog(t *testing.T) {
 	test.AssertEqual(t, len(posts), limit)
 }
 
-func TestPostCount(t *testing.T) {
+func TestPostCountByBlog(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -94,7 +94,7 @@ func TestPostCount(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	count, err := repo.Post().Count(blog)
+	count, err := repo.Post().CountByBlog(blog)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, count, 3)

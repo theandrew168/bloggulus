@@ -6,6 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
@@ -39,6 +40,7 @@ func Handler(
 	public fs.FS,
 	repo *repository.Repository,
 	find *finder.Finder,
+	pageFetcher fetch.PageFetcher,
 	syncService *service.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
@@ -83,7 +85,7 @@ func Handler(
 
 	// Public page routes.
 	mux.Handle("GET /pages", accountRequired(HandlePageList(repo)))
-	mux.Handle("POST /pages/create", accountRequired(HandlePageCreateForm(repo)))
+	mux.Handle("POST /pages/create", accountRequired(HandlePageCreateForm(repo, pageFetcher)))
 	mux.Handle("POST /pages/{pageID}/unfollow", accountRequired(HandlePageUnfollowForm(repo)))
 
 	// Private (admin only) blog + post routes.

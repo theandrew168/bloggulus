@@ -38,7 +38,9 @@ func RenderError(w http.ResponseWriter, r *http.Request, code int, render Render
 	var buf bytes.Buffer
 	err := render(&buf)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("error rendering template",
+			"error", err.Error(),
+		)
 
 		code = http.StatusInternalServerError
 		http.Error(w, http.StatusText(code), code)

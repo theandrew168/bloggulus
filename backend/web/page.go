@@ -5,8 +5,11 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/google/uuid"
+
+	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -43,7 +46,7 @@ func HandlePageList(repo *repository.Repository) http.Handler {
 // Instantly return and show a toast. In a background goro, fetch
 // the page, parse out the title, strip out HTML, and create the
 // database rows (page and account_page).
-func HandlePageCreateForm(repo *repository.Repository) http.Handler {
+func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFetcher) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -57,17 +60,64 @@ func HandlePageCreateForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		url := r.PostForm.Get("url")
+		rawURL := r.PostForm.Get("url")
 
-		page, err := repo.Page().ReadByURL(url)
+		parsedURL, err := url.Parse(rawURL)
 		if err != nil {
-			if !errors.Is(err, postgres.ErrNotFound) {
-				util.InternalServerErrorResponse(w, r, err)
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		if parsedURL.Scheme == "" {
+			parsedURL.Scheme = "https"
+		}
+
+		pageURL := parsedURL.String()
+
+		// If the page already exists, just follow it and return.
+		page, err := repo.Page().ReadByURL(pageURL)
+		if err == nil {
+			// Follow the page and check for ErrConflict (already followed).
+			err = repo.AccountPage().Create(account, page)
+			if err != nil {
+				if !errors.Is(err, postgres.ErrConflict) {
+					util.InternalServerErrorResponse(w, r, err)
+					return
+				}
+			}
+
+			slog.Info("page followed",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+				"page_id", page.ID(),
+				"page_url", page.URL(),
+				"page_title", page.Title(),
+			)
+
+			// Show a toast explaining that the page will be processed in the background.
+			cookie := util.NewSessionCookie(util.ToastCookieName, "This pageh as been added!")
+			http.SetCookie(w, &cookie)
+
+			http.Redirect(w, r, "/pages", http.StatusSeeOther)
+			return
+		}
+
+		if !errors.Is(err, postgres.ErrNotFound) {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
+
+		// Fetch the page and follow (if valid) in the background.
+		go func() {
+			content, err := pageFetcher.FetchPage(pageURL)
+			if err != nil {
+				slog.Error("error fetching page",
+					"error", err.Error(),
+				)
 				return
 			}
 
-			// TODO: Fetch the content for real.
-			page, err = model.NewPage(url, "FooBar", "Gotta love that foobar")
+			page, err = model.NewPage(pageURL, pageURL, content)
 			if err != nil {
 				util.InternalServerErrorResponse(w, r, err)
 				return
@@ -86,24 +136,24 @@ func HandlePageCreateForm(repo *repository.Repository) http.Handler {
 				"page_url", page.URL(),
 				"page_title", page.Title(),
 			)
-		}
 
-		// Follow the page and check for ErrConflict (already followed).
-		err = repo.AccountPage().Create(account, page)
-		if err != nil {
-			if !errors.Is(err, postgres.ErrConflict) {
-				util.InternalServerErrorResponse(w, r, err)
-				return
+			// Follow the page and check for ErrConflict (already followed).
+			err = repo.AccountPage().Create(account, page)
+			if err != nil {
+				if !errors.Is(err, postgres.ErrConflict) {
+					util.InternalServerErrorResponse(w, r, err)
+					return
+				}
 			}
-		}
 
-		slog.Info("page followed",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
-			"page_id", page.ID(),
-			"page_url", page.URL(),
-			"page_title", page.Title(),
-		)
+			slog.Info("page followed",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+				"page_id", page.ID(),
+				"page_url", page.URL(),
+				"page_title", page.Title(),
+			)
+		}()
 
 		// Show a toast explaining that the page will be processed in the background.
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Once processed, this page will be added. Check back soon!")

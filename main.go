@@ -32,7 +32,9 @@ func main() {
 
 	err := run()
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error("error running application",
+			"error", err.Error(),
+		)
 		code = 1
 	}
 
@@ -80,7 +82,9 @@ func run() error {
 	find := finder.New(pool)
 
 	// Init the sync service and do an initial sync.
-	syncService := service.NewSyncService(repo, fetch.NewFeedFetcher(), fetch.NewPageFetcher())
+	feedFetcher := fetch.NewFeedFetcher()
+	pageFetcher := fetch.NewPageFetcher()
+	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
 
 	// Init the session service and clear any expired session tokens.
 	sessionService := service.NewSessionService(repo)
@@ -94,7 +98,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, repo, find, syncService)
+	webHandler := web.Handler(publicFS, repo, find, pageFetcher, syncService)
 
 	// Let the web server port be overridden by an env var.
 	port := cfg.Port
@@ -111,7 +115,9 @@ func run() error {
 
 		err := web.Run(ctx, webHandler, addr)
 		if err != nil {
-			slog.Error(err.Error())
+			slog.Error("error running web server",
+				"error", err.Error(),
+			)
 		}
 	}()
 
@@ -122,7 +128,9 @@ func run() error {
 
 		err := syncService.Run(ctx)
 		if err != nil {
-			slog.Error(err.Error())
+			slog.Error("error running sync service",
+				"error", err.Error(),
+			)
 		}
 	}()
 
@@ -133,7 +141,9 @@ func run() error {
 
 		err := sessionService.Run(ctx)
 		if err != nil {
-			slog.Error(err.Error())
+			slog.Error("error running session service",
+				"error", err.Error(),
+			)
 		}
 	}()
 

@@ -1,0 +1,36 @@
+{{define "main"}}
+
+<section class="pages">
+	<header class="pages-header">
+		<h1 class="pages-header__title">Pages</h1>
+		<form method="POST" action="/pages/create">
+			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+			<input
+				class="input pages-header__input"
+				type="text"
+				name="url"
+				placeholder="Add Page"
+			/>
+			<button class="button" type="submit">
+				Add
+			</button>
+		</form>
+	</header>
+	{{block "pages" .}}
+	<ul class="pages-list" id="pages">
+		{{range .Pages}}
+		<li class="pages-list__item">
+			<a class="pages-list__link" href="{{.URL}}">{{.Title}}</a>
+			<form method="POST" action="/pages/{{.ID}}/unfollow" hx-post="/pages/{{.ID}}/unfollow" hx-target="#pages">
+				<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+				<button class="button button--outline" type="submit">
+					Delete
+				</button>
+			</form>
+		</li>
+		{{end}}
+	</ul>
+	{{end}}
+</section>
+
+{{end}}

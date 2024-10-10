@@ -334,44 +334,44 @@ svg {
 
 
 
-.blogs, .accounts {
+.blogs, .pages, .accounts {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem;
 }
 
-.blogs-header, .accounts-header {
+.blogs-header, .pages-header, .accounts-header {
 	margin-bottom: 1rem;
 }
 
-.blogs-header__title, .accounts-header__title {
+.blogs-header__title, .pages-header__title, .accounts-header__title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	margin-bottom: 0.5rem;
 }
 
-.blogs-header__input {
+.blogs-header__input, .pages-header__input {
 	width: 70%;
 }
 
-.blogs-list, .accounts-list {
+.blogs-list, .pages-list, .accounts-list {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
 
-.blogs-list__item, .accounts-list__item {
+.blogs-list__item, .pages-list__item, .accounts-list__item {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
 
-.blogs-list__link {
+.blogs-list__link, .pages-list__link {
 	color: var(--color-dark);
 	text-decoration: none;
 }
 
-.blogs-list__link:hover {
+.blogs-list__link:hover, .pages-list__link:hover {
 	text-decoration: underline;
 }
 
@@ -391,12 +391,12 @@ svg {
 	margin-bottom: 0.5rem;
 }
 
-.blog-links__list,  .post-links__list {
+.blog-links__list, .post-links__list {
 	display: flex;
 	gap: 0.5rem;
 }
 
-.blog-links__link,  .post-links__link {
+.blog-links__link, .post-links__link {
 	color: var(--color-dark);
 	text-decoration: none;
 }

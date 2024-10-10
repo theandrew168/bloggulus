@@ -4,9 +4,8 @@ import (
 	_ "embed"
 	"html/template"
 	"io"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -16,12 +15,8 @@ var BlogHTML string
 type BlogData struct {
 	layout.BaseData
 
-	ID       uuid.UUID
-	Title    string
-	SiteURL  string
-	FeedURL  string
-	SyncedAt time.Time
-	Posts    []PostData
+	Blog  *model.Blog
+	Posts []*model.Post
 }
 
 type BlogPage struct {
@@ -34,7 +29,7 @@ func NewBlog() *BlogPage {
 		BlogHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := BlogPage{
 		tmpl: tmpl,
 	}
@@ -42,5 +37,5 @@ func NewBlog() *BlogPage {
 }
 
 func (p *BlogPage) Render(w io.Writer, data BlogData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

@@ -28,7 +28,7 @@ func NewAccounts() *AccountsPage {
 		AccountsHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := AccountsPage{
 		tmpl: tmpl,
 	}
@@ -36,7 +36,7 @@ func NewAccounts() *AccountsPage {
 }
 
 func (p *AccountsPage) Render(w io.Writer, data AccountsData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }
 
 func (p *AccountsPage) RenderAccounts(w io.Writer, data AccountsData) error {

@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/theandrew168/bloggulus/backend/finder"
-	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -16,8 +15,7 @@ var BlogsHTML string
 type BlogsData struct {
 	layout.BaseData
 
-	Account *model.Account
-	Blogs   []BlogsBlogData
+	Blogs []BlogsBlogData
 }
 
 // Since this data might be re-rendered per-row via HTMX, we have to include

@@ -29,7 +29,7 @@ func NewError() *ErrorPage {
 		ErrorHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := ErrorPage{
 		tmpl: tmpl,
 	}
@@ -37,5 +37,5 @@ func NewError() *ErrorPage {
 }
 
 func (p *ErrorPage) Render(w io.Writer, data ErrorData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

@@ -35,22 +35,9 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 		data := page.BlogData{
 			BaseData: util.TemplateBaseData(r, w),
 
-			ID:       blog.ID(),
-			Title:    blog.Title(),
-			SiteURL:  blog.SiteURL(),
-			FeedURL:  blog.FeedURL(),
-			SyncedAt: blog.SyncedAt(),
+			Blog:  blog,
+			Posts: posts,
 		}
-		for _, post := range posts {
-			blogPost := page.PostData{
-				ID:          post.ID(),
-				BlogID:      post.BlogID(),
-				Title:       post.Title(),
-				PublishedAt: post.PublishedAt(),
-			}
-			data.Posts = append(data.Posts, blogPost)
-		}
-
 		util.Render(w, r, 200, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

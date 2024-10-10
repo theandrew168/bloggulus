@@ -106,7 +106,6 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			HasMorePages: p*s < count,
 			NextPage:     p + 1,
 		}
-
 		util.Render(w, r, 200, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

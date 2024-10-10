@@ -25,7 +25,6 @@ func HandleAccountList(repo *repository.Repository) http.Handler {
 
 			Accounts: accounts,
 		}
-
 		util.Render(w, r, 200, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

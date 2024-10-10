@@ -28,7 +28,7 @@ func NewRegister() *RegisterPage {
 		RegisterHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := RegisterPage{
 		tmpl: tmpl,
 	}
@@ -36,5 +36,5 @@ func NewRegister() *RegisterPage {
 }
 
 func (p *RegisterPage) Render(w io.Writer, data RegisterData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

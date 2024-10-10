@@ -29,7 +29,7 @@ func NewLogin() *LoginPage {
 		LoginHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := LoginPage{
 		tmpl: tmpl,
 	}
@@ -37,5 +37,5 @@ func NewLogin() *LoginPage {
 }
 
 func (p *LoginPage) Render(w io.Writer, data LoginData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

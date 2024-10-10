@@ -84,7 +84,7 @@ func Handler(
 	// Public page routes.
 	mux.Handle("GET /pages", accountRequired(HandlePageList(repo)))
 	mux.Handle("POST /pages/create", accountRequired(HandlePageCreateForm(repo)))
-	mux.Handle("POST /pages/{pageID}/delete", accountRequired(HandlePageDeleteForm(repo)))
+	mux.Handle("POST /pages/{pageID}/unfollow", accountRequired(HandlePageUnfollowForm(repo)))
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))

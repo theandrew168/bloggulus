@@ -115,6 +115,34 @@ func (r *PageRepository) Read(id uuid.UUID) (*model.Page, error) {
 	return row.unmarshal()
 }
 
+func (r *PageRepository) ReadByURL(url string) (*model.Page, error) {
+	stmt := `
+		SELECT
+			page.id,
+			page.url,
+			page.title,
+			page.content,
+			page.created_at,
+			page.updated_at
+		FROM page
+		WHERE page.url = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := r.conn.Query(ctx, stmt, url)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPage])
+	if err != nil {
+		return nil, postgres.CheckReadError(err)
+	}
+
+	return row.unmarshal()
+}
+
 func (r *PageRepository) ListByAccount(account *model.Account, limit, offset int) ([]*model.Page, error) {
 	stmt := `
 		SELECT

@@ -16,7 +16,6 @@
 			</button>
 		</form>
 	</header>
-	{{block "blogs" .}}
 	<ul class="blogs-list" id="blogs">
 		{{range .Blogs}}
 		<li class="blogs-list__item">
@@ -46,7 +45,6 @@
 		</li>
 		{{end}}
 	</ul>
-	{{end}}
 </section>
 
 {{end}}

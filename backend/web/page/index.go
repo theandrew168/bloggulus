@@ -31,7 +31,7 @@ func NewIndex() *IndexPage {
 		IndexHTML,
 	}
 
-	tmpl := newTemplate("page", sources)
+	tmpl := newTemplate("default", sources)
 	page := IndexPage{
 		tmpl: tmpl,
 	}
@@ -39,5 +39,5 @@ func NewIndex() *IndexPage {
 }
 
 func (p *IndexPage) Render(w io.Writer, data IndexData) error {
-	return p.tmpl.ExecuteTemplate(w, "page", data)
+	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

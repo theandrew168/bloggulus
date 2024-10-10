@@ -1,6 +1,7 @@
 {{define "main"}}
 
 <section class="post">
+	{{with .Post}}
 	<article class="post-links">
 		<h1 class="post-links__title">{{.Title}}</h1>
 		<ul class="post-links__list">
@@ -22,6 +23,7 @@
 			</button>
 		</form>
 	</article>
+	{{end}}
 </section>
 
 {{end}}

@@ -31,13 +31,8 @@ func HandlePostRead(repo *repository.Repository) http.Handler {
 		data := page.PostData{
 			BaseData: util.TemplateBaseData(r, w),
 
-			ID:          post.ID(),
-			BlogID:      post.BlogID(),
-			Title:       post.Title(),
-			URL:         post.URL(),
-			PublishedAt: post.PublishedAt(),
+			Post: post,
 		}
-
 		util.Render(w, r, 200, func(w io.Writer) error {
 			return tmpl.Render(w, data)
 		})

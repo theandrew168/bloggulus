@@ -1,6 +1,7 @@
 {{define "main"}}
 
 <section class="blog">
+	{{with .Blog}}
 	<article class="blog-links">
 		<h1 class="blog-links__title">{{.Title}}</h1>
 		<ul class="blog-links__list">
@@ -22,6 +23,7 @@
 			</button>
 		</form>
 	</article>
+	{{end}}
 	<article class="blog-posts">
 		<h2 class="blog-posts__title">{{len .Posts}} Posts</h2>
 		<ul class="blog-posts__list">

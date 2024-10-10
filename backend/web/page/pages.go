@@ -9,32 +9,36 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
-//go:embed post.html
-var PostHTML string
+//go:embed pages.html
+var PagesHTML string
 
-type PostData struct {
+type PagesData struct {
 	layout.BaseData
 
-	Post *model.Post
+	Pages []*model.Page
 }
 
-type PostPage struct {
+type PagesPage struct {
 	tmpl *template.Template
 }
 
-func NewPost() *PostPage {
+func NewPages() *PagesPage {
 	sources := []string{
 		layout.BaseHTML,
-		PostHTML,
+		PagesHTML,
 	}
 
 	tmpl := newTemplate("default", sources)
-	page := PostPage{
+	page := PagesPage{
 		tmpl: tmpl,
 	}
 	return &page
 }
 
-func (p *PostPage) Render(w io.Writer, data PostData) error {
+func (p *PagesPage) Render(w io.Writer, data PagesData) error {
 	return p.tmpl.ExecuteTemplate(w, "default", data)
+}
+
+func (p *PagesPage) RenderPages(w io.Writer, data PagesData) error {
+	return p.tmpl.ExecuteTemplate(w, "pages", data)
 }

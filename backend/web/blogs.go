@@ -34,8 +34,6 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 
 		data := page.BlogsData{
 			BaseData: util.TemplateBaseData(r, w),
-
-			Account: account,
 		}
 		for _, blog := range blogs {
 			data.Blogs = append(data.Blogs, page.BlogsBlogData{
@@ -53,15 +51,15 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 
 func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, syncService *service.SyncService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			util.BadRequestResponse(w, r)
-			return
-		}
-
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			util.BadRequestResponse(w, r)
 			return
 		}
 
@@ -154,15 +152,15 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			util.BadRequestResponse(w, r)
-			return
-		}
-
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			util.BadRequestResponse(w, r)
 			return
 		}
 
@@ -222,15 +220,15 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			util.BadRequestResponse(w, r)
-			return
-		}
-
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
 			util.ForbiddenResponse(w, r)
+			return
+		}
+
+		err := r.ParseForm()
+		if err != nil {
+			util.BadRequestResponse(w, r)
 			return
 		}
 

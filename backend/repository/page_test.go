@@ -44,6 +44,19 @@ func TestPageRead(t *testing.T) {
 	test.AssertEqual(t, got.ID(), page.ID())
 }
 
+func TestPageReadByURL(t *testing.T) {
+	t.Parallel()
+
+	repo, closer := test.NewRepository(t)
+	defer closer()
+
+	page := test.CreatePage(t, repo)
+	got, err := repo.Page().ReadByURL(page.URL())
+	test.AssertNilError(t, err)
+
+	test.AssertEqual(t, got.ID(), page.ID())
+}
+
 func TestPageListByAccount(t *testing.T) {
 	t.Parallel()
 

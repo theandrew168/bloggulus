@@ -10,24 +10,24 @@ import (
 )
 
 type Account struct {
-	id       uuid.UUID
-	username string
-	isAdmin  bool
+	id      uuid.UUID
+	email   string
+	isAdmin bool
 
 	createdAt time.Time
 	updatedAt time.Time
 }
 
-func NewAccount(username string) (*Account, error) {
-	if username == "" {
-		return nil, fmt.Errorf("account: invalid username")
+func NewAccount(email string) (*Account, error) {
+	if email == "" {
+		return nil, fmt.Errorf("account: invalid email")
 	}
 
 	now := timeutil.Now()
 	account := Account{
-		id:       uuid.New(),
-		username: username,
-		isAdmin:  false,
+		id:      uuid.New(),
+		email:   email,
+		isAdmin: false,
 
 		createdAt: now,
 		updatedAt: now,
@@ -35,11 +35,11 @@ func NewAccount(username string) (*Account, error) {
 	return &account, nil
 }
 
-func LoadAccount(id uuid.UUID, username string, isAdmin bool, createdAt, updatedAt time.Time) *Account {
+func LoadAccount(id uuid.UUID, email string, isAdmin bool, createdAt, updatedAt time.Time) *Account {
 	account := Account{
-		id:       id,
-		username: username,
-		isAdmin:  isAdmin,
+		id:      id,
+		email:   email,
+		isAdmin: isAdmin,
 
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -51,8 +51,8 @@ func (a *Account) ID() uuid.UUID {
 	return a.id
 }
 
-func (a *Account) Username() string {
-	return a.username
+func (a *Account) Email() string {
+	return a.email
 }
 
 func (a *Account) IsAdmin() bool {

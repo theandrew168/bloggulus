@@ -88,7 +88,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 
 			slog.Info("page followed",
 				"account_id", account.ID(),
-				"account_username", account.Username(),
+				"account_email", account.Email(),
 				"page_id", page.ID(),
 				"page_url", page.URL(),
 				"page_title", page.Title(),
@@ -131,7 +131,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 
 			slog.Info("page added",
 				"account_id", account.ID(),
-				"account_username", account.Username(),
+				"account_email", account.Email(),
 				"page_id", page.ID(),
 				"page_url", page.URL(),
 				"page_title", page.Title(),
@@ -148,7 +148,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 
 			slog.Info("page followed",
 				"account_id", account.ID(),
-				"account_username", account.Username(),
+				"account_email", account.Email(),
 				"page_id", page.ID(),
 				"page_url", page.URL(),
 				"page_title", page.Title(),
@@ -208,7 +208,7 @@ func HandlePageUnfollowForm(repo *repository.Repository) http.Handler {
 
 		slog.Info("page unfollowed",
 			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_email", account.Email(),
 			"page_id", existingPage.ID(),
 			"page_url", existingPage.URL(),
 			"page_title", existingPage.Title(),

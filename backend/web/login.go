@@ -110,7 +110,7 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 			return
 		}
 
-		account, err := repo.Account().ReadByUsername(user.Email)
+		account, err := repo.Account().ReadByEmail(user.Email)
 		if err != nil {
 			if !errors.Is(err, postgres.ErrNotFound) {
 				util.InternalServerErrorResponse(w, r, err)

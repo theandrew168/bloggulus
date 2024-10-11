@@ -59,7 +59,7 @@ func HandleAccountDeleteForm(repo *repository.Repository) http.Handler {
 
 		slog.Info("account deleted",
 			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_email", account.Email(),
 		)
 
 		// Redirect back to the accounts page.

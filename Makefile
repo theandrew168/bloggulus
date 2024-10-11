@@ -18,10 +18,6 @@ migrate:
 	go run main.go -conf bloggulus.conf -migrate
 	go run main.go -conf bloggulus.test.conf -migrate
 
-.PHONY: seed
-seed: migrate
-	psql -h localhost -U postgres -f scripts/seed.sql
-
 .PHONY: test
 test: migrate
 	go test -count=1 -shuffle=on -race -vet=all -failfast ./...

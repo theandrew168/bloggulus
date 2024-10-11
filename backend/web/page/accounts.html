@@ -7,7 +7,7 @@
 	<ul class="accounts-list" id="accounts">
 		{{range .Accounts}}
 		<li class="accounts-list__item">
-			<p>{{.Username}}</p>
+			<p>{{.Email}}</p>
 
 			<form method="POST" action="/accounts/{{.ID}}/delete">
 				<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />

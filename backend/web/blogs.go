@@ -74,7 +74,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 				slog.Error("error following blog",
 					"error", err.Error(),
 					"account_id", account.ID(),
-					"account_email", account.Email(),
+					"account_username", account.Username(),
 					"blog_id", blog.ID(),
 					"blog_title", blog.Title(),
 				)
@@ -83,7 +83,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 			slog.Info("blog followed",
 				"account_id", account.ID(),
-				"account_email", account.Email(),
+				"account_username", account.Username(),
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
@@ -116,7 +116,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 			slog.Info("blog added",
 				"account_id", account.ID(),
-				"account_email", account.Email(),
+				"account_username", account.Username(),
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
@@ -126,7 +126,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 				slog.Error("error following blog",
 					"error", err.Error(),
 					"account_id", account.ID(),
-					"account_email", account.Email(),
+					"account_username", account.Username(),
 					"blog_id", blog.ID(),
 					"blog_title", blog.Title(),
 				)
@@ -135,7 +135,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 			slog.Info("blog followed",
 				"account_id", account.ID(),
-				"account_email", account.Email(),
+				"account_username", account.Username(),
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
@@ -190,7 +190,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 
 		slog.Info("blog followed",
 			"account_id", account.ID(),
-			"account_email", account.Email(),
+			"account_username", account.Username(),
 			"blog_id", blog.ID(),
 			"blog_title", blog.Title(),
 		)
@@ -258,7 +258,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 
 		slog.Info("blog unfollowed",
 			"account_id", account.ID(),
-			"account_email", account.Email(),
+			"account_username", account.Username(),
 			"blog_id", blog.ID(),
 			"blog_title", blog.Title(),
 		)

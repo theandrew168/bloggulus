@@ -15,7 +15,7 @@ import (
 
 type dbAccount struct {
 	ID        uuid.UUID `db:"id"`
-	Email     string    `db:"email"`
+	Username  string    `db:"username"`
 	IsAdmin   bool      `db:"is_admin"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
@@ -24,7 +24,7 @@ type dbAccount struct {
 func marshalAccount(account *model.Account) (dbAccount, error) {
 	a := dbAccount{
 		ID:        account.ID(),
-		Email:     account.Email(),
+		Username:  account.Username(),
 		IsAdmin:   account.IsAdmin(),
 		CreatedAt: account.CreatedAt(),
 		UpdatedAt: account.UpdatedAt(),
@@ -35,7 +35,7 @@ func marshalAccount(account *model.Account) (dbAccount, error) {
 func (a dbAccount) unmarshal() (*model.Account, error) {
 	account := model.LoadAccount(
 		a.ID,
-		a.Email,
+		a.Username,
 		a.IsAdmin,
 		a.CreatedAt,
 		a.UpdatedAt,
@@ -57,7 +57,7 @@ func NewAccountRepository(conn postgres.Conn) *AccountRepository {
 func (r *AccountRepository) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
-			(id, email, created_at, updated_at)
+			(id, username, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4)`
 
@@ -68,7 +68,7 @@ func (r *AccountRepository) Create(account *model.Account) error {
 
 	args := []any{
 		row.ID,
-		row.Email,
+		row.Username,
 		row.CreatedAt,
 		row.UpdatedAt,
 	}
@@ -88,7 +88,7 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
-			account.email,
+			account.username,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
@@ -111,21 +111,21 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) ReadByEmail(email string) (*model.Account, error) {
+func (r *AccountRepository) ReadByUsername(username string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
-			account.email,
+			account.username,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
 		FROM account
-		WHERE account.email = $1`
+		WHERE account.username = $1`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := r.conn.Query(ctx, stmt, email)
+	rows, err := r.conn.Query(ctx, stmt, username)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 	stmt := `
 		SELECT
 			account.id,
-			account.email,
+			account.username,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
@@ -174,7 +174,7 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
-			account.email,
+			account.username,
 			account.is_admin,
 			account.created_at,
 			account.updated_at

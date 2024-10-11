@@ -57,7 +57,7 @@ func TestAccountReadByEmail(t *testing.T) {
 	test.AssertEqual(t, got.ID(), account.ID())
 }
 
-func TestAccountReadBySessionIDn(t *testing.T) {
+func TestAccountReadBySessionID(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)

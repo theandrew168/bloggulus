@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/theandrew168/bloggulus/backend/web/layout"
+	"golang.org/x/oauth2"
 )
 
 //go:embed login.html
@@ -14,9 +15,8 @@ var LoginHTML string
 type LoginData struct {
 	layout.BaseData
 
-	NextPath string
-	Username string
-	Errors   map[string]string
+	GithubConf *oauth2.Config
+	Errors     map[string]string
 }
 
 type LoginPage struct {

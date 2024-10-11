@@ -44,15 +44,13 @@ func NewTag(t *testing.T) *model.Tag {
 	return tag
 }
 
-func NewAccount(t *testing.T) (*model.Account, string) {
-	password := RandomString(32)
+func NewAccount(t *testing.T) *model.Account {
 	account, err := model.NewAccount(
 		RandomString(32),
-		password,
 	)
 	AssertNilError(t, err)
 
-	return account, password
+	return account
 }
 
 func NewSession(t *testing.T, account *model.Account) (*model.Session, string) {
@@ -120,17 +118,17 @@ func CreateTag(t *testing.T, repo *repository.Repository) *model.Tag {
 }
 
 // mocks an account and creates it in the database
-func CreateAccount(t *testing.T, repo *repository.Repository) (*model.Account, string) {
+func CreateAccount(t *testing.T, repo *repository.Repository) *model.Account {
 	t.Helper()
 
 	// generate some random account data
-	account, password := NewAccount(t)
+	account := NewAccount(t)
 
 	// create an example account
 	err := repo.Account().Create(account)
 	AssertNilError(t, err)
 
-	return account, password
+	return account
 }
 
 // mocks a session and creates it in the database

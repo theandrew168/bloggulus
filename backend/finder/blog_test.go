@@ -15,7 +15,7 @@ func TestListBlogsForAccount(t *testing.T) {
 	find, findCloser := test.NewFinder(t)
 	defer findCloser()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 
 	// Create and follow a blog.
 	blog := test.CreateBlog(t, repo)

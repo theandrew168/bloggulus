@@ -13,7 +13,7 @@ func TestAccountPageCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	page := test.CreatePage(t, repo)
 
 	err := repo.AccountPage().Create(account, page)
@@ -26,7 +26,7 @@ func TestAccountPageCreateAlreadyExists(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	page := test.CreatePage(t, repo)
 
 	err := repo.AccountPage().Create(account, page)
@@ -42,7 +42,7 @@ func TestAccountPageDelete(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	page := test.CreatePage(t, repo)
 
 	err := repo.AccountPage().Create(account, page)
@@ -58,7 +58,7 @@ func TestAccountPageDeleteDoesNotExist(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.NewAccount(t)
+	account := test.NewAccount(t)
 	page := test.CreatePage(t, repo)
 
 	err := repo.AccountPage().Delete(account, page)

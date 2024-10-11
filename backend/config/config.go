@@ -13,31 +13,23 @@ const (
 )
 
 type Config struct {
-	DatabaseURI string `toml:"database_uri"`
-	Port        string `toml:"port"`
+	DatabaseURI        string `toml:"database_uri"`
+	Port               string `toml:"port"`
+	GithubClientID     string `toml:"github_client_id"`
+	GithubClientSecret string `toml:"github_client_secret"`
 }
 
 func Read(data string) (Config, error) {
-	var cfg Config
-	meta, err := toml.Decode(data, &cfg)
+	// Initialize config with default values.
+	conf := Config{
+		Port: DefaultPort,
+	}
+	meta, err := toml.Decode(data, &conf)
 	if err != nil {
 		return Config{}, err
 	}
 
-	// gather extra values
-	extra := []string{}
-	for _, keys := range meta.Undecoded() {
-		key := keys[0]
-		extra = append(extra, key)
-	}
-
-	// error upon extra values
-	if len(extra) > 0 {
-		msg := strings.Join(extra, ", ")
-		return Config{}, fmt.Errorf("extra config values: %s", msg)
-	}
-
-	// build set of present config keys
+	// Build set of present config keys.
 	present := make(map[string]bool)
 	for _, keys := range meta.Keys() {
 		key := keys[0]
@@ -48,7 +40,7 @@ func Read(data string) (Config, error) {
 		"database_uri",
 	}
 
-	// gather missing values
+	// Gather any missing values.
 	missing := []string{}
 	for _, key := range required {
 		if _, ok := present[key]; !ok {
@@ -56,18 +48,13 @@ func Read(data string) (Config, error) {
 		}
 	}
 
-	// error upon missing values
+	// Error upon missing values
 	if len(missing) > 0 {
 		msg := strings.Join(missing, ", ")
 		return Config{}, fmt.Errorf("missing config values: %s", msg)
 	}
 
-	// handle defaults
-	if cfg.Port == "" {
-		cfg.Port = DefaultPort
-	}
-
-	return cfg, nil
+	return conf, nil
 }
 
 func ReadFile(path string) (Config, error) {

@@ -5,7 +5,10 @@ import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 
+	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -38,12 +41,20 @@ import (
 
 func Handler(
 	public fs.FS,
+	conf config.Config,
 	repo *repository.Repository,
 	find *finder.Finder,
 	pageFetcher fetch.PageFetcher,
 	syncService *service.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
+
+	githubConf := oauth2.Config{
+		ClientID:     conf.GithubClientID,
+		ClientSecret: conf.GithubClientSecret,
+		Scopes:       []string{},
+		Endpoint:     github.Endpoint,
+	}
 
 	accountRequired := middleware.AccountRequired()
 	adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
@@ -71,10 +82,9 @@ func Handler(
 	mux.Handle("GET /{$}", HandleIndexPage(find))
 
 	// Authenication routes.
-	mux.Handle("GET /register", HandleRegisterPage())
-	mux.Handle("POST /register", HandleRegisterForm(repo))
-	mux.Handle("GET /login", HandleLoginPage())
-	mux.Handle("POST /login", HandleLoginForm(repo))
+	mux.Handle("GET /login", HandleLogin())
+	mux.Handle("GET /github/login", HandleGithubLogin(&githubConf))
+	mux.Handle("GET /github/callback", HandleGithubCallback(&githubConf, repo))
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
 	// Public blog routes.

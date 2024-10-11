@@ -6,9 +6,13 @@ import (
 )
 
 var (
+	// Permanents cookies.
 	SessionCookieName = "bloggulus_session"
 	SessionCookieTTL  = 7 * 24 * time.Hour
 
+	// Session cookies.
+	NextCookieName  = "bloggulus_next"
+	StateCookieName = "bloggulus_state"
 	ToastCookieName = "bloggulus_toast"
 )
 

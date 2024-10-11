@@ -13,7 +13,7 @@ func TestAccountBlogCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
 	err := repo.AccountBlog().Create(account, blog)
@@ -26,7 +26,7 @@ func TestAccountBlogCreateAlreadyExists(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
 	err := repo.AccountBlog().Create(account, blog)
@@ -42,7 +42,7 @@ func TestAccountBlogDelete(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
 	err := repo.AccountBlog().Create(account, blog)
@@ -58,7 +58,7 @@ func TestAccountBlogDeleteDoesNotExist(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.NewAccount(t)
+	account := test.NewAccount(t)
 	blog := test.NewBlog(t)
 
 	err := repo.AccountBlog().Delete(account, blog)

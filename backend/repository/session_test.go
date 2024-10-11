@@ -16,7 +16,7 @@ func TestSessionCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.NewAccount(t)
+	account := test.NewAccount(t)
 	err := repo.Account().Create(account)
 	test.AssertNilError(t, err)
 
@@ -31,7 +31,7 @@ func TestSessionCreateAlreadyExists(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	session, _ := test.CreateSession(t, repo, account)
 
 	// attempt to create the same session again
@@ -45,7 +45,7 @@ func TestSessionRead(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	session, _ := test.CreateSession(t, repo, account)
 
 	got, err := repo.Session().Read(session.ID())
@@ -60,7 +60,7 @@ func TestSessionReadBySessionID(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	session, sessionID := test.CreateSession(t, repo, account)
 
 	got, err := repo.Session().ReadBySessionID(sessionID)
@@ -75,7 +75,7 @@ func TestSessionDelete(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	session, _ := test.CreateSession(t, repo, account)
 
 	err := repo.Session().Delete(session)
@@ -91,7 +91,7 @@ func TestSessionDeleteExpired(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 
 	sessionOld, _, err := model.NewSession(
 		account,

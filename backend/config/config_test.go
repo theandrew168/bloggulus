@@ -53,16 +53,3 @@ func TestRequired(t *testing.T) {
 	test.AssertErrorContains(t, err, "missing")
 	test.AssertErrorContains(t, err, "database_uri")
 }
-
-func TestExtra(t *testing.T) {
-	t.Parallel()
-
-	data := fmt.Sprintf(`
-		database_uri = "%s"
-		foo = "bar"
-	`, databaseURI)
-
-	_, err := config.Read(data)
-	test.AssertErrorContains(t, err, "extra")
-	test.AssertErrorContains(t, err, "foo")
-}

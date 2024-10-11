@@ -16,7 +16,7 @@ func TestClearExpiredSessions(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 
 	sessionOld, _, err := model.NewSession(
 		account,

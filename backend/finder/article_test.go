@@ -45,7 +45,7 @@ func TestListArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 	test.CreatePost(t, repo, unfollowedBlog)
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// List posts from blogs followed by this account.
@@ -144,7 +144,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 		test.AssertNilError(t, err)
 	}
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// List posts (from followed blogs) that relate to python.
@@ -194,7 +194,7 @@ func TestCountArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 	test.CreatePost(t, repo, unfollowedBlog)
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// We should only count the three posts associated with the followed blog.
@@ -289,7 +289,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 		test.AssertNilError(t, err)
 	}
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// Count posts (from followed blogs) that relate to python.

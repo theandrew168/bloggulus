@@ -63,7 +63,7 @@ func TestPageListByAccount(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	for i := 0; i < 3; i++ {
 		page := test.CreatePage(t, repo)
 		test.CreateAccountPage(t, repo, account, page)
@@ -83,7 +83,7 @@ func TestPageCountByAccount(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	for i := 0; i < 3; i++ {
 		page := test.CreatePage(t, repo)
 		test.CreateAccountPage(t, repo, account, page)

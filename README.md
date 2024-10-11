@@ -30,6 +30,12 @@ These containers can be stopped via:
 docker compose down
 ```
 
+### Configuration
+
+For authentication, this project relies on OAuth social logins (from GitHub and Google).
+When developing locally, you'll need to create a `bloggulus.local.conf` file that contains the necessary OAuth credentials (client ID and client secret for each service).
+If you need these credentials, feel free to reach out.
+
 ### Running
 
 Run the application (with automatic restarts via [wgo](https://github.com/bokwoon95/wgo)):

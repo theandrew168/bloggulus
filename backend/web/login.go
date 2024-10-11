@@ -1,6 +1,10 @@
 package web
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"io"
 	"log/slog"
@@ -11,9 +15,11 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
+
+	"golang.org/x/oauth2"
 )
 
-func HandleLoginPage() http.Handler {
+func HandleLogin() http.Handler {
 	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a "next" query param for post-auth redirecting.
@@ -22,10 +28,12 @@ func HandleLoginPage() http.Handler {
 			next = "/"
 		}
 
+		// Store "next" URL in a session cookie.
+		cookie := util.NewSessionCookie(util.NextCookieName, next)
+		http.SetCookie(w, &cookie)
+
 		data := page.LoginData{
 			BaseData: util.TemplateBaseData(r, w),
-
-			NextPath: next,
 		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)
@@ -33,85 +41,102 @@ func HandleLoginPage() http.Handler {
 	})
 }
 
-func HandleLoginForm(repo *repository.Repository) http.Handler {
-	tmpl := page.NewLogin()
+func HandleGithubLogin(conf *oauth2.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check for a "next" query param for post-auth redirecting.
-		next := r.URL.Query().Get("next")
-		if next == "" {
-			next = "/"
+		state, err := randString(16)
+		if err != nil {
+			panic(err)
 		}
 
-		// Parse the form data.
-		err := r.ParseForm()
+		cookie := util.NewSessionCookie(util.StateCookieName, state)
+		http.SetCookie(w, &cookie)
+
+		http.Redirect(w, r, conf.AuthCodeURL(state), http.StatusFound)
+	})
+}
+
+func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http.Handler {
+	// TODO: Replace the 400s with login page re-renders.
+	// tmpl := page.NewLogin()
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Clear out the state expiredStateCookie.
+		expiredStateCookie := util.NewExpiredCookie(util.StateCookieName)
+		http.SetCookie(w, &expiredStateCookie)
+
+		state, err := r.Cookie(util.StateCookieName)
 		if err != nil {
+			slog.Error("state not found")
 			util.BadRequestResponse(w, r)
 			return
 		}
 
-		// Pull out the expected form fields
-		username := r.PostForm.Get("username")
-		password := r.PostForm.Get("password")
-
-		// Validate the form values.
-		v := util.NewValidator()
-		v.CheckRequired("username", username)
-		v.CheckRequired("password", password)
-
-		// If the form isn't valid, re-render the template with existing input values.
-		if !v.IsValid() {
-			data := page.LoginData{
-				BaseData: util.TemplateBaseData(r, w),
-
-				NextPath: next,
-				Username: username,
-				Errors:   v,
-			}
-			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
-				return tmpl.Render(w, data)
-			})
+		if r.URL.Query().Get("state") != state.Value {
+			slog.Error("state did not match")
+			util.BadRequestResponse(w, r)
 			return
 		}
 
-		account, err := repo.Account().ReadByUsername(username)
+		code := r.URL.Query().Get("code")
+		token, err := conf.Exchange(context.Background(), code)
 		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				v.Add("username", "Invalid username or password")
-				v.Add("password", "Invalid username or password")
-				data := page.LoginData{
-					BaseData: util.TemplateBaseData(r, w),
+			slog.Error("failed to exchange code for access token", "error", err.Error())
+			util.BadRequestResponse(w, r)
+			return
+		}
 
-					NextPath: next,
-					Username: username,
-					Errors:   v,
-				}
-				util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
-					return tmpl.Render(w, data)
-				})
-			default:
+		client := conf.Client(context.Background(), token)
+		resp, err := client.Get("https://api.github.com/user")
+		if err != nil {
+			slog.Error("failed to obtain user information", "error", err.Error())
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
+
+		type userinfo struct {
+			Email string `json:"email"`
+		}
+
+		var user userinfo
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			slog.Error("failed to parse user information", "error", err.Error())
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		account, err := repo.Account().ReadByUsername(user.Email)
+		if err != nil {
+			if !errors.Is(err, postgres.ErrNotFound) {
 				util.InternalServerErrorResponse(w, r, err)
+				return
 			}
-			return
+
+			// We need to create a new account at this point.
+			account, err = model.NewAccount(user.Email)
+			if err != nil {
+				util.InternalServerErrorResponse(w, r, err)
+				return
+			}
+
+			err = repo.Account().Create(account)
+			if err != nil {
+				slog.Error("failed create user account", "error", err.Error())
+				util.BadRequestResponse(w, r)
+				return
+			}
+
+			slog.Info("register",
+				"account_id", account.ID(),
+			)
 		}
 
-		ok := account.PasswordMatches(password)
-		if !ok {
-			v.Add("username", "Invalid username or password")
-			v.Add("password", "Invalid username or password")
-			data := page.LoginData{
-				BaseData: util.TemplateBaseData(r, w),
-
-				NextPath: next,
-				Username: username,
-				Errors:   v,
-			}
-			util.Render(w, r, http.StatusBadRequest, func(w io.Writer) error {
-				return tmpl.Render(w, data)
-			})
-			return
-		}
-
+		// Create a new session for the account.
 		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
@@ -125,15 +150,31 @@ func HandleLoginForm(repo *repository.Repository) http.Handler {
 		}
 
 		// Set a permanent cookie after login.
-		cookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
-		http.SetCookie(w, &cookie)
+		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
+		http.SetCookie(w, &sessionCookie)
 
 		slog.Info("login",
 			"account_id", account.ID(),
-			"account_username", username,
 			"session_id", session.ID(),
 		)
 
-		http.Redirect(w, r, next, http.StatusSeeOther)
+		next := "/"
+		nextCookie, err := r.Cookie(util.NextCookieName)
+		if err == nil {
+			next = nextCookie.Value
+
+			expiredNextCookie := util.NewExpiredCookie(util.NextCookieName)
+			http.SetCookie(w, &expiredNextCookie)
+		}
+
+		http.Redirect(w, r, next, http.StatusFound)
 	})
+}
+
+func randString(n int) (string, error) {
+	buf := make([]byte, n)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
 }

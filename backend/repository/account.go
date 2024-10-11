@@ -14,22 +14,20 @@ import (
 )
 
 type dbAccount struct {
-	ID           uuid.UUID `db:"id"`
-	Username     string    `db:"username"`
-	PasswordHash string    `db:"password_hash"`
-	IsAdmin      bool      `db:"is_admin"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
+	ID        uuid.UUID `db:"id"`
+	Username  string    `db:"username"`
+	IsAdmin   bool      `db:"is_admin"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
 	a := dbAccount{
-		ID:           account.ID(),
-		Username:     account.Username(),
-		PasswordHash: account.PasswordHash(),
-		IsAdmin:      account.IsAdmin(),
-		CreatedAt:    account.CreatedAt(),
-		UpdatedAt:    account.UpdatedAt(),
+		ID:        account.ID(),
+		Username:  account.Username(),
+		IsAdmin:   account.IsAdmin(),
+		CreatedAt: account.CreatedAt(),
+		UpdatedAt: account.UpdatedAt(),
 	}
 	return a, nil
 }
@@ -38,7 +36,6 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 	account := model.LoadAccount(
 		a.ID,
 		a.Username,
-		a.PasswordHash,
 		a.IsAdmin,
 		a.CreatedAt,
 		a.UpdatedAt,
@@ -60,9 +57,9 @@ func NewAccountRepository(conn postgres.Conn) *AccountRepository {
 func (r *AccountRepository) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
-			(id, username, password_hash, created_at, updated_at)
+			(id, username, created_at, updated_at)
 		VALUES
-			($1, $2, $3, $4, $5)`
+			($1, $2, $3, $4)`
 
 	row, err := marshalAccount(account)
 	if err != nil {
@@ -72,7 +69,6 @@ func (r *AccountRepository) Create(account *model.Account) error {
 	args := []any{
 		row.ID,
 		row.Username,
-		row.PasswordHash,
 		row.CreatedAt,
 		row.UpdatedAt,
 	}
@@ -93,7 +89,6 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 		SELECT
 			account.id,
 			account.username,
-			account.password_hash,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
@@ -121,7 +116,6 @@ func (r *AccountRepository) ReadByUsername(username string) (*model.Account, err
 		SELECT
 			account.id,
 			account.username,
-			account.password_hash,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
@@ -149,7 +143,6 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 		SELECT
 			account.id,
 			account.username,
-			account.password_hash,
 			account.is_admin,
 			account.created_at,
 			account.updated_at
@@ -182,7 +175,6 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 		SELECT
 			account.id,
 			account.username,
-			account.password_hash,
 			account.is_admin,
 			account.created_at,
 			account.updated_at

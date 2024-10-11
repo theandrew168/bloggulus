@@ -4,6 +4,9 @@ bloggulus
 dist/
 tmp/
 
+# Local dev config
+bloggulus.local.conf
+
 # Apple files
 .DS_Store
 

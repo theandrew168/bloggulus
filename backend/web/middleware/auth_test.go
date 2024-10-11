@@ -17,7 +17,7 @@ func TestAuthenticate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	_, sessionID := test.CreateSession(t, repo, account)
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 
@@ -86,7 +86,7 @@ func TestAccountRequired(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	_, sessionID := test.CreateSession(t, repo, account)
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 
@@ -191,7 +191,7 @@ func TestAdminRequired(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	_, sessionID := test.CreateSession(t, repo, account)
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 
@@ -279,7 +279,7 @@ func TestAdminRequiredNotAdmin(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account, _ := test.CreateAccount(t, repo)
+	account := test.CreateAccount(t, repo)
 	_, sessionID := test.CreateSession(t, repo, account)
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
 

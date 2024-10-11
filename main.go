@@ -43,20 +43,20 @@ func main() {
 
 func run() error {
 	// Check for the config file path flag.
-	conf := flag.String("conf", "bloggulus.conf", "app config file")
+	configFilePath := flag.String("conf", "bloggulus.conf", "app config file")
 
 	// Check for any specific action flags.
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")
 	flag.Parse()
 
 	// Load the application's config file.
-	cfg, err := config.ReadFile(*conf)
+	conf, err := config.ReadFile(*configFilePath)
 	if err != nil {
 		return err
 	}
 
 	// Open a database connection pool.
-	pool, err := postgres.ConnectPool(cfg.DatabaseURI)
+	pool, err := postgres.ConnectPool(conf.DatabaseURI)
 	if err != nil {
 		return err
 	}
@@ -98,10 +98,10 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, repo, find, pageFetcher, syncService)
+	webHandler := web.Handler(publicFS, conf, repo, find, pageFetcher, syncService)
 
 	// Let the web server port be overridden by an env var.
-	port := cfg.Port
+	port := conf.Port
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}

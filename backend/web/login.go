@@ -98,6 +98,9 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 			return
 		}
 
+		// TODO: Combine the provider and ID to create a unique identifier across
+		// all OAuth services (like "github_123456" or "google_123456"). Then, hash
+		// that ID before using as the account's username.
 		type userinfo struct {
 			Email string `json:"email"`
 		}

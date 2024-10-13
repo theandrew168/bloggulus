@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -113,8 +114,11 @@ func HandleLogin() http.Handler {
 		cookie := util.NewSessionCookie(util.NextCookieName, next)
 		http.SetCookie(w, &cookie)
 
+		isDebug := os.Getenv("DEBUG") != ""
 		data := page.LoginData{
 			BaseData: util.TemplateBaseData(r, w),
+
+			IsDebug: isDebug,
 		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)

@@ -6,6 +6,7 @@
 
 		<hr />
 
+		{{if .IsDebug}}
 		<form method="POST" action="/debug/signin">
 			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 			<button class="login__button" type="submit">
@@ -16,6 +17,7 @@
 			<p class="login__error">{{.}}</p>
 			{{end}}
 		</form>
+		{{end}}
 
 		<a class="login__button" href="/github/signin">
 			<img class="login__icon" src="/img/github.png" />

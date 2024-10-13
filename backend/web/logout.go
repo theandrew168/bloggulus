@@ -9,7 +9,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleLogoutForm(repo *repository.Repository) http.Handler {
+func HandleSignOutForm(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a session ID. If there isn't one, just redirect back home.
 		sessionID, err := r.Cookie(util.SessionCookieName)

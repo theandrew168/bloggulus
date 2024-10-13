@@ -298,14 +298,14 @@ svg {
 
 
 
-.login {
+.signin {
 	height: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.login__card {
+.signin__card {
 	background-color: var(--color-white);
 	padding: 2rem;
 	box-shadow: var(--shadow);
@@ -315,12 +315,12 @@ svg {
 	gap: 1.5rem;
 }
 
-.login__heading {
+.signin__heading {
 	text-align: center;
 	font-weight: 500;
 }
 
-.login__button {
+.signin__button {
 	color: var(--color-dark);
 	background-color: var(--color-white);
 	font-size: 1rem;
@@ -336,17 +336,17 @@ svg {
 	gap: 0.5rem;
 }
 
-.login__button:hover {
+.signin__button:hover {
 	background-color: var(--color-gray);
 	cursor: pointer;
 }
 
-.login__icon {
+.signin__icon {
 	max-width: 24px;
 	max-height: 24px;
 }
 
-.login__error {
+.signin__error {
 	font-size: 0.75rem;
 	color: red;
 	margin-top: 0.25rem;

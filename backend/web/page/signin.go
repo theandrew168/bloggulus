@@ -9,10 +9,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-//go:embed login.html
-var LoginHTML string
+//go:embed signin.html
+var SignInHTML string
 
-type LoginData struct {
+type SignInData struct {
 	layout.BaseData
 
 	GithubConf *oauth2.Config
@@ -21,23 +21,23 @@ type LoginData struct {
 	EnableDebugAuth bool
 }
 
-type LoginPage struct {
+type SignInPage struct {
 	tmpl *template.Template
 }
 
-func NewLogin() *LoginPage {
+func NewSignIn() *SignInPage {
 	sources := []string{
 		layout.BaseHTML,
-		LoginHTML,
+		SignInHTML,
 	}
 
 	tmpl := newTemplate("default", sources)
-	page := LoginPage{
+	page := SignInPage{
 		tmpl: tmpl,
 	}
 	return &page
 }
 
-func (p *LoginPage) Render(w io.Writer, data LoginData) error {
+func (p *SignInPage) Render(w io.Writer, data SignInData) error {
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

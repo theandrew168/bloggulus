@@ -100,8 +100,8 @@ func FetchGoogleUserID(client *http.Client) (string, error) {
 	return username, nil
 }
 
-func HandleLogin(enableDebugAuth bool) http.Handler {
-	tmpl := page.NewLogin()
+func HandleSignIn(enableDebugAuth bool) http.Handler {
+	tmpl := page.NewSignIn()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a "next" query param for post-auth redirecting.
 		next := r.URL.Query().Get("next")
@@ -113,7 +113,7 @@ func HandleLogin(enableDebugAuth bool) http.Handler {
 		cookie := util.NewSessionCookie(util.NextCookieName, next)
 		http.SetCookie(w, &cookie)
 
-		data := page.LoginData{
+		data := page.SignInData{
 			BaseData: util.TemplateBaseData(r, w),
 
 			EnableDebugAuth: enableDebugAuth,
@@ -124,7 +124,7 @@ func HandleLogin(enableDebugAuth bool) http.Handler {
 	})
 }
 
-func HandleOAuthLogin(conf *oauth2.Config) http.Handler {
+func HandleOAuthSignIn(conf *oauth2.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		state, err := random.BytesBase64(16)
 		if err != nil {
@@ -139,8 +139,8 @@ func HandleOAuthLogin(conf *oauth2.Config) http.Handler {
 }
 
 func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetchUserID FetchUserID) http.Handler {
-	// TODO: Replace the 400s with login page re-renders.
-	// tmpl := page.NewLogin()
+	// TODO: Replace the 400s with sign in page re-renders.
+	// tmpl := page.NewSignIn()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Clear out the state expiredStateCookie.
 		expiredStateCookie := util.NewExpiredCookie(util.StateCookieName)
@@ -196,7 +196,7 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 				return
 			}
 
-			slog.Info("register",
+			slog.Info("account created",
 				"account_id", account.ID(),
 			)
 		}
@@ -214,11 +214,11 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 			return
 		}
 
-		// Set a permanent cookie after login.
+		// Set a permanent cookie after sign in.
 		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
 
-		slog.Info("login",
+		slog.Info("account signed in",
 			"account_id", account.ID(),
 			"session_id", session.ID(),
 		)
@@ -236,9 +236,9 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 	})
 }
 
-func HandleDebugLogin(repo *repository.Repository) http.Handler {
+func HandleDebugSignIn(repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Generate a random userID for the debug login.
+		// Generate a random userID for the debug sign in.
 		userID, err := random.BytesBase64(16)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
@@ -270,7 +270,7 @@ func HandleDebugLogin(repo *repository.Repository) http.Handler {
 				return
 			}
 
-			slog.Info("register",
+			slog.Info("account created",
 				"account_id", account.ID(),
 			)
 		}
@@ -288,11 +288,11 @@ func HandleDebugLogin(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		// Set a permanent cookie after login.
+		// Set a permanent cookie after sign in.
 		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
 
-		slog.Info("login",
+		slog.Info("account signed in",
 			"account_id", account.ID(),
 			"session_id", session.ID(),
 		)

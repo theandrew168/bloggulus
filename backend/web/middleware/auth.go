@@ -10,8 +10,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func loginRedirectURL(path string) *url.URL {
-	url, err := url.Parse("/login")
+func signInRedirectURL(path string) *url.URL {
+	url, err := url.Parse("/signin")
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +65,7 @@ func AccountRequired() Middleware {
 			// If the request context has no account, then the user is not logged in (redirect).
 			_, ok := util.GetContextAccount(r)
 			if !ok {
-				url := loginRedirectURL(r.URL.Path)
+				url := signInRedirectURL(r.URL.Path)
 				http.Redirect(w, r, url.String(), http.StatusSeeOther)
 				return
 			}
@@ -81,7 +81,7 @@ func AdminRequired() Middleware {
 			// If the request context has no account, then the user is not logged in (redirect).
 			account, ok := util.GetContextAccount(r)
 			if !ok {
-				url := loginRedirectURL(r.URL.Path)
+				url := signInRedirectURL(r.URL.Path)
 				http.Redirect(w, r, url.String(), http.StatusSeeOther)
 				return
 			}

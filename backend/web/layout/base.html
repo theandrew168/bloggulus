@@ -22,7 +22,7 @@
 				{{if .Account}}
 				<li><a class="header__link" href="/blogs">Blogs</a></li>
 				<li>
-					<form action="/logout" method="post">
+					<form action="/signout" method="post">
 						<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
 						<button class="header__link" type="submit">Sign out</button>
 					</form>

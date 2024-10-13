@@ -2,9 +2,7 @@ package web
 
 import (
 	"context"
-	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -14,6 +12,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -45,7 +44,7 @@ func HandleLogin() http.Handler {
 
 func HandleGithubLogin(conf *oauth2.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		state, err := randString(16)
+		state, err := random.BytesBase64(16)
 		if err != nil {
 			panic(err)
 		}
@@ -185,13 +184,4 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 
 		http.Redirect(w, r, next, http.StatusFound)
 	})
-}
-
-// TODO: Make this a shared util since model.Session uses it.
-func randString(n int) (string, error) {
-	buf := make([]byte, n)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(buf), nil
 }

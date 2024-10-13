@@ -1,13 +1,13 @@
 package model
 
 import (
-	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
@@ -23,14 +23,7 @@ type Session struct {
 
 // Generate a random, crypto-safe session ID.
 func GenerateSessionID() (string, error) {
-	b := make([]byte, 32)
-
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.RawURLEncoding.EncodeToString(b), nil
+	return random.BytesBase64(32)
 }
 
 func NewSession(account *Account, ttl time.Duration) (*Session, string, error) {

@@ -51,6 +51,7 @@ make run-local
 ```
 
 Otherwise, you can simply run the application normally (without OAuth configured) and use the local-only debug login.
+This is enabled when `ENABLE_DEBUG_AUTH` is set (which the already Makefile includes for `run` and `run-local`).
 
 ### Testing
 

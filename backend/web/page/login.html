@@ -6,7 +6,7 @@
 
 		<hr />
 
-		{{if .IsDebug}}
+		{{if .EnableDebugAuth}}
 		<form method="POST" action="/debug/signin">
 			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 			<button class="login__button" type="submit">

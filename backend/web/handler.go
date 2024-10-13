@@ -92,8 +92,11 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(find))
 
+	// Check if the debug auth method should be enabled.
+	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
+
 	// Authenication routes.
-	mux.Handle("GET /signin", HandleLogin())
+	mux.Handle("GET /signin", HandleLogin(enableDebugAuth))
 	mux.Handle("GET /github/signin", HandleOAuthLogin(&githubConf))
 	mux.Handle("GET /github/callback", HandleOAuthCallback(&githubConf, repo, FetchGithubUserID))
 	mux.Handle("GET /google/signin", HandleOAuthLogin(&googleConf))
@@ -101,7 +104,7 @@ func Handler(
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
 	// Debug-only auth routes.
-	if os.Getenv("DEBUG") != "" {
+	if enableDebugAuth {
 		mux.Handle("POST /debug/signin", HandleDebugLogin(repo))
 	}
 

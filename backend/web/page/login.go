@@ -15,9 +15,10 @@ var LoginHTML string
 type LoginData struct {
 	layout.BaseData
 
-	IsDebug    bool
 	GithubConf *oauth2.Config
 	Errors     map[string]string
+
+	EnableDebugAuth bool
 }
 
 type LoginPage struct {

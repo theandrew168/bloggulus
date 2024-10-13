@@ -9,7 +9,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"os"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -101,7 +100,7 @@ func FetchGoogleUserID(client *http.Client) (string, error) {
 	return username, nil
 }
 
-func HandleLogin() http.Handler {
+func HandleLogin(enableDebugAuth bool) http.Handler {
 	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a "next" query param for post-auth redirecting.
@@ -114,11 +113,10 @@ func HandleLogin() http.Handler {
 		cookie := util.NewSessionCookie(util.NextCookieName, next)
 		http.SetCookie(w, &cookie)
 
-		isDebug := os.Getenv("DEBUG") != ""
 		data := page.LoginData{
 			BaseData: util.TemplateBaseData(r, w),
 
-			IsDebug: isDebug,
+			EnableDebugAuth: enableDebugAuth,
 		}
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return tmpl.Render(w, data)

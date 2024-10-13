@@ -3,7 +3,9 @@ package web
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -98,11 +100,11 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 			return
 		}
 
-		// TODO: Combine the provider and ID to create a unique identifier across
-		// all OAuth services (like "github_123456" or "google_123456"). Then, hash
+		// Combine the provider and ID to create a unique identifier across all
+		// OAuth services (like "github_123456" or "google_123456"). Then, hash
 		// that ID before using as the account's username.
 		type userinfo struct {
-			Email string `json:"email"`
+			ID json.Number `json:"id"`
 		}
 
 		var user userinfo
@@ -113,7 +115,18 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 			return
 		}
 
-		account, err := repo.Account().ReadByUsername(user.Email)
+		userID := user.ID.String()
+		if userID == "" {
+			slog.Error("failed to obtain user information")
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		userID = "bloggulus_github_" + userID
+		userIDHash := sha256.Sum256([]byte(userID))
+		username := hex.EncodeToString(userIDHash[:])
+
+		account, err := repo.Account().ReadByUsername(username)
 		if err != nil {
 			if !errors.Is(err, postgres.ErrNotFound) {
 				util.InternalServerErrorResponse(w, r, err)
@@ -121,7 +134,7 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 			}
 
 			// We need to create a new account at this point.
-			account, err = model.NewAccount(user.Email)
+			account, err = model.NewAccount(username)
 			if err != nil {
 				util.InternalServerErrorResponse(w, r, err)
 				return
@@ -174,6 +187,7 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 	})
 }
 
+// TODO: Make this a shared util since model.Session uses it.
 func randString(n int) (string, error) {
 	buf := make([]byte, n)
 	if _, err := rand.Read(buf); err != nil {

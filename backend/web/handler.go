@@ -51,17 +51,18 @@ func Handler(
 	mux := http.NewServeMux()
 
 	githubConf := oauth2.Config{
+		Endpoint:     github.Endpoint,
 		ClientID:     conf.GithubClientID,
 		ClientSecret: conf.GithubClientSecret,
+		RedirectURL:  conf.GithubRedirectURI,
 		Scopes:       []string{},
-		Endpoint:     github.Endpoint,
 	}
 	googleConf := oauth2.Config{
+		Endpoint:     google.Endpoint,
 		ClientID:     conf.GoogleClientID,
 		ClientSecret: conf.GoogleClientSecret,
+		RedirectURL:  conf.GoogleRedirectURI,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
-		Endpoint:     google.Endpoint,
-		RedirectURL:  "http://127.0.0.1:5000/google/callback",
 	}
 
 	accountRequired := middleware.AccountRequired()

@@ -93,16 +93,16 @@ func Handler(
 	mux.Handle("GET /{$}", HandleIndexPage(find))
 
 	// Authenication routes.
-	mux.Handle("GET /login", HandleLogin())
-	mux.Handle("GET /github/login", HandleOAuthLogin(&githubConf))
+	mux.Handle("GET /signin", HandleLogin())
+	mux.Handle("GET /github/signin", HandleOAuthLogin(&githubConf))
 	mux.Handle("GET /github/callback", HandleOAuthCallback(&githubConf, repo, FetchGithubUserID))
-	mux.Handle("GET /google/login", HandleOAuthLogin(&googleConf))
+	mux.Handle("GET /google/signin", HandleOAuthLogin(&googleConf))
 	mux.Handle("GET /google/callback", HandleOAuthCallback(&googleConf, repo, FetchGoogleUserID))
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
 	// Debug-only auth routes.
 	if os.Getenv("DEBUG") != "" {
-		mux.Handle("POST /debug/login", HandleDebugLogin(repo))
+		mux.Handle("POST /debug/signin", HandleDebugLogin(repo))
 	}
 
 	// Public blog routes.

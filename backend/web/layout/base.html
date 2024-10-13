@@ -24,11 +24,11 @@
 				<li>
 					<form action="/logout" method="post">
 						<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
-						<button class="header__link" type="submit">Logout</button>
+						<button class="header__link" type="submit">Sign out</button>
 					</form>
 				</li>
 				{{else}}
-				<li><a class="header__link" href="/login">Login</a></li>
+				<li><a class="header__link" href="/signin">Sign in</a></li>
 				{{end}}
 			</ul>
 		</nav>

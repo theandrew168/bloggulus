@@ -233,3 +233,77 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 		http.Redirect(w, r, next, http.StatusFound)
 	})
 }
+
+func HandleDebugLogin(repo *repository.Repository) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Generate a random userID for the debug login.
+		userID, err := random.BytesBase64(16)
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
+
+		userID = "bloggulus_debug_" + userID
+		userIDHash := sha256.Sum256([]byte(userID))
+		username := hex.EncodeToString(userIDHash[:])
+
+		account, err := repo.Account().ReadByUsername(username)
+		if err != nil {
+			if !errors.Is(err, postgres.ErrNotFound) {
+				util.InternalServerErrorResponse(w, r, err)
+				return
+			}
+
+			// We need to create a new account at this point.
+			account, err = model.NewAccount(username)
+			if err != nil {
+				util.InternalServerErrorResponse(w, r, err)
+				return
+			}
+
+			err = repo.Account().Create(account)
+			if err != nil {
+				slog.Error("failed create user account", "error", err.Error())
+				util.BadRequestResponse(w, r)
+				return
+			}
+
+			slog.Info("register",
+				"account_id", account.ID(),
+			)
+		}
+
+		// Create a new session for the account.
+		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
+
+		err = repo.Session().Create(session)
+		if err != nil {
+			util.CreateErrorResponse(w, r, err)
+			return
+		}
+
+		// Set a permanent cookie after login.
+		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
+		http.SetCookie(w, &sessionCookie)
+
+		slog.Info("login",
+			"account_id", account.ID(),
+			"session_id", session.ID(),
+		)
+
+		next := "/"
+		nextCookie, err := r.Cookie(util.NextCookieName)
+		if err == nil {
+			next = nextCookie.Value
+
+			expiredNextCookie := util.NewExpiredCookie(util.NextCookieName)
+			http.SetCookie(w, &expiredNextCookie)
+		}
+
+		http.Redirect(w, r, next, http.StatusFound)
+	})
+}

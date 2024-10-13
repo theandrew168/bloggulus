@@ -6,6 +6,17 @@
 
 		<hr />
 
+		<form method="POST" action="/debug/login">
+			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+			<button class="login__button" type="submit">
+				<img class="login__icon" src="/img/bloggulus.png" />
+				Log in with Debug
+			</button>
+			{{with .Errors.google}}
+			<p class="login__error">{{.}}</p>
+			{{end}}
+		</form>
+
 		<a class="login__button" href="/github/login">
 			<img class="login__icon" src="/img/github.png" />
 			Log in with GitHub
@@ -13,6 +24,7 @@
 		{{with .Errors.github}}
 		<p class="login__error">{{.}}</p>
 		{{end}}
+
 		<a class="login__button" href="/google/login">
 			<img class="login__icon" src="/img/google.png" />
 			Log in with Google

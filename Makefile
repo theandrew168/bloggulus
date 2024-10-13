@@ -11,7 +11,12 @@ build:
 # use wgo to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
-	go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go -conf bloggulus.local.conf
+	DEBUG=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go
+
+# run the app using the local-only config file
+.PHONY: run-local
+run-local:
+	DEBUG=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go -conf bloggulus.local.conf
 
 .PHONY: migrate
 migrate:

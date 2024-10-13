@@ -3,6 +3,7 @@ package web
 import (
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/oauth2"
@@ -98,6 +99,11 @@ func Handler(
 	mux.Handle("GET /google/login", HandleOAuthLogin(&googleConf))
 	mux.Handle("GET /google/callback", HandleOAuthCallback(&googleConf, repo, FetchGoogleUserID))
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
+
+	// Debug-only auth routes.
+	if os.Getenv("DEBUG") != "" {
+		mux.Handle("POST /debug/login", HandleDebugLogin(repo))
+	}
 
 	// Public blog routes.
 	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))

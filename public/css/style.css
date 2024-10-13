@@ -322,6 +322,8 @@ svg {
 
 .login__button {
 	color: var(--color-dark);
+	background-color: var(--color-white);
+	font-size: 1rem;
 	font-weight: 500;
 
 	padding: 1rem;
@@ -336,6 +338,7 @@ svg {
 
 .login__button:hover {
 	background-color: var(--color-gray);
+	cursor: pointer;
 }
 
 .login__icon {

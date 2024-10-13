@@ -1,17 +1,25 @@
 {{define "main"}}
 
 <section class="login">
-	<article class="login__form">
+	<article class="login__card">
 		<h2 class="login__heading">Log in to Bloggulus</h2>
 
 		<hr />
 
-		<div class="login__field">
-			<a href="/github/login">Log in with GitHub</a>
-			{{with .Errors.github}}
-			<p class="login__error">{{.}}</p>
-			{{end}}
-		</div>
+		<a class="login__button" href="/github/login">
+			<img class="login__icon" src="/img/github.png" />
+			Log in with GitHub
+		</a>
+		{{with .Errors.github}}
+		<p class="login__error">{{.}}</p>
+		{{end}}
+		<a class="login__button" href="/google/login">
+			<img class="login__icon" src="/img/google.png" />
+			Log in with Google
+		</a>
+		{{with .Errors.google}}
+		<p class="login__error">{{.}}</p>
+		{{end}}
 	</article>
 </section>
 

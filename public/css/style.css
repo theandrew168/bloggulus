@@ -298,14 +298,14 @@ svg {
 
 
 
-.register, .login {
+.login {
 	height: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.register__form, .login__form {
+.login__card {
 	background-color: var(--color-white);
 	padding: 2rem;
 	box-shadow: var(--shadow);
@@ -315,18 +315,35 @@ svg {
 	gap: 1.5rem;
 }
 
-.register__heading, .login__heading {
+.login__heading {
 	text-align: center;
 	font-weight: 500;
 }
 
-.register__label, .login__label {
-	display: inline-block;
+.login__button {
+	color: var(--color-dark);
 	font-weight: 500;
-	margin-bottom: 0.5rem;
+
+	padding: 1rem;
+	text-decoration: none;
+	border: 1px solid var(--color-dark);
+	border-radius: 0.5rem;
+
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-.register__error, .login__error {
+.login__button:hover {
+	background-color: var(--color-gray);
+}
+
+.login__icon {
+	max-width: 24px;
+	max-height: 24px;
+}
+
+.login__error {
 	font-size: 0.75rem;
 	color: red;
 	margin-top: 0.25rem;

@@ -17,6 +17,8 @@ type Config struct {
 	Port               string `toml:"port"`
 	GithubClientID     string `toml:"github_client_id"`
 	GithubClientSecret string `toml:"github_client_secret"`
+	GoogleClientID     string `toml:"google_client_id"`
+	GoogleClientSecret string `toml:"google_client_secret"`
 }
 
 func Read(data string) (Config, error) {

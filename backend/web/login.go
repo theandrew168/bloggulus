@@ -20,6 +20,86 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type FetchUserID func(client *http.Client) (string, error)
+
+func FetchGithubUserID(client *http.Client) (string, error) {
+	resp, err := client.Get("https://api.github.com/user")
+	if err != nil {
+		slog.Error("failed to obtain user information", "error", err.Error())
+		return "", err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		slog.Error("failed to read user information", "error", err.Error())
+		return "", err
+	}
+
+	// Combine the provider and ID to create a unique identifier across all
+	// OAuth services (like "github_123456" or "google_123456"). Then, hash
+	// that ID before using as the account's username.
+	type userinfo struct {
+		ID json.Number `json:"id"`
+	}
+
+	var user userinfo
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		slog.Error("failed to parse user information", "error", err.Error())
+		return "", err
+	}
+
+	userID := user.ID.String()
+	if userID == "" {
+		slog.Error("failed to obtain user information")
+		return "", err
+	}
+
+	userID = "bloggulus_github_" + userID
+	userIDHash := sha256.Sum256([]byte(userID))
+	username := hex.EncodeToString(userIDHash[:])
+	return username, nil
+}
+
+func FetchGoogleUserID(client *http.Client) (string, error) {
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v1/userinfo")
+	if err != nil {
+		slog.Error("failed to obtain user information", "error", err.Error())
+		return "", err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		slog.Error("failed to read user information", "error", err.Error())
+		return "", err
+	}
+
+	// Combine the provider and ID to create a unique identifier across all
+	// OAuth services (like "github_123456" or "google_123456"). Then, hash
+	// that ID before using as the account's username.
+	type userinfo struct {
+		ID string `json:"id"`
+	}
+
+	var user userinfo
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		slog.Error("failed to parse user information", "error", err.Error())
+		return "", err
+	}
+
+	userID := user.ID
+	if userID == "" {
+		slog.Error("failed to obtain user information")
+		return "", err
+	}
+
+	userID = "bloggulus_google_" + userID
+	userIDHash := sha256.Sum256([]byte(userID))
+	username := hex.EncodeToString(userIDHash[:])
+	return username, nil
+}
+
 func HandleLogin() http.Handler {
 	tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +122,7 @@ func HandleLogin() http.Handler {
 	})
 }
 
-func HandleGithubLogin(conf *oauth2.Config) http.Handler {
+func HandleOAuthLogin(conf *oauth2.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		state, err := random.BytesBase64(16)
 		if err != nil {
@@ -56,7 +136,7 @@ func HandleGithubLogin(conf *oauth2.Config) http.Handler {
 	})
 }
 
-func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http.Handler {
+func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetchUserID FetchUserID) http.Handler {
 	// TODO: Replace the 400s with login page re-renders.
 	// tmpl := page.NewLogin()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -86,44 +166,12 @@ func HandleGithubCallback(conf *oauth2.Config, repo *repository.Repository) http
 		}
 
 		client := conf.Client(context.Background(), token)
-		resp, err := client.Get("https://api.github.com/user")
+		username, err := fetchUserID(client)
 		if err != nil {
-			slog.Error("failed to obtain user information", "error", err.Error())
+			slog.Error("failed to fetch user ID", "error", err.Error())
 			util.BadRequestResponse(w, r)
 			return
 		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			util.InternalServerErrorResponse(w, r, err)
-			return
-		}
-
-		// Combine the provider and ID to create a unique identifier across all
-		// OAuth services (like "github_123456" or "google_123456"). Then, hash
-		// that ID before using as the account's username.
-		type userinfo struct {
-			ID json.Number `json:"id"`
-		}
-
-		var user userinfo
-		err = json.Unmarshal(body, &user)
-		if err != nil {
-			slog.Error("failed to parse user information", "error", err.Error())
-			util.BadRequestResponse(w, r)
-			return
-		}
-
-		userID := user.ID.String()
-		if userID == "" {
-			slog.Error("failed to obtain user information")
-			util.BadRequestResponse(w, r)
-			return
-		}
-
-		userID = "bloggulus_github_" + userID
-		userIDHash := sha256.Sum256([]byte(userID))
-		username := hex.EncodeToString(userIDHash[:])
 
 		account, err := repo.Account().ReadByUsername(username)
 		if err != nil {

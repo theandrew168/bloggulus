@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	"golang.org/x/oauth2/google"
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/fetch"
@@ -55,6 +56,13 @@ func Handler(
 		Scopes:       []string{},
 		Endpoint:     github.Endpoint,
 	}
+	googleConf := oauth2.Config{
+		ClientID:     conf.GoogleClientID,
+		ClientSecret: conf.GoogleClientSecret,
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
+		Endpoint:     google.Endpoint,
+		RedirectURL:  "http://127.0.0.1:5000/google/callback",
+	}
 
 	accountRequired := middleware.AccountRequired()
 	adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
@@ -84,8 +92,10 @@ func Handler(
 
 	// Authenication routes.
 	mux.Handle("GET /login", HandleLogin())
-	mux.Handle("GET /github/login", HandleGithubLogin(&githubConf))
-	mux.Handle("GET /github/callback", HandleGithubCallback(&githubConf, repo))
+	mux.Handle("GET /github/login", HandleOAuthLogin(&githubConf))
+	mux.Handle("GET /github/callback", HandleOAuthCallback(&githubConf, repo, FetchGithubUserID))
+	mux.Handle("GET /google/login", HandleOAuthLogin(&googleConf))
+	mux.Handle("GET /google/callback", HandleOAuthCallback(&googleConf, repo, FetchGoogleUserID))
 	mux.Handle("POST /logout", HandleLogoutForm(repo))
 
 	// Public blog routes.

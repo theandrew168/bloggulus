@@ -92,6 +92,9 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(find))
 
+	// Documentation routes.
+	mux.Handle("GET /privacy", HandlePrivacyPolicy())
+
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
 	if enableDebugAuth {
@@ -127,6 +130,7 @@ func Handler(
 	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(repo)))
 	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(repo)))
 
+	// Debug endpoint for testing toasts.
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
 		http.SetCookie(w, &cookie)

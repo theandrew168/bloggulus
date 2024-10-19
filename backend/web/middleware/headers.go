@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func SecureHeaders() Middleware {
+func AddSecureHeaders() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Referrer-Policy", "origin-when-cross-origin")

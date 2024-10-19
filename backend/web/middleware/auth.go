@@ -59,7 +59,7 @@ func Authenticate(repo *repository.Repository) Middleware {
 	}
 }
 
-func AccountRequired() Middleware {
+func RequireAccount() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// If the request context has no account, then the user is not logged in (redirect).
@@ -75,7 +75,7 @@ func AccountRequired() Middleware {
 	}
 }
 
-func AdminRequired() Middleware {
+func RequireAdmin() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// If the request context has no account, then the user is not logged in (redirect).

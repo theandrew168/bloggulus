@@ -24,7 +24,7 @@ func TestUse(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.SecureHeaders(),
+		middleware.AddSecureHeaders(),
 		middleware.EnableCORS(),
 	)
 	h.ServeHTTP(w, r)
@@ -47,7 +47,7 @@ func TestChain(t *testing.T) {
 		test.AssertEqual(t, w.Header().Get("Access-Control-Allow-Origin"), "*")
 	})
 
-	chain := middleware.Chain(middleware.SecureHeaders(), middleware.EnableCORS())
+	chain := middleware.Chain(middleware.AddSecureHeaders(), middleware.EnableCORS())
 	h := chain(next)
 	h.ServeHTTP(w, r)
 

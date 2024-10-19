@@ -29,5 +29,10 @@ func TemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
 		http.SetCookie(w, &cookie)
 	}
 
+	conf, ok := GetContextConfig(r)
+	if ok && conf.PlausibleDataDomain != "" {
+		data.PlausibleDataDomain = conf.PlausibleDataDomain
+	}
+
 	return data
 }

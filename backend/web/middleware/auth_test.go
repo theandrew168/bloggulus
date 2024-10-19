@@ -80,7 +80,7 @@ func TestAuthenticateInvalidSession(t *testing.T) {
 	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }
 
-func TestAccountRequired(t *testing.T) {
+func TestRequireAccount(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -102,7 +102,7 @@ func TestAccountRequired(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
+		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -110,7 +110,7 @@ func TestAccountRequired(t *testing.T) {
 	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }
 
-func TestAccountRequiredNoSession(t *testing.T) {
+func TestRequireAccountNoSession(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -125,7 +125,7 @@ func TestAccountRequiredNoSession(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
+		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -134,7 +134,7 @@ func TestAccountRequiredNoSession(t *testing.T) {
 	test.AssertEqual(t, rr.Header.Get("Location"), "/signin?next=%2F")
 }
 
-func TestAccountRequiredInvalidSession(t *testing.T) {
+func TestRequireAccountInvalidSession(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -152,7 +152,7 @@ func TestAccountRequiredInvalidSession(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
+		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -161,7 +161,7 @@ func TestAccountRequiredInvalidSession(t *testing.T) {
 	test.AssertEqual(t, rr.Header.Get("Location"), "/signin?next=%2F")
 }
 
-func TestAccountRequiredRedirect(t *testing.T) {
+func TestRequireAccountRedirect(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -176,7 +176,7 @@ func TestAccountRequiredRedirect(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
+		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -185,7 +185,7 @@ func TestAccountRequiredRedirect(t *testing.T) {
 	test.AssertEqual(t, rr.Header.Get("Location"), "/signin?next=%2Ffoobar")
 }
 
-func TestAdminRequired(t *testing.T) {
+func TestRequireAdmin(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -211,8 +211,8 @@ func TestAdminRequired(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
-		middleware.AdminRequired(),
+		middleware.RequireAccount(),
+		middleware.RequireAdmin(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -220,7 +220,7 @@ func TestAdminRequired(t *testing.T) {
 	test.AssertEqual(t, rr.StatusCode, http.StatusOK)
 }
 
-func TestAdminRequiredNoSession(t *testing.T) {
+func TestRequireAdminNoSession(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -235,8 +235,8 @@ func TestAdminRequiredNoSession(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
-		middleware.AdminRequired(),
+		middleware.RequireAccount(),
+		middleware.RequireAdmin(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -245,7 +245,7 @@ func TestAdminRequiredNoSession(t *testing.T) {
 	test.AssertEqual(t, rr.Header.Get("Location"), "/signin?next=%2F")
 }
 
-func TestAdminRequiredInvalidSession(t *testing.T) {
+func TestRequireAdminInvalidSession(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -263,8 +263,8 @@ func TestAdminRequiredInvalidSession(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
-		middleware.AdminRequired(),
+		middleware.RequireAccount(),
+		middleware.RequireAdmin(),
 	)
 	h.ServeHTTP(w, r)
 
@@ -273,7 +273,7 @@ func TestAdminRequiredInvalidSession(t *testing.T) {
 	test.AssertEqual(t, rr.Header.Get("Location"), "/signin?next=%2F")
 }
 
-func TestAdminRequiredNotAdmin(t *testing.T) {
+func TestRequireAdminNotAdmin(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
@@ -293,8 +293,8 @@ func TestAdminRequiredNotAdmin(t *testing.T) {
 
 	h := middleware.Use(next,
 		middleware.Authenticate(repo),
-		middleware.AccountRequired(),
-		middleware.AdminRequired(),
+		middleware.RequireAccount(),
+		middleware.RequireAdmin(),
 	)
 	h.ServeHTTP(w, r)
 

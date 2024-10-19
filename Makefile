@@ -11,12 +11,12 @@ build:
 # use wgo to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
-	ENABLE_DEBUG_AUTH=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go
+	ENABLE_DEBUG_AUTH=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go
 
 # run the app using the local-only config file
 .PHONY: run-local
 run-local:
-	ENABLE_DEBUG_AUTH=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css main.go -conf bloggulus.local.conf
+	ENABLE_DEBUG_AUTH=1 go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go -conf bloggulus.local.conf
 
 .PHONY: migrate
 migrate:

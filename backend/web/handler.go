@@ -66,8 +66,8 @@ func Handler(
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
 	}
 
-	accountRequired := middleware.AccountRequired()
-	adminRequired := middleware.Chain(accountRequired, middleware.AdminRequired())
+	requireAccount := middleware.RequireAccount()
+	requireAdmin := middleware.Chain(requireAccount, middleware.RequireAdmin())
 
 	// Host prometheus metrics on "/metrics".
 	mux.Handle("GET /metrics", promhttp.Handler())
@@ -94,6 +94,9 @@ func Handler(
 
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
+	if enableDebugAuth {
+		mux.Handle("POST /debug/signin", HandleDebugSignIn(repo))
+	}
 
 	// Authenication routes.
 	mux.Handle("GET /signin", HandleSignIn(enableDebugAuth))
@@ -103,31 +106,26 @@ func Handler(
 	mux.Handle("GET /google/callback", HandleOAuthCallback(&googleConf, repo, FetchGoogleUserID))
 	mux.Handle("POST /signout", HandleSignOutForm(repo))
 
-	// Debug-only auth routes.
-	if enableDebugAuth {
-		mux.Handle("POST /debug/signin", HandleDebugSignIn(repo))
-	}
-
 	// Public blog routes.
-	mux.Handle("GET /blogs", accountRequired(HandleBlogList(find)))
-	mux.Handle("POST /blogs/create", accountRequired(HandleBlogCreateForm(repo, find, syncService)))
-	mux.Handle("POST /blogs/{blogID}/follow", accountRequired(HandleBlogFollowForm(repo, find)))
-	mux.Handle("POST /blogs/{blogID}/unfollow", accountRequired(HandleBlogUnfollowForm(repo, find)))
+	mux.Handle("GET /blogs", requireAccount(HandleBlogList(find)))
+	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, find, syncService)))
+	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo, find)))
+	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo, find)))
 
 	// Public page routes.
-	mux.Handle("GET /pages", accountRequired(HandlePageList(repo)))
-	mux.Handle("POST /pages/create", accountRequired(HandlePageCreateForm(repo, pageFetcher)))
-	mux.Handle("POST /pages/{pageID}/unfollow", accountRequired(HandlePageUnfollowForm(repo)))
+	mux.Handle("GET /pages", requireAccount(HandlePageList(repo)))
+	mux.Handle("POST /pages/create", requireAccount(HandlePageCreateForm(repo, pageFetcher)))
+	mux.Handle("POST /pages/{pageID}/unfollow", requireAccount(HandlePageUnfollowForm(repo)))
 
 	// Private (admin only) blog + post routes.
-	mux.Handle("GET /blogs/{blogID}", adminRequired(HandleBlogRead(repo)))
-	mux.Handle("POST /blogs/{blogID}/delete", adminRequired(HandleBlogDeleteForm(repo)))
-	mux.Handle("GET /blogs/{blogID}/posts/{postID}", adminRequired(HandlePostRead(repo)))
-	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", adminRequired(HandlePostDeleteForm(repo)))
+	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))
+	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(repo)))
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(repo)))
+	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(repo)))
 
 	// Private (admin only) account routes.
-	mux.Handle("GET /accounts", adminRequired(HandleAccountList(repo)))
-	mux.Handle("POST /accounts/{accountID}/delete", adminRequired(HandleAccountDeleteForm(repo)))
+	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(repo)))
+	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(repo)))
 
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
@@ -143,9 +141,10 @@ func Handler(
 	// Apply global middleware to all routes.
 	handler := middleware.Use(mux,
 		middleware.RecoverPanic(),
+		middleware.AddConfig(conf),
 		middleware.CompressFiles(),
 		middleware.PreventCSRF(),
-		middleware.SecureHeaders(),
+		middleware.AddSecureHeaders(),
 		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(repo),
 	)

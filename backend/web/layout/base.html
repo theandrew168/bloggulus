@@ -12,6 +12,9 @@
 	<link rel="stylesheet" href="/css/fonts.css" />
 	<link rel="stylesheet" href="/css/style.css" />
 	<script src="/js/htmx.min.js" defer></script>
+	{{with .PlausibleDataDomain}}
+	<script src="https://plausible.io/js/script.js" data-domain="{{.}}" defer></script>
+	{{end}}
 </head>
 
 <body class="sans-serif">

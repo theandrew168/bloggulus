@@ -9,7 +9,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 )
 
-func TestSecureHeaders(t *testing.T) {
+func TestAddSecureHeaders(t *testing.T) {
 	t.Parallel()
 
 	w := httptest.NewRecorder()
@@ -22,8 +22,8 @@ func TestSecureHeaders(t *testing.T) {
 		test.AssertEqual(t, w.Header().Get("X-XSS-Protection"), "0")
 	})
 
-	secureHeaders := middleware.SecureHeaders()
-	h := secureHeaders(next)
+	addSecureHeaders := middleware.AddSecureHeaders()
+	h := addSecureHeaders(next)
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()

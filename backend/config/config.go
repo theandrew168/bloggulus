@@ -14,6 +14,7 @@ const (
 
 type Config struct {
 	DatabaseURI         string `toml:"database_uri"`
+	SecretKey           string `toml:"secret_key"`
 	Port                string `toml:"port"`
 	GithubClientID      string `toml:"github_client_id"`
 	GithubClientSecret  string `toml:"github_client_secret"`
@@ -43,6 +44,7 @@ func Read(data string) (Config, error) {
 
 	required := []string{
 		"database_uri",
+		"secret_key",
 	}
 
 	// Gather any missing values.

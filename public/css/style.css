@@ -179,8 +179,11 @@ svg {
 	.footer__links {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-between;
 		align-items: center;
+	}
+
+	.footer__links li:last-child {
+		margin-left: auto;
 	}
 }
 
@@ -193,9 +196,13 @@ svg {
 	color: var(--color-light);
 }
 
-.footer__link--home {
+.footer__link--big {
 	font-size: 1.25rem;
 	font-weight: 500;
+}
+
+.footer__link--small {
+	font-size: 0.75rem;
 }
 
 

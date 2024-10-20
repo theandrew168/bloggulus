@@ -476,6 +476,7 @@ svg {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1rem;
+	color: var(--color-dark);
 }
 
 .privacy h1,

@@ -2,8 +2,6 @@ package web
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -55,10 +53,8 @@ func FetchGithubUserID(client *http.Client) (string, error) {
 		return "", err
 	}
 
-	userID = "bloggulus_github_" + userID
-	userIDHash := sha256.Sum256([]byte(userID))
-	username := hex.EncodeToString(userIDHash[:])
-	return username, nil
+	userID = "github_" + userID
+	return userID, nil
 }
 
 func FetchGoogleUserID(client *http.Client) (string, error) {
@@ -94,10 +90,8 @@ func FetchGoogleUserID(client *http.Client) (string, error) {
 		return "", err
 	}
 
-	userID = "bloggulus_google_" + userID
-	userIDHash := sha256.Sum256([]byte(userID))
-	username := hex.EncodeToString(userIDHash[:])
-	return username, nil
+	userID = "google_" + userID
+	return userID, nil
 }
 
 func HandleSignIn(enableDebugAuth bool) http.Handler {
@@ -138,7 +132,12 @@ func HandleOAuthSignIn(conf *oauth2.Config) http.Handler {
 	})
 }
 
-func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetchUserID FetchUserID) http.Handler {
+func HandleOAuthCallback(
+	secretKey string,
+	repo *repository.Repository,
+	conf *oauth2.Config,
+	fetchUserID FetchUserID,
+) http.Handler {
 	// TODO: Replace the 400s with sign in page re-renders.
 	// tmpl := page.NewSignIn()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -168,13 +167,14 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 		}
 
 		client := conf.Client(context.Background(), token)
-		username, err := fetchUserID(client)
+		userID, err := fetchUserID(client)
 		if err != nil {
 			slog.Error("failed to fetch user ID", "error", err.Error())
 			util.BadRequestResponse(w, r)
 			return
 		}
 
+		username := util.HashUserID(userID, secretKey)
 		account, err := repo.Account().ReadByUsername(username)
 		if err != nil {
 			if !errors.Is(err, postgres.ErrNotFound) {
@@ -236,7 +236,7 @@ func HandleOAuthCallback(conf *oauth2.Config, repo *repository.Repository, fetch
 	})
 }
 
-func HandleDebugSignIn(repo *repository.Repository) http.Handler {
+func HandleDebugSignIn(secretKey string, repo *repository.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Generate a random userID for the debug sign in.
 		userID, err := random.BytesBase64(16)
@@ -245,9 +245,8 @@ func HandleDebugSignIn(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		userID = "bloggulus_debug_" + userID
-		userIDHash := sha256.Sum256([]byte(userID))
-		username := hex.EncodeToString(userIDHash[:])
+		userID = "debug_" + userID
+		username := util.HashUserID(userID, secretKey)
 
 		account, err := repo.Account().ReadByUsername(username)
 		if err != nil {

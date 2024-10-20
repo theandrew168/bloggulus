@@ -98,15 +98,15 @@ func Handler(
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
 	if enableDebugAuth {
-		mux.Handle("POST /debug/signin", HandleDebugSignIn(repo))
+		mux.Handle("POST /debug/signin", HandleDebugSignIn(conf.SecretKey, repo))
 	}
 
 	// Authenication routes.
 	mux.Handle("GET /signin", HandleSignIn(enableDebugAuth))
 	mux.Handle("GET /github/signin", HandleOAuthSignIn(&githubConf))
-	mux.Handle("GET /github/callback", HandleOAuthCallback(&githubConf, repo, FetchGithubUserID))
+	mux.Handle("GET /github/callback", HandleOAuthCallback(conf.SecretKey, repo, &githubConf, FetchGithubUserID))
 	mux.Handle("GET /google/signin", HandleOAuthSignIn(&googleConf))
-	mux.Handle("GET /google/callback", HandleOAuthCallback(&googleConf, repo, FetchGoogleUserID))
+	mux.Handle("GET /google/callback", HandleOAuthCallback(conf.SecretKey, repo, &googleConf, FetchGoogleUserID))
 	mux.Handle("POST /signout", HandleSignOutForm(repo))
 
 	// Public blog routes.

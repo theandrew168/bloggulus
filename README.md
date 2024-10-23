@@ -51,7 +51,7 @@ make run-local
 ```
 
 Otherwise, you can simply run the application normally (without OAuth configured) and use the local-only debug sign in.
-This is automatically enabled (via the `ENABLE_DEBUG_AUTH` environment variable) for `run` and `run-local`.
+This is enabled by default (via the `ENABLE_DEBUG_AUTH` environment variable) for the `run` and `run-local` targets.
 
 ### Testing
 

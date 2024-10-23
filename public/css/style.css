@@ -303,6 +303,15 @@ svg {
 	padding: 1.5rem 0.5rem;
 }
 
+.articles-cta {
+	margin-top: 4rem;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2rem;
+}
+
 
 
 .signin {
@@ -400,6 +409,11 @@ svg {
 
 .blogs-list__link:hover, .pages-list__link:hover {
 	text-decoration: underline;
+}
+
+.blogs-cta {
+	margin-top: 4rem;
+	text-align: center;
 }
 
 

@@ -5,14 +5,9 @@
 		<h1 class="blogs-header__title">Blogs</h1>
 		<form method="POST" action="/blogs/create">
 			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
-			<input
-				class="input blogs-header__input"
-				type="text"
-				name="feedURL"
-				placeholder="Add Feed"
-			/>
+			<input class="input blogs-header__input" type="text" name="feedURL" placeholder="Follow RSS Feed" />
 			<button class="button" type="submit">
-				Add
+				Follow
 			</button>
 		</form>
 	</header>
@@ -43,6 +38,10 @@
 			{{end}}
 			{{end}}
 		</li>
+		{{else}}
+		<article class="blogs-cta">
+			<p>Follow your favorite blogs by adding their RSS feed above!</p>
+		</article>
 		{{end}}
 	</ul>
 </section>

@@ -5,12 +5,7 @@
 		<h1 class="pages-header__title">Pages</h1>
 		<form method="POST" action="/pages/create">
 			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
-			<input
-				class="input pages-header__input"
-				type="text"
-				name="url"
-				placeholder="Add Page"
-			/>
+			<input class="input pages-header__input" type="text" name="url" placeholder="Add Page" />
 			<button class="button" type="submit">
 				Add
 			</button>

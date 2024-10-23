@@ -41,7 +41,7 @@ make run
 ### OAuth Services
 
 For authentication, this project relies on OAuth social sign ins (from GitHub and Google).
-To work on the auth system, you'll need to create a `bloggulus.local.conf` file that contains the necessary OAuth credentials (client ID and client secret for each service).
+To work on the auth system, you'll need to create a `bloggulus.local.conf` file that contains the necessary OAuth credentials for each service.
 If you need these credentials, feel free to reach out.
 
 Then, you can run the app using the local config file with:
@@ -51,7 +51,7 @@ make run-local
 ```
 
 Otherwise, you can simply run the application normally (without OAuth configured) and use the local-only debug sign in.
-This is enabled when `ENABLE_DEBUG_AUTH` is set (which the already Makefile includes for `run` and `run-local`).
+This is enabled when `ENABLE_DEBUG_AUTH` is set and is already included for the Makefile targets `run` and `run-local`.
 
 ### Testing
 

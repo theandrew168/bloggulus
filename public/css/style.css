@@ -538,3 +538,8 @@ svg {
 .privacy p {
 	line-height: 1.5rem;
 }
+
+.privacy a,
+.privacy a:visited {
+	color: var(--color-dark);
+}

@@ -85,15 +85,13 @@ func Handler(
 	// Serve public (static) files from the embedded FS.
 	mux.Handle("/favicon.ico", publicFilesHandler)
 	mux.Handle("/robots.txt", publicFilesHandler)
+	mux.Handle("/docs/", publicFilesHandler)
 	mux.Handle("/css/", publicFilesHandler)
 	mux.Handle("/img/", publicFilesHandler)
 	mux.Handle("/js/", publicFilesHandler)
 
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(find))
-
-	// Documentation routes.
-	mux.Handle("GET /privacy", HandlePrivacyPolicy())
 
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""

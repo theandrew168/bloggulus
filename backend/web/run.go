@@ -12,10 +12,6 @@ func Run(ctx context.Context, handler http.Handler, addr string) error {
 	srv := http.Server{
 		Addr:    addr,
 		Handler: handler,
-
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
 	}
 
 	// start a goro to watch for stop signal (context cancelled)

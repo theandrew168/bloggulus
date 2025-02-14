@@ -19,12 +19,14 @@ builds:
       - arm64
 
 archives:
-  - format: tar.gz
+  - formats:
+      - tar.gz
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
 changelog:
   filters:

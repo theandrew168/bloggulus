@@ -1,0 +1,45 @@
+# Bloggulus Domains, Models, and Rules
+
+## Entities
+
+1. Blog (unique by URL)
+2. Post (unique by URL)
+
+## Value Objects
+
+1. Tags
+
+## Ports / Adapters (IO Boundaries)
+
+1. Persistent Storage (a PostgreSQL database)
+2. Fetching RSS Feeds (via the internet)
+3. Fetching Web Pages (via the internet)
+
+## Errors
+
+1. Feed was unreachable
+2. Feed was invalid
+3. Page was unreachable
+4. Blog does not exist
+5. Blog already exists
+6. Post does not exist
+7. Post already exists
+
+## Rules
+
+1. A Blog must have a valid, non-empty URL
+2. A Blog's feed URL must be unique
+3. A new Blog can be created from just a Feed URL
+4. A Blog can be deleted by a site admin
+5. If present, a Blog request should include ETag / LastModified headers
+6. If a response includes ETag / LastModified headers, they should be stored with the blog
+7. A Blog shouldn't be synced more than once per hour (or two)
+8. A Post must have a valid, non-empty URL
+9. A Post's URL must be unique
+10. A Post can be deleted by a site admin
+11. If a Feed doesn't include a Post's content, it will be fetched directly
+12. All outgoing HTTP requests should include a proper user agent
+13. When syncing RSS data, new Posts should be created
+14. When syncing RSS data, existing Posts may be updated
+15. Post content should be stripped of HTML tags before storing
+16. Posts should be searchable by their content

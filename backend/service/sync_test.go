@@ -4,13 +4,42 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
+	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
+
+func TestFilterSyncedBlogs(t *testing.T) {
+	t.Parallel()
+
+	now := timeutil.Now()
+
+	pastBlog := test.NewBlog(t)
+	pastBlog.SetSyncedAt(now.Add(-model.SyncCooldown).Add(-1 * time.Minute))
+	presentBlog := test.NewBlog(t)
+	presentBlog.SetSyncedAt(now)
+	futureBlog := test.NewBlog(t)
+	futureBlog.SetSyncedAt(now.Add(1 * time.Hour))
+
+	blogs := []*model.Blog{pastBlog, presentBlog, futureBlog}
+
+	syncableBlogs := service.FilterSyncableBlogs(blogs, now)
+	test.AssertEqual(t, len(syncableBlogs), 1)
+
+	var syncableBlogIDs []uuid.UUID
+	for _, blog := range syncableBlogs {
+		syncableBlogIDs = append(syncableBlogIDs, blog.ID())
+	}
+
+	test.AssertSliceContains(t, syncableBlogIDs, pastBlog.ID())
+}
 
 func TestNewBlog(t *testing.T) {
 	t.Parallel()

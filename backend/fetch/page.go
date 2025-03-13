@@ -15,5 +15,5 @@ type FetchPageResponse struct {
 }
 
 type PageFetcher interface {
-	FetchPage(req FetchPageRequest) (FetchPageResponse, error)
+	FetchPage(request FetchPageRequest) (FetchPageResponse, error)
 }

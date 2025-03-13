@@ -3,6 +3,7 @@ package web
 import (
 	"html"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -16,6 +17,7 @@ var _ fetch.PageFetcher = (*PageFetcher)(nil)
 
 // I know...
 var (
+	headPattern   = regexp.MustCompile(`(?s)<head>.*?</head>`)
 	codePattern   = regexp.MustCompile(`(?s)<code>.*?</code>`)
 	footerPattern = regexp.MustCompile(`(?s)<footer>.*?</footer>`)
 	headerPattern = regexp.MustCompile(`(?s)<header>.*?</header>`)
@@ -23,8 +25,9 @@ var (
 	prePattern    = regexp.MustCompile(`(?s)<pre>.*?</pre>`)
 )
 
-// please PR a better way :(
+// TODO: Make a separate package for this w/ tests.
 func cleanHTML(s string) string {
+	s = headPattern.ReplaceAllString(s, "")
 	s = codePattern.ReplaceAllString(s, "")
 	s = footerPattern.ReplaceAllString(s, "")
 	s = headerPattern.ReplaceAllString(s, "")
@@ -54,11 +57,13 @@ func (f *PageFetcher) FetchPage(request fetch.FetchPageRequest) (fetch.FetchPage
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		slog.Warn("failed to fetch page", "url", request.URL, "error", err.Error())
 		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
+		slog.Warn("failed to fetch page", "url", request.URL, "status", resp.StatusCode)
 		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 

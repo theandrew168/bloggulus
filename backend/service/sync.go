@@ -20,13 +20,13 @@ import (
 // SYNC:
 // Calculation: Run the sync process every N hours (time.Ticker)
 // Action: List all blogs in the database
-// Calculation: Determine which blogs need to be synced (filter + CanBeSynced)
+// Calculation: Determine which blogs need to be synced (FilterSyncableBlogs)
 // ADD:
-// Calculation: For each sync-able blog, create it's FetchFeedRequest
+// Calculation: For each sync-able blog, create it's FetchFeedRequest (CreateSyncRequest)
 // Action: Update sync time for each sync-able blog
 // Action: Exchange the request to fetch the blog for a response (with limited concurrency)
-// Calculation: Determine if the response indicates any changes / new content
-// Calculation: If there are changes, parse the RSS / Atom feed for posts
+// Action: Update the blog's cache headers if changed
+// Calculation: If the response includes data, parse the RSS / Atom feed for posts
 // Action: List all posts for the current blog
 // Calculation: Determine if any posts in the feed are new / updated
 // Action: Create / update posts in the database
@@ -49,15 +49,6 @@ func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
 	return syncableBlogs
 }
 
-func CreateSyncRequest(blog *model.Blog) fetch.FetchFeedRequest {
-	req := fetch.FetchFeedRequest{
-		URL:          blog.FeedURL(),
-		ETag:         blog.ETag(),
-		LastModified: blog.LastModified(),
-	}
-	return req
-}
-
 type SyncService struct {
 	mu          sync.Mutex
 	repo        *repository.Repository
@@ -72,6 +63,26 @@ func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher, 
 		pageFetcher: pageFetcher,
 	}
 	return &s
+}
+
+func (s *SyncService) updateCacheHeaders(blog *model.Blog, response fetch.FetchFeedResponse) error {
+	headersChanged := false
+	if response.ETag != "" && response.ETag != blog.ETag() {
+		headersChanged = true
+		blog.SetETag(response.ETag)
+	}
+
+	if response.LastModified != "" && response.LastModified != blog.LastModified() {
+		headersChanged = true
+		blog.SetLastModified(response.LastModified)
+	}
+
+	// Update the blog's cache headers if changed.
+	if headersChanged {
+		return s.repo.Blog().Update(blog)
+	}
+
+	return nil
 }
 
 func (s *SyncService) Run(ctx context.Context) error {
@@ -117,30 +128,33 @@ func (s *SyncService) SyncAllBlogs() error {
 
 	slog.Info("syncing blogs")
 
-	// TODO: Use the paginated List() method?
 	blogs, err := s.repo.Blog().ListAll()
 	if err != nil {
 		return err
 	}
 
+	// Be sure to only sync blogs that are ready.
 	now := timeutil.Now()
+	syncableBlogs := FilterSyncableBlogs(blogs, now)
+
+	// Update the syncedAt time for each blog before syncing.
+	for _, blog := range syncableBlogs {
+		blog.SetSyncedAt(now)
+		err = s.repo.Blog().Update(blog)
+		if err != nil {
+			return err
+		}
+	}
 
 	// use a weighted semaphore to limit concurrency
 	sem := semaphore.NewWeighted(SyncConcurrency)
 
 	// sync all blogs in parallel (up to SyncConcurrency at once)
-	for _, blog := range blogs {
+	for _, blog := range syncableBlogs {
 		sem.Acquire(context.Background(), 1)
 
 		go func(blog *model.Blog) {
 			defer sem.Release(1)
-
-			// don't sync a given blog more than once per SyncInterval
-			delta := now.Sub(blog.SyncedAt())
-			if delta < SyncInterval {
-				slog.Info("skipping blog", "title", blog.Title(), "id", blog.ID())
-				return
-			}
 
 			slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
 			_, err := s.SyncBlog(blog.FeedURL())
@@ -157,6 +171,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	return nil
 }
 
+// Sync a new or existing Blog based on the provided feed URL.
 func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 	blog, err := s.repo.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
@@ -171,15 +186,15 @@ func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
-	request := fetch.FetchFeedRequest{
+	req := fetch.FetchFeedRequest{
 		URL: feedURL,
 	}
-	resp, err := s.feedFetcher.FetchFeed(request)
+	resp, err := s.feedFetcher.FetchFeed(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// no feed from a new blog (no cache headers) is an error
+	// no feed from a new blog is an error
 	if resp.Feed == "" {
 		return nil, fetch.ErrUnreachableFeed
 	}
@@ -189,19 +204,13 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	feedBlog, err = feed.Hydrate(feedBlog, s.pageFetcher)
-	if err != nil {
-		return nil, err
-	}
-
-	now := timeutil.Now()
 	blog, err := model.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
 		feedBlog.Title,
 		resp.ETag,
 		resp.LastModified,
-		now,
+		timeutil.Now(),
 	)
 	if err != nil {
 		return nil, err
@@ -223,45 +232,28 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
-	now := timeutil.Now()
-	blog.SetSyncedAt(now)
-
 	err := s.repo.Blog().Update(blog)
 	if err != nil {
 		return nil, err
 	}
 
-	request := fetch.FetchFeedRequest{
+	req := fetch.FetchFeedRequest{
 		URL:          blog.FeedURL(),
 		ETag:         blog.ETag(),
 		LastModified: blog.LastModified(),
 	}
-	resp, err := s.feedFetcher.FetchFeed(request)
+	resp, err := s.feedFetcher.FetchFeed(req)
 	if err != nil {
 		return nil, err
 	}
 
-	headersChanged := false
-	if resp.ETag != "" && resp.ETag != blog.ETag() {
-		headersChanged = true
-		blog.SetETag(resp.ETag)
-	}
-
-	if resp.LastModified != "" && resp.LastModified != blog.LastModified() {
-		headersChanged = true
-		blog.SetLastModified(resp.LastModified)
-	}
-
-	// Update the blog's cache headers if changed.
-	if headersChanged {
-		err = s.repo.Blog().Update(blog)
-		if err != nil {
-			return nil, err
-		}
+	err = s.updateCacheHeaders(blog, resp)
+	if err != nil {
+		return nil, err
 	}
 
 	if resp.Feed == "" {
-		slog.Info("no new content", "title", blog.Title(), "id", blog.ID())
+		slog.Info("skipping blog (no feed content)", "title", blog.Title(), "id", blog.ID())
 		return blog, nil
 	}
 
@@ -270,15 +262,10 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
-	feedBlog, err = feed.Hydrate(feedBlog, s.pageFetcher)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, feedPost := range feedBlog.Posts {
 		_, err = s.syncPost(blog, feedPost)
 		if err != nil {
-			slog.Warn(err.Error(), "url", feedPost.URL)
+			slog.Warn("failed to sync post", "url", feedPost.URL, "error", err.Error())
 		}
 	}
 
@@ -292,7 +279,8 @@ func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Pos
 			return nil, err
 		}
 
-		post, err := model.NewPost(
+		// If the post doesn't exist, create it and fall through.
+		post, err = model.NewPost(
 			blog,
 			feedPost.URL,
 			feedPost.Title,
@@ -307,19 +295,32 @@ func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Pos
 		if err != nil {
 			return nil, err
 		}
-
-		return post, nil
 	}
 
-	// update the post's content (if available)
-	if feedPost.Content != "" {
+	// Update the post's content (if not present but available from the feed).
+	if post.Content() == "" && feedPost.Content != "" {
 		post.SetContent(feedPost.Content)
 		err = s.repo.Post().Update(post)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		return post, nil
+	// If we still don't have content, try to fetch it manually.
+	if post.Content() == "" {
+		req := fetch.FetchPageRequest{
+			URL: post.URL(),
+		}
+		resp, err := s.pageFetcher.FetchPage(req)
+		if err != nil {
+			return post, nil
+		}
+
+		post.SetContent(resp.Content)
+		err = s.repo.Post().Update(post)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return post, nil

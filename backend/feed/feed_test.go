@@ -6,7 +6,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
-	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -209,50 +208,6 @@ func TestParsePublishedAtUTC(t *testing.T) {
 
 	for _, parsedPost := range parsedBlog.Posts {
 		test.AssertEqual(t, parsedPost.PublishedAt, publishedAt.UTC().Round(time.Microsecond))
-	}
-}
-
-func TestHydrate(t *testing.T) {
-	t.Parallel()
-
-	feedPostFoo := feed.Post{
-		URL:         "https://example.com/foo",
-		Title:       "Foo",
-		PublishedAt: time.Now(),
-	}
-	feedPostBar := feed.Post{
-		URL:         "https://example.com/bar",
-		Title:       "Bar",
-		PublishedAt: time.Now(),
-	}
-	feedBlog := feed.Blog{
-		Title:   "FooBar",
-		SiteURL: "https://example.com",
-		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo, feedPostBar},
-	}
-
-	for _, feedPost := range feedBlog.Posts {
-		test.AssertEqual(t, feedPost.Content, "")
-	}
-
-	pages := map[string]string{
-		feedPostFoo.URL: "content about foo",
-		feedPostBar.URL: "content about bar",
-	}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	feedBlog, err := feed.Hydrate(feedBlog, pageFetcher)
-	test.AssertNilError(t, err)
-
-	for _, feedPost := range feedBlog.Posts {
-		want, ok := pages[feedPost.URL]
-		if !ok {
-			t.Errorf("invalid post URL: %s", feedPost.URL)
-			continue
-		}
-
-		test.AssertEqual(t, feedPost.Content, want)
 	}
 }
 

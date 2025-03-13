@@ -1,14 +1,11 @@
 package feed
 
 import (
-	"log/slog"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
-
-	"github.com/theandrew168/bloggulus/backend/fetch"
 )
 
 var (
@@ -92,26 +89,5 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 		Title:   feed.Title,
 		Posts:   posts,
 	}
-	return blog, nil
-}
-
-func Hydrate(blog Blog, pageFetcher fetch.PageFetcher) (Blog, error) {
-	var hydratedPosts []Post
-	for _, post := range blog.Posts {
-		if post.Content == "" {
-			request := fetch.FetchPageRequest{
-				URL: post.URL,
-			}
-			response, err := pageFetcher.FetchPage(request)
-			if err != nil {
-				slog.Warn("failed to fetch page", "url", post.URL)
-			} else {
-				post.Content = response.Content
-			}
-		}
-		hydratedPosts = append(hydratedPosts, post)
-	}
-
-	blog.Posts = hydratedPosts
 	return blog, nil
 }

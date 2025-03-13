@@ -6,6 +6,12 @@ var (
 	ErrUnreachableFeed = errors.New("fetch: unreachable feed")
 )
 
+type FetchFeedRequest struct {
+	URL          string
+	ETag         string
+	LastModified string
+}
+
 type FetchFeedResponse struct {
 	Feed         string
 	ETag         string
@@ -13,5 +19,5 @@ type FetchFeedResponse struct {
 }
 
 type FeedFetcher interface {
-	FetchFeed(url, etag, lastModified string) (FetchFeedResponse, error)
+	FetchFeed(request FetchFeedRequest) (FetchFeedResponse, error)
 }

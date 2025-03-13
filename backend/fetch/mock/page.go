@@ -16,11 +16,14 @@ func NewPageFetcher(pages map[string]string) *PageFetcher {
 	return &f
 }
 
-func (f *PageFetcher) FetchPage(url string) (string, error) {
-	page, ok := f.pages[url]
+func (f *PageFetcher) FetchPage(request fetch.FetchPageRequest) (fetch.FetchPageResponse, error) {
+	page, ok := f.pages[request.URL]
 	if !ok {
-		return "", fetch.ErrUnreachablePage
+		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 
-	return page, nil
+	response := fetch.FetchPageResponse{
+		Content: page,
+	}
+	return response, nil
 }

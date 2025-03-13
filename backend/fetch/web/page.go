@@ -45,27 +45,30 @@ func NewPageFetcher() *PageFetcher {
 	return &f
 }
 
-func (f *PageFetcher) FetchPage(url string) (string, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (f *PageFetcher) FetchPage(request fetch.FetchPageRequest) (fetch.FetchPageResponse, error) {
+	req, err := http.NewRequest("GET", request.URL, nil)
 	if err != nil {
-		return "", fetch.ErrUnreachablePage
+		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 	req.Header.Set("User-Agent", UserAgent)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", fetch.ErrUnreachablePage
+		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		return "", fetch.ErrUnreachablePage
+		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fetch.ErrUnreachablePage
+		return fetch.FetchPageResponse{}, fetch.ErrUnreachablePage
 	}
 
-	return cleanHTML(string(buf)), nil
+	response := fetch.FetchPageResponse{
+		Content: cleanHTML(string(buf)),
+	}
+	return response, nil
 }

@@ -6,6 +6,14 @@ var (
 	ErrUnreachablePage = errors.New("fetch: unreachable page")
 )
 
+type FetchPageRequest struct {
+	URL string
+}
+
+type FetchPageResponse struct {
+	Content string
+}
+
 type PageFetcher interface {
-	FetchPage(url string) (string, error)
+	FetchPage(req FetchPageRequest) (FetchPageResponse, error)
 }

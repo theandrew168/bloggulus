@@ -17,18 +17,18 @@ func NewFeedFetcher() *FeedFetcher {
 	return &f
 }
 
-func (f *FeedFetcher) FetchFeed(url, etag, lastModified string) (fetch.FetchFeedResponse, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (f *FeedFetcher) FetchFeed(request fetch.FetchFeedRequest) (fetch.FetchFeedResponse, error) {
+	req, err := http.NewRequest("GET", request.URL, nil)
 	if err != nil {
 		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 	req.Header.Set("User-Agent", UserAgent)
 
-	if etag != "" {
-		req.Header.Set("If-None-Match", etag)
+	if request.ETag != "" {
+		req.Header.Set("If-None-Match", request.ETag)
 	}
-	if lastModified != "" {
-		req.Header.Set("If-Modified-Since", lastModified)
+	if request.LastModified != "" {
+		req.Header.Set("If-Modified-Since", request.LastModified)
 	}
 
 	resp, err := http.DefaultClient.Do(req)

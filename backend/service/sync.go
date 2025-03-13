@@ -17,6 +17,20 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
+// SYNC:
+// Calculation: Run the sync process every N hours (time.Ticker)
+// Action: List all blogs in the database
+// Calculation: Determine which blogs need to be synced (filter + CanBeSynced)
+// ADD:
+// Calculation: For each sync-able blog, create it's FetchFeedRequest
+// Action: Update sync time for each sync-able blog
+// Action: Exchange the request to fetch the blog for a response (with limited concurrency)
+// Calculation: Determine if the response indicates any changes / new content
+// Calculation: If there are changes, parse the RSS / Atom feed for posts
+// Action: List all posts for the current blog
+// Calculation: Determine if any posts in the feed are new / updated
+// Action: Create / update posts in the database
+
 const (
 	// Check for new posts every SyncInterval.
 	SyncInterval = 2 * time.Hour
@@ -24,6 +38,25 @@ const (
 	// How many blogs to sync at once.
 	SyncConcurrency = 8
 )
+
+func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
+	var syncableBlogs []*model.Blog
+	for _, blog := range blogs {
+		if blog.CanBeSynced(now) {
+			syncableBlogs = append(syncableBlogs, blog)
+		}
+	}
+	return syncableBlogs
+}
+
+func CreateSyncRequest(blog *model.Blog) fetch.FetchFeedRequest {
+	req := fetch.FetchFeedRequest{
+		URL:          blog.FeedURL(),
+		ETag:         blog.ETag(),
+		LastModified: blog.LastModified(),
+	}
+	return req
+}
 
 type SyncService struct {
 	mu          sync.Mutex
@@ -138,7 +171,10 @@ func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
-	resp, err := s.feedFetcher.FetchFeed(feedURL, "", "")
+	request := fetch.FetchFeedRequest{
+		URL: feedURL,
+	}
+	resp, err := s.feedFetcher.FetchFeed(request)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +231,12 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
-	resp, err := s.feedFetcher.FetchFeed(blog.FeedURL(), blog.ETag(), blog.LastModified())
+	request := fetch.FetchFeedRequest{
+		URL:          blog.FeedURL(),
+		ETag:         blog.ETag(),
+		LastModified: blog.LastModified(),
+	}
+	resp, err := s.feedFetcher.FetchFeed(request)
 	if err != nil {
 		return nil, err
 	}

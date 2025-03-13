@@ -4,16 +4,19 @@
 
 1. Blog (unique by URL)
 2. Post (unique by URL)
+3. Account (unique by username)
 
 ## Value Objects
 
-1. Tags
+1. Tag (many Posts have many)
+2. Session (one Account has many)
 
 ## Ports / Adapters (IO Boundaries)
 
 1. Persistent Storage (a PostgreSQL database)
 2. Fetching RSS Feeds (via the internet)
 3. Fetching Web Pages (via the internet)
+4. OAuth redirects / callbacks (via GitHub / Google)
 
 ## Errors
 
@@ -43,3 +46,6 @@
 14. When syncing RSS data, existing Posts may be updated
 15. Post content should be stripped of HTML tags before storing
 16. Posts should be searchable by their content
+17. An Account can add Blogs (by feed URL)
+18. An Account can follow Blogs
+19. An Account can unfollow Blogs

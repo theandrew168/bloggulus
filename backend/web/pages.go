@@ -109,7 +109,10 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 
 		// Fetch the page and follow (if valid) in the background.
 		go func() {
-			content, err := pageFetcher.FetchPage(pageURL)
+			request := fetch.FetchPageRequest{
+				URL: pageURL,
+			}
+			response, err := pageFetcher.FetchPage(request)
 			if err != nil {
 				slog.Error("error fetching page",
 					"error", err.Error(),
@@ -117,7 +120,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 				return
 			}
 
-			page, err = model.NewPage(pageURL, pageURL, content)
+			page, err = model.NewPage(pageURL, pageURL, response.Content)
 			if err != nil {
 				util.InternalServerErrorResponse(w, r, err)
 				return

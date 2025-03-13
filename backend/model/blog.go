@@ -8,6 +8,11 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
+const (
+	// Ensure that a post doesn't get synced more than once every SyncCooldown.
+	SyncCooldown = 2 * time.Hour
+)
+
 type Blog struct {
 	id           uuid.UUID
 	feedURL      string
@@ -94,6 +99,10 @@ func (b *Blog) SyncedAt() time.Time {
 
 func (b *Blog) SetSyncedAt(syncedAt time.Time) {
 	b.syncedAt = syncedAt
+}
+
+func (b *Blog) CanBeSynced(now time.Time) bool {
+	return b.syncedAt.Add(SyncCooldown).Before(now)
 }
 
 func (b *Blog) CreatedAt() time.Time {

@@ -99,11 +99,14 @@ func Hydrate(blog Blog, pageFetcher fetch.PageFetcher) (Blog, error) {
 	var hydratedPosts []Post
 	for _, post := range blog.Posts {
 		if post.Content == "" {
-			content, err := pageFetcher.FetchPage(post.URL)
+			request := fetch.FetchPageRequest{
+				URL: post.URL,
+			}
+			response, err := pageFetcher.FetchPage(request)
 			if err != nil {
 				slog.Warn("failed to fetch page", "url", post.URL)
 			} else {
-				post.Content = content
+				post.Content = response.Content
 			}
 		}
 		hydratedPosts = append(hydratedPosts, post)

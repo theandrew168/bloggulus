@@ -67,6 +67,11 @@ func (p *Post) Title() string {
 	return p.title
 }
 
+func (p *Post) SetTitle(title string) error {
+	p.title = title
+	return nil
+}
+
 func (p *Post) Content() string {
 	return p.content
 }
@@ -78,6 +83,11 @@ func (p *Post) SetContent(content string) error {
 
 func (p *Post) PublishedAt() time.Time {
 	return p.publishedAt
+}
+
+func (p *Post) SetPublishedAt(publishedAt time.Time) error {
+	p.publishedAt = publishedAt
+	return nil
 }
 
 func (p *Post) CreatedAt() time.Time {

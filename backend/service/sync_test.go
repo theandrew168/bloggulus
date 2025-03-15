@@ -16,7 +16,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
-func TestFilterSyncedBlogs(t *testing.T) {
+func TestFilterSyncableBlogs(t *testing.T) {
 	t.Parallel()
 
 	now := timeutil.Now()
@@ -39,6 +39,52 @@ func TestFilterSyncedBlogs(t *testing.T) {
 	}
 
 	test.AssertSliceContains(t, syncableBlogIDs, pastBlog.ID())
+}
+
+func TestComparePosts(t *testing.T) {
+	t.Parallel()
+
+	blog := test.NewBlog(t)
+
+	knownPost := test.NewPost(t, blog)
+	knownPosts := []*model.Post{
+		knownPost,
+	}
+
+	newPost := feed.Post{
+		URL:         test.RandomURL(20),
+		Title:       test.RandomString(20),
+		Content:     test.RandomString(200),
+		PublishedAt: test.RandomTime(),
+	}
+	updatedPost := feed.Post{
+		URL:         knownPost.URL(),
+		Title:       test.RandomString(20),
+		Content:     test.RandomString(200),
+		PublishedAt: test.RandomTime(),
+	}
+	feedPosts := []feed.Post{
+		newPost,
+		updatedPost,
+	}
+
+	result, err := service.ComparePosts(blog, knownPosts, feedPosts)
+	test.AssertNilError(t, err)
+
+	// Verify that one new post should be created.
+	test.AssertEqual(t, len(result.PostsToCreate), 1)
+	test.AssertEqual(t, result.PostsToCreate[0].URL(), newPost.URL)
+	test.AssertEqual(t, result.PostsToCreate[0].Title(), newPost.Title)
+	test.AssertEqual(t, result.PostsToCreate[0].Content(), newPost.Content)
+	test.AssertEqual(t, result.PostsToCreate[0].PublishedAt(), newPost.PublishedAt)
+
+	// Verify that one existing post should be updated (URL should stay the same).
+	test.AssertEqual(t, len(result.PostsToUpdate), 1)
+	test.AssertEqual(t, result.PostsToUpdate[0].URL(), knownPost.URL())
+	test.AssertEqual(t, result.PostsToUpdate[0].URL(), updatedPost.URL)
+	test.AssertEqual(t, result.PostsToUpdate[0].Title(), updatedPost.Title)
+	test.AssertEqual(t, result.PostsToUpdate[0].Content(), updatedPost.Content)
+	test.AssertEqual(t, result.PostsToUpdate[0].PublishedAt(), updatedPost.PublishedAt)
 }
 
 func TestNewBlog(t *testing.T) {

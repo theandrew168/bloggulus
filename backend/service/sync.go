@@ -31,14 +31,18 @@ import (
 // Calculation: Determine if any posts in the feed are new / updated
 // Action: Create / update posts in the database
 
+// Given a list of blogs, which ones should be synced?
+// Given a list of posts and a feed, which posts should be created / updated?
+
 const (
 	// Check for new posts every SyncInterval.
-	SyncInterval = 2 * time.Hour
+	SyncInterval = 30 * time.Minute
 
 	// How many blogs to sync at once.
 	SyncConcurrency = 8
 )
 
+// FilterSyncableBlogs takes a list of blogs and returns only those that are ready to be synced.
 func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
 	var syncableBlogs []*model.Blog
 	for _, blog := range blogs {
@@ -47,6 +51,76 @@ func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
 		}
 	}
 	return syncableBlogs
+}
+
+type ComparePostsResult struct {
+	PostsToCreate []*model.Post
+	PostsToUpdate []*model.Post
+}
+
+// ComparePosts compares a list of known posts to a list of feed posts and returns
+// a list of posts to create and a list of posts to update.
+func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.Post) (ComparePostsResult, error) {
+	// Create a map of URLs to posts for quick lookups.
+	knownPostsByURL := make(map[string]*model.Post)
+	for _, post := range knownPosts {
+		knownPostsByURL[post.URL()] = post
+	}
+
+	var postsToCreate []*model.Post
+	var postsToUpdate []*model.Post
+
+	// Compare each post in the feed to the posts in the database.
+	for _, feedPost := range feedPosts {
+		knownPost, ok := knownPostsByURL[feedPost.URL]
+		if !ok {
+			// The post is new so we need to create it.
+			postToCreate, err := model.NewPost(
+				blog,
+				feedPost.URL,
+				feedPost.Title,
+				feedPost.Content,
+				feedPost.PublishedAt,
+			)
+			if err != nil {
+				return ComparePostsResult{}, err
+			}
+
+			postsToCreate = append(postsToCreate, postToCreate)
+		} else {
+			// The post already exists but we might need to update it.
+			knownPostShouldBeUpdated := false
+
+			// Check if the post's title has changed.
+			if feedPost.Title != "" && feedPost.Title != knownPost.Title() {
+				knownPost.SetTitle(feedPost.Title)
+				knownPostShouldBeUpdated = true
+			}
+
+			// Check if the post's content has changed.
+			if feedPost.Content != "" && feedPost.Content != knownPost.Content() {
+				knownPost.SetContent(feedPost.Content)
+				knownPostShouldBeUpdated = true
+			}
+
+			// Check if the post's publishedAt date has changed.
+			if feedPost.PublishedAt != knownPost.PublishedAt() {
+				knownPost.SetPublishedAt(feedPost.PublishedAt)
+				knownPostShouldBeUpdated = true
+			}
+
+			// If any post data has changed, add it to the list of posts to update.
+			if knownPostShouldBeUpdated {
+				postsToUpdate = append(postsToUpdate, knownPost)
+			}
+		}
+	}
+
+	result := ComparePostsResult{
+		PostsToCreate: postsToCreate,
+		PostsToUpdate: postsToUpdate,
+	}
+	return result, nil
 }
 
 type SyncService struct {

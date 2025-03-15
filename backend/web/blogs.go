@@ -71,14 +71,16 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 			// If it does, follow it for the current user.
 			err = repo.AccountBlog().Create(account, blog)
 			if err != nil {
-				slog.Error("error following blog",
-					"error", err.Error(),
-					"account_id", account.ID(),
-					"account_username", account.Username(),
-					"blog_id", blog.ID(),
-					"blog_title", blog.Title(),
-				)
-				return
+				if !errors.Is(err, postgres.ErrConflict) {
+					slog.Error("error following blog",
+						"error", err.Error(),
+						"account_id", account.ID(),
+						"account_username", account.Username(),
+						"blog_id", blog.ID(),
+						"blog_title", blog.Title(),
+					)
+					return
+				}
 			}
 
 			slog.Info("blog followed",
@@ -114,8 +116,6 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 				return
 			}
 
-			// TODO: Handle the case where the blog already exists (just follow it).
-
 			slog.Info("blog added",
 				"account_id", account.ID(),
 				"account_username", account.Username(),
@@ -125,14 +125,16 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 
 			err = repo.AccountBlog().Create(account, blog)
 			if err != nil {
-				slog.Error("error following blog",
-					"error", err.Error(),
-					"account_id", account.ID(),
-					"account_username", account.Username(),
-					"blog_id", blog.ID(),
-					"blog_title", blog.Title(),
-				)
-				return
+				if !errors.Is(err, postgres.ErrConflict) {
+					slog.Error("error following blog",
+						"error", err.Error(),
+						"account_id", account.ID(),
+						"account_username", account.Username(),
+						"blog_id", blog.ID(),
+						"blog_title", blog.Title(),
+					)
+					return
+				}
 			}
 
 			slog.Info("blog followed",

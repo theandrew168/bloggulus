@@ -136,6 +136,24 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	return result, nil
 }
 
+func ParallelMap[T any](concurrency int, items []T, fn func(T)) {
+	// Use a weighted semaphore to limit concurrency.
+	sem := semaphore.NewWeighted(int64(concurrency))
+
+	// Perform tasks in parallel (up to "concurrency" at once).
+	for _, item := range items {
+		sem.Acquire(context.Background(), 1)
+
+		go func(item T) {
+			defer sem.Release(1)
+			fn(item)
+		}(item)
+	}
+
+	// Wait for all tasks to finish.
+	sem.Acquire(context.Background(), SyncConcurrency)
+}
+
 type SyncService struct {
 	mu          sync.Mutex
 	repo        *repository.Repository
@@ -211,27 +229,13 @@ func (s *SyncService) SyncAllBlogs() error {
 		}
 	}
 
-	// Use a weighted semaphore to limit concurrency.
-	sem := semaphore.NewWeighted(SyncConcurrency)
-
-	// Sync all blogs in parallel (up to SyncConcurrency at once).
-	for _, blog := range syncableBlogs {
-		sem.Acquire(context.Background(), 1)
-
-		go func(blog *model.Blog) {
-			defer sem.Release(1)
-
-			slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
-			_, err := s.SyncBlog(blog.FeedURL())
-			if err != nil {
-				slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
-				return
-			}
-		}(blog)
-	}
-
-	// Wait for all blogs to finish syncing.
-	sem.Acquire(context.Background(), SyncConcurrency)
+	ParallelMap(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
+		slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
+		_, err := s.SyncBlog(blog.FeedURL())
+		if err != nil {
+			slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
+		}
+	})
 
 	return nil
 }

@@ -8,14 +8,14 @@ import (
 	"log/slog"
 	"net/http"
 
+	"golang.org/x/oauth2"
+
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
-
-	"golang.org/x/oauth2"
 )
 
 type FetchUserID func(client *http.Client) (string, error)

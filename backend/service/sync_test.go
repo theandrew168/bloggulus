@@ -41,6 +41,36 @@ func TestFilterSyncableBlogs(t *testing.T) {
 	test.AssertSliceContains(t, syncableBlogIDs, pastBlog.ID())
 }
 
+func TestUpdateCacheHeaders(t *testing.T) {
+	t.Parallel()
+
+	blog := test.NewBlog(t)
+	resp := fetch.FetchFeedResponse{
+		ETag:         "foo",
+		LastModified: "bar",
+	}
+
+	changed := service.UpdateCacheHeaders(blog, resp)
+	test.AssertEqual(t, changed, true)
+	test.AssertEqual(t, blog.ETag(), "foo")
+	test.AssertEqual(t, blog.LastModified(), "bar")
+}
+
+func TestUpdateCacheHeadersDoesNotClear(t *testing.T) {
+	t.Parallel()
+
+	blog := test.NewBlog(t)
+	resp := fetch.FetchFeedResponse{
+		ETag:         "",
+		LastModified: "",
+	}
+
+	changed := service.UpdateCacheHeaders(blog, resp)
+	test.AssertEqual(t, changed, false)
+	test.AssertEqual(t, blog.ETag(), blog.ETag())
+	test.AssertEqual(t, blog.LastModified(), blog.LastModified())
+}
+
 func TestComparePosts(t *testing.T) {
 	t.Parallel()
 

@@ -53,6 +53,22 @@ func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
 	return syncableBlogs
 }
 
+// UpdateCacheHeaders updates the ETag and Last-Modified headers for a blog if they have changed.
+func UpdateCacheHeaders(blog *model.Blog, response fetch.FetchFeedResponse) bool {
+	headersChanged := false
+	if response.ETag != "" && response.ETag != blog.ETag() {
+		headersChanged = true
+		blog.SetETag(response.ETag)
+	}
+
+	if response.LastModified != "" && response.LastModified != blog.LastModified() {
+		headersChanged = true
+		blog.SetLastModified(response.LastModified)
+	}
+
+	return headersChanged
+}
+
 type ComparePostsResult struct {
 	PostsToCreate []*model.Post
 	PostsToUpdate []*model.Post
@@ -135,26 +151,6 @@ func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher) 
 		feedFetcher: feedFetcher,
 	}
 	return &s
-}
-
-func (s *SyncService) updateCacheHeaders(blog *model.Blog, response fetch.FetchFeedResponse) error {
-	headersChanged := false
-	if response.ETag != "" && response.ETag != blog.ETag() {
-		headersChanged = true
-		blog.SetETag(response.ETag)
-	}
-
-	if response.LastModified != "" && response.LastModified != blog.LastModified() {
-		headersChanged = true
-		blog.SetLastModified(response.LastModified)
-	}
-
-	// Update the blog's cache headers if changed.
-	if headersChanged {
-		return s.repo.Blog().Update(blog)
-	}
-
-	return nil
 }
 
 func (s *SyncService) Run(ctx context.Context) error {
@@ -317,9 +313,12 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
-	err = s.updateCacheHeaders(blog, resp)
-	if err != nil {
-		return nil, err
+	headersChanged := UpdateCacheHeaders(blog, resp)
+	if headersChanged {
+		err = s.repo.Blog().Update(blog)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if resp.Feed == "" {

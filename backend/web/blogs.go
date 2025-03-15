@@ -114,6 +114,8 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 				return
 			}
 
+			// TODO: Handle the case where the blog already exists (just follow it).
+
 			slog.Info("blog added",
 				"account_id", account.ID(),
 				"account_username", account.Username(),

@@ -31,9 +31,6 @@ import (
 // Calculation: Determine if any posts in the feed are new / updated
 // Action: Create / update posts in the database
 
-// Given a list of blogs, which ones should be synced?
-// Given a list of posts and a feed, which posts should be created / updated?
-
 const (
 	// Check for new posts every SyncInterval.
 	SyncInterval = 30 * time.Minute
@@ -205,7 +202,7 @@ func (s *SyncService) SyncAllBlogs() error {
 	now := timeutil.Now()
 	syncableBlogs := FilterSyncableBlogs(blogs, now)
 
-	// Update the syncedAt time for each blog before syncing.
+	// Update the syncedAt time for each syncable blog before syncing.
 	for _, blog := range syncableBlogs {
 		blog.SetSyncedAt(now)
 		err = s.repo.Blog().Update(blog)
@@ -214,10 +211,10 @@ func (s *SyncService) SyncAllBlogs() error {
 		}
 	}
 
-	// use a weighted semaphore to limit concurrency
+	// Use a weighted semaphore to limit concurrency.
 	sem := semaphore.NewWeighted(SyncConcurrency)
 
-	// sync all blogs in parallel (up to SyncConcurrency at once)
+	// Sync all blogs in parallel (up to SyncConcurrency at once).
 	for _, blog := range syncableBlogs {
 		sem.Acquire(context.Background(), 1)
 
@@ -233,7 +230,7 @@ func (s *SyncService) SyncAllBlogs() error {
 		}(blog)
 	}
 
-	// wait for all blogs to finish syncing
+	// Wait for all blogs to finish syncing.
 	sem.Acquire(context.Background(), SyncConcurrency)
 
 	return nil
@@ -247,6 +244,9 @@ func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 			return nil, err
 		}
 
+		// An ErrNotFound is acceptable (and expected) here. The only difference
+		// is that we won't be able to include the ETag and Last-Modified headers
+		// in the request. This is fine for new blogs (an unconditional fetch).
 		return s.syncNewBlog(feedURL)
 	}
 
@@ -254,6 +254,7 @@ func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
+	// Make an unconditional fetch for the blog's feed.
 	req := fetch.FetchFeedRequest{
 		URL: feedURL,
 	}
@@ -262,7 +263,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	// no feed from a new blog is an error
+	// No feed data from a new blog is an error.
 	if resp.Feed == "" {
 		return nil, fetch.ErrUnreachableFeed
 	}
@@ -272,6 +273,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
+	// Create a new blog based on the feed data.
 	blog, err := model.NewBlog(
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
@@ -298,11 +300,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
-	err := s.repo.Blog().Update(blog)
-	if err != nil {
-		return nil, err
-	}
-
+	// Make a conditional fetch for the blog's feed.
 	req := fetch.FetchFeedRequest{
 		URL:          blog.FeedURL(),
 		ETag:         blog.ETag(),
@@ -313,6 +311,7 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
+	// Update the blog's cache headers if they have changed.
 	headersChanged := UpdateCacheHeaders(blog, resp)
 	if headersChanged {
 		err = s.repo.Blog().Update(blog)
@@ -340,16 +339,19 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 }
 
 func (s *SyncService) syncPosts(blog *model.Blog, feedPosts []feed.Post) error {
+	// List all known posts for the current blog.
 	knownPosts, err := s.repo.Post().ListByBlog(blog)
 	if err != nil {
 		return err
 	}
 
+	// Compare the known posts to the feed posts.
 	result, err := ComparePosts(blog, knownPosts, feedPosts)
 	if err != nil {
 		return err
 	}
 
+	// Create any posts that are new.
 	for _, post := range result.PostsToCreate {
 		err = s.repo.Post().Create(post)
 		if err != nil {
@@ -357,6 +359,7 @@ func (s *SyncService) syncPosts(blog *model.Blog, feedPosts []feed.Post) error {
 		}
 	}
 
+	// Update any posts that have changed.
 	for _, post := range result.PostsToUpdate {
 		err = s.repo.Post().Update(post)
 		if err != nil {

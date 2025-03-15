@@ -54,10 +54,9 @@ func NewSyncService(
 	t *testing.T,
 	repo *repository.Repository,
 	feeds map[string]fetch.FetchFeedResponse,
-	pages map[string]string,
 ) *service.SyncService {
 	t.Helper()
 
-	syncService := service.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds), fetchMock.NewPageFetcher(pages))
+	syncService := service.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds))
 	return syncService
 }

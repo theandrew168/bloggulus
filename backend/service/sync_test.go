@@ -114,10 +114,7 @@ func TestNewBlog(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -130,7 +127,7 @@ func TestNewBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 	// fetch posts and verify count
-	posts, err := repo.Post().ListByBlog(blog, 20, 0)
+	posts, err := repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -161,10 +158,7 @@ func TestExistingBlog(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -177,7 +171,7 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
 
 	// fetch posts and verify count (should be none)
-	posts, err := repo.Post().ListByBlog(blog, 20, 0)
+	posts, err := repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 0)
 
@@ -201,7 +195,7 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err = repo.Post().ListByBlog(blog, 20, 0)
+	posts, err = repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -223,10 +217,7 @@ func TestUnreachableFeed(t *testing.T) {
 	feeds := map[string]fetch.FetchFeedResponse{}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	_, err := syncService.SyncBlog(feedURL)
 	test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
@@ -252,10 +243,7 @@ func TestSyncCooldown(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// add a blog (sync now)
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -302,17 +290,14 @@ func TestUpdatePostContent(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err := repo.Post().ListByBlog(blog, 20, 0)
+	posts, err := repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -335,7 +320,7 @@ func TestUpdatePostContent(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// refetch posts and verify count
-	posts, err = repo.Post().ListByBlog(blog, 20, 0)
+	posts, err = repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -365,10 +350,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -418,10 +400,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	pages := map[string]string{}
-	pageFetcher := fetchMock.NewPageFetcher(pages)
-
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -438,7 +417,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher = fetchMock.NewFeedFetcher(feeds)
 
-	syncService = service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService = service.NewSyncService(repo, feedFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
 	_, err = syncService.SyncBlog(feedBlog.FeedURL)

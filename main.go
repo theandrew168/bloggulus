@@ -84,7 +84,7 @@ func run() error {
 	// Init the sync service and do an initial sync.
 	feedFetcher := fetch.NewFeedFetcher()
 	pageFetcher := fetch.NewPageFetcher()
-	syncService := service.NewSyncService(repo, feedFetcher, pageFetcher)
+	syncService := service.NewSyncService(repo, feedFetcher)
 
 	// Init the session service and clear any expired session tokens.
 	sessionService := service.NewSessionService(repo)

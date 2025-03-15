@@ -127,14 +127,12 @@ type SyncService struct {
 	mu          sync.Mutex
 	repo        *repository.Repository
 	feedFetcher fetch.FeedFetcher
-	pageFetcher fetch.PageFetcher
 }
 
-func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher, pageFetcher fetch.PageFetcher) *SyncService {
+func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher) *SyncService {
 	s := SyncService{
 		repo:        repo,
 		feedFetcher: feedFetcher,
-		pageFetcher: pageFetcher,
 	}
 	return &s
 }
@@ -295,11 +293,9 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		return nil, err
 	}
 
-	for _, feedPost := range feedBlog.Posts {
-		_, err = s.syncPost(blog, feedPost)
-		if err != nil {
-			slog.Warn(err.Error(), "url", feedPost.URL)
-		}
+	err = s.syncPosts(blog, feedBlog.Posts)
+	if err != nil {
+		return nil, err
 	}
 
 	return blog, nil
@@ -336,66 +332,38 @@ func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 		return nil, err
 	}
 
-	for _, feedPost := range feedBlog.Posts {
-		_, err = s.syncPost(blog, feedPost)
-		if err != nil {
-			slog.Warn("failed to sync post", "url", feedPost.URL, "error", err.Error())
-		}
+	err = s.syncPosts(blog, feedBlog.Posts)
+	if err != nil {
+		return nil, err
 	}
 
 	return blog, nil
 }
 
-func (s *SyncService) syncPost(blog *model.Blog, feedPost feed.Post) (*model.Post, error) {
-	post, err := s.repo.Post().ReadByURL(feedPost.URL)
+func (s *SyncService) syncPosts(blog *model.Blog, feedPosts []feed.Post) error {
+	knownPosts, err := s.repo.Post().ListByBlog(blog)
 	if err != nil {
-		if !errors.Is(err, postgres.ErrNotFound) {
-			return nil, err
-		}
+		return err
+	}
 
-		// If the post doesn't exist, create it and fall through.
-		post, err = model.NewPost(
-			blog,
-			feedPost.URL,
-			feedPost.Title,
-			feedPost.Content,
-			feedPost.PublishedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
+	result, err := ComparePosts(blog, knownPosts, feedPosts)
+	if err != nil {
+		return err
+	}
 
+	for _, post := range result.PostsToCreate {
 		err = s.repo.Post().Create(post)
 		if err != nil {
-			return nil, err
+			slog.Warn("failed to create post", "url", post.URL(), "error", err.Error())
 		}
 	}
 
-	// Update the post's content (if not present but available from the feed).
-	if post.Content() == "" && feedPost.Content != "" {
-		post.SetContent(feedPost.Content)
+	for _, post := range result.PostsToUpdate {
 		err = s.repo.Post().Update(post)
 		if err != nil {
-			return nil, err
+			slog.Warn("failed to update post", "url", post.URL(), "error", err.Error())
 		}
 	}
 
-	// If we still don't have content, try to fetch it manually.
-	if post.Content() == "" {
-		req := fetch.FetchPageRequest{
-			URL: post.URL(),
-		}
-		resp, err := s.pageFetcher.FetchPage(req)
-		if err != nil {
-			return post, nil
-		}
-
-		post.SetContent(resp.Content)
-		err = s.repo.Post().Update(post)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return post, nil
+	return nil
 }

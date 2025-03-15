@@ -75,12 +75,10 @@ func TestPostListByBlog(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	limit := 3
-	offset := 0
-	posts, err := repo.Post().ListByBlog(blog, limit, offset)
+	posts, err := repo.Post().ListByBlog(blog)
 	test.AssertNilError(t, err)
 
-	test.AssertEqual(t, len(posts), limit)
+	test.AssertEqual(t, len(posts), 3)
 }
 
 func TestPostCountByBlog(t *testing.T) {

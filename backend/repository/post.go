@@ -156,7 +156,7 @@ func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (r *PostRepository) ListByBlog(blog *model.Blog, limit, offset int) ([]*model.Post, error) {
+func (r *PostRepository) ListByBlog(blog *model.Blog) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -169,13 +169,12 @@ func (r *PostRepository) ListByBlog(blog *model.Blog, limit, offset int) ([]*mod
 			post.updated_at
 		FROM post
 		WHERE post.blog_id = $1
-		ORDER BY post.published_at DESC
-		LIMIT $2 OFFSET $3`
+		ORDER BY post.published_at DESC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := r.conn.Query(ctx, stmt, blog.ID(), limit, offset)
+	rows, err := r.conn.Query(ctx, stmt, blog.ID())
 	if err != nil {
 		return nil, err
 	}

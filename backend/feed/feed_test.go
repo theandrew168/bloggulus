@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -26,6 +27,59 @@ func TestNormalizePostURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := feed.NormalizePostURL(tt.blogURL, tt.postURL)
+		test.AssertEqual(t, got, tt.want)
+	}
+}
+
+func TestDeterminePublishedAt(t *testing.T) {
+	t.Parallel()
+
+	feedUpdatedParsed := time.Now().AddDate(0, 0, -1)
+	itemPublishedParsed := time.Now().AddDate(0, 0, -2)
+	now := time.Now()
+
+	tests := []struct {
+		feedUpdatedParsed   *time.Time
+		itemPublishedParsed *time.Time
+		now                 time.Time
+		want                time.Time
+	}{
+		{
+			// Without any feed or item published date, use now.
+			feedUpdatedParsed:   nil,
+			itemPublishedParsed: nil,
+			now:                 now,
+			want:                now.UTC().Round(time.Microsecond),
+		},
+		{
+			// If the feed has an updated date, use it.
+			feedUpdatedParsed:   &feedUpdatedParsed,
+			itemPublishedParsed: nil,
+			now:                 now,
+			want:                feedUpdatedParsed.UTC().Round(time.Microsecond),
+		},
+		{
+			// If the item has a published date, use it.
+			feedUpdatedParsed:   nil,
+			itemPublishedParsed: &itemPublishedParsed,
+			now:                 now,
+			want:                itemPublishedParsed.UTC().Round(time.Microsecond),
+		},
+		{
+			// If item has a published date, use it even if the feed has an updated date.
+			feedUpdatedParsed:   &feedUpdatedParsed,
+			itemPublishedParsed: &itemPublishedParsed,
+			now:                 now,
+			want:                itemPublishedParsed.UTC().Round(time.Microsecond),
+		},
+	}
+
+	for _, tt := range tests {
+		got := feed.DeterminePublishedAt(
+			&gofeed.Feed{UpdatedParsed: tt.feedUpdatedParsed},
+			&gofeed.Item{PublishedParsed: tt.itemPublishedParsed},
+			tt.now,
+		)
 		test.AssertEqual(t, got, tt.want)
 	}
 }

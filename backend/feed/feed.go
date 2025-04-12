@@ -49,6 +49,23 @@ func NormalizePostURL(blogURL, postURL string) string {
 	return url
 }
 
+func DeterminePublishedAt(feed *gofeed.Feed, item *gofeed.Item, now time.Time) time.Time {
+	// Default the published date to now (though it will likely get overwritten).
+	publishedAt := now
+
+	// If the feed has an updated date, use it (better than now).
+	if feed.UpdatedParsed != nil {
+		publishedAt = *feed.UpdatedParsed
+	}
+
+	// If the item has a published date, use it (better than the feed's updated date).
+	if item.PublishedParsed != nil {
+		publishedAt = *item.PublishedParsed
+	}
+
+	return publishedAt.UTC().Round(time.Microsecond)
+}
+
 func Parse(feedURL string, feedBody string) (Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseString(feedBody)
@@ -58,21 +75,13 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 
 	var posts []Post
 	for _, item := range feed.Items {
-		// skip items without a link or title
+		// Skip items without a link or title.
 		if item.Link == "" || item.Title == "" {
 			continue
 		}
 
 		url := NormalizePostURL(feed.Link, item.Link)
-
-		// check for a publish date, else default to now
-		publishedAt := time.Now()
-		if item.PublishedParsed != nil {
-			publishedAt = *item.PublishedParsed
-		}
-
-		// ensure publishedAt is in UTC
-		publishedAt = publishedAt.UTC().Round(time.Microsecond)
+		publishedAt := DeterminePublishedAt(feed, item, time.Now())
 
 		post := Post{
 			URL:         url,

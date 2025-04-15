@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed"
+
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 var (
@@ -50,20 +52,18 @@ func NormalizePostURL(blogURL, postURL string) string {
 }
 
 func DeterminePublishedAt(feed *gofeed.Feed, item *gofeed.Item, now time.Time) time.Time {
-	// Default the published date to now (though it will likely get overwritten).
-	publishedAt := now
-
-	// If the feed has an updated date, use it (better than now).
-	if feed.UpdatedParsed != nil {
-		publishedAt = *feed.UpdatedParsed
-	}
-
-	// If the item has a published date, use it (better than the feed's updated date).
+	// If the item has a published date, use it since it is the most accurate / specific.
 	if item.PublishedParsed != nil {
-		publishedAt = *item.PublishedParsed
+		return timeutil.Normalize(*item.PublishedParsed)
 	}
 
-	return publishedAt.UTC().Round(time.Microsecond)
+	// Otherwise, if the feed itself has an updated date, use it instead.
+	if feed.UpdatedParsed != nil {
+		return timeutil.Normalize(*feed.UpdatedParsed)
+	}
+
+	// If all else fails, use the current time.
+	return timeutil.Normalize(now)
 }
 
 func Parse(feedURL string, feedBody string) (Blog, error) {

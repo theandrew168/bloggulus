@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed"
+
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 func TestNormalizePostURL(t *testing.T) {
@@ -49,28 +51,28 @@ func TestDeterminePublishedAt(t *testing.T) {
 			feedUpdatedParsed:   nil,
 			itemPublishedParsed: nil,
 			now:                 now,
-			want:                now.UTC().Round(time.Microsecond),
+			want:                timeutil.Normalize(now),
 		},
 		{
 			// If the feed has an updated date, use it.
 			feedUpdatedParsed:   &feedUpdatedParsed,
 			itemPublishedParsed: nil,
 			now:                 now,
-			want:                feedUpdatedParsed.UTC().Round(time.Microsecond),
+			want:                timeutil.Normalize(feedUpdatedParsed),
 		},
 		{
 			// If the item has a published date, use it.
 			feedUpdatedParsed:   nil,
 			itemPublishedParsed: &itemPublishedParsed,
 			now:                 now,
-			want:                itemPublishedParsed.UTC().Round(time.Microsecond),
+			want:                timeutil.Normalize(itemPublishedParsed),
 		},
 		{
 			// If item has a published date, use it even if the feed has an updated date.
 			feedUpdatedParsed:   &feedUpdatedParsed,
 			itemPublishedParsed: &itemPublishedParsed,
 			now:                 now,
-			want:                itemPublishedParsed.UTC().Round(time.Microsecond),
+			want:                timeutil.Normalize(itemPublishedParsed),
 		},
 	}
 
@@ -261,7 +263,7 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		test.AssertEqual(t, parsedPost.PublishedAt, publishedAt.UTC().Round(time.Microsecond))
+		test.AssertEqual(t, parsedPost.PublishedAt, timeutil.Normalize(publishedAt))
 	}
 }
 

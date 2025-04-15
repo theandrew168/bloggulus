@@ -2,7 +2,12 @@ package timeutil
 
 import "time"
 
-// Return the current UTC time rounded to microseconds (to match PostgreSQL).
+// Normalize a time to UTC and round it to microseconds (to match PostgreSQL).
+func Normalize(t time.Time) time.Time {
+	return t.UTC().Round(time.Microsecond)
+}
+
+// Return the current time (normalized to UTC and rounded to microseconds).
 func Now() time.Time {
-	return time.Now().UTC().Round(time.Microsecond)
+	return Normalize(time.Now())
 }

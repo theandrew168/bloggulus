@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
+
+	"github.com/coreos/go-systemd/v22/activation"
 )
 
 func Run(ctx context.Context, handler http.Handler, addr string) error {
 	srv := http.Server{
-		Addr:    addr,
 		Handler: handler,
 	}
 
@@ -35,11 +37,27 @@ func Run(ctx context.Context, handler http.Handler, addr string) error {
 		close(stopError)
 	}()
 
-	slog.Info("starting web server", "addr", srv.Addr)
+	systemdSocketListeners, err := activation.Listeners()
+	if err != nil {
+		return err
+	}
+
+	var listener net.Listener
+	if len(systemdSocketListeners) > 0 {
+		slog.Info("using systemd socket activation")
+		listener = systemdSocketListeners[0]
+	} else {
+		listener, err = net.Listen("tcp", addr)
+		if err != nil {
+			return err
+		}
+	}
+
+	slog.Info("starting web server", "addr", listener.Addr().String())
 
 	// listen and serve forever
 	// ignore http.ErrServerClosed (expected upon stop)
-	err := srv.ListenAndServe()
+	err = srv.Serve(listener)
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

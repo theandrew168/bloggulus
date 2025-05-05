@@ -23,6 +23,7 @@ type Config struct {
 	GoogleClientSecret  string `toml:"google_client_secret"`
 	GoogleRedirectURI   string `toml:"google_redirect_uri"`
 	PlausibleDataDomain string `toml:"plausible_data_domain"`
+	GoatCounterCode     string `toml:"goatcounter_code"`
 }
 
 func Read(data string) (Config, error) {

@@ -33,6 +33,9 @@ func TemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
 	if ok && conf.PlausibleDataDomain != "" {
 		data.PlausibleDataDomain = conf.PlausibleDataDomain
 	}
+	if ok && conf.GoatCounterCode != "" {
+		data.GoatCounterCode = conf.GoatCounterCode
+	}
 
 	return data
 }

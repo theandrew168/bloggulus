@@ -14,5 +14,6 @@ type BaseData struct {
 	CSRFToken string
 	Toast     string
 
+	GoatCounterCode     string
 	PlausibleDataDomain string
 }

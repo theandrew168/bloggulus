@@ -15,6 +15,7 @@ require (
 	github.com/prometheus/client_golang v1.21.1
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sync v0.12.0
+	maragu.dev/gomponents v1.1.0
 )
 
 require (
@@ -41,5 +42,4 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
-	maragu.dev/gomponents v1.1.0 // indirect
 )

@@ -138,7 +138,15 @@ func Handler(
 	})
 
 	mux.HandleFunc("GET /gomp", func(w http.ResponseWriter, r *http.Request) {
-		page := ui.Layout(ui.LayoutData{})
+		data := util.TemplateBaseData(r, w)
+		page := ui.Layout(ui.LayoutData{
+			Account:   data.Account,
+			CSRFToken: data.CSRFToken,
+			Toast:     data.Toast,
+
+			GoatCounterCode:     data.GoatCounterCode,
+			PlausibleDataDomain: data.PlausibleDataDomain,
+		})
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
 			return page.Render(w)
 		})

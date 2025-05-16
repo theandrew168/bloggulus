@@ -8,13 +8,12 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/theandrew168/bloggulus/backend/finder"
-	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/ui"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 // TODO: Rename p / s to page / size.
 func HandleIndexPage(find *finder.Finder) http.Handler {
-	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 
@@ -98,16 +97,17 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			return
 		}
 
-		data := page.IndexData{
-			BaseData: util.TemplateBaseData(r, w),
+		page := ui.Index(ui.IndexData{
+			LayoutData: util.GetLayoutData(r, w),
 
 			Search:       search,
 			Articles:     articles,
 			HasMorePages: p*s < count,
 			NextPage:     p + 1,
-		}
+		})
+
 		util.Render(w, r, 200, func(w io.Writer) error {
-			return tmpl.Render(w, data)
+			return page.Render(w)
 		})
 	})
 }

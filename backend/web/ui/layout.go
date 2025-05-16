@@ -10,7 +10,7 @@ import (
 	h "maragu.dev/gomponents/html"
 )
 
-type LayoutData struct {
+type PageLayoutData struct {
 	Account   *model.Account
 	CSRFToken string
 	Toast     string
@@ -19,7 +19,7 @@ type LayoutData struct {
 	PlausibleDataDomain string
 }
 
-func Layout(data LayoutData, children ...g.Node) g.Node {
+func PageLayout(data PageLayoutData, children ...g.Node) g.Node {
 	return c.HTML5(c.HTML5Props{
 		Language:    "en",
 		Title:       "Bloggulus - A website for avid blog readers",

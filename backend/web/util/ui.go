@@ -8,8 +8,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/ui"
 )
 
-func GetLayoutData(r *http.Request, w http.ResponseWriter) ui.LayoutData {
-	data := ui.LayoutData{}
+func GetPageLayoutData(r *http.Request, w http.ResponseWriter) ui.PageLayoutData {
+	data := ui.PageLayoutData{}
 
 	account, isLoggedIn := GetContextAccount(r)
 	if isLoggedIn {

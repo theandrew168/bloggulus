@@ -1,7 +1,6 @@
 package web
 
 import (
-	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -17,7 +16,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
-	"github.com/theandrew168/bloggulus/backend/web/ui"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
@@ -135,21 +133,6 @@ func Handler(
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-	})
-
-	mux.HandleFunc("GET /gomp", func(w http.ResponseWriter, r *http.Request) {
-		data := util.TemplateBaseData(r, w)
-		page := ui.Layout(ui.LayoutData{
-			Account:   data.Account,
-			CSRFToken: data.CSRFToken,
-			Toast:     data.Toast,
-
-			GoatCounterCode:     data.GoatCounterCode,
-			PlausibleDataDomain: data.PlausibleDataDomain,
-		})
-		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
-			return page.Render(w)
-		})
 	})
 
 	// Requests that don't match any of the above handlers get a 404.

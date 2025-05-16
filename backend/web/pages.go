@@ -95,7 +95,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 			)
 
 			// Show a toast explaining that the page will be processed in the background.
-			cookie := util.NewSessionCookie(util.ToastCookieName, "This pageh as been added!")
+			cookie := util.NewSessionCookie(util.ToastCookieName, "This page as been added!")
 			http.SetCookie(w, &cookie)
 
 			http.Redirect(w, r, "/pages", http.StatusSeeOther)
@@ -168,7 +168,7 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 
 // Just delete the account_page entry for this account + page. This
 // is because pages _could_ be added by multiple accounts and we
-// wouldn't wanna delete them out from under other users. If necessarh,
+// wouldn't wanna delete them out from under other users. If necessary,
 // a service could be written that "garbage collects" dead pages.
 func HandlePageUnfollowForm(repo *repository.Repository) http.Handler {
 	tmpl := page.NewPages()

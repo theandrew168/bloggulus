@@ -97,8 +97,8 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			return
 		}
 
-		page := ui.Index(ui.IndexData{
-			LayoutData: util.GetLayoutData(r, w),
+		page := ui.IndexPage(ui.IndexPageData{
+			PageLayoutData: util.GetPageLayoutData(r, w),
 
 			Search:       search,
 			Articles:     articles,

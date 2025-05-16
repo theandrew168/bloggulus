@@ -9,8 +9,8 @@ import (
 	h "maragu.dev/gomponents/html"
 )
 
-type IndexData struct {
-	LayoutData
+type IndexPageData struct {
+	PageLayoutData
 
 	Search       string
 	Articles     []finder.Article
@@ -18,8 +18,8 @@ type IndexData struct {
 	NextPage     int
 }
 
-func Index(data IndexData) g.Node {
-	return Layout(data.LayoutData,
+func IndexPage(data IndexPageData) g.Node {
+	return PageLayout(data.PageLayoutData,
 		// Header (search)
 		h.Header(
 			h.Class("articles-header"),

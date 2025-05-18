@@ -6,13 +6,13 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/ui"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 func HandleAccountList(repo *repository.Repository) http.Handler {
-	tmpl := page.NewAccounts()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accounts, err := repo.Account().List(100, 0)
 		if err != nil {
@@ -20,13 +20,13 @@ func HandleAccountList(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		data := page.AccountsData{
-			BaseData: util.TemplateBaseData(r, w),
+		page := ui.AccountsPage(ui.AccountsPageData{
+			PageLayoutData: util.GetPageLayoutData(r, w),
 
 			Accounts: accounts,
-		}
+		})
 		util.Render(w, r, 200, func(w io.Writer) error {
-			return tmpl.Render(w, data)
+			return page.Render(w)
 		})
 	})
 }
@@ -47,6 +47,10 @@ func HandleAccountDeleteForm(repo *repository.Repository) http.Handler {
 
 		// Prevent accidental deletion of admin accounts.
 		if account.IsAdmin() {
+			slog.Info("admin account deletion attempt",
+				"account_id", account.ID(),
+				"account_username", account.Username(),
+			)
 			util.BadRequestResponse(w, r)
 			return
 		}

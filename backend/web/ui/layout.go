@@ -35,63 +35,56 @@ func PageLayout(data PageLayoutData, children ...g.Node) g.Node {
 				h.Async(),
 			)),
 		},
-		Body: []g.Node{
-			h.Class("sans-serif"),
+		Body: []g.Node{h.Class("sans-serif"),
 			// Header (nav bar)
-			h.Header(
-				h.Class("header"),
+			h.Header(h.Class("header"),
 				h.Nav(
-					h.Ul(
-						h.Class("header__links"),
-						h.Li(
-							h.Class("header__link--first"),
-							h.A(
-								h.Class("header__link header__link--home"),
+					h.Ul(h.Class("header__links"),
+						h.Li(h.Class("header__link--first"),
+							h.A(h.Class("header__link header__link--home"),
 								h.Href("/"),
 								g.Text("Bloggulus"),
 							),
 						),
-						g.If(data.Account != nil, g.Group{
-							h.Li(
-								h.A(
-									h.Class("header__link"),
-									h.Href("/blogs"),
-									g.Text("Blogs"),
-								),
-							),
-							h.Li(
-								h.Form(
-									h.Method("POST"),
-									h.Action("/signout"),
-									h.Input(
-										h.Type("hidden"),
-										h.Name("csrf_token"),
-										h.Value(data.CSRFToken),
-									),
-									h.Button(
-										h.Class("header__link"),
-										h.Type("submit"),
-										g.Text("Sign Out"),
+						g.If(data.Account != nil,
+							g.Group{
+								h.Li(
+									h.A(h.Class("header__link"),
+										h.Href("/blogs"),
+										g.Text("Blogs"),
 									),
 								),
-							),
-						}),
-						g.If(data.Account == nil, g.Group{
+								h.Li(
+									h.Form(
+										h.Method("POST"),
+										h.Action("/signout"),
+										h.Input(
+											h.Type("hidden"),
+											h.Name("csrf_token"),
+											h.Value(data.CSRFToken),
+										),
+										h.Button(h.Class("header__link"),
+											h.Type("submit"),
+											g.Text("Sign Out"),
+										),
+									),
+								),
+							},
+						),
+						g.If(data.Account == nil,
 							h.Li(
-								h.A(
-									h.Class("header__link"),
+								h.A(h.Class("header__link"),
 									h.Href("/signin"),
 									g.Text("Sign In"),
 								),
 							),
-						}),
+						),
 					),
 				),
 			),
 			// Toast message
 			g.If(data.Toast != "",
-				h.Div(
-					h.Class("toast"),
+				h.Div(h.Class("toast"),
 					h.Div(
 						g.Text(data.Toast),
 					),
@@ -102,28 +95,23 @@ func PageLayout(data PageLayoutData, children ...g.Node) g.Node {
 				g.Group(children),
 			),
 			// Footer
-			h.Footer(
-				h.Class("footer"),
+			h.Footer(h.Class("footer"),
 				h.Nav(
-					h.Ul(
-						h.Class("footer__links"),
+					h.Ul(h.Class("footer__links"),
 						h.Li(
-							h.A(
-								h.Class("footer__link footer__link--big"),
+							h.A(h.Class("footer__link footer__link--big"),
 								h.Href("/"),
 								g.Text("Bloggulus"),
 							),
 						),
 						h.Li(
-							h.A(
-								h.Class("footer__link footer__link--small"),
+							h.A(h.Class("footer__link footer__link--small"),
 								h.Href("/docs/privacy.html"),
 								g.Text("Privacy Policy"),
 							),
 						),
 						h.Li(
-							h.A(
-								h.Class("footer__link"),
+							h.A(h.Class("footer__link"),
 								h.Href("https://shallowbrooksoftware.com"),
 								g.Text("Shallow Brook Software"),
 							),

@@ -13,12 +13,9 @@ type SignInPageData struct {
 
 func SignInPage(data SignInPageData) g.Node {
 	return PageLayout(data.PageLayoutData,
-		h.Section(
-			h.Class("signin"),
-			h.Article(
-				h.Class("signin__card"),
-				h.H2(
-					h.Class("signin__heading"),
+		h.Section(h.Class("signin"),
+			h.Article(h.Class("signin__card"),
+				h.H2(h.Class("signin__heading"),
 					g.Text("Welcome!"),
 				),
 
@@ -33,11 +30,9 @@ func SignInPage(data SignInPageData) g.Node {
 							h.Name("csrf_token"),
 							h.Value(data.CSRFToken),
 						),
-						h.Button(
-							h.Class("signin__button"),
+						h.Button(h.Class("signin__button"),
 							h.Type("submit"),
-							h.Img(
-								h.Class("signin__icon"),
+							h.Img(h.Class("signin__icon"),
 								h.Src("/img/bloggulus.png"),
 							),
 							g.Text("Sign in with Debug"),
@@ -45,21 +40,17 @@ func SignInPage(data SignInPageData) g.Node {
 					),
 				),
 
-				h.A(
-					h.Class("signin__button"),
+				h.A(h.Class("signin__button"),
 					h.Href("/github/signin"),
-					h.Img(
-						h.Class("signin__icon"),
+					h.Img(h.Class("signin__icon"),
 						h.Src("/img/github.png"),
 					),
 					g.Text("Sign in with GitHub"),
 				),
 
-				h.A(
-					h.Class("signin__button"),
+				h.A(h.Class("signin__button"),
 					h.Href("/google/signin"),
-					h.Img(
-						h.Class("signin__icon"),
+					h.Img(h.Class("signin__icon"),
 						h.Src("/img/google.png"),
 					),
 					g.Text("Sign in with Google"),

@@ -42,4 +42,5 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
+	maragu.dev/gomponents-htmx v0.6.1 // indirect
 )

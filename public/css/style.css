@@ -388,6 +388,7 @@ svg {
 
 .blogs-header__input, .pages-header__input {
 	width: 70%;
+	margin-right: 0.5rem;
 }
 
 .blogs-list, .pages-list, .accounts-list {

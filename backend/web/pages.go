@@ -13,12 +13,11 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/ui"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 func HandlePageList(repo *repository.Repository) http.Handler {
-	tmpl := page.NewPages()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -32,13 +31,13 @@ func HandlePageList(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		data := page.PagesData{
-			BaseData: util.TemplateBaseData(r, w),
+		page := ui.PagesPage(ui.PagesPageData{
+			PageLayoutData: util.GetPageLayoutData(r, w),
 
 			Pages: pages,
-		}
+		})
 		util.Render(w, r, 200, func(w io.Writer) error {
-			return tmpl.Render(w, data)
+			return page.Render(w)
 		})
 	})
 }
@@ -171,7 +170,6 @@ func HandlePageCreateForm(repo *repository.Repository, pageFetcher fetch.PageFet
 // wouldn't wanna delete them out from under other users. If necessary,
 // a service could be written that "garbage collects" dead pages.
 func HandlePageUnfollowForm(repo *repository.Repository) http.Handler {
-	tmpl := page.NewPages()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -225,13 +223,14 @@ func HandlePageUnfollowForm(repo *repository.Repository) http.Handler {
 				return
 			}
 
-			data := page.PagesData{
-				BaseData: util.TemplateBaseData(r, w),
+			pagesList := ui.PagesList(ui.PagesPageData{
+				PageLayoutData: util.GetPageLayoutData(r, w),
 
 				Pages: pages,
-			}
+			})
+
 			util.Render(w, r, 200, func(w io.Writer) error {
-				return tmpl.RenderPages(w, data)
+				return pagesList.Render(w)
 			})
 			return
 		}

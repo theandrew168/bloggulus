@@ -14,7 +14,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/ui"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
@@ -95,7 +95,6 @@ func FetchGoogleUserID(client *http.Client) (string, error) {
 }
 
 func HandleSignIn(enableDebugAuth bool) http.Handler {
-	tmpl := page.NewSignIn()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a "next" query param for post-auth redirecting.
 		next := r.URL.Query().Get("next")
@@ -107,13 +106,14 @@ func HandleSignIn(enableDebugAuth bool) http.Handler {
 		cookie := util.NewSessionCookie(util.NextCookieName, next)
 		http.SetCookie(w, &cookie)
 
-		data := page.SignInData{
-			BaseData: util.TemplateBaseData(r, w),
+		page := ui.SignInPage(ui.SignInPageData{
+			PageLayoutData: util.GetPageLayoutData(r, w),
 
 			EnableDebugAuth: enableDebugAuth,
-		}
+		})
+
 		util.Render(w, r, http.StatusOK, func(w io.Writer) error {
-			return tmpl.Render(w, data)
+			return page.Render(w)
 		})
 	})
 }

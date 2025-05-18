@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/web/page"
+	"github.com/theandrew168/bloggulus/backend/web/ui"
 )
 
 // Handle errors that arise from creating a new row in the database.
@@ -59,52 +59,49 @@ func DeleteErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 
 // Render a 400 Bad Request error page.
 func BadRequestResponse(w http.ResponseWriter, r *http.Request) {
-	tmpl := page.NewError()
 	code := http.StatusBadRequest
-	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+	page := ui.ErrorPage(ui.ErrorPageData{
+		PageLayoutData: GetPageLayoutData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, we cannot understand what you sent.",
-	}
+	})
 
 	RenderError(w, r, code, func(w io.Writer) error {
-		return tmpl.Render(w, data)
+		return page.Render(w)
 	})
 }
 
 // Render a 403 Forbidden error page.
 func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
-	tmpl := page.NewError()
 	code := http.StatusForbidden
-	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+	page := ui.ErrorPage(ui.ErrorPageData{
+		PageLayoutData: GetPageLayoutData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, you are not allowed to access this page.",
-	}
+	})
 
 	RenderError(w, r, code, func(w io.Writer) error {
-		return tmpl.Render(w, data)
+		return page.Render(w)
 	})
 }
 
 // Render a 404 Not Found error page.
 func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
-	tmpl := page.NewError()
 	code := http.StatusNotFound
-	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+	page := ui.ErrorPage(ui.ErrorPageData{
+		PageLayoutData: GetPageLayoutData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, this page could not be found.",
-	}
+	})
 
 	RenderError(w, r, code, func(w io.Writer) error {
-		return tmpl.Render(w, data)
+		return page.Render(w)
 	})
 }
 
@@ -115,17 +112,16 @@ func InternalServerErrorResponse(w http.ResponseWriter, r *http.Request, err err
 		"url", r.URL.String(),
 	)
 
-	tmpl := page.NewError()
 	code := http.StatusInternalServerError
-	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+	page := ui.ErrorPage(ui.ErrorPageData{
+		PageLayoutData: GetPageLayoutData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
 		Message:    "Sorry, something went wrong.",
-	}
+	})
 
 	RenderError(w, r, code, func(w io.Writer) error {
-		return tmpl.Render(w, data)
+		return page.Render(w)
 	})
 }

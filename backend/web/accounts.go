@@ -21,7 +21,7 @@ func HandleAccountList(repo *repository.Repository) http.Handler {
 		}
 
 		data := page.AccountsData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			Accounts: accounts,
 		}

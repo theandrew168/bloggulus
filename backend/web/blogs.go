@@ -33,11 +33,11 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 		}
 
 		data := page.BlogsData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 		}
 		for _, blog := range blogs {
 			data.Blogs = append(data.Blogs, page.BlogsBlogData{
-				BaseData: util.TemplateBaseData(r, w),
+				BaseData: util.GetTemplateBaseData(r, w),
 
 				BlogForAccount: blog,
 			})
@@ -202,7 +202,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 		// If the request came in via HTMX, re-render the individual blog row.
 		if util.IsHTMXRequest(r) {
 			data := page.BlogsBlogData{
-				BaseData: util.TemplateBaseData(r, w),
+				BaseData: util.GetTemplateBaseData(r, w),
 
 				BlogForAccount: finder.BlogForAccount{
 					ID:          blog.ID(),
@@ -270,7 +270,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 		// If the request came in via HTMX, re-render the individual row.
 		if util.IsHTMXRequest(r) {
 			data := page.BlogsBlogData{
-				BaseData: util.TemplateBaseData(r, w),
+				BaseData: util.GetTemplateBaseData(r, w),
 
 				BlogForAccount: finder.BlogForAccount{
 					ID:          blog.ID(),

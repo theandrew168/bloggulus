@@ -13,9 +13,6 @@
 				<img class="signin__icon" src="/img/bloggulus.png" />
 				Sign in with Debug
 			</button>
-			{{with .Errors.google}}
-			<p class="signin__error">{{.}}</p>
-			{{end}}
 		</form>
 		{{end}}
 
@@ -23,17 +20,11 @@
 			<img class="signin__icon" src="/img/github.png" />
 			Sign in with GitHub
 		</a>
-		{{with .Errors.github}}
-		<p class="signin__error">{{.}}</p>
-		{{end}}
 
 		<a class="signin__button" href="/google/signin">
 			<img class="signin__icon" src="/img/google.png" />
 			Sign in with Google
 		</a>
-		{{with .Errors.google}}
-		<p class="signin__error">{{.}}</p>
-		{{end}}
 	</article>
 </section>
 

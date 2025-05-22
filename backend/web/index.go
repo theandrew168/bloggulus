@@ -99,7 +99,7 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 		}
 
 		data := page.IndexData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			Search:       search,
 			Articles:     articles,

@@ -33,7 +33,7 @@ func HandlePageList(repo *repository.Repository) http.Handler {
 		}
 
 		data := page.PagesData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			Pages: pages,
 		}
@@ -226,7 +226,7 @@ func HandlePageUnfollowForm(repo *repository.Repository) http.Handler {
 			}
 
 			data := page.PagesData{
-				BaseData: util.TemplateBaseData(r, w),
+				BaseData: util.GetTemplateBaseData(r, w),
 
 				Pages: pages,
 			}

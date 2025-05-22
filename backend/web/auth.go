@@ -108,7 +108,7 @@ func HandleSignIn(enableDebugAuth bool) http.Handler {
 		http.SetCookie(w, &cookie)
 
 		data := page.SignInData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			EnableDebugAuth: enableDebugAuth,
 		}

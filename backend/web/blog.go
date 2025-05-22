@@ -34,7 +34,7 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 		}
 
 		data := page.BlogData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			Blog:  blog,
 			Posts: posts,

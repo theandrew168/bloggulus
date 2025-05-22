@@ -62,7 +62,7 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusBadRequest
 	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+		BaseData: GetTemplateBaseData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
@@ -79,7 +79,7 @@ func ForbiddenResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusForbidden
 	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+		BaseData: GetTemplateBaseData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
@@ -96,7 +96,7 @@ func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
 	tmpl := page.NewError()
 	code := http.StatusNotFound
 	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+		BaseData: GetTemplateBaseData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),
@@ -118,7 +118,7 @@ func InternalServerErrorResponse(w http.ResponseWriter, r *http.Request, err err
 	tmpl := page.NewError()
 	code := http.StatusInternalServerError
 	data := page.ErrorData{
-		BaseData: TemplateBaseData(r, w),
+		BaseData: GetTemplateBaseData(r, w),
 
 		StatusCode: code,
 		StatusText: http.StatusText(code),

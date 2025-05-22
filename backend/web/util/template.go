@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
-func TemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
+func GetTemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData {
 	data := layout.BaseData{}
 
 	account, isLoggedIn := GetContextAccount(r)

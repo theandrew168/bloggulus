@@ -29,7 +29,7 @@ func HandlePostRead(repo *repository.Repository) http.Handler {
 		}
 
 		data := page.PostData{
-			BaseData: util.TemplateBaseData(r, w),
+			BaseData: util.GetTemplateBaseData(r, w),
 
 			Post: post,
 		}

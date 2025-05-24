@@ -1,5 +1,45 @@
 # Bloggulus Domains, Models, and Rules
 
+## Commands
+
+1. Create Account ?
+2. Sign In ?
+3. Sign Out ?
+4. Add Blog
+   1. Idempotently add and then "Follow Blog"
+5. Follow Blog
+6. Unfollow Blog
+7. Sync One Blog
+   1. Internal (cron)
+8. Sync All Blogs
+   1. Internal (cron)
+9. Delete Blog
+   1. Admin only
+10. Delete Post
+   1. Admin only
+
+## Queries
+
+1. List articles (anon vs account)
+2. Search articles (anon vs account)
+3. List blogs
+   1. Includes "Follow" status
+4. List blog details
+   1. Admin only
+5. List posts
+   1. Admin only
+6. List post details
+   1. Admin only
+
+## Aggregates
+
+1. Account
+   1. Session
+2. Blog
+   1. Post ?
+3. Post ?
+3. Tag
+
 ## Entities
 
 1. Blog (unique by URL)

@@ -1,4 +1,4 @@
-package service
+package job
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func (s *SessionService) Run(ctx context.Context) error {
 	}
 
 	// Then run again every "internal" until stopped (by the context being canceled).
-	ticker := time.NewTicker(SyncInterval)
+	ticker := time.NewTicker(ClearExpiredSessionsInterval)
 	defer ticker.Stop()
 
 	for {

@@ -15,9 +15,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/web"
 )
 
@@ -84,10 +84,10 @@ func run() error {
 	// Init the sync service and do an initial sync.
 	feedFetcher := fetch.NewFeedFetcher()
 	pageFetcher := fetch.NewPageFetcher()
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// Init the session service and clear any expired session tokens.
-	sessionService := service.NewSessionService(repo)
+	sessionService := job.NewSessionService(repo)
 
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)

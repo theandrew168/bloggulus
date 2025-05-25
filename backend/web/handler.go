@@ -13,8 +13,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -47,7 +47,7 @@ func Handler(
 	repo *repository.Repository,
 	find *finder.Finder,
 	pageFetcher fetch.PageFetcher,
-	syncService *service.SyncService,
+	syncService *job.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
 

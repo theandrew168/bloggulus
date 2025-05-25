@@ -7,9 +7,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/service"
 )
 
 type CloserFunc func()
@@ -54,9 +54,9 @@ func NewSyncService(
 	t *testing.T,
 	repo *repository.Repository,
 	feeds map[string]fetch.FetchFeedResponse,
-) *service.SyncService {
+) *job.SyncService {
 	t.Helper()
 
-	syncService := service.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds))
+	syncService := job.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds))
 	return syncService
 }

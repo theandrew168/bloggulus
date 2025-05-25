@@ -1,12 +1,12 @@
-package service_test
+package job_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
@@ -36,7 +36,7 @@ func TestClearExpiredSessions(t *testing.T) {
 	err = repo.Session().Create(sessionNew)
 	test.AssertNilError(t, err)
 
-	s := service.NewSessionService(repo)
+	s := job.NewSessionService(repo)
 	err = s.ClearExpiredSessions()
 	test.AssertNilError(t, err)
 

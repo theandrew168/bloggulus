@@ -1,4 +1,4 @@
-package service_test
+package job_test
 
 import (
 	"testing"
@@ -10,8 +10,8 @@ import (
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
+	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/model"
-	"github.com/theandrew168/bloggulus/backend/service"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
@@ -30,7 +30,7 @@ func TestFilterSyncableBlogs(t *testing.T) {
 
 	blogs := []*model.Blog{pastBlog, presentBlog, futureBlog}
 
-	syncableBlogs := service.FilterSyncableBlogs(blogs, now)
+	syncableBlogs := job.FilterSyncableBlogs(blogs, now)
 	test.AssertEqual(t, len(syncableBlogs), 1)
 
 	var syncableBlogIDs []uuid.UUID
@@ -50,7 +50,7 @@ func TestUpdateCacheHeaders(t *testing.T) {
 		LastModified: "bar",
 	}
 
-	changed := service.UpdateCacheHeaders(blog, resp)
+	changed := job.UpdateCacheHeaders(blog, resp)
 	test.AssertEqual(t, changed, true)
 	test.AssertEqual(t, blog.ETag(), "foo")
 	test.AssertEqual(t, blog.LastModified(), "bar")
@@ -65,7 +65,7 @@ func TestUpdateCacheHeadersDoesNotClear(t *testing.T) {
 		LastModified: "",
 	}
 
-	changed := service.UpdateCacheHeaders(blog, resp)
+	changed := job.UpdateCacheHeaders(blog, resp)
 	test.AssertEqual(t, changed, false)
 	test.AssertEqual(t, blog.ETag(), blog.ETag())
 	test.AssertEqual(t, blog.LastModified(), blog.LastModified())
@@ -98,7 +98,7 @@ func TestComparePosts(t *testing.T) {
 		updatedPost,
 	}
 
-	result, err := service.ComparePosts(blog, knownPosts, feedPosts)
+	result, err := job.ComparePosts(blog, knownPosts, feedPosts)
 	test.AssertNilError(t, err)
 
 	// Verify that one new post should be created.
@@ -144,7 +144,7 @@ func TestNewBlog(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -188,7 +188,7 @@ func TestExistingBlog(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -247,7 +247,7 @@ func TestUnreachableFeed(t *testing.T) {
 	feeds := map[string]fetch.FetchFeedResponse{}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	_, err := syncService.SyncBlog(feedURL)
 	test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
@@ -273,7 +273,7 @@ func TestSyncCooldown(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// add a blog (sync now)
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -320,7 +320,7 @@ func TestUpdatePostContent(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -380,7 +380,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -430,7 +430,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher := fetchMock.NewFeedFetcher(feeds)
 
-	syncService := service.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// sync a new blog
 	blog, err := syncService.SyncBlog(feedBlog.FeedURL)
@@ -447,7 +447,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher = fetchMock.NewFeedFetcher(feeds)
 
-	syncService = service.NewSyncService(repo, feedFetcher)
+	syncService = job.NewSyncService(repo, feedFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
 	_, err = syncService.SyncBlog(feedBlog.FeedURL)

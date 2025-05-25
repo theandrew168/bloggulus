@@ -136,7 +136,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	return result, nil
 }
 
-func ParallelMap[T any](concurrency int, items []T, fn func(T)) {
+func ParallelForEach[T any](concurrency int, items []T, fn func(T)) {
 	// Use a weighted semaphore to limit concurrency.
 	sem := semaphore.NewWeighted(int64(concurrency))
 
@@ -229,7 +229,7 @@ func (s *SyncService) SyncAllBlogs() error {
 		}
 	}
 
-	ParallelMap(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
+	ParallelForEach(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
 		slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
 		_, err := s.SyncBlog(blog.FeedURL())
 		if err != nil {

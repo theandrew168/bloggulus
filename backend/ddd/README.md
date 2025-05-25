@@ -17,6 +17,12 @@
    1. Admin only
 10. Delete Post
    1. Admin only
+11. Create Post
+12. Update Post
+   1. Title
+   2. Content
+   3. PublishedAt
+13. Delete Expired Sessions
 
 ## Queries
 
@@ -37,7 +43,6 @@
    1. Session
 2. Blog
    1. Post ?
-3. Post ?
 3. Tag
 
 ## Entities

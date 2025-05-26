@@ -10,8 +10,6 @@ import (
 )
 
 var ErrAccountNotFound = errors.New("account not found")
-
-// TODO: Move this to the Account domain model.
 var ErrDeleteAdminAccount = errors.New("cannot delete admin account")
 
 func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {

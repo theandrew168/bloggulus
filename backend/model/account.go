@@ -94,8 +94,3 @@ func (a *Account) CreatedAt() time.Time {
 func (a *Account) UpdatedAt() time.Time {
 	return a.updatedAt
 }
-
-func (a *Account) CheckDelete() error {
-	// TODO: Ensure admin accounts cannot be deleted.
-	return nil
-}

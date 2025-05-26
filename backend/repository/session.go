@@ -192,11 +192,6 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 		WHERE id = $1
 		RETURNING id`
 
-	err := session.CheckDelete()
-	if err != nil {
-		return err
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 

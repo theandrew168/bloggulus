@@ -117,7 +117,3 @@ func (b *Blog) SetUpdatedAt(updatedAt time.Time) error {
 	b.updatedAt = updatedAt
 	return nil
 }
-
-func (b *Blog) CheckDelete() error {
-	return nil
-}

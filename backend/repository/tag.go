@@ -169,11 +169,6 @@ func (r *TagRepository) Delete(tag *model.Tag) error {
 		WHERE id = $1
 		RETURNING id`
 
-	err := tag.CheckDelete()
-	if err != nil {
-		return err
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 

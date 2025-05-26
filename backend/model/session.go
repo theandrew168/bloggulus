@@ -89,7 +89,3 @@ func (s *Session) CreatedAt() time.Time {
 func (s *Session) UpdatedAt() time.Time {
 	return s.updatedAt
 }
-
-func (s *Session) CheckDelete() error {
-	return nil
-}

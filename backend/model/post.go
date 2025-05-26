@@ -102,7 +102,3 @@ func (p *Post) SetUpdatedAt(updatedAt time.Time) error {
 	p.updatedAt = updatedAt
 	return nil
 }
-
-func (p *Post) CheckDelete() error {
-	return nil
-}

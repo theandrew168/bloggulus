@@ -59,7 +59,3 @@ func (t *Tag) SetUpdatedAt(updatedAt time.Time) error {
 	t.updatedAt = updatedAt
 	return nil
 }
-
-func (t *Tag) CheckDelete() error {
-	return nil
-}

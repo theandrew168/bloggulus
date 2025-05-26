@@ -271,11 +271,6 @@ func (r *PostRepository) Delete(post *model.Post) error {
 		WHERE id = $1
 		RETURNING id`
 
-	err := post.CheckDelete()
-	if err != nil {
-		return err
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 

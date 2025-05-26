@@ -81,10 +81,6 @@ func (a *Account) UpdatedAt() time.Time {
 	return a.updatedAt
 }
 
-func (a *Account) CheckDelete() error {
-	return nil
-}
-
 func (a *Account) FollowBlog(blogID uuid.UUID) error {
 	if slices.Contains(a.followedBlogIDs, blogID) {
 		return fmt.Errorf("account: already following blog")

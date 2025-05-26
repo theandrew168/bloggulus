@@ -20,7 +20,7 @@ func TestListArticles(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
 
-	articles, err := find.ListArticles(1, 0)
+	articles, err := find.ListRecentArticles(1, 0)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(articles), 1)
@@ -49,7 +49,7 @@ func TestListArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// List posts from blogs followed by this account.
-	articles, err := find.ListArticlesByAccount(account, 5, 0)
+	articles, err := find.ListRecentArticlesByAccount(account, 5, 0)
 	test.AssertNilError(t, err)
 
 	// We should only get the three posts associated with the followed blog.
@@ -96,7 +96,7 @@ func TestSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// list articles that relate to python
-	articles, err := find.SearchArticles("python", 1, 0)
+	articles, err := find.ListRelevantArticles("python", 1, 0)
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -148,7 +148,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// List posts (from followed blogs) that relate to python.
-	articles, err := find.SearchArticlesByAccount(account, "python", 5, 0)
+	articles, err := find.ListRelevantArticlesByAccount(account, "python", 5, 0)
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.
@@ -169,7 +169,7 @@ func TestCountArticles(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	count, err := find.CountArticles()
+	count, err := find.CountRecentArticles()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -198,7 +198,7 @@ func TestCountArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// We should only count the three posts associated with the followed blog.
-	count, err := find.CountArticlesByAccount(account)
+	count, err := find.CountRecentArticlesByAccount(account)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, count, 3)
 }
@@ -241,7 +241,7 @@ func TestCountSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// count posts that relate to python
-	count, err := find.CountSearchArticles("python")
+	count, err := find.CountRelevantArticles("python")
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -293,7 +293,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account, followedBlog)
 
 	// Count posts (from followed blogs) that relate to python.
-	count, err := find.CountSearchArticlesByAccount(account, "python")
+	count, err := find.CountRelevantArticlesByAccount(account, "python")
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.

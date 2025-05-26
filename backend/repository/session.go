@@ -148,6 +148,44 @@ func (r *SessionRepository) ReadBySessionID(sessionID string) (*model.Session, e
 	return row.unmarshal()
 }
 
+func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error) {
+	stmt := `
+		SELECT
+			session.id,
+			session.account_id,
+			session.hash,
+			session.expires_at,
+			session.created_at,
+			session.updated_at
+		FROM session
+		WHERE session.expires_at <= $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := r.conn.Query(ctx, stmt, now)
+	if err != nil {
+		return nil, err
+	}
+
+	sessionRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbSession])
+	if err != nil {
+		return nil, postgres.CheckListError(err)
+	}
+
+	var sessions []*model.Session
+	for _, row := range sessionRows {
+		session, err := row.unmarshal()
+		if err != nil {
+			return nil, err
+		}
+
+		sessions = append(sessions, session)
+	}
+
+	return sessions, nil
+}
+
 func (r *SessionRepository) Delete(session *model.Session) error {
 	stmt := `
 		DELETE FROM session

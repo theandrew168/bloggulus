@@ -12,9 +12,6 @@
 	<link rel="stylesheet" href="/css/fonts.css" />
 	<link rel="stylesheet" href="/css/style.css" />
 	<script src="/js/htmx.min.js" defer></script>
-	{{with .PlausibleDataDomain}}
-	<script src="https://plausible.io/js/script.js" data-domain="{{.}}" defer></script>
-	{{end}}
 	{{with .GoatCounterCode}}
 	<script data-goatcounter="https://{{.}}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 	{{end}}

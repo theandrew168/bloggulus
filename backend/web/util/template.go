@@ -30,9 +30,6 @@ func GetTemplateBaseData(r *http.Request, w http.ResponseWriter) layout.BaseData
 	}
 
 	conf, ok := GetContextConfig(r)
-	if ok && conf.PlausibleDataDomain != "" {
-		data.PlausibleDataDomain = conf.PlausibleDataDomain
-	}
 	if ok && conf.GoatCounterCode != "" {
 		data.GoatCounterCode = conf.GoatCounterCode
 	}

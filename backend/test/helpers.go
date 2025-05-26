@@ -6,9 +6,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/fetch"
 	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
-	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
 
@@ -42,12 +42,12 @@ func NewRepository(t *testing.T) (*repository.Repository, CloserFunc) {
 	return repo, closer
 }
 
-func NewFinder(t *testing.T) (*finder.Finder, CloserFunc) {
+func NewQuery(t *testing.T) (*query.Query, CloserFunc) {
 	t.Helper()
 
 	db, closer := NewDatabase(t)
-	find := finder.New(db)
-	return find, closer
+	q := query.New(db)
+	return q, closer
 }
 
 func NewSyncService(

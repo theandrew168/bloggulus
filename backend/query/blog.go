@@ -1,4 +1,4 @@
-package finder
+package query
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type BlogForAccount struct {
 }
 
 // TODO: Paginate this (will need to add a CountBlogsForAccount method).
-func (f *Finder) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
+func (f *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
 	stmt := `
 		SELECT
 			blog.id,

@@ -7,13 +7,13 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 // TODO: Rename p / s to page / size.
-func HandleIndexPage(find *finder.Finder) http.Handler {
+func HandleIndexPage(qry *query.Query) http.Handler {
 	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -36,7 +36,7 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 		limit, offset := util.PageSizeToLimitOffset(p, s)
 
 		var count int
-		var articles []finder.Article
+		var articles []query.Article
 
 		// Two levels of decision making here:
 		// 1. Is the user logged in?
@@ -46,23 +46,23 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			if search != "" {
 				g.Go(func() error {
 					var err error
-					count, err = find.CountSearchArticlesByAccount(account, search)
+					count, err = qry.CountSearchArticlesByAccount(account, search)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = find.SearchArticlesByAccount(account, search, limit, offset)
+					articles, err = qry.SearchArticlesByAccount(account, search, limit, offset)
 					return err
 				})
 			} else {
 				g.Go(func() error {
 					var err error
-					count, err = find.CountArticlesByAccount(account)
+					count, err = qry.CountArticlesByAccount(account)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = find.ListArticlesByAccount(account, limit, offset)
+					articles, err = qry.ListArticlesByAccount(account, limit, offset)
 					return err
 				})
 			}
@@ -70,23 +70,23 @@ func HandleIndexPage(find *finder.Finder) http.Handler {
 			if search != "" {
 				g.Go(func() error {
 					var err error
-					count, err = find.CountSearchArticles(search)
+					count, err = qry.CountSearchArticles(search)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = find.SearchArticles(search, limit, offset)
+					articles, err = qry.SearchArticles(search, limit, offset)
 					return err
 				})
 			} else {
 				g.Go(func() error {
 					var err error
-					count, err = find.CountArticles()
+					count, err = qry.CountArticles()
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = find.ListArticles(limit, offset)
+					articles, err = qry.ListArticles(limit, offset)
 					return err
 				})
 			}

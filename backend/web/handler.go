@@ -11,8 +11,8 @@ import (
 	"golang.org/x/oauth2/google"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -44,7 +44,7 @@ func Handler(
 	public fs.FS,
 	conf config.Config,
 	repo *repository.Repository,
-	find *finder.Finder,
+	qry *query.Query,
 	syncService *job.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
@@ -89,7 +89,7 @@ func Handler(
 	mux.Handle("/js/", publicFilesHandler)
 
 	// The main application routes start here.
-	mux.Handle("GET /{$}", HandleIndexPage(find))
+	mux.Handle("GET /{$}", HandleIndexPage(qry))
 
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
@@ -106,10 +106,10 @@ func Handler(
 	mux.Handle("POST /signout", HandleSignOutForm(repo))
 
 	// Public blog routes.
-	mux.Handle("GET /blogs", requireAccount(HandleBlogList(find)))
-	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, find, syncService)))
-	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo, find)))
-	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo, find)))
+	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
+	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, syncService)))
+	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo)))
+	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo)))
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))

@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -16,7 +16,7 @@ type IndexData struct {
 	layout.BaseData
 
 	Search       string
-	Articles     []finder.Article
+	Articles     []query.Article
 	HasMorePages bool
 	NextPage     int
 }

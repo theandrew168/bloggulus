@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/finder"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -22,7 +22,7 @@ type BlogsData struct {
 // the layout.BaseData to ensure CSRF prevention still works.
 type BlogsBlogData struct {
 	layout.BaseData
-	finder.BlogForAccount
+	query.BlogForAccount
 }
 
 type BlogsPage struct {

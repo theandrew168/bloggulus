@@ -1,4 +1,4 @@
-package finder_test
+package query_test
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ func TestListBlogsForAccount(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	account := test.CreateAccount(t, repo)

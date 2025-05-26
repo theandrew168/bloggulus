@@ -1,4 +1,4 @@
-package finder
+package query
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type Article struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (f *Finder) ListArticles(limit, offset int) ([]Article, error) {
+func (f *Query) ListArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -64,7 +64,7 @@ func (f *Finder) ListArticles(limit, offset int) ([]Article, error) {
 	return articles, nil
 }
 
-func (f *Finder) ListArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
+func (f *Query) ListArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -111,7 +111,7 @@ func (f *Finder) ListArticlesByAccount(account *model.Account, limit, offset int
 	return articles, nil
 }
 
-func (f *Finder) SearchArticles(search string, limit, offset int) ([]Article, error) {
+func (f *Query) SearchArticles(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -154,7 +154,7 @@ func (f *Finder) SearchArticles(search string, limit, offset int) ([]Article, er
 	return articles, nil
 }
 
-func (f *Finder) SearchArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
+func (f *Query) SearchArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -202,7 +202,7 @@ func (f *Finder) SearchArticlesByAccount(account *model.Account, search string, 
 	return articles, nil
 }
 
-func (f *Finder) CountArticles() (int, error) {
+func (f *Query) CountArticles() (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post`
@@ -223,7 +223,7 @@ func (f *Finder) CountArticles() (int, error) {
 	return count, nil
 }
 
-func (f *Finder) CountArticlesByAccount(account *model.Account) (int, error) {
+func (f *Query) CountArticlesByAccount(account *model.Account) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -249,7 +249,7 @@ func (f *Finder) CountArticlesByAccount(account *model.Account) (int, error) {
 	return count, nil
 }
 
-func (f *Finder) CountSearchArticles(search string) (int, error) {
+func (f *Query) CountSearchArticles(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -271,7 +271,7 @@ func (f *Finder) CountSearchArticles(search string) (int, error) {
 	return count, nil
 }
 
-func (f *Finder) CountSearchArticlesByAccount(account *model.Account, search string) (int, error) {
+func (f *Query) CountSearchArticlesByAccount(account *model.Account, search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post

@@ -1,4 +1,4 @@
-package finder_test
+package query_test
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ func TestListArticles(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	blog := test.CreateBlog(t, repo)
@@ -32,7 +32,7 @@ func TestListArticlesByAccount(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	followedBlog := test.CreateBlog(t, repo)
@@ -62,7 +62,7 @@ func TestSearchArticles(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	blog := test.NewBlog(t)
@@ -109,7 +109,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	// Create some followed posts about python.
@@ -161,7 +161,7 @@ func TestCountArticles(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	blog := test.CreateBlog(t, repo)
@@ -181,7 +181,7 @@ func TestCountArticlesByAccount(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	followedBlog := test.CreateBlog(t, repo)
@@ -209,7 +209,7 @@ func TestCountSearchArticles(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	blog := test.CreateBlog(t, repo)
@@ -254,7 +254,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	repo, repoCloser := test.NewRepository(t)
 	defer repoCloser()
 
-	find, findCloser := test.NewFinder(t)
+	find, findCloser := test.NewQuery(t)
 	defer findCloser()
 
 	// Create some followed posts about python.

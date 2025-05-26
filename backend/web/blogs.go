@@ -9,15 +9,15 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleBlogList(find *finder.Finder) http.Handler {
+func HandleBlogList(qry *query.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -26,7 +26,7 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 			return
 		}
 
-		blogs, err := find.ListBlogsForAccount(account)
+		blogs, err := qry.ListBlogsForAccount(account)
 		if err != nil {
 			util.ListErrorResponse(w, r, err)
 			return
@@ -49,7 +49,7 @@ func HandleBlogList(find *finder.Finder) http.Handler {
 	})
 }
 
-func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, syncService *job.SyncService) http.Handler {
+func HandleBlogCreateForm(repo *repository.Repository, syncService *job.SyncService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -153,7 +153,7 @@ func HandleBlogCreateForm(repo *repository.Repository, find *finder.Finder, sync
 	})
 }
 
-func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http.Handler {
+func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -204,7 +204,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 			data := page.BlogsBlogData{
 				BaseData: util.GetTemplateBaseData(r, w),
 
-				BlogForAccount: finder.BlogForAccount{
+				BlogForAccount: query.BlogForAccount{
 					ID:          blog.ID(),
 					Title:       blog.Title(),
 					SiteURL:     blog.SiteURL(),
@@ -221,7 +221,7 @@ func HandleBlogFollowForm(repo *repository.Repository, find *finder.Finder) http
 	})
 }
 
-func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) http.Handler {
+func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -272,7 +272,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository, find *finder.Finder) ht
 			data := page.BlogsBlogData{
 				BaseData: util.GetTemplateBaseData(r, w),
 
-				BlogForAccount: finder.BlogForAccount{
+				BlogForAccount: query.BlogForAccount{
 					ID:          blog.ID(),
 					Title:       blog.Title(),
 					SiteURL:     blog.SiteURL(),

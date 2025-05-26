@@ -83,7 +83,6 @@ func run() error {
 
 	// Init the sync service and do an initial sync.
 	feedFetcher := fetch.NewFeedFetcher()
-	pageFetcher := fetch.NewPageFetcher()
 	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// Init the session service and clear any expired session tokens.
@@ -98,7 +97,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, conf, repo, find, pageFetcher, syncService)
+	webHandler := web.Handler(publicFS, conf, repo, find, syncService)
 
 	// Let the web server port be overridden by an env var.
 	port := conf.Port

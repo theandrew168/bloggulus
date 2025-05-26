@@ -64,17 +64,6 @@ func NewSession(t *testing.T, account *model.Account) (*model.Session, string) {
 	return session, sessionID
 }
 
-func NewPage(t *testing.T) *model.Page {
-	page, err := model.NewPage(
-		RandomURL(32),
-		RandomString(32),
-		RandomString(32),
-	)
-	AssertNilError(t, err)
-
-	return page
-}
-
 // mocks a blog and creates it in the database
 func CreateBlog(t *testing.T, repo *repository.Repository) *model.Blog {
 	t.Helper()
@@ -151,28 +140,5 @@ func CreateAccountBlog(t *testing.T, repo *repository.Repository, account *model
 
 	// create an account blog
 	err := repo.AccountBlog().Create(account, blog)
-	AssertNilError(t, err)
-}
-
-// mocks a page and creates it in the database
-func CreatePage(t *testing.T, repo *repository.Repository) *model.Page {
-	t.Helper()
-
-	// generate some random page data
-	page := NewPage(t)
-
-	// create an example page
-	err := repo.Page().Create(page)
-	AssertNilError(t, err)
-
-	return page
-}
-
-// create an account page in the database
-func CreateAccountPage(t *testing.T, repo *repository.Repository, account *model.Account, page *model.Page) {
-	t.Helper()
-
-	// create an account page
-	err := repo.AccountPage().Create(account, page)
 	AssertNilError(t, err)
 }

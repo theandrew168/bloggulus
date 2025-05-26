@@ -43,7 +43,7 @@ func (f *FeedFetcher) FetchFeed(request fetch.FetchFeedRequest) (fetch.FetchFeed
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fetch.FetchFeedResponse{}, fetch.ErrUnreachablePage
+		return fetch.FetchFeedResponse{}, fetch.ErrUnreachableFeed
 	}
 
 	fetchFeedResponse := fetch.FetchFeedResponse{

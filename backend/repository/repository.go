@@ -15,8 +15,6 @@ type Repository struct {
 	account     *AccountRepository
 	session     *SessionRepository
 	accountBlog *AccountBlogRepository
-	page        *PageRepository
-	accountPage *AccountPageRepository
 }
 
 func New(conn postgres.Conn) *Repository {
@@ -29,8 +27,6 @@ func New(conn postgres.Conn) *Repository {
 		account:     NewAccountRepository(conn),
 		session:     NewSessionRepository(conn),
 		accountBlog: NewAccountBlogRepository(conn),
-		page:        NewPageRepository(conn),
-		accountPage: NewAccountPageRepository(conn),
 	}
 	return &r
 }
@@ -57,14 +53,6 @@ func (r *Repository) Session() *SessionRepository {
 
 func (r *Repository) AccountBlog() *AccountBlogRepository {
 	return r.accountBlog
-}
-
-func (r *Repository) Page() *PageRepository {
-	return r.page
-}
-
-func (r *Repository) AccountPage() *AccountPageRepository {
-	return r.accountPage
 }
 
 func (r *Repository) Exec(ctx context.Context, sql string, args ...any) error {

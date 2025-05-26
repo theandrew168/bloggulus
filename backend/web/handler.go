@@ -11,7 +11,6 @@ import (
 	"golang.org/x/oauth2/google"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/finder"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -46,7 +45,6 @@ func Handler(
 	conf config.Config,
 	repo *repository.Repository,
 	find *finder.Finder,
-	pageFetcher fetch.PageFetcher,
 	syncService *job.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()
@@ -112,11 +110,6 @@ func Handler(
 	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, find, syncService)))
 	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo, find)))
 	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo, find)))
-
-	// Public page routes.
-	mux.Handle("GET /pages", requireAccount(HandlePageList(repo)))
-	mux.Handle("POST /pages/create", requireAccount(HandlePageCreateForm(repo, pageFetcher)))
-	mux.Handle("POST /pages/{pageID}/unfollow", requireAccount(HandlePageUnfollowForm(repo)))
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))

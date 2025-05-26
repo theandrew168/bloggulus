@@ -90,6 +90,33 @@ func TestAccountList(t *testing.T) {
 	test.AssertEqual(t, len(accounts), limit)
 }
 
+func TestAccountUpdate(t *testing.T) {
+	t.Parallel()
+
+	repo, closer := test.NewRepository(t)
+	defer closer()
+
+	account := test.CreateAccount(t, repo)
+	blog := test.CreateBlog(t, repo)
+
+	account.FollowBlog(blog)
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
+
+	updatedAccount, err := repo.Account().Read(account.ID())
+	test.AssertNilError(t, err)
+
+	test.AssertSliceContains(t, updatedAccount.FollowedBlogIDs(), blog.ID())
+
+	account.UnfollowBlog(blog)
+	err = repo.Account().Update(account)
+	test.AssertNilError(t, err)
+
+	updatedAccount, err = repo.Account().Read(account.ID())
+	test.AssertNilError(t, err)
+	test.AssertSliceDoesNotContain(t, updatedAccount.FollowedBlogIDs(), blog.ID())
+}
+
 func TestAccountDelete(t *testing.T) {
 	t.Parallel()
 

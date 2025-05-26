@@ -13,7 +13,33 @@ func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 			return err
 		}
 
-		err = account.FollowBlog(blogID)
+		blog, err := tx.Blog().Read(blogID)
+		if err != nil {
+			return err
+		}
+
+		err = account.FollowBlog(blog)
+		if err != nil {
+			return err
+		}
+
+		return tx.Account().Update(account)
+	})
+}
+
+func (cmd *Command) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
+	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
+		account, err := tx.Account().Read(accountID)
+		if err != nil {
+			return err
+		}
+
+		blog, err := tx.Blog().Read(blogID)
+		if err != nil {
+			return err
+		}
+
+		err = account.UnfollowBlog(blog)
 		if err != nil {
 			return err
 		}

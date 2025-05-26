@@ -48,6 +48,14 @@ func AssertSliceContains[T comparable](t *testing.T, got []T, want T) {
 	}
 }
 
+func AssertSliceDoesNotContain[T comparable](t *testing.T, got []T, want T) {
+	t.Helper()
+
+	if slices.Contains(got, want) {
+		t.Fatalf("got %v; should not contain: %v", got, want)
+	}
+}
+
 func AssertNilError(t *testing.T, got error) {
 	t.Helper()
 

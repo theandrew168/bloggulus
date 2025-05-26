@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -229,8 +230,59 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 
 func (r *AccountRepository) Update(account *model.Account) error {
 	// List blogs currently being followed in the database.
+	stmt := `
+		SELECT
+			account_blog.blog_id
+		FROM account_blog
+		WHERE account_blog.account_id = $1`
+
+	rows, err := QueryWithTimeout(r.conn, stmt, account.ID())
+	if err != nil {
+		return err
+	}
+
+	followedBlogIDs, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil {
+		return postgres.CheckListError(err)
+	}
+
 	// Set diff to find which blogs to add or remove.
+	var blogsToFollow []uuid.UUID
+	for _, blogID := range account.FollowedBlogIDs() {
+		if !slices.Contains(followedBlogIDs, blogID) {
+			blogsToFollow = append(blogsToFollow, blogID)
+		}
+	}
+
+	var blogsToUnfollow []uuid.UUID
+	for _, blogID := range followedBlogIDs {
+		if !slices.Contains(account.FollowedBlogIDs(), blogID) {
+			blogsToUnfollow = append(blogsToUnfollow, blogID)
+		}
+	}
+
 	// Add and remove blogs as necessary.
+	stmtFollow := `
+		INSERT INTO account_blog
+			(account_id, blog_id)
+		VALUES ($1, $2)`
+	for _, blogID := range blogsToFollow {
+		err = ExecWithTimeout(r.conn, stmtFollow, account.ID(), blogID)
+		if err != nil {
+			return postgres.CheckCreateError(err)
+		}
+	}
+
+	stmtUnfollow := `
+		DELETE FROM account_blog
+		WHERE account_id = $1 AND blog_id = $2`
+	for _, blogID := range blogsToUnfollow {
+		err = ExecWithTimeout(r.conn, stmtUnfollow, account.ID(), blogID)
+		if err != nil {
+			return postgres.CheckDeleteError(err)
+		}
+	}
+
 	return nil
 }
 

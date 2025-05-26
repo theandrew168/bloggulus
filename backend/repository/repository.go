@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -99,4 +101,20 @@ func (r *Repository) WithTransaction(operation func(repo *Repository) error) err
 	}
 
 	return nil
+}
+
+func QueryWithTimeout(conn postgres.Conn, stmt string, args ...any) (pgx.Rows, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	rows, err := conn.Query(ctx, stmt, args...)
+	return rows, err
+}
+
+func ExecWithTimeout(conn postgres.Conn, stmt string, args ...any) error {
+	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
+	defer cancel()
+
+	_, err := conn.Exec(ctx, stmt, args...)
+	return err
 }

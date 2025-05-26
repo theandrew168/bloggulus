@@ -68,21 +68,22 @@ func (a *Account) FollowedBlogIDs() []uuid.UUID {
 	return a.followedBlogIDs
 }
 
-func (a *Account) FollowBlog(blogID uuid.UUID) error {
-	if slices.Contains(a.followedBlogIDs, blogID) {
+func (a *Account) FollowBlog(blog *Blog) error {
+	if slices.Contains(a.followedBlogIDs, blog.ID()) {
 		return nil
 	}
 
-	a.followedBlogIDs = append(a.followedBlogIDs, blogID)
+	a.followedBlogIDs = append(a.followedBlogIDs, blog.ID())
 	return nil
 }
 
-func (a *Account) UnfollowBlog(blogID uuid.UUID) error {
-	if !slices.Contains(a.followedBlogIDs, blogID) {
+func (a *Account) UnfollowBlog(blog *Blog) error {
+	index := slices.Index(a.followedBlogIDs, blog.ID())
+	if index == -1 {
 		return nil
 	}
 
-	a.followedBlogIDs = slices.Delete(a.followedBlogIDs, slices.Index(a.followedBlogIDs, blogID), slices.Index(a.followedBlogIDs, blogID)+1)
+	a.followedBlogIDs = slices.Delete(a.followedBlogIDs, index, index+1)
 	return nil
 }
 

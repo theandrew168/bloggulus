@@ -10,8 +10,8 @@ type Query struct {
 }
 
 func New(conn postgres.Conn) *Query {
-	f := Query{
+	qry := Query{
 		conn: conn,
 	}
-	return &f
+	return &qry
 }

@@ -22,7 +22,7 @@ type Article struct {
 	Tags        []string  `db:"tags"`
 }
 
-func (f *Query) ListArticles(limit, offset int) ([]Article, error) {
+func (qry *Query) ListArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -51,7 +51,7 @@ func (f *Query) ListArticles(limit, offset int) ([]Article, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := f.conn.Query(ctx, stmt, limit, offset)
+	rows, err := qry.conn.Query(ctx, stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}

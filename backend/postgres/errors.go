@@ -51,9 +51,6 @@ delete (CollectOneRow) - does not exist
 var (
 	ErrNotFound = errors.New("postgres: not found")
 	ErrConflict = errors.New("postgres: conflict")
-
-	// sentinel error used to rollback transactions
-	ErrRollback = errors.New("postgres: rollback")
 )
 
 func CheckCreateError(err error) error {

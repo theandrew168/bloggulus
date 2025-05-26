@@ -17,7 +17,7 @@ type BlogForAccount struct {
 }
 
 // TODO: Paginate this (will need to add a CountBlogsForAccount method).
-func (f *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
+func (qry *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -33,7 +33,7 @@ func (f *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, e
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
 
-	rows, err := f.conn.Query(ctx, stmt, account.ID())
+	rows, err := qry.conn.Query(ctx, stmt, account.ID())
 	if err != nil {
 		return nil, err
 	}

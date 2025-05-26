@@ -5,6 +5,8 @@ package query
 
 import "github.com/theandrew168/bloggulus/backend/postgres"
 
+// TODO: Add queries for all read operations.
+
 type Query struct {
 	conn postgres.Conn
 }

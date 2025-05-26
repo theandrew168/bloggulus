@@ -68,20 +68,20 @@ func (cmd *Command) SignOut(sessionID string) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		session, err := tx.Session().ReadBySessionID(sessionID)
 		if err != nil {
-			if !errors.Is(err, postgres.ErrNotFound) {
-				return err
+			if errors.Is(err, postgres.ErrNotFound) {
+				return ErrSessionNotFound
 			}
 
-			return ErrSessionNotFound
+			return err
 		}
 
 		err = tx.Session().Delete(session)
 		if err != nil {
-			if !errors.Is(err, postgres.ErrNotFound) {
-				return err
+			if errors.Is(err, postgres.ErrNotFound) {
+				return ErrSessionNotFound
 			}
 
-			return ErrSessionNotFound
+			return err
 		}
 
 		return nil
@@ -100,9 +100,11 @@ func (cmd *Command) DeleteExpiredSessions(now time.Time) error {
 			err := tx.Session().Delete(session)
 			if err != nil {
 				// Ignore any "not found" errors here.
-				if !errors.Is(err, postgres.ErrNotFound) {
-					return err
+				if errors.Is(err, postgres.ErrNotFound) {
+					continue
 				}
+
+				return err
 			}
 		}
 

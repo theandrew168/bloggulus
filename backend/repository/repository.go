@@ -8,6 +8,9 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
+// TODO: Can these methods (CRUD) be collapsed?
+// Can Create and Update be combined into a single method (Save or Store)?
+
 type Repository struct {
 	conn postgres.Conn
 

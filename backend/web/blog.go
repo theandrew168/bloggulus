@@ -1,12 +1,13 @@
 package web
 
 import (
+	"errors"
 	"io"
-	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
 
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -45,7 +46,7 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 	})
 }
 
-func HandleBlogDeleteForm(repo *repository.Repository) http.Handler {
+func HandleBlogDeleteForm(cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
 		if err != nil {
@@ -53,22 +54,16 @@ func HandleBlogDeleteForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		blog, err := repo.Blog().Read(blogID)
+		err = cmd.DeleteBlog(blogID)
 		if err != nil {
-			util.ReadErrorResponse(w, r, err)
+			if errors.Is(err, command.ErrBlogNotFound) {
+				util.NotFoundResponse(w, r)
+				return
+			}
+
+			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
-
-		err = repo.Blog().Delete(blog)
-		if err != nil {
-			util.DeleteErrorResponse(w, r, err)
-			return
-		}
-
-		slog.Info("blog deleted",
-			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
-		)
 
 		// Redirect back to the blogs page.
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)

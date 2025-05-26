@@ -261,6 +261,8 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		}
 	}
 
+	// TODO: Optim Oppty: Batch these additions and removals.
+
 	// Add and remove blogs as necessary.
 	stmtFollow := `
 		INSERT INTO account_blog

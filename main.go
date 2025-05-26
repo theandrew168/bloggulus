@@ -12,6 +12,7 @@ import (
 
 	"github.com/coreos/go-systemd/v22/daemon"
 
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
 	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
 	"github.com/theandrew168/bloggulus/backend/job"
@@ -77,12 +78,14 @@ func run() error {
 		return nil
 	}
 
+	feedFetcher := fetch.NewFeedFetcher()
+
 	// Init the database storage interfaces.
 	repo := repository.New(pool)
+	cmd := command.New(repo, feedFetcher)
 	qry := query.New(pool)
 
 	// Init the sync service and do an initial sync.
-	feedFetcher := fetch.NewFeedFetcher()
 	syncService := job.NewSyncService(repo, feedFetcher)
 
 	// Init the session service and clear any expired session tokens.
@@ -97,7 +100,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, conf, repo, qry, syncService)
+	webHandler := web.Handler(publicFS, conf, repo, cmd, qry, syncService)
 
 	// Let the web server port be overridden by an env var.
 	port := conf.Port

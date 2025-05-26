@@ -10,6 +10,7 @@ import (
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
 
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/query"
@@ -44,6 +45,7 @@ func Handler(
 	public fs.FS,
 	conf config.Config,
 	repo *repository.Repository,
+	cmd *command.Command,
 	qry *query.Query,
 	syncService *job.SyncService,
 ) http.Handler {
@@ -113,7 +115,7 @@ func Handler(
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))
-	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(repo)))
+	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(cmd)))
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(repo)))
 

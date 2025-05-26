@@ -2,14 +2,11 @@
 
 ## Commands
 
-1. Create Account ?
-2. Sign In ?
-3. Sign Out ?
-4. Add Blog
-   1. Idempotently add and then "Follow Blog"
+2. Sign In (returns session)
+3. Sign Out
 5. Follow Blog
 6. Unfollow Blog
-7. Sync One Blog
+7. Add / Sync Blog
    1. Internal (cron)
 8. Sync All Blogs
    1. Internal (cron)
@@ -17,11 +14,6 @@
    1. Admin only
 10. Delete Post
    1. Admin only
-11. Create Post
-12. Update Post
-   1. Title
-   2. Content
-   3. PublishedAt
 13. Delete Expired Sessions
 
 ## Queries
@@ -37,37 +29,25 @@
 6. List post details
    1. Admin only
 
-## Aggregates
+## Models
 
 1. Account
-   1. Session
-2. Blog
-   1. Post ?
-3. Tag
-
-## Entities
-
-1. Blog (unique by URL)
-2. Post (unique by URL)
-3. Account (unique by username)
-
-## Value Objects
-
-1. Tag (many Posts have many)
-2. Session (one Account has many)
+   1. Followed blogs
+2. Session
+3. Blog
+4. Post
+5. Tag
 
 ## Ports / Adapters (IO Boundaries)
 
 1. Persistent Storage (a PostgreSQL database)
 2. Fetching RSS Feeds (via the internet)
-3. Fetching Web Pages (via the internet)
 4. OAuth redirects / callbacks (via GitHub / Google)
 
 ## Errors
 
 1. Feed was unreachable
 2. Feed was invalid
-3. Page was unreachable
 4. Blog does not exist
 5. Blog already exists
 6. Post does not exist

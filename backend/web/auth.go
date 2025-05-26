@@ -139,7 +139,6 @@ func HandleOAuthCallback(
 	fetchUserID FetchUserID,
 ) http.Handler {
 	// TODO: Replace the 400s with sign in page re-renders.
-	// tmpl := page.NewSignIn()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Clear out the state expiredStateCookie.
 		expiredStateCookie := util.NewExpiredCookie(util.StateCookieName)

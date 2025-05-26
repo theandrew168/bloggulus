@@ -14,20 +14,22 @@ import (
 )
 
 type dbAccount struct {
-	ID        uuid.UUID `db:"id"`
-	Username  string    `db:"username"`
-	IsAdmin   bool      `db:"is_admin"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID              uuid.UUID   `db:"id"`
+	Username        string      `db:"username"`
+	IsAdmin         bool        `db:"is_admin"`
+	FollowedBlogIDs []uuid.UUID `db:"followed_blog_ids"`
+	CreatedAt       time.Time   `db:"created_at"`
+	UpdatedAt       time.Time   `db:"updated_at"`
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
 	a := dbAccount{
-		ID:        account.ID(),
-		Username:  account.Username(),
-		IsAdmin:   account.IsAdmin(),
-		CreatedAt: account.CreatedAt(),
-		UpdatedAt: account.UpdatedAt(),
+		ID:              account.ID(),
+		Username:        account.Username(),
+		IsAdmin:         account.IsAdmin(),
+		FollowedBlogIDs: account.FollowedBlogIDs(),
+		CreatedAt:       account.CreatedAt(),
+		UpdatedAt:       account.UpdatedAt(),
 	}
 	return a, nil
 }
@@ -37,6 +39,7 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		a.ID,
 		a.Username,
 		a.IsAdmin,
+		a.FollowedBlogIDs,
 		a.CreatedAt,
 		a.UpdatedAt,
 	)
@@ -90,10 +93,14 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 			account.id,
 			account.username,
 			account.is_admin,
+			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
 			account.created_at,
 			account.updated_at
 		FROM account
-		WHERE account.id = $1`
+		LEFT JOIN account_blog
+			ON account_blog.account_id = account.id
+		WHERE account.id = $1
+		GROUP BY account.id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -117,10 +124,14 @@ func (r *AccountRepository) ReadByUsername(username string) (*model.Account, err
 			account.id,
 			account.username,
 			account.is_admin,
+			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
 			account.created_at,
 			account.updated_at
 		FROM account
-		WHERE account.username = $1`
+		LEFT JOIN account_blog
+			ON account_blog.account_id = account.id
+		WHERE account.username = $1
+		GROUP BY account.id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -144,12 +155,16 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 			account.id,
 			account.username,
 			account.is_admin,
+			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
 			account.created_at,
 			account.updated_at
 		FROM account
+		LEFT JOIN account_blog
+			ON account_blog.account_id = account.id
 		INNER JOIN session
 			ON session.account_id = account.id
-		WHERE session.hash = $1`
+		WHERE session.hash = $1
+		GROUP BY account.id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
 	defer cancel()
@@ -176,9 +191,13 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 			account.id,
 			account.username,
 			account.is_admin,
+			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
 			account.created_at,
 			account.updated_at
 		FROM account
+		LEFT JOIN account_blog
+			ON account_blog.account_id = account.id
+		GROUP BY account.id
 		ORDER BY account.created_at DESC
 		LIMIT $1 OFFSET $2`
 
@@ -206,6 +225,13 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 	}
 
 	return accounts, nil
+}
+
+func (r *AccountRepository) Update(account *model.Account) error {
+	// List blogs currently being followed in the database.
+	// Set diff to find which blogs to add or remove.
+	// Add and remove blogs as necessary.
+	return nil
 }
 
 func (r *AccountRepository) Delete(account *model.Account) error {

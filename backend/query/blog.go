@@ -30,10 +30,7 @@ func (qry *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount,
 			AND account_blog.account_id = $1
 		ORDER BY blog.created_at DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, account.ID())
+	rows, err := qry.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {
 		return nil, err
 	}

@@ -37,10 +37,7 @@ func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog)
 		now,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err := r.conn.Exec(ctx, stmt, args...)
+	_, err := r.conn.Exec(context.Background(), stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -55,15 +52,12 @@ func (r *AccountBlogRepository) Delete(account *model.Account, blog *model.Blog)
 			AND blog_id = $2
 		RETURNING account_id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
 	args := []any{
 		account.ID(),
 		blog.ID(),
 	}
 
-	rows, err := r.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(context.Background(), stmt, args...)
 	if err != nil {
 		return err
 	}

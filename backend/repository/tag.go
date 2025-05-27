@@ -68,10 +68,7 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err = r.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(context.Background(), stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -89,10 +86,7 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 		FROM tag
 		WHERE tag.id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -116,10 +110,7 @@ func (r *TagRepository) List(limit, offset int) ([]*model.Tag, error) {
 		ORDER BY tag.created_at DESC
 		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, limit, offset)
+	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -147,10 +138,7 @@ func (r *TagRepository) Count() (int, error) {
 		SELECT count(*)
 		FROM tag`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt)
+	rows, err := r.conn.Query(context.Background(), stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -169,10 +157,7 @@ func (r *TagRepository) Delete(tag *model.Tag) error {
 		WHERE id = $1
 		RETURNING id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, tag.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, tag.ID())
 	if err != nil {
 		return err
 	}

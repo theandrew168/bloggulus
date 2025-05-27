@@ -85,10 +85,7 @@ func (r *PostRepository) Create(post *model.Post) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err = r.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(context.Background(), stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -110,10 +107,7 @@ func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 		FROM post
 		WHERE post.id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +134,7 @@ func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 		FROM post
 		WHERE post.url = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, url)
+	rows, err := r.conn.Query(context.Background(), stmt, url)
 	if err != nil {
 		return nil, err
 	}
@@ -171,10 +162,7 @@ func (r *PostRepository) ListByBlog(blog *model.Blog) ([]*model.Post, error) {
 		WHERE post.blog_id = $1
 		ORDER BY post.published_at DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, blog.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
 	if err != nil {
 		return nil, err
 	}
@@ -203,10 +191,7 @@ func (r *PostRepository) CountByBlog(blog *model.Blog) (int, error) {
 		FROM post
 		WHERE post.blog_id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, blog.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
 	if err != nil {
 		return 0, err
 	}
@@ -248,10 +233,7 @@ func (r *PostRepository) Update(post *model.Post) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, args...)
+	rows, err := r.conn.Query(context.Background(), stmt, args...)
 	if err != nil {
 		return err
 	}
@@ -271,10 +253,7 @@ func (r *PostRepository) Delete(post *model.Post) error {
 		WHERE id = $1
 		RETURNING id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, post.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, post.ID())
 	if err != nil {
 		return err
 	}

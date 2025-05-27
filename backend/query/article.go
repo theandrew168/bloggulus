@@ -48,10 +48,7 @@ func (qry *Query) ListRecentArticles(limit, offset int) ([]Article, error) {
 		GROUP BY post.id
 		ORDER BY post.published_at DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +92,7 @@ func (qry *Query) ListRecentArticlesByAccount(account *model.Account, limit, off
 		GROUP BY post.id
 		ORDER BY post.published_at DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, account.ID(), limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -138,10 +132,7 @@ func (qry *Query) ListRelevantArticles(search string, limit, offset int) ([]Arti
 		GROUP BY post.id
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, search, limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -186,10 +177,7 @@ func (qry *Query) ListRelevantArticlesByAccount(account *model.Account, search s
 		GROUP BY post.id
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, account.ID(), search, limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -207,10 +195,7 @@ func (qry *Query) CountRecentArticles() (int, error) {
 		SELECT count(*)
 		FROM post`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt)
+	rows, err := qry.conn.Query(context.Background(), stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -233,10 +218,7 @@ func (qry *Query) CountRecentArticlesByAccount(account *model.Account) (int, err
 			ON account_blog.blog_id = blog.id
 			AND account_blog.account_id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, account.ID())
+	rows, err := qry.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {
 		return 0, err
 	}
@@ -255,10 +237,7 @@ func (qry *Query) CountRelevantArticles(search string) (int, error) {
 		FROM post
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, search)
+	rows, err := qry.conn.Query(context.Background(), stmt, search)
 	if err != nil {
 		return 0, err
 	}
@@ -282,10 +261,7 @@ func (qry *Query) CountRelevantArticlesByAccount(account *model.Account, search 
 			AND account_blog.account_id = $1
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2)`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := qry.conn.Query(ctx, stmt, account.ID(), search)
+	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), search)
 	if err != nil {
 		return 0, err
 	}

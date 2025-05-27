@@ -77,10 +77,7 @@ func (r *AccountRepository) Create(account *model.Account) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err = r.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(context.Background(), stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -103,10 +100,7 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 		WHERE account.id = $1
 		GROUP BY account.id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -134,10 +128,7 @@ func (r *AccountRepository) ReadByUsername(username string) (*model.Account, err
 		WHERE account.username = $1
 		GROUP BY account.id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, username)
+	rows, err := r.conn.Query(context.Background(), stmt, username)
 	if err != nil {
 		return nil, err
 	}
@@ -167,13 +158,10 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 		WHERE session.hash = $1
 		GROUP BY account.id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
 	hashBytes := sha256.Sum256([]byte(sessionID))
 	hash := hex.EncodeToString(hashBytes[:])
 
-	rows, err := r.conn.Query(ctx, stmt, hash)
+	rows, err := r.conn.Query(context.Background(), stmt, hash)
 	if err != nil {
 		return nil, err
 	}
@@ -202,10 +190,7 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 		ORDER BY account.created_at DESC
 		LIMIT $1 OFFSET $2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, limit, offset)
+	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +221,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		FROM account_blog
 		WHERE account_blog.account_id = $1`
 
-	rows, err := QueryWithTimeout(r.conn, stmt, account.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {
 		return err
 	}
@@ -269,7 +254,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 			(account_id, blog_id)
 		VALUES ($1, $2)`
 	for _, blogID := range blogsToFollow {
-		err = ExecWithTimeout(r.conn, stmtFollow, account.ID(), blogID)
+		_, err = r.conn.Exec(context.Background(), stmtFollow, account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckCreateError(err)
 		}
@@ -279,7 +264,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		DELETE FROM account_blog
 		WHERE account_id = $1 AND blog_id = $2`
 	for _, blogID := range blogsToUnfollow {
-		err = ExecWithTimeout(r.conn, stmtUnfollow, account.ID(), blogID)
+		_, err = r.conn.Exec(context.Background(), stmtUnfollow, account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckDeleteError(err)
 		}
@@ -294,10 +279,7 @@ func (r *AccountRepository) Delete(account *model.Account) error {
 		WHERE id = $1
 		RETURNING id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, account.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {
 		return err
 	}

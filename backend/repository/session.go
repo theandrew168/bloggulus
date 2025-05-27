@@ -78,10 +78,7 @@ func (r *SessionRepository) Create(session *model.Session) error {
 		row.UpdatedAt,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err = r.conn.Exec(ctx, stmt, args...)
+	_, err = r.conn.Exec(context.Background(), stmt, args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -101,10 +98,7 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 		FROM session
 		WHERE session.id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, id)
+	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
 		return nil, err
 	}
@@ -129,13 +123,10 @@ func (r *SessionRepository) ReadBySessionID(sessionID string) (*model.Session, e
 		FROM session
 		WHERE session.hash = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
 	hashBytes := sha256.Sum256([]byte(sessionID))
 	hash := hex.EncodeToString(hashBytes[:])
 
-	rows, err := r.conn.Query(ctx, stmt, hash)
+	rows, err := r.conn.Query(context.Background(), stmt, hash)
 	if err != nil {
 		return nil, err
 	}
@@ -160,10 +151,7 @@ func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error)
 		FROM session
 		WHERE session.expires_at <= $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, now)
+	rows, err := r.conn.Query(context.Background(), stmt, now)
 	if err != nil {
 		return nil, err
 	}
@@ -192,10 +180,7 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 		WHERE id = $1
 		RETURNING id`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	rows, err := r.conn.Query(ctx, stmt, session.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, session.ID())
 	if err != nil {
 		return err
 	}
@@ -213,10 +198,7 @@ func (r *SessionRepository) DeleteExpired(now time.Time) error {
 		DELETE FROM session
 		WHERE expires_at <= $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), postgres.Timeout)
-	defer cancel()
-
-	_, err := r.conn.Exec(ctx, stmt, now)
+	_, err := r.conn.Exec(context.Background(), stmt, now)
 	if err != nil {
 		return err
 	}

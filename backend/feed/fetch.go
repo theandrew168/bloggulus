@@ -1,9 +1,9 @@
-package fetch
+package feed
 
 import "errors"
 
 var (
-	ErrUnreachableFeed = errors.New("fetch: unreachable feed")
+	ErrUnreachableFeed = errors.New("feed: unreachable feed")
 )
 
 type FetchFeedRequest struct {

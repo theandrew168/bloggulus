@@ -14,7 +14,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
-	fetch "github.com/theandrew168/bloggulus/backend/fetch/web"
+	feedweb "github.com/theandrew168/bloggulus/backend/feed/web"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/query"
@@ -78,7 +78,7 @@ func run() error {
 		return nil
 	}
 
-	feedFetcher := fetch.NewFeedFetcher()
+	feedFetcher := feedweb.NewFeedFetcher()
 
 	// Init the database storage interfaces.
 	repo := repository.New(pool)

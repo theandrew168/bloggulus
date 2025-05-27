@@ -4,14 +4,13 @@ import (
 	"log/slog"
 
 	"github.com/theandrew168/bloggulus/backend/feed"
-	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 // UpdateCacheHeaders updates the ETag and Last-Modified headers for a blog if they have changed.
-func UpdateCacheHeaders(blog *model.Blog, response fetch.FetchFeedResponse) bool {
+func UpdateCacheHeaders(blog *model.Blog, response feed.FetchFeedResponse) bool {
 	headersChanged := false
 	if response.ETag != "" && response.ETag != blog.ETag() {
 		headersChanged = true
@@ -96,9 +95,9 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	return result, nil
 }
 
-func SyncNewBlog(repo *repository.Repository, feedFetcher fetch.FeedFetcher, feedURL string) error {
+func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feedURL string) error {
 	// Make an unconditional fetch for the blog's feed.
-	req := fetch.FetchFeedRequest{
+	req := feed.FetchFeedRequest{
 		URL: feedURL,
 	}
 	resp, err := feedFetcher.FetchFeed(req)
@@ -108,7 +107,7 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher fetch.FeedFetcher, fee
 
 	// No feed data from a new blog is an error.
 	if resp.Feed == "" {
-		return fetch.ErrUnreachableFeed
+		return feed.ErrUnreachableFeed
 	}
 
 	feedBlog, err := feed.Parse(feedURL, resp.Feed)
@@ -142,9 +141,9 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher fetch.FeedFetcher, fee
 	return nil
 }
 
-func SyncExistingBlog(repo *repository.Repository, feedFetcher fetch.FeedFetcher, blog *model.Blog) error {
+func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, blog *model.Blog) error {
 	// Make a conditional fetch for the blog's feed.
-	req := fetch.FetchFeedRequest{
+	req := feed.FetchFeedRequest{
 		URL:          blog.FeedURL(),
 		ETag:         blog.ETag(),
 		LastModified: blog.LastModified(),

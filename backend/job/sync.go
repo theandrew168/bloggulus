@@ -10,7 +10,6 @@ import (
 	"golang.org/x/sync/semaphore"
 
 	"github.com/theandrew168/bloggulus/backend/feed"
-	"github.com/theandrew168/bloggulus/backend/fetch"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -51,7 +50,7 @@ func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
 }
 
 // UpdateCacheHeaders updates the ETag and Last-Modified headers for a blog if they have changed.
-func UpdateCacheHeaders(blog *model.Blog, response fetch.FetchFeedResponse) bool {
+func UpdateCacheHeaders(blog *model.Blog, response feed.FetchFeedResponse) bool {
 	headersChanged := false
 	if response.ETag != "" && response.ETag != blog.ETag() {
 		headersChanged = true
@@ -157,10 +156,10 @@ func ParallelForEach[T any](concurrency int, items []T, fn func(T)) {
 type SyncService struct {
 	mu          sync.Mutex
 	repo        *repository.Repository
-	feedFetcher fetch.FeedFetcher
+	feedFetcher feed.FeedFetcher
 }
 
-func NewSyncService(repo *repository.Repository, feedFetcher fetch.FeedFetcher) *SyncService {
+func NewSyncService(repo *repository.Repository, feedFetcher feed.FeedFetcher) *SyncService {
 	s := SyncService{
 		repo:        repo,
 		feedFetcher: feedFetcher,
@@ -259,7 +258,7 @@ func (s *SyncService) SyncBlog(feedURL string) (*model.Blog, error) {
 
 func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 	// Make an unconditional fetch for the blog's feed.
-	req := fetch.FetchFeedRequest{
+	req := feed.FetchFeedRequest{
 		URL: feedURL,
 	}
 	resp, err := s.feedFetcher.FetchFeed(req)
@@ -269,7 +268,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 
 	// No feed data from a new blog is an error.
 	if resp.Feed == "" {
-		return nil, fetch.ErrUnreachableFeed
+		return nil, feed.ErrUnreachableFeed
 	}
 
 	feedBlog, err := feed.Parse(feedURL, resp.Feed)
@@ -305,7 +304,7 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 
 func (s *SyncService) syncExistingBlog(blog *model.Blog) (*model.Blog, error) {
 	// Make a conditional fetch for the blog's feed.
-	req := fetch.FetchFeedRequest{
+	req := feed.FetchFeedRequest{
 		URL:          blog.FeedURL(),
 		ETag:         blog.ETag(),
 		LastModified: blog.LastModified(),

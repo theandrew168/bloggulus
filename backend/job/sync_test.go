@@ -8,8 +8,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
-	"github.com/theandrew168/bloggulus/backend/fetch"
-	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/test"
@@ -45,7 +43,7 @@ func TestUpdateCacheHeaders(t *testing.T) {
 	t.Parallel()
 
 	blog := test.NewBlog(t)
-	resp := fetch.FetchFeedResponse{
+	resp := feed.FetchFeedResponse{
 		ETag:         "foo",
 		LastModified: "bar",
 	}
@@ -60,7 +58,7 @@ func TestUpdateCacheHeadersDoesNotClear(t *testing.T) {
 	t.Parallel()
 
 	blog := test.NewBlog(t)
-	resp := fetch.FetchFeedResponse{
+	resp := feed.FetchFeedResponse{
 		ETag:         "",
 		LastModified: "",
 	}
@@ -139,10 +137,10 @@ func TestNewBlog(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -183,10 +181,10 @@ func TestExistingBlog(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -218,7 +216,7 @@ func TestExistingBlog(t *testing.T) {
 	atomFeed, err = feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds[feedBlog.FeedURL] = fetch.FetchFeedResponse{Feed: atomFeed}
+	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
 	_, err = syncService.SyncBlog(feedBlog.FeedURL)
@@ -244,13 +242,13 @@ func TestUnreachableFeed(t *testing.T) {
 
 	feedURL := test.RandomURL(20)
 
-	feeds := map[string]fetch.FetchFeedResponse{}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feeds := map[string]feed.FetchFeedResponse{}
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
 	_, err := syncService.SyncBlog(feedURL)
-	test.AssertErrorIs(t, err, fetch.ErrUnreachableFeed)
+	test.AssertErrorIs(t, err, feed.ErrUnreachableFeed)
 }
 
 func TestSyncCooldown(t *testing.T) {
@@ -268,10 +266,10 @@ func TestSyncCooldown(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -315,10 +313,10 @@ func TestUpdatePostContent(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -343,7 +341,7 @@ func TestUpdatePostContent(t *testing.T) {
 	atomFeed, err = feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds[feedBlog.FeedURL] = fetch.FetchFeedResponse{Feed: atomFeed}
+	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
 	_, err = syncService.SyncBlog(feedBlog.FeedURL)
@@ -375,10 +373,10 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -421,14 +419,14 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	feeds := map[string]fetch.FetchFeedResponse{
+	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {
 			Feed:         atomFeed,
 			ETag:         "etag",
 			LastModified: "lastModified",
 		},
 	}
-	feedFetcher := fetchMock.NewFeedFetcher(feeds)
+	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
 	syncService := job.NewSyncService(repo, feedFetcher)
 
@@ -439,13 +437,13 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	test.AssertEqual(t, blog.LastModified(), "lastModified")
 
 	// Update the feed to return new cache value but no data
-	feeds = map[string]fetch.FetchFeedResponse{
+	feeds = map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {
 			ETag:         "other etag",
 			LastModified: "other lastModified",
 		},
 	}
-	feedFetcher = fetchMock.NewFeedFetcher(feeds)
+	feedFetcher = feedMock.NewFeedFetcher(feeds)
 
 	syncService = job.NewSyncService(repo, feedFetcher)
 

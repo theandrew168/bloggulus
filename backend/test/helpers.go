@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/fetch"
-	fetchMock "github.com/theandrew168/bloggulus/backend/fetch/mock"
+	"github.com/theandrew168/bloggulus/backend/feed"
+	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/query"
@@ -53,10 +53,10 @@ func NewQuery(t *testing.T) (*query.Query, CloserFunc) {
 func NewSyncService(
 	t *testing.T,
 	repo *repository.Repository,
-	feeds map[string]fetch.FetchFeedResponse,
+	feeds map[string]feed.FetchFeedResponse,
 ) *job.SyncService {
 	t.Helper()
 
-	syncService := job.NewSyncService(repo, fetchMock.NewFeedFetcher(feeds))
+	syncService := job.NewSyncService(repo, feedMock.NewFeedFetcher(feeds))
 	return syncService
 }

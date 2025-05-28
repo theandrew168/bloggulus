@@ -12,7 +12,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-var ErrSessionNotFound = errors.New("session not found")
+var ErrSessionNotFound = errors.New("session: not found")
 
 func (cmd *Command) SignIn(username string) (string, error) {
 	// NOTE: Handling state outside the transaciton is the exception, not the rule.

@@ -9,8 +9,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
 
-var ErrAccountNotFound = errors.New("account not found")
-var ErrDeleteAdminAccount = errors.New("cannot delete admin account")
+var ErrAccountNotFound = errors.New("account: not found")
+var ErrDeleteAdminAccount = errors.New("account: cannot delete admin account")
 
 func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {

@@ -10,7 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
 
-var ErrBlogNotFound = errors.New("blog not found")
+var ErrBlogNotFound = errors.New("blog: not found")
 
 func (cmd *Command) DeleteBlog(blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {

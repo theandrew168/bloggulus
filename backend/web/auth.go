@@ -10,10 +10,8 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/theandrew168/bloggulus/backend/model"
-	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/random"
-	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -134,7 +132,7 @@ func HandleOAuthSignIn(conf *oauth2.Config) http.Handler {
 
 func HandleOAuthCallback(
 	secretKey string,
-	repo *repository.Repository,
+	cmd *command.Command,
 	conf *oauth2.Config,
 	fetchUserID FetchUserID,
 ) http.Handler {
@@ -174,53 +172,15 @@ func HandleOAuthCallback(
 		}
 
 		username := util.HashUserID(userID, secretKey)
-		account, err := repo.Account().ReadByUsername(username)
-		if err != nil {
-			if !errors.Is(err, postgres.ErrNotFound) {
-				util.InternalServerErrorResponse(w, r, err)
-				return
-			}
-
-			// We need to create a new account at this point.
-			account, err = model.NewAccount(username)
-			if err != nil {
-				util.InternalServerErrorResponse(w, r, err)
-				return
-			}
-
-			err = repo.Account().Create(account)
-			if err != nil {
-				slog.Error("failed create user account", "error", err.Error())
-				util.BadRequestResponse(w, r)
-				return
-			}
-
-			slog.Info("account created",
-				"account_id", account.ID(),
-			)
-		}
-
-		// Create a new session for the account.
-		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
+		sessionID, err := cmd.SignIn(username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
-			return
-		}
-
-		err = repo.Session().Create(session)
-		if err != nil {
-			util.CreateErrorResponse(w, r, err)
 			return
 		}
 
 		// Set a permanent cookie after sign in.
 		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
-
-		slog.Info("account signed in",
-			"account_id", account.ID(),
-			"session_id", session.ID(),
-		)
 
 		next := "/"
 		nextCookie, err := r.Cookie(util.NextCookieName)
@@ -235,7 +195,7 @@ func HandleOAuthCallback(
 	})
 }
 
-func HandleDebugSignIn(secretKey string, repo *repository.Repository) http.Handler {
+func HandleDebugSignIn(secretKey string, cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Generate a random userID for the debug sign in.
 		userID, err := random.BytesBase64(16)
@@ -247,53 +207,15 @@ func HandleDebugSignIn(secretKey string, repo *repository.Repository) http.Handl
 		userID = "debug_" + userID
 		username := util.HashUserID(userID, secretKey)
 
-		account, err := repo.Account().ReadByUsername(username)
-		if err != nil {
-			if !errors.Is(err, postgres.ErrNotFound) {
-				util.InternalServerErrorResponse(w, r, err)
-				return
-			}
-
-			// We need to create a new account at this point.
-			account, err = model.NewAccount(username)
-			if err != nil {
-				util.InternalServerErrorResponse(w, r, err)
-				return
-			}
-
-			err = repo.Account().Create(account)
-			if err != nil {
-				slog.Error("failed create user account", "error", err.Error())
-				util.BadRequestResponse(w, r)
-				return
-			}
-
-			slog.Info("account created",
-				"account_id", account.ID(),
-			)
-		}
-
-		// Create a new session for the account.
-		session, sessionID, err := model.NewSession(account, util.SessionCookieTTL)
+		sessionID, err := cmd.SignIn(username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
-			return
-		}
-
-		err = repo.Session().Create(session)
-		if err != nil {
-			util.CreateErrorResponse(w, r, err)
 			return
 		}
 
 		// Set a permanent cookie after sign in.
 		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
-
-		slog.Info("account signed in",
-			"account_id", account.ID(),
-			"session_id", session.ID(),
-		)
 
 		next := "/"
 		nextCookie, err := r.Cookie(util.NextCookieName)
@@ -308,7 +230,7 @@ func HandleDebugSignIn(secretKey string, repo *repository.Repository) http.Handl
 	})
 }
 
-func HandleSignOutForm(repo *repository.Repository) http.Handler {
+func HandleSignOutForm(cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a session ID. If there isn't one, just redirect back home.
 		sessionID, err := r.Cookie(util.SessionCookieName)
@@ -321,23 +243,11 @@ func HandleSignOutForm(repo *repository.Repository) http.Handler {
 		cookie := util.NewExpiredCookie(util.SessionCookieName)
 		http.SetCookie(w, &cookie)
 
-		// Lookup the session by its client-side session ID.
-		session, err := repo.Session().ReadBySessionID(sessionID.Value)
+		err = cmd.SignOut(sessionID.Value)
 		if err != nil {
 			switch {
-			case errors.Is(err, postgres.ErrNotFound):
-				http.Redirect(w, r, "/", http.StatusSeeOther)
-			default:
-				util.InternalServerErrorResponse(w, r, err)
-			}
-			return
-		}
-
-		// Delete the session from the database.
-		err = repo.Session().Delete(session)
-		if err != nil {
-			switch {
-			case errors.Is(err, postgres.ErrNotFound):
+			case errors.Is(err, command.ErrSessionNotFound):
+				// If the session was not found, just redirect back home.
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			default:
 				util.InternalServerErrorResponse(w, r, err)

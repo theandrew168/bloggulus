@@ -94,7 +94,7 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(qry))
 
-	apiHandler := api.Handler(public, cmd, qry)
+	apiHandler := api.Handler(conf, cmd, qry)
 	mux.Handle("GET /api/v1/", http.StripPrefix("/api/v1", apiHandler))
 
 	// Check if the debug auth method should be enabled.

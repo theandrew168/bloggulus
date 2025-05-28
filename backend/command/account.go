@@ -2,6 +2,7 @@ package command
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -21,6 +22,10 @@ func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 
 		blog, err := tx.Blog().Read(blogID)
 		if err != nil {
+			if errors.Is(err, postgres.ErrNotFound) {
+				return ErrBlogNotFound
+			}
+
 			return err
 		}
 
@@ -29,7 +34,19 @@ func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 			return err
 		}
 
-		return tx.Account().Update(account)
+		err = tx.Account().Update(account)
+		if err != nil {
+			return err
+		}
+
+		slog.Info("blog followed",
+			"account_id", account.ID(),
+			"account_username", account.Username(),
+			"blog_id", blog.ID(),
+			"blog_title", blog.Title(),
+		)
+
+		return nil
 	})
 }
 
@@ -42,6 +59,10 @@ func (cmd *Command) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 
 		blog, err := tx.Blog().Read(blogID)
 		if err != nil {
+			if errors.Is(err, postgres.ErrNotFound) {
+				return ErrBlogNotFound
+			}
+
 			return err
 		}
 
@@ -50,7 +71,19 @@ func (cmd *Command) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 			return err
 		}
 
-		return tx.Account().Update(account)
+		err = tx.Account().Update(account)
+		if err != nil {
+			return err
+		}
+
+		slog.Info("blog unfollowed",
+			"account_id", account.ID(),
+			"account_username", account.Username(),
+			"blog_id", blog.ID(),
+			"blog_title", blog.Title(),
+		)
+
+		return nil
 	})
 }
 

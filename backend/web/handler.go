@@ -15,6 +15,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -92,6 +93,9 @@ func Handler(
 
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(qry))
+
+	apiHandler := api.Handler(public, cmd, qry)
+	mux.Handle("GET /api/v1/", http.StripPrefix("/api/v1", apiHandler))
 
 	// Check if the debug auth method should be enabled.
 	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""

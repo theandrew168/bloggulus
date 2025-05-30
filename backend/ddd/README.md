@@ -74,3 +74,39 @@
 17. An Account can add Blogs (by feed URL)
 18. An Account can follow Blogs
 19. An Account can unfollow Blogs
+
+## Deployment
+
+1. JS code needs to be pulled and built, so just do that for both?
+2. Configure MFD to:
+   1. Build the backend Go API
+   2. Build the frontend SvelteKit project
+   3. Flip the symlink
+   4. Cleanup any old dirs
+3. Restart the bloggulus-api service
+   1. Points to /usr/local/src/bloggulus/active/backend/bloggulus file
+4. Restart the bloggulus-web service
+   1. Points to /usr/local/src/bloggulus/active/frontend/build directory
+
+Orrrr....
+
+1. Build the FE to an output build/ directory
+2. Embed the whole FE output into the single Go binary
+3. At startup, write the embedded build dir to temp using os.CopyFS
+4. Exec a NodeJS process to run the frontend (in a background goro)
+5. Run the Go API like normal
+6. This might be terrible. Doesn't handle systemd sockets (or restarts) well.
+
+Orrrr....
+
+1. Just do the first strat but without mfd?
+2. Checkout the new commit into a fresh dir
+3. Build the backend Go API
+4. Build the frontend SvelteKit project
+5. Flip the symlink
+6. Cleanup any old dirs
+7. Restart the bloggulus-api service
+   1. Points to /usr/local/src/bloggulus/active/backend/bloggulus file
+8. Restart the bloggulus-web service
+   1. Points to /usr/local/src/bloggulus/active/frontend/build directory
+9. Cleanup any old dirs

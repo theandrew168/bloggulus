@@ -34,7 +34,7 @@ func Handler(
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /articles", HandleArticleList(qry))
-	mux.Handle("GET /github/signin", HandleOAuthSignin(&githubConf))
-	mux.Handle("GET /google/signin", HandleOAuthSignin(&googleConf))
+	mux.Handle("GET /signin/github", HandleOAuthSignin(&githubConf))
+	mux.Handle("GET /signin/google", HandleOAuthSignin(&googleConf))
 	return mux
 }

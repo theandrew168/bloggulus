@@ -7,7 +7,7 @@
 		<hr />
 
 		{{if .EnableDebugAuth}}
-		<form method="POST" action="/debug/signin">
+		<form method="POST" action="/signin/debug">
 			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
 			<button class="signin__button" type="submit">
 				<img class="signin__icon" src="/img/bloggulus.png" />
@@ -16,12 +16,12 @@
 		</form>
 		{{end}}
 
-		<a class="signin__button" href="/github/signin">
+		<a class="signin__button" href="/signin/github">
 			<img class="signin__icon" src="/img/github.png" />
 			Sign in with GitHub
 		</a>
 
-		<a class="signin__button" href="/google/signin">
+		<a class="signin__button" href="/signin/google">
 			<img class="signin__icon" src="/img/google.png" />
 			Sign in with Google
 		</a>

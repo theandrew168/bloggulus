@@ -2,10 +2,11 @@
 
 Bloggulus is a web application for aggregating and indexing your favorite blogs.
 I wrote it to serve as a less engaging and more personalized version of sites like Hacker News or Reddit.
+While originally written in Go (this repo), I've since built and deployed a [new version](https://github.com/theandrew168/bloggulus-svelte) of the site in SvelteKit.
 
 ## Local Development
 
-While the primary [Bloggulus website](https://bloggulus.com) represents my own personal collection of blogs, it is designed to be easily self-hostable.
+Bloggulus is designed to be easily self-hostable.
 Check out the [releases page](https://github.com/theandrew168/bloggulus/releases) for pre-built binaries.
 
 ### Setup

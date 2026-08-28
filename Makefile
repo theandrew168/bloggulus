@@ -40,8 +40,16 @@ deploy: release
 format:
 	gofmt -l -s -w .
 
-lint:
+vet:
 	go vet ./...
+
+staticcheck:
+	go tool staticcheck ./...
+
+govulncheck:
+	go tool govulncheck ./...
+
+check: vet staticcheck govulncheck
 
 .PHONY: update
 update: update-deps update-htmx update-alpine

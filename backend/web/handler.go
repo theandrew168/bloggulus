@@ -3,7 +3,6 @@ package web
 import (
 	"io/fs"
 	"net/http"
-	"os"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/oauth2"
@@ -15,7 +14,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
-	"github.com/theandrew168/bloggulus/backend/web/api"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -54,16 +52,16 @@ func Handler(
 
 	githubConf := oauth2.Config{
 		Endpoint:     github.Endpoint,
-		ClientID:     conf.GithubClientID,
-		ClientSecret: conf.GithubClientSecret,
-		RedirectURL:  conf.GithubRedirectURI,
+		ClientID:     conf.GithubOAuth.ClientID,
+		ClientSecret: conf.GithubOAuth.ClientSecret,
+		RedirectURL:  conf.GithubOAuth.RedirectURI,
 		Scopes:       []string{},
 	}
 	googleConf := oauth2.Config{
 		Endpoint:     google.Endpoint,
-		ClientID:     conf.GoogleClientID,
-		ClientSecret: conf.GoogleClientSecret,
-		RedirectURL:  conf.GoogleRedirectURI,
+		ClientID:     conf.GoogleOAuth.ClientID,
+		ClientSecret: conf.GoogleOAuth.ClientSecret,
+		RedirectURL:  conf.GoogleOAuth.RedirectURI,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
 	}
 
@@ -94,17 +92,13 @@ func Handler(
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(qry))
 
-	apiHandler := api.Handler(conf, cmd, qry)
-	mux.Handle("GET /api/v1/", http.StripPrefix("/api/v1", apiHandler))
-
 	// Check if the debug auth method should be enabled.
-	enableDebugAuth := os.Getenv("ENABLE_DEBUG_AUTH") != ""
-	if enableDebugAuth {
+	if conf.EnableDebugAuth {
 		mux.Handle("POST /signin/debug", HandleDebugSignIn(conf.SecretKey, cmd))
 	}
 
 	// Authenication routes.
-	mux.Handle("GET /signin", HandleSignIn(enableDebugAuth))
+	mux.Handle("GET /signin", HandleSignIn(conf.EnableDebugAuth))
 	mux.Handle("GET /signin/github", HandleOAuthSignIn(&githubConf))
 	mux.Handle("GET /signin/github/callback", HandleOAuthCallback(conf.SecretKey, cmd, &githubConf, FetchGithubUserID))
 	mux.Handle("GET /signin/google", HandleOAuthSignIn(&googleConf))

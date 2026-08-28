@@ -84,7 +84,6 @@ func Handler(
 	// Serve public (static) files from the embedded FS.
 	mux.Handle("/favicon.ico", publicFilesHandler)
 	mux.Handle("/robots.txt", publicFilesHandler)
-	mux.Handle("/docs/", publicFilesHandler)
 	mux.Handle("/css/", publicFilesHandler)
 	mux.Handle("/img/", publicFilesHandler)
 	mux.Handle("/js/", publicFilesHandler)
@@ -104,6 +103,9 @@ func Handler(
 	mux.Handle("GET /signin/google", HandleOAuthSignIn(&googleConf))
 	mux.Handle("GET /signin/google/callback", HandleOAuthCallback(conf.SecretKey, cmd, &googleConf, FetchGoogleUserID))
 	mux.Handle("POST /signout", HandleSignOutForm(cmd))
+
+	// Documentation routes.
+	mux.Handle("GET /docs/privacy", HandlePrivacy())
 
 	// Public blog routes.
 	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))

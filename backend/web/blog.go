@@ -4,8 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/repository"

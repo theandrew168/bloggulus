@@ -3,37 +3,51 @@ package repository
 import (
 	"context"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type dbTag struct {
-	ID        uuid.UUID `db:"id"`
-	Name      string    `db:"name"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID   uuid.UUID `db:"id"`
+	Name string    `db:"name"`
+
+	MetaCreatedAt time.Time `db:"meta_created_at"`
+	MetaUpdatedAt time.Time `db:"meta_updated_at"`
+	MetaVersion   int       `db:"meta_version"`
 }
 
 func marshalTag(tag *model.Tag) (dbTag, error) {
 	t := dbTag{
-		ID:        tag.ID(),
-		Name:      tag.Name(),
-		CreatedAt: tag.CreatedAt(),
-		UpdatedAt: tag.UpdatedAt(),
+		ID:            tag.ID(),
+		Name:          tag.Name().Value(),
+		MetaCreatedAt: tag.Meta().CreatedAt(),
+		MetaUpdatedAt: tag.Meta().UpdatedAt(),
+		MetaVersion:   tag.Meta().Version().Value(),
 	}
 	return t, nil
 }
 
 func (t dbTag) unmarshal() (*model.Tag, error) {
+	name, err := value.NewName(t.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := value.NewCount(t.MetaVersion)
+	if err != nil {
+		return nil, err
+	}
+	meta := model.LoadMeta(t.MetaCreatedAt, t.MetaUpdatedAt, version)
+
 	tag := model.LoadTag(
 		t.ID,
-		t.Name,
-		t.CreatedAt,
-		t.UpdatedAt,
+		name,
+		meta,
 	)
 	return tag, nil
 }
@@ -52,9 +66,9 @@ func NewTagRepository(conn postgres.Conn) *TagRepository {
 func (r *TagRepository) Create(tag *model.Tag) error {
 	stmt := `
 		INSERT INTO tag
-			(id, name, created_at, updated_at)
+			(id, name, meta_created_at, meta_updated_at, meta_version)
 		VALUES
-			($1, $2, $3, $4)`
+			($1, $2, $3, $4, $5)`
 
 	row, err := marshalTag(tag)
 	if err != nil {
@@ -64,8 +78,9 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 	args := []any{
 		row.ID,
 		row.Name,
-		row.CreatedAt,
-		row.UpdatedAt,
+		row.MetaCreatedAt,
+		row.MetaUpdatedAt,
+		row.MetaVersion,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -81,8 +96,9 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 		SELECT
 			tag.id,
 			tag.name,
-			tag.created_at,
-			tag.updated_at
+			tag.meta_created_at,
+			tag.meta_updated_at,
+			tag.meta_version
 		FROM tag
 		WHERE tag.id = $1`
 
@@ -104,10 +120,11 @@ func (r *TagRepository) List(limit, offset int) ([]*model.Tag, error) {
 		SELECT
 			tag.id,
 			tag.name,
-			tag.created_at,
-			tag.updated_at
+			tag.meta_created_at,
+			tag.meta_updated_at,
+			tag.meta_version
 		FROM tag
-		ORDER BY tag.created_at DESC
+		ORDER BY tag.meta_created_at DESC
 		LIMIT $1 OFFSET $2`
 
 	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)

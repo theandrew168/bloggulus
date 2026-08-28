@@ -12,11 +12,12 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/random"
+	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-type FetchUserID func(client *http.Client) (string, error)
+type FetchUserIDFunc func(client *http.Client) (string, error)
 
 func FetchGithubUserID(client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.github.com/user")
@@ -134,7 +135,7 @@ func HandleOAuthCallback(
 	secretKey string,
 	cmd *command.Command,
 	conf *oauth2.Config,
-	fetchUserID FetchUserID,
+	fetchUserID FetchUserIDFunc,
 ) http.Handler {
 	// TODO: Replace the 400s with sign in page re-renders.
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +172,12 @@ func HandleOAuthCallback(
 			return
 		}
 
-		username := util.HashUserID(userID, secretKey)
+		username, err := value.NewName(util.HashUserID(userID, secretKey))
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
+
 		sessionID, err := cmd.SignIn(username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
@@ -205,7 +211,11 @@ func HandleDebugSignIn(secretKey string, cmd *command.Command) http.Handler {
 		}
 
 		userID = "debug_" + userID
-		username := util.HashUserID(userID, secretKey)
+		username, err := value.NewName(util.HashUserID(userID, secretKey))
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
 
 		sessionID, err := cmd.SignIn(username)
 		if err != nil {

@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/model"
@@ -215,7 +215,7 @@ func (r *PostRepository) Update(post *model.Post) error {
 			published_at = $4,
 			updated_at = $5
 		WHERE id = $6
-		  AND updated_at = $7
+			AND updated_at = $7
 		RETURNING updated_at`
 
 	row, err := marshalPost(post)

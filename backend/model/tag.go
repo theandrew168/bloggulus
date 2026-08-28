@@ -1,40 +1,31 @@
 package model
 
 import (
-	"time"
+	"uuid"
 
-	"github.com/google/uuid"
-
-	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type Tag struct {
 	id   uuid.UUID
-	name string
-
-	createdAt time.Time
-	updatedAt time.Time
+	name value.Name
+	meta *Meta
 }
 
-func NewTag(name string) (*Tag, error) {
-	now := timeutil.Now()
+func NewTag(name value.Name) (*Tag, error) {
 	tag := Tag{
 		id:   uuid.New(),
 		name: name,
-
-		createdAt: now,
-		updatedAt: now,
+		meta: NewMeta(),
 	}
 	return &tag, nil
 }
 
-func LoadTag(id uuid.UUID, name string, createdAt, updatedAt time.Time) *Tag {
+func LoadTag(id uuid.UUID, name value.Name, meta *Meta) *Tag {
 	tag := Tag{
 		id:   id,
 		name: name,
-
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		meta: meta,
 	}
 	return &tag
 }
@@ -43,19 +34,10 @@ func (t *Tag) ID() uuid.UUID {
 	return t.id
 }
 
-func (t *Tag) Name() string {
+func (t *Tag) Name() value.Name {
 	return t.name
 }
 
-func (t *Tag) CreatedAt() time.Time {
-	return t.createdAt
-}
-
-func (t *Tag) UpdatedAt() time.Time {
-	return t.updatedAt
-}
-
-func (t *Tag) SetUpdatedAt(updatedAt time.Time) error {
-	t.updatedAt = updatedAt
-	return nil
+func (t *Tag) Meta() *Meta {
+	return t.meta
 }

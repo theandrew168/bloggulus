@@ -6,8 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"

@@ -6,12 +6,13 @@ import (
 	"encoding/hex"
 	"slices"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type dbAccount struct {
@@ -19,30 +20,42 @@ type dbAccount struct {
 	Username        string      `db:"username"`
 	IsAdmin         bool        `db:"is_admin"`
 	FollowedBlogIDs []uuid.UUID `db:"followed_blog_ids"`
-	CreatedAt       time.Time   `db:"created_at"`
-	UpdatedAt       time.Time   `db:"updated_at"`
+	MetaCreatedAt   time.Time   `db:"meta_created_at"`
+	MetaUpdatedAt   time.Time   `db:"meta_updated_at"`
+	MetaVersion     int         `db:"meta_version"`
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
 	a := dbAccount{
 		ID:              account.ID(),
-		Username:        account.Username(),
+		Username:        account.Username().Value(),
 		IsAdmin:         account.IsAdmin(),
 		FollowedBlogIDs: account.FollowedBlogIDs(),
-		CreatedAt:       account.CreatedAt(),
-		UpdatedAt:       account.UpdatedAt(),
+		MetaCreatedAt:   account.Meta().CreatedAt(),
+		MetaUpdatedAt:   account.Meta().UpdatedAt(),
+		MetaVersion:     account.Meta().Version().Value(),
 	}
 	return a, nil
 }
 
 func (a dbAccount) unmarshal() (*model.Account, error) {
+	username, err := value.NewName(a.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := value.NewCount(a.MetaVersion)
+	if err != nil {
+		return nil, err
+	}
+	meta := model.LoadMeta(a.MetaCreatedAt, a.MetaUpdatedAt, version)
+
 	account := model.LoadAccount(
 		a.ID,
-		a.Username,
+		username,
 		a.IsAdmin,
 		a.FollowedBlogIDs,
-		a.CreatedAt,
-		a.UpdatedAt,
+		meta,
 	)
 	return account, nil
 }
@@ -61,9 +74,9 @@ func NewAccountRepository(conn postgres.Conn) *AccountRepository {
 func (r *AccountRepository) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
-			(id, username, created_at, updated_at)
+			(id, username, meta_created_at, meta_updated_at, meta_version)
 		VALUES
-			($1, $2, $3, $4)`
+			($1, $2, $3, $4, $5)`
 
 	row, err := marshalAccount(account)
 	if err != nil {
@@ -73,8 +86,9 @@ func (r *AccountRepository) Create(account *model.Account) error {
 	args := []any{
 		row.ID,
 		row.Username,
-		row.CreatedAt,
-		row.UpdatedAt,
+		row.MetaCreatedAt,
+		row.MetaUpdatedAt,
+		row.MetaVersion,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -92,8 +106,9 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 			account.username,
 			account.is_admin,
 			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
-			account.created_at,
-			account.updated_at
+			account.meta_created_at,
+			account.meta_updated_at,
+			account.meta_version
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
@@ -113,22 +128,23 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) ReadByUsername(username string) (*model.Account, error) {
+func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
 			account.username,
 			account.is_admin,
 			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
-			account.created_at,
-			account.updated_at
+			account.meta_created_at,
+			account.meta_updated_at,
+			account.meta_version
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
 		WHERE account.username = $1
 		GROUP BY account.id`
 
-	rows, err := r.conn.Query(context.Background(), stmt, username)
+	rows, err := r.conn.Query(context.Background(), stmt, username.Value())
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +164,9 @@ func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, e
 			account.username,
 			account.is_admin,
 			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
-			account.created_at,
-			account.updated_at
+			account.meta_created_at,
+			account.meta_updated_at,
+			account.meta_version
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
@@ -181,13 +198,14 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 			account.username,
 			account.is_admin,
 			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
-			account.created_at,
-			account.updated_at
+			account.meta_created_at,
+			account.meta_updated_at,
+			account.meta_version
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
 		GROUP BY account.id
-		ORDER BY account.created_at DESC
+		ORDER BY account.meta_created_at DESC
 		LIMIT $1 OFFSET $2`
 
 	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)

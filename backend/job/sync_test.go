@@ -3,8 +3,7 @@ package job_test
 import (
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"

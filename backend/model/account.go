@@ -1,44 +1,33 @@
 package model
 
 import (
-	"fmt"
 	"slices"
-	"time"
+	"uuid"
 
-	"github.com/google/uuid"
-
-	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type Account struct {
 	id       uuid.UUID
-	username string
+	username value.Name
 	isAdmin  bool
 
 	followedBlogIDs []uuid.UUID
 
-	createdAt time.Time
-	updatedAt time.Time
+	meta *Meta
 }
 
-func NewAccount(username string) (*Account, error) {
-	if username == "" {
-		return nil, fmt.Errorf("account: invalid username")
-	}
-
-	now := timeutil.Now()
+func NewAccount(username value.Name) (*Account, error) {
 	account := Account{
 		id:       uuid.New(),
 		username: username,
 		isAdmin:  false,
-
-		createdAt: now,
-		updatedAt: now,
+		meta:     NewMeta(),
 	}
 	return &account, nil
 }
 
-func LoadAccount(id uuid.UUID, username string, isAdmin bool, followedBlogIDs []uuid.UUID, createdAt, updatedAt time.Time) *Account {
+func LoadAccount(id uuid.UUID, username value.Name, isAdmin bool, followedBlogIDs []uuid.UUID, meta *Meta) *Account {
 	account := Account{
 		id:       id,
 		username: username,
@@ -46,8 +35,7 @@ func LoadAccount(id uuid.UUID, username string, isAdmin bool, followedBlogIDs []
 
 		followedBlogIDs: followedBlogIDs,
 
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		meta: meta,
 	}
 	return &account
 }
@@ -56,7 +44,7 @@ func (a *Account) ID() uuid.UUID {
 	return a.id
 }
 
-func (a *Account) Username() string {
+func (a *Account) Username() value.Name {
 	return a.username
 }
 
@@ -87,10 +75,6 @@ func (a *Account) UnfollowBlog(blog *Blog) error {
 	return nil
 }
 
-func (a *Account) CreatedAt() time.Time {
-	return a.createdAt
-}
-
-func (a *Account) UpdatedAt() time.Time {
-	return a.updatedAt
+func (a *Account) Meta() *Meta {
+	return a.meta
 }

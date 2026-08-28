@@ -3,8 +3,7 @@ package command
 import (
 	"errors"
 	"log/slog"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"

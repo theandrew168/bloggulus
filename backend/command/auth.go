@@ -9,12 +9,13 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
 var ErrSessionNotFound = errors.New("session: not found")
 
-func (cmd *Command) SignIn(username string) (string, error) {
+func (cmd *Command) SignIn(username value.Name) (string, error) {
 	// NOTE: Handling state outside the transaciton is the exception, not the rule.
 	// This is a special case where a command needs to return a value (the session ID).
 	var sessionID string

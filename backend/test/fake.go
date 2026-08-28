@@ -37,7 +37,7 @@ func NewPost(t *testing.T, blog *model.Blog) *model.Post {
 
 func NewTag(t *testing.T) *model.Tag {
 	tag, err := model.NewTag(
-		RandomString(32),
+		RandomName(t),
 	)
 	AssertNilError(t, err)
 
@@ -46,7 +46,7 @@ func NewTag(t *testing.T) *model.Tag {
 
 func NewAccount(t *testing.T) *model.Account {
 	account, err := model.NewAccount(
-		RandomString(32),
+		RandomName(t),
 	)
 	AssertNilError(t, err)
 

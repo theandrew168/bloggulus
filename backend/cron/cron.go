@@ -25,6 +25,7 @@ func NewCron(cmd *command.Command) *Cron {
 	}
 	return &c
 }
+
 func (c *Cron) Run(ctx context.Context, jobs []Job) error {
 	var wg sync.WaitGroup
 

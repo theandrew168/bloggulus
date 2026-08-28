@@ -27,11 +27,6 @@ migrate:
 test: migrate
 	go test -count=1 -shuffle=on -race -vet=all -failfast ./...
 
-.PHONY: cover
-cover:
-	go test -coverprofile=c.out -coverpkg=./... -count=1 ./...
-	go tool cover -html=c.out
-
 .PHONY: release
 release:
 	goreleaser release --clean --snapshot

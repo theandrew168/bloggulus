@@ -142,7 +142,6 @@ func Handler(
 	// Apply global middleware to all routes.
 	handler := middleware.Use(mux,
 		middleware.RecoverPanic(),
-		middleware.AddConfig(conf),
 		middleware.CompressFiles(),
 		middleware.PreventCSRF(),
 		middleware.AddSecureHeaders(),

@@ -103,7 +103,7 @@ func run() error {
 	webHandler := web.Handler(publicFS, conf, repo, cmd, qry, syncService)
 
 	// Let the web server port be overridden by an env var.
-	port := conf.Port
+	port := "5000"
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
 	}

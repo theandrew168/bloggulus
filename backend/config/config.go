@@ -8,28 +8,20 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-const (
-	DefaultPort = "5000"
-)
-
 type Config struct {
 	DatabaseURI        string `toml:"database_uri"`
 	SecretKey          string `toml:"secret_key"`
-	Port               string `toml:"port"`
 	GithubClientID     string `toml:"github_client_id"`
 	GithubClientSecret string `toml:"github_client_secret"`
 	GithubRedirectURI  string `toml:"github_redirect_uri"`
 	GoogleClientID     string `toml:"google_client_id"`
 	GoogleClientSecret string `toml:"google_client_secret"`
 	GoogleRedirectURI  string `toml:"google_redirect_uri"`
-	GoatCounterCode    string `toml:"goatcounter_code"`
 }
 
 func Read(data string) (Config, error) {
 	// Initialize config with default values.
-	conf := Config{
-		Port: DefaultPort,
-	}
+	conf := Config{}
 	meta, err := toml.Decode(data, &conf)
 	if err != nil {
 		return Config{}, err

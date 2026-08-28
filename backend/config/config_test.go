@@ -11,7 +11,6 @@ import (
 const (
 	databaseURI = "postgresql://foo:bar@localhost:5432/postgres"
 	secretKey   = "secret"
-	port        = "5000"
 )
 
 func TestRead(t *testing.T) {
@@ -20,14 +19,12 @@ func TestRead(t *testing.T) {
 	data := fmt.Sprintf(`
 		database_uri = "%s"
 		secret_key = "%s"
-		port = "%s"
-	`, databaseURI, secretKey, port)
+	`, databaseURI, secretKey)
 
 	cfg, err := config.Read(data)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, cfg.DatabaseURI, databaseURI)
-	test.AssertEqual(t, cfg.Port, port)
 }
 
 func TestOptional(t *testing.T) {
@@ -42,15 +39,12 @@ func TestOptional(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, cfg.DatabaseURI, databaseURI)
-	test.AssertEqual(t, cfg.Port, config.DefaultPort)
 }
 
 func TestRequired(t *testing.T) {
 	t.Parallel()
 
-	data := fmt.Sprintf(`
-		port = "%s"
-	`, port)
+	data := ""
 
 	_, err := config.Read(data)
 	test.AssertErrorContains(t, err, "missing")

@@ -13,6 +13,4 @@ type BaseData struct {
 	Account   *model.Account
 	CSRFToken string
 	Toast     string
-
-	GoatCounterCode string
 }

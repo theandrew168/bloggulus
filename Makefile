@@ -11,12 +11,12 @@ build:
 # use wgo to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
-	go tool wgo run -file .html -file .css -file .conf main.go
+	go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go
 
 # run the app using the local-only config file
 .PHONY: run-local
 run-local:
-	go tool wgo run -file .html -file .css -file .conf main.go -conf bloggulus.local.conf
+	go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go -conf bloggulus.local.conf
 
 .PHONY: migrate
 migrate:
@@ -44,10 +44,10 @@ vet:
 	go vet ./...
 
 staticcheck:
-	go tool staticcheck ./...
+	go run honnef.co/go/tools/cmd/staticcheck@latest ./...
 
 govulncheck:
-	go tool govulncheck ./...
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 check: vet staticcheck govulncheck
 

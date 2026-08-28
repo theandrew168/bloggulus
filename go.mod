@@ -19,9 +19,7 @@ require (
 require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bokwoon95/wgo v0.7.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
@@ -30,20 +28,8 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.70.1 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
-	golang.org/x/exp/typeparams v0.0.0-20231108232855-2478ac86f678 // indirect
-	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260811182544-a038080d80e5 // indirect
 	golang.org/x/text v0.41.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
-	golang.org/x/vuln v1.7.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
-	honnef.co/go/tools v0.8.1 // indirect
-)
-
-tool (
-	github.com/bokwoon95/wgo
-	golang.org/x/vuln/cmd/govulncheck
-	honnef.co/go/tools/cmd/staticcheck
 )

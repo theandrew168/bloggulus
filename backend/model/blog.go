@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"uuid"
-
-	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 const (
@@ -18,43 +16,42 @@ type Blog struct {
 	feedURL      string
 	siteURL      string
 	title        string
+	isPublic     bool
+	syncedAt     time.Time
 	etag         string
 	lastModified string
-	syncedAt     time.Time
 
-	createdAt time.Time
-	updatedAt time.Time
+	meta *Meta
 }
 
-func NewBlog(feedURL, siteURL, title, etag, lastModified string, syncedAt time.Time) (*Blog, error) {
-	now := timeutil.Now()
+func NewBlog(feedURL, siteURL, title string, syncedAt time.Time, etag, lastModified string) (*Blog, error) {
 	blog := Blog{
 		id:           uuid.New(),
 		feedURL:      feedURL,
 		siteURL:      siteURL,
 		title:        title,
+		isPublic:     false,
+		syncedAt:     syncedAt,
 		etag:         etag,
 		lastModified: lastModified,
-		syncedAt:     syncedAt,
 
-		createdAt: now,
-		updatedAt: now,
+		meta: NewMeta(),
 	}
 	return &blog, nil
 }
 
-func LoadBlog(id uuid.UUID, feedURL, siteURL, title, etag, lastModified string, syncedAt, createdAt, updatedAt time.Time) *Blog {
+func LoadBlog(id uuid.UUID, feedURL, siteURL, title string, isPublic bool, syncedAt time.Time, etag, lastModified string, meta *Meta) *Blog {
 	blog := Blog{
 		id:           id,
 		feedURL:      feedURL,
 		siteURL:      siteURL,
 		title:        title,
+		isPublic:     isPublic,
+		syncedAt:     syncedAt,
 		etag:         etag,
 		lastModified: lastModified,
-		syncedAt:     syncedAt,
 
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		meta: meta,
 	}
 	return &blog
 }
@@ -75,6 +72,23 @@ func (b *Blog) Title() string {
 	return b.title
 }
 
+func (b *Blog) IsPublic() bool {
+	return b.isPublic
+}
+
+func (b *Blog) SetIsPublic(isPublic bool) error {
+	b.isPublic = isPublic
+	return nil
+}
+
+func (b *Blog) SyncedAt() time.Time {
+	return b.syncedAt
+}
+
+func (b *Blog) SetSyncedAt(syncedAt time.Time) {
+	b.syncedAt = syncedAt
+}
+
 func (b *Blog) ETag() string {
 	return b.etag
 }
@@ -93,27 +107,10 @@ func (b *Blog) SetLastModified(lastModified string) error {
 	return nil
 }
 
-func (b *Blog) SyncedAt() time.Time {
-	return b.syncedAt
-}
-
-func (b *Blog) SetSyncedAt(syncedAt time.Time) {
-	b.syncedAt = syncedAt
+func (b *Blog) Meta() *Meta {
+	return b.meta
 }
 
 func (b *Blog) CanBeSynced(now time.Time) bool {
 	return b.syncedAt.Add(SyncCooldown).Before(now)
-}
-
-func (b *Blog) CreatedAt() time.Time {
-	return b.createdAt
-}
-
-func (b *Blog) UpdatedAt() time.Time {
-	return b.updatedAt
-}
-
-func (b *Blog) SetUpdatedAt(updatedAt time.Time) error {
-	b.updatedAt = updatedAt
-	return nil
 }

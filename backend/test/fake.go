@@ -13,9 +13,9 @@ func NewBlog(t *testing.T) *model.Blog {
 		RandomURL(32),
 		RandomURL(32),
 		RandomString(32),
-		RandomString(32),
-		RandomString(32),
 		RandomTime(),
+		RandomString(32),
+		RandomString(32),
 	)
 	AssertNilError(t, err)
 
@@ -27,8 +27,8 @@ func NewPost(t *testing.T, blog *model.Blog) *model.Post {
 		blog,
 		RandomURL(32),
 		RandomString(32),
-		RandomString(32),
 		RandomTime(),
+		RandomString(32),
 	)
 	AssertNilError(t, err)
 

@@ -4,8 +4,7 @@ CREATE TABLE session (
 	token_hash TEXT NOT NULL UNIQUE,
 	expires_at TIMESTAMPTZ NOT NULL,
 	meta_created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	meta_updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	meta_version INTEGER NOT NULL DEFAULT 1
+	meta_updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Used when querying for expired sessions.

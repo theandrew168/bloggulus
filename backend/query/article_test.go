@@ -74,8 +74,8 @@ func TestSearchArticles(t *testing.T) {
 		blog,
 		test.RandomURL(20),
 		"Python",
-		"content about python",
 		timeutil.Now(),
+		"content about python",
 	)
 	test.AssertNilError(t, err)
 
@@ -87,8 +87,8 @@ func TestSearchArticles(t *testing.T) {
 		blog,
 		test.RandomURL(20),
 		"Boring",
-		"content about nothing",
 		timeutil.Now(),
+		"content about nothing",
 	)
 	test.AssertNilError(t, err)
 
@@ -119,8 +119,8 @@ func TestSearchArticlesByAccount(t *testing.T) {
 			followedBlog,
 			test.RandomURL(20),
 			"Python",
-			"content about python",
 			timeutil.Now(),
+			"content about python",
 		)
 		test.AssertNilError(t, err)
 
@@ -135,8 +135,8 @@ func TestSearchArticlesByAccount(t *testing.T) {
 			unfollowedBlog,
 			test.RandomURL(20),
 			"Python",
-			"content about python",
 			timeutil.Now(),
+			"content about python",
 		)
 		test.AssertNilError(t, err)
 
@@ -219,8 +219,8 @@ func TestCountSearchArticles(t *testing.T) {
 		blog,
 		test.RandomURL(20),
 		"Python",
-		"content about python",
 		timeutil.Now(),
+		"content about python",
 	)
 	test.AssertNilError(t, err)
 
@@ -232,8 +232,8 @@ func TestCountSearchArticles(t *testing.T) {
 		blog,
 		test.RandomURL(20),
 		"Boring",
-		"content about nothing",
 		timeutil.Now(),
+		"content about nothing",
 	)
 	test.AssertNilError(t, err)
 
@@ -264,8 +264,8 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 			followedBlog,
 			test.RandomURL(20),
 			"Python",
-			"content about python",
 			timeutil.Now(),
+			"content about python",
 		)
 		test.AssertNilError(t, err)
 
@@ -280,8 +280,8 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 			unfollowedBlog,
 			test.RandomURL(20),
 			"Python",
-			"content about python",
 			timeutil.Now(),
+			"content about python",
 		)
 		test.AssertNilError(t, err)
 

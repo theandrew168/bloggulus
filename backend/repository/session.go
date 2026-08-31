@@ -14,22 +14,22 @@ import (
 )
 
 type dbSession struct {
-	ID        uuid.UUID `db:"id"`
-	AccountID uuid.UUID `db:"account_id"`
-	Hash      string    `db:"hash"`
-	ExpiresAt time.Time `db:"expires_at"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID            uuid.UUID `db:"id"`
+	AccountID     uuid.UUID `db:"account_id"`
+	TokenHash     string    `db:"token_hash"`
+	ExpiresAt     time.Time `db:"expires_at"`
+	MetaCreatedAt time.Time `db:"meta_created_at"`
+	MetaUpdatedAt time.Time `db:"meta_updated_at"`
 }
 
 func marshalSession(session *model.Session) (dbSession, error) {
 	s := dbSession{
-		ID:        session.ID(),
-		AccountID: session.AccountID(),
-		Hash:      session.Hash(),
-		ExpiresAt: session.ExpiresAt(),
-		CreatedAt: session.CreatedAt(),
-		UpdatedAt: session.UpdatedAt(),
+		ID:            session.ID(),
+		AccountID:     session.AccountID(),
+		TokenHash:     session.TokenHash(),
+		ExpiresAt:     session.ExpiresAt(),
+		MetaCreatedAt: session.Meta().CreatedAt(),
+		MetaUpdatedAt: session.Meta().UpdatedAt(),
 	}
 	return s, nil
 }
@@ -38,10 +38,9 @@ func (s dbSession) unmarshal() (*model.Session, error) {
 	session := model.LoadSession(
 		s.ID,
 		s.AccountID,
-		s.Hash,
+		s.TokenHash,
 		s.ExpiresAt,
-		s.CreatedAt,
-		s.UpdatedAt,
+		model.LoadMeta(s.MetaCreatedAt, s.MetaUpdatedAt),
 	)
 	return session, nil
 }
@@ -60,7 +59,7 @@ func NewSessionRepository(conn postgres.Conn) *SessionRepository {
 func (r *SessionRepository) Create(session *model.Session) error {
 	stmt := `
 		INSERT INTO session
-			(id, account_id, hash, expires_at, created_at, updated_at)
+			(id, account_id, token_hash, expires_at, meta_created_at, meta_updated_at)
 		VALUES
 			($1, $2, $3, $4, $5, $6)`
 
@@ -72,10 +71,10 @@ func (r *SessionRepository) Create(session *model.Session) error {
 	args := []any{
 		row.ID,
 		row.AccountID,
-		row.Hash,
+		row.TokenHash,
 		row.ExpiresAt,
-		row.CreatedAt,
-		row.UpdatedAt,
+		row.MetaCreatedAt,
+		row.MetaUpdatedAt,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -91,10 +90,10 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 		SELECT
 			session.id,
 			session.account_id,
-			session.hash,
+			session.token_hash,
 			session.expires_at,
-			session.created_at,
-			session.updated_at
+			session.meta_created_at,
+			session.meta_updated_at
 		FROM session
 		WHERE session.id = $1`
 
@@ -111,22 +110,22 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 	return row.unmarshal()
 }
 
-func (r *SessionRepository) ReadBySessionID(sessionID string) (*model.Session, error) {
+func (r *SessionRepository) ReadBySessionToken(token string) (*model.Session, error) {
 	stmt := `
 		SELECT
 			session.id,
 			session.account_id,
-			session.hash,
+			session.token_hash,
 			session.expires_at,
-			session.created_at,
-			session.updated_at
+			session.meta_created_at,
+			session.meta_updated_at
 		FROM session
-		WHERE session.hash = $1`
+		WHERE session.token_hash = $1`
 
-	hashBytes := sha256.Sum256([]byte(sessionID))
-	hash := hex.EncodeToString(hashBytes[:])
+	tokenHashBytes := sha256.Sum256([]byte(token))
+	tokenHash := hex.EncodeToString(tokenHashBytes[:])
 
-	rows, err := r.conn.Query(context.Background(), stmt, hash)
+	rows, err := r.conn.Query(context.Background(), stmt, tokenHash)
 	if err != nil {
 		return nil, err
 	}
@@ -144,10 +143,10 @@ func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error)
 		SELECT
 			session.id,
 			session.account_id,
-			session.hash,
+			session.token_hash,
 			session.expires_at,
-			session.created_at,
-			session.updated_at
+			session.meta_created_at,
+			session.meta_updated_at
 		FROM session
 		WHERE session.expires_at <= $1`
 

@@ -91,8 +91,8 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 				blog,
 				feedPost.URL,
 				feedPost.Title,
-				feedPost.Content,
 				feedPost.PublishedAt,
+				feedPost.Content,
 			)
 			if err != nil {
 				return ComparePostsResult{}, err
@@ -281,9 +281,9 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 		feedBlog.FeedURL,
 		feedBlog.SiteURL,
 		feedBlog.Title,
+		timeutil.Now(),
 		resp.ETag,
 		resp.LastModified,
-		timeutil.Now(),
 	)
 	if err != nil {
 		return nil, err

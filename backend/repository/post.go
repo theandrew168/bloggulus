@@ -13,26 +13,26 @@ import (
 )
 
 type dbPost struct {
-	ID          uuid.UUID `db:"id"`
-	BlogID      uuid.UUID `db:"blog_id"`
-	URL         string    `db:"url"`
-	Title       string    `db:"title"`
-	Content     string    `db:"content"`
-	PublishedAt time.Time `db:"published_at"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID            uuid.UUID `db:"id"`
+	BlogID        uuid.UUID `db:"blog_id"`
+	URL           string    `db:"url"`
+	Title         string    `db:"title"`
+	PublishedAt   time.Time `db:"published_at"`
+	Content       string    `db:"content"`
+	MetaCreatedAt time.Time `db:"meta_created_at"`
+	MetaUpdatedAt time.Time `db:"meta_updated_at"`
 }
 
 func marshalPost(post *model.Post) (dbPost, error) {
 	p := dbPost{
-		ID:          post.ID(),
-		BlogID:      post.BlogID(),
-		URL:         post.URL(),
-		Title:       post.Title(),
-		Content:     post.Content(),
-		PublishedAt: post.PublishedAt(),
-		CreatedAt:   post.CreatedAt(),
-		UpdatedAt:   post.UpdatedAt(),
+		ID:            post.ID(),
+		BlogID:        post.BlogID(),
+		URL:           post.URL(),
+		Title:         post.Title(),
+		PublishedAt:   post.PublishedAt(),
+		Content:       post.Content(),
+		MetaCreatedAt: post.Meta().CreatedAt(),
+		MetaUpdatedAt: post.Meta().UpdatedAt(),
 	}
 	return p, nil
 }
@@ -43,10 +43,9 @@ func (p dbPost) unmarshal() (*model.Post, error) {
 		p.BlogID,
 		p.URL,
 		p.Title,
-		p.Content,
 		p.PublishedAt,
-		p.CreatedAt,
-		p.UpdatedAt,
+		p.Content,
+		model.LoadMeta(p.MetaCreatedAt, p.MetaUpdatedAt),
 	)
 	return post, nil
 }
@@ -65,7 +64,7 @@ func NewPostRepository(conn postgres.Conn) *PostRepository {
 func (r *PostRepository) Create(post *model.Post) error {
 	stmt := `
 		INSERT INTO post
-			(id, blog_id, url, title, content, published_at, created_at, updated_at)
+			(id, blog_id, url, title, published_at, content, meta_created_at, meta_updated_at)
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8)`
 
@@ -79,10 +78,10 @@ func (r *PostRepository) Create(post *model.Post) error {
 		row.BlogID,
 		row.URL,
 		row.Title,
-		row.Content,
 		row.PublishedAt,
-		row.CreatedAt,
-		row.UpdatedAt,
+		row.Content,
+		row.MetaCreatedAt,
+		row.MetaUpdatedAt,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -100,10 +99,10 @@ func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 			post.blog_id,
 			post.url,
 			post.title,
-			post.content,
 			post.published_at,
-			post.created_at,
-			post.updated_at
+			post.content,
+			post.meta_created_at,
+			post.meta_updated_at
 		FROM post
 		WHERE post.id = $1`
 
@@ -127,10 +126,10 @@ func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 			post.blog_id,
 			post.url,
 			post.title,
-			post.content,
 			post.published_at,
-			post.created_at,
-			post.updated_at
+			post.content,
+			post.meta_created_at,
+			post.meta_updated_at
 		FROM post
 		WHERE post.url = $1`
 
@@ -154,10 +153,10 @@ func (r *PostRepository) ListByBlog(blog *model.Blog) ([]*model.Post, error) {
 			post.blog_id,
 			post.url,
 			post.title,
-			post.content,
 			post.published_at,
-			post.created_at,
-			post.updated_at
+			post.content,
+			post.meta_created_at,
+			post.meta_updated_at
 		FROM post
 		WHERE post.blog_id = $1
 		ORDER BY post.published_at DESC`
@@ -209,14 +208,14 @@ func (r *PostRepository) Update(post *model.Post) error {
 	stmt := `
 		UPDATE post
 		SET
-			url = $1,
-			title = $2,
-			content = $3,
+			url = $2,
+			title = $3,
 			published_at = $4,
-			updated_at = $5
-		WHERE id = $6
-			AND updated_at = $7
-		RETURNING updated_at`
+			content = $5,
+			meta_updated_at = $6
+		WHERE id = $1
+			AND meta_updated_at = $7
+		RETURNING meta_updated_at`
 
 	row, err := marshalPost(post)
 	if err != nil {
@@ -224,13 +223,13 @@ func (r *PostRepository) Update(post *model.Post) error {
 	}
 
 	args := []any{
+		row.ID,
 		row.URL,
 		row.Title,
-		row.Content,
 		row.PublishedAt,
+		row.Content,
 		now,
-		row.ID,
-		row.UpdatedAt,
+		row.MetaUpdatedAt,
 	}
 
 	rows, err := r.conn.Query(context.Background(), stmt, args...)
@@ -243,7 +242,7 @@ func (r *PostRepository) Update(post *model.Post) error {
 		return postgres.CheckUpdateError(err)
 	}
 
-	post.SetUpdatedAt(now)
+	post.Meta().Update(now)
 	return nil
 }
 

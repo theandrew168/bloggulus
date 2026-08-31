@@ -18,7 +18,6 @@ type dbTag struct {
 
 	MetaCreatedAt time.Time `db:"meta_created_at"`
 	MetaUpdatedAt time.Time `db:"meta_updated_at"`
-	MetaVersion   int       `db:"meta_version"`
 }
 
 func marshalTag(tag *model.Tag) (dbTag, error) {
@@ -27,7 +26,6 @@ func marshalTag(tag *model.Tag) (dbTag, error) {
 		Name:          tag.Name().Value(),
 		MetaCreatedAt: tag.Meta().CreatedAt(),
 		MetaUpdatedAt: tag.Meta().UpdatedAt(),
-		MetaVersion:   tag.Meta().Version().Value(),
 	}
 	return t, nil
 }
@@ -38,16 +36,10 @@ func (t dbTag) unmarshal() (*model.Tag, error) {
 		return nil, err
 	}
 
-	version, err := value.NewCount(t.MetaVersion)
-	if err != nil {
-		return nil, err
-	}
-	meta := model.LoadMeta(t.MetaCreatedAt, t.MetaUpdatedAt, version)
-
 	tag := model.LoadTag(
 		t.ID,
 		name,
-		meta,
+		model.LoadMeta(t.MetaCreatedAt, t.MetaUpdatedAt),
 	)
 	return tag, nil
 }
@@ -66,9 +58,9 @@ func NewTagRepository(conn postgres.Conn) *TagRepository {
 func (r *TagRepository) Create(tag *model.Tag) error {
 	stmt := `
 		INSERT INTO tag
-			(id, name, meta_created_at, meta_updated_at, meta_version)
+			(id, name, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5)`
+			($1, $2, $3, $4)`
 
 	row, err := marshalTag(tag)
 	if err != nil {
@@ -80,7 +72,6 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 		row.Name,
 		row.MetaCreatedAt,
 		row.MetaUpdatedAt,
-		row.MetaVersion,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -97,8 +88,7 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 			tag.id,
 			tag.name,
 			tag.meta_created_at,
-			tag.meta_updated_at,
-			tag.meta_version
+			tag.meta_updated_at
 		FROM tag
 		WHERE tag.id = $1`
 
@@ -121,8 +111,7 @@ func (r *TagRepository) List(limit, offset int) ([]*model.Tag, error) {
 			tag.id,
 			tag.name,
 			tag.meta_created_at,
-			tag.meta_updated_at,
-			tag.meta_version
+				tag.meta_updated_at
 		FROM tag
 		ORDER BY tag.meta_created_at DESC
 		LIMIT $1 OFFSET $2`

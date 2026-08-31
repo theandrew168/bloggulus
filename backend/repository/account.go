@@ -22,7 +22,6 @@ type dbAccount struct {
 	FollowedBlogIDs []uuid.UUID `db:"followed_blog_ids"`
 	MetaCreatedAt   time.Time   `db:"meta_created_at"`
 	MetaUpdatedAt   time.Time   `db:"meta_updated_at"`
-	MetaVersion     int         `db:"meta_version"`
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
@@ -33,7 +32,6 @@ func marshalAccount(account *model.Account) (dbAccount, error) {
 		FollowedBlogIDs: account.FollowedBlogIDs(),
 		MetaCreatedAt:   account.Meta().CreatedAt(),
 		MetaUpdatedAt:   account.Meta().UpdatedAt(),
-		MetaVersion:     account.Meta().Version().Value(),
 	}
 	return a, nil
 }
@@ -44,18 +42,12 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		return nil, err
 	}
 
-	version, err := value.NewCount(a.MetaVersion)
-	if err != nil {
-		return nil, err
-	}
-	meta := model.LoadMeta(a.MetaCreatedAt, a.MetaUpdatedAt, version)
-
 	account := model.LoadAccount(
 		a.ID,
 		username,
 		a.IsAdmin,
 		a.FollowedBlogIDs,
-		meta,
+		model.LoadMeta(a.MetaCreatedAt, a.MetaUpdatedAt),
 	)
 	return account, nil
 }
@@ -74,9 +66,9 @@ func NewAccountRepository(conn postgres.Conn) *AccountRepository {
 func (r *AccountRepository) Create(account *model.Account) error {
 	stmt := `
 		INSERT INTO account
-			(id, username, meta_created_at, meta_updated_at, meta_version)
+			(id, username, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5)`
+			($1, $2, $3, $4)`
 
 	row, err := marshalAccount(account)
 	if err != nil {
@@ -88,7 +80,6 @@ func (r *AccountRepository) Create(account *model.Account) error {
 		row.Username,
 		row.MetaCreatedAt,
 		row.MetaUpdatedAt,
-		row.MetaVersion,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -105,10 +96,9 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 			account.id,
 			account.username,
 			account.is_admin,
-			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
+			ARRAY_REMOVE(ARRAY_AGG(account_blog.blog_id), NULL) AS followed_blog_ids,
 			account.meta_created_at,
-			account.meta_updated_at,
-			account.meta_version
+			account.meta_updated_at
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
@@ -134,10 +124,9 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 			account.id,
 			account.username,
 			account.is_admin,
-			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
+			ARRAY_REMOVE(ARRAY_AGG(account_blog.blog_id), NULL) AS followed_blog_ids,
 			account.meta_created_at,
-			account.meta_updated_at,
-			account.meta_version
+			account.meta_updated_at
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
@@ -157,28 +146,27 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) ReadBySessionID(sessionID string) (*model.Account, error) {
+func (r *AccountRepository) ReadBySessionToken(sessionToken string) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
 			account.username,
 			account.is_admin,
-			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
+			ARRAY_REMOVE(ARRAY_AGG(account_blog.blog_id), NULL) AS followed_blog_ids,
 			account.meta_created_at,
-			account.meta_updated_at,
-			account.meta_version
+			account.meta_updated_at
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
 		INNER JOIN session
 			ON session.account_id = account.id
-		WHERE session.hash = $1
+		WHERE session.token_hash = $1
 		GROUP BY account.id`
 
-	hashBytes := sha256.Sum256([]byte(sessionID))
-	hash := hex.EncodeToString(hashBytes[:])
+	tokenHashBytes := sha256.Sum256([]byte(sessionToken))
+	tokenHash := hex.EncodeToString(tokenHashBytes[:])
 
-	rows, err := r.conn.Query(context.Background(), stmt, hash)
+	rows, err := r.conn.Query(context.Background(), stmt, tokenHash)
 	if err != nil {
 		return nil, err
 	}
@@ -197,10 +185,9 @@ func (r *AccountRepository) List(limit, offset int) ([]*model.Account, error) {
 			account.id,
 			account.username,
 			account.is_admin,
-			ARRAY_AGG(account_blog.blog_id) AS followed_blog_ids,
+			ARRAY_REMOVE(ARRAY_AGG(account_blog.blog_id), NULL) AS followed_blog_ids,
 			account.meta_created_at,
-			account.meta_updated_at,
-			account.meta_version
+			account.meta_updated_at
 		FROM account
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id

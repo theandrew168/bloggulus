@@ -13,54 +13,51 @@ import (
 type Session struct {
 	id        uuid.UUID
 	accountID uuid.UUID
-	hash      string
+	tokenHash string
 	expiresAt time.Time
 
-	createdAt time.Time
-	updatedAt time.Time
+	meta *Meta
 }
 
-// Generate a random, crypto-safe session ID.
-func GenerateSessionID() (string, error) {
+// Generate a random, crypto-safe session token.
+func GenerateSessionToken() (string, error) {
 	return random.BytesBase64(32)
 }
 
 func NewSession(account *Account, ttl time.Duration) (*Session, string, error) {
 	now := timeutil.Now()
 
-	sessionID, err := GenerateSessionID()
+	sessionToken, err := GenerateSessionToken()
 	if err != nil {
 		return nil, "", err
 	}
 
-	// Generate a SHA-256 hash of the plaintext session ID. This will be the value
-	// that we store in the `hash` field of our database table. Note that the
+	// Generate a SHA-256 hash of the plaintext session token. This will be the value
+	// that we store in the `token_hash` field of our database table. Note that the
 	// sha256.Sum256() function returns an array of length 32, so to make it easier to
 	// work with we convert it to a slice using the [:] operator before storing it.
-	hashBytes := sha256.Sum256([]byte(sessionID))
-	hash := hex.EncodeToString(hashBytes[:])
+	sessionTokenHashBytes := sha256.Sum256([]byte(sessionToken))
+	sessionTokenHash := hex.EncodeToString(sessionTokenHashBytes[:])
 
 	session := Session{
 		id:        uuid.New(),
 		accountID: account.ID(),
-		hash:      hash,
+		tokenHash: sessionTokenHash,
 		expiresAt: now.Add(ttl),
 
-		createdAt: now,
-		updatedAt: now,
+		meta: NewMeta(),
 	}
-	return &session, sessionID, nil
+	return &session, sessionToken, nil
 }
 
-func LoadSession(id, accountID uuid.UUID, hash string, expiresAt, createdAt, updatedAt time.Time) *Session {
+func LoadSession(id, accountID uuid.UUID, tokenHash string, expiresAt time.Time, meta *Meta) *Session {
 	session := Session{
 		id:        id,
 		accountID: accountID,
-		hash:      hash,
+		tokenHash: tokenHash,
 		expiresAt: expiresAt,
 
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		meta: meta,
 	}
 	return &session
 }
@@ -73,18 +70,14 @@ func (s *Session) AccountID() uuid.UUID {
 	return s.accountID
 }
 
-func (s *Session) Hash() string {
-	return s.hash
+func (s *Session) TokenHash() string {
+	return s.tokenHash
 }
 
 func (s *Session) ExpiresAt() time.Time {
 	return s.expiresAt
 }
 
-func (s *Session) CreatedAt() time.Time {
-	return s.createdAt
-}
-
-func (s *Session) UpdatedAt() time.Time {
-	return s.updatedAt
+func (s *Session) Meta() *Meta {
+	return s.meta
 }

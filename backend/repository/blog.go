@@ -13,28 +13,30 @@ import (
 )
 
 type dbBlog struct {
-	ID           uuid.UUID `db:"id"`
-	FeedURL      string    `db:"feed_url"`
-	SiteURL      string    `db:"site_url"`
-	Title        string    `db:"title"`
-	ETag         string    `db:"etag"`
-	LastModified string    `db:"last_modified"`
-	SyncedAt     time.Time `db:"synced_at"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
+	ID            uuid.UUID `db:"id"`
+	FeedURL       string    `db:"feed_url"`
+	SiteURL       string    `db:"site_url"`
+	Title         string    `db:"title"`
+	IsPublic      bool      `db:"is_public"`
+	ETag          string    `db:"etag"`
+	LastModified  string    `db:"last_modified"`
+	SyncedAt      time.Time `db:"synced_at"`
+	MetaCreatedAt time.Time `db:"meta_created_at"`
+	MetaUpdatedAt time.Time `db:"meta_updated_at"`
 }
 
 func marshalBlog(blog *model.Blog) (dbBlog, error) {
 	b := dbBlog{
-		ID:           blog.ID(),
-		FeedURL:      blog.FeedURL(),
-		SiteURL:      blog.SiteURL(),
-		Title:        blog.Title(),
-		ETag:         blog.ETag(),
-		LastModified: blog.LastModified(),
-		SyncedAt:     blog.SyncedAt(),
-		CreatedAt:    blog.CreatedAt(),
-		UpdatedAt:    blog.UpdatedAt(),
+		ID:            blog.ID(),
+		FeedURL:       blog.FeedURL(),
+		SiteURL:       blog.SiteURL(),
+		Title:         blog.Title(),
+		IsPublic:      blog.IsPublic(),
+		ETag:          blog.ETag(),
+		LastModified:  blog.LastModified(),
+		SyncedAt:      blog.SyncedAt(),
+		MetaCreatedAt: blog.Meta().CreatedAt(),
+		MetaUpdatedAt: blog.Meta().UpdatedAt(),
 	}
 	return b, nil
 }
@@ -45,11 +47,11 @@ func (b dbBlog) unmarshal() (*model.Blog, error) {
 		b.FeedURL,
 		b.SiteURL,
 		b.Title,
+		b.IsPublic,
+		b.SyncedAt,
 		b.ETag,
 		b.LastModified,
-		b.SyncedAt,
-		b.CreatedAt,
-		b.UpdatedAt,
+		model.LoadMeta(b.MetaCreatedAt, b.MetaUpdatedAt),
 	)
 	return blog, nil
 }
@@ -68,9 +70,9 @@ func NewBlogRepository(conn postgres.Conn) *BlogRepository {
 func (r *BlogRepository) Create(blog *model.Blog) error {
 	stmt := `
 		INSERT INTO blog
-			(id, feed_url, site_url, title, etag, last_modified, synced_at, created_at, updated_at)
+			(id, feed_url, site_url, title, is_public, etag, last_modified, synced_at, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	row, err := marshalBlog(blog)
 	if err != nil {
@@ -82,11 +84,12 @@ func (r *BlogRepository) Create(blog *model.Blog) error {
 		row.FeedURL,
 		row.SiteURL,
 		row.Title,
+		row.IsPublic,
 		row.ETag,
 		row.LastModified,
 		row.SyncedAt,
-		row.CreatedAt,
-		row.UpdatedAt,
+		row.MetaCreatedAt,
+		row.MetaUpdatedAt,
 	}
 
 	_, err = r.conn.Exec(context.Background(), stmt, args...)
@@ -104,11 +107,12 @@ func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 			blog.feed_url,
 			blog.site_url,
 			blog.title,
+			blog.is_public,
 			blog.etag,
 			blog.last_modified,
 			blog.synced_at,
-			blog.created_at,
-			blog.updated_at
+			blog.meta_created_at,
+			blog.meta_updated_at
 		FROM blog
 		WHERE id = $1`
 
@@ -132,11 +136,12 @@ func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 			blog.feed_url,
 			blog.site_url,
 			blog.title,
+			blog.is_public,
 			blog.etag,
 			blog.last_modified,
 			blog.synced_at,
-			blog.created_at,
-			blog.updated_at
+			blog.meta_created_at,
+			blog.meta_updated_at
 		FROM blog
 		WHERE blog.feed_url = $1`
 
@@ -160,13 +165,14 @@ func (r *BlogRepository) List(limit, offset int) ([]*model.Blog, error) {
 			blog.feed_url,
 			blog.site_url,
 			blog.title,
+			blog.is_public,
 			blog.etag,
 			blog.last_modified,
 			blog.synced_at,
-			blog.created_at,
-			blog.updated_at
+			blog.meta_created_at,
+			blog.meta_updated_at
 		FROM blog
-		ORDER BY blog.created_at DESC
+		ORDER BY blog.meta_created_at DESC
 		LIMIT $1 OFFSET $2`
 
 	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)
@@ -200,13 +206,14 @@ func (r *BlogRepository) ListAll() ([]*model.Blog, error) {
 			blog.feed_url,
 			blog.site_url,
 			blog.title,
+			blog.is_public,
 			blog.etag,
 			blog.last_modified,
 			blog.synced_at,
-			blog.created_at,
-			blog.updated_at
+			blog.meta_created_at,
+			blog.meta_updated_at
 		FROM blog
-		ORDER BY blog.created_at DESC`
+		ORDER BY blog.meta_created_at DESC`
 
 	rows, err := r.conn.Query(context.Background(), stmt)
 	if err != nil {
@@ -254,16 +261,17 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 	stmt := `
 		UPDATE blog
 		SET
-			feed_url = $1,
-			site_url = $2,
-			title = $3,
-			etag = $4,
-			last_modified = $5,
-			synced_at = $6,
-			updated_at = $7
-		WHERE id = $8
-			AND updated_at = $9
-		RETURNING updated_at`
+			feed_url = $2,
+			site_url = $3,
+			title = $4,
+			is_public = $5,
+			etag = $6,
+			last_modified = $7,
+			synced_at = $8,
+			meta_updated_at = $9
+		WHERE id = $1
+			AND meta_updated_at = $10
+		RETURNING meta_updated_at`
 
 	row, err := marshalBlog(blog)
 	if err != nil {
@@ -271,15 +279,16 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 	}
 
 	args := []any{
+		row.ID,
 		row.FeedURL,
 		row.SiteURL,
 		row.Title,
+		row.IsPublic,
 		row.ETag,
 		row.LastModified,
 		row.SyncedAt,
 		now,
-		row.ID,
-		row.UpdatedAt,
+		row.MetaUpdatedAt,
 	}
 
 	rows, err := r.conn.Query(context.Background(), stmt, args...)
@@ -292,7 +301,7 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 		return postgres.CheckUpdateError(err)
 	}
 
-	blog.SetUpdatedAt(now)
+	blog.Meta().Update(now)
 	return nil
 }
 

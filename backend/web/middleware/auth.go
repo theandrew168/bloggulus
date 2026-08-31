@@ -36,7 +36,7 @@ func Authenticate(repo *repository.Repository) Middleware {
 			}
 
 			// Lookup the account linked to the session.
-			account, err := repo.Account().ReadBySessionID(sessionID.Value)
+			account, err := repo.Account().ReadBySessionToken(sessionID.Value)
 			if err != nil {
 				// If the user has an invalid / expired session cookie, delete it.
 				if errors.Is(err, postgres.ErrNotFound) {

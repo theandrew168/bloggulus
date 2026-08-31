@@ -28,7 +28,7 @@ func (qry *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount,
 		LEFT JOIN account_blog
 			ON account_blog.blog_id = blog.id
 			AND account_blog.account_id = $1
-		ORDER BY blog.created_at DESC`
+		ORDER BY blog.meta_created_at DESC`
 
 	rows, err := qry.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {

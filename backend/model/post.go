@@ -3,8 +3,6 @@ package model
 import (
 	"time"
 	"uuid"
-
-	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type Post struct {
@@ -12,40 +10,36 @@ type Post struct {
 	blogID      uuid.UUID
 	url         string
 	title       string
-	content     string
 	publishedAt time.Time
+	content     string
 
-	createdAt time.Time
-	updatedAt time.Time
+	meta *Meta
 }
 
-func NewPost(blog *Blog, url, title, content string, publishedAt time.Time) (*Post, error) {
-	now := timeutil.Now()
+func NewPost(blog *Blog, url, title string, publishedAt time.Time, content string) (*Post, error) {
 	post := Post{
 		id:          uuid.New(),
 		blogID:      blog.ID(),
 		url:         url,
 		title:       title,
-		content:     content,
 		publishedAt: publishedAt,
+		content:     content,
 
-		createdAt: now,
-		updatedAt: now,
+		meta: NewMeta(),
 	}
 	return &post, nil
 }
 
-func LoadPost(id, blogID uuid.UUID, url, title, content string, publishedAt, createdAt, updatedAt time.Time) *Post {
+func LoadPost(id, blogID uuid.UUID, url, title string, publishedAt time.Time, content string, meta *Meta) *Post {
 	post := Post{
 		id:          id,
 		blogID:      blogID,
 		url:         url,
 		title:       title,
-		content:     content,
 		publishedAt: publishedAt,
+		content:     content,
 
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		meta: meta,
 	}
 	return &post
 }
@@ -71,15 +65,6 @@ func (p *Post) SetTitle(title string) error {
 	return nil
 }
 
-func (p *Post) Content() string {
-	return p.content
-}
-
-func (p *Post) SetContent(content string) error {
-	p.content = content
-	return nil
-}
-
 func (p *Post) PublishedAt() time.Time {
 	return p.publishedAt
 }
@@ -89,15 +74,15 @@ func (p *Post) SetPublishedAt(publishedAt time.Time) error {
 	return nil
 }
 
-func (p *Post) CreatedAt() time.Time {
-	return p.createdAt
+func (p *Post) Content() string {
+	return p.content
 }
 
-func (p *Post) UpdatedAt() time.Time {
-	return p.updatedAt
-}
-
-func (p *Post) SetUpdatedAt(updatedAt time.Time) error {
-	p.updatedAt = updatedAt
+func (p *Post) SetContent(content string) error {
+	p.content = content
 	return nil
+}
+
+func (p *Post) Meta() *Meta {
+	return p.meta
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
 type AccountBlogRepository struct {
@@ -25,16 +24,17 @@ func NewAccountBlogRepository(conn postgres.Conn) *AccountBlogRepository {
 func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog) error {
 	stmt := `
 		INSERT INTO account_blog
-			(account_id, blog_id, created_at, updated_at)
+			(account_id, blog_id, meta_created_at, meta_updated_at)
 		VALUES
 			($1, $2, $3, $4)`
 
-	now := timeutil.Now()
+	meta := model.NewMeta()
+
 	args := []any{
 		account.ID(),
 		blog.ID(),
-		now,
-		now,
+		meta.CreatedAt(),
+		meta.UpdatedAt(),
 	}
 
 	_, err := r.conn.Exec(context.Background(), stmt, args...)

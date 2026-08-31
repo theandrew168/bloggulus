@@ -4,7 +4,6 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 	"github.com/theandrew168/bloggulus/backend/value"
 )
@@ -16,11 +15,6 @@ type Session struct {
 	expiresAt time.Time
 
 	meta *Meta
-}
-
-// Generate a random, crypto-safe session token.
-func GenerateSessionToken() (string, error) {
-	return random.BytesBase64(32)
 }
 
 func NewSession(account *Account, ttl time.Duration) (*Session, value.Token, error) {

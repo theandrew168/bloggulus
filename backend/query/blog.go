@@ -5,6 +5,7 @@ import (
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
+
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
@@ -16,7 +17,6 @@ type BlogForAccount struct {
 	IsFollowing bool      `db:"is_following"`
 }
 
-// TODO: Paginate this (will need to add a CountBlogsForAccount method).
 func (qry *Query) ListBlogsForAccount(account *model.Account) ([]BlogForAccount, error) {
 	stmt := `
 		SELECT

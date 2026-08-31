@@ -11,7 +11,6 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/theandrew168/bloggulus/backend/command"
-	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -119,15 +118,15 @@ func HandleSignIn(enableDebugAuth bool) http.Handler {
 
 func HandleOAuthSignIn(conf *oauth2.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		state, err := random.BytesBase64(16)
+		state, err := value.RandomToken()
 		if err != nil {
 			panic(err)
 		}
 
-		cookie := util.NewSessionCookie(util.StateCookieName, state)
+		cookie := util.NewSessionCookie(util.StateCookieName, state.Value())
 		http.SetCookie(w, &cookie)
 
-		http.Redirect(w, r, conf.AuthCodeURL(state), http.StatusFound)
+		http.Redirect(w, r, conf.AuthCodeURL(state.Value()), http.StatusFound)
 	})
 }
 
@@ -178,14 +177,14 @@ func HandleOAuthCallback(
 			return
 		}
 
-		sessionID, err := cmd.SignIn(username)
+		sessionToken, err := cmd.SignIn(username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
 		// Set a permanent cookie after sign in.
-		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
+		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionToken.Value(), util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
 
 		next := "/"
@@ -203,28 +202,28 @@ func HandleOAuthCallback(
 
 func HandleDebugSignIn(secretKey string, cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Generate a random userID for the debug sign in.
-		userID, err := random.BytesBase64(16)
+		// Generate a random ID for the debug sign in.
+		randomID, err := value.RandomToken()
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
-		userID = "debug_" + userID
+		userID := "debug_" + randomID.Value()
 		username, err := value.NewName(util.HashUserID(userID, secretKey))
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
-		sessionID, err := cmd.SignIn(username)
+		sessionToken, err := cmd.SignIn(username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
 		}
 
 		// Set a permanent cookie after sign in.
-		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionID, util.SessionCookieTTL)
+		sessionCookie := util.NewPermanentCookie(util.SessionCookieName, sessionToken.Value(), util.SessionCookieTTL)
 		http.SetCookie(w, &sessionCookie)
 
 		next := "/"
@@ -243,7 +242,7 @@ func HandleDebugSignIn(secretKey string, cmd *command.Command) http.Handler {
 func HandleSignOutForm(cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check for a session ID. If there isn't one, just redirect back home.
-		sessionID, err := r.Cookie(util.SessionCookieName)
+		sessionTokenCookie, err := r.Cookie(util.SessionCookieName)
 		if err != nil {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
@@ -253,7 +252,13 @@ func HandleSignOutForm(cmd *command.Command) http.Handler {
 		cookie := util.NewExpiredCookie(util.SessionCookieName)
 		http.SetCookie(w, &cookie)
 
-		err = cmd.SignOut(sessionID.Value)
+		sessionToken, err := value.LoadToken(sessionTokenCookie.Value)
+		if err != nil {
+			util.BadRequestResponse(w, r)
+			return
+		}
+
+		err = cmd.SignOut(sessionToken)
 		if err != nil {
 			switch {
 			case errors.Is(err, command.ErrSessionNotFound):

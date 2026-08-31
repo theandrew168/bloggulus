@@ -15,10 +15,10 @@ import (
 
 var ErrSessionNotFound = errors.New("session: not found")
 
-func (cmd *Command) SignIn(username value.Name) (string, error) {
-	// NOTE: Handling state outside the transaciton is the exception, not the rule.
+func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
+	// NOTE: Handling state outside the transaction is the exception, not the rule.
 	// This is a special case where a command needs to return a value (the session ID).
-	var sessionID string
+	var sessionToken value.Token
 	err := cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().ReadByUsername(username)
 		if err != nil {
@@ -44,7 +44,7 @@ func (cmd *Command) SignIn(username value.Name) (string, error) {
 
 		// Create a new session for the account.
 		var session *model.Session
-		session, sessionID, err = model.NewSession(account, util.SessionCookieTTL)
+		session, sessionToken, err = model.NewSession(account, util.SessionCookieTTL)
 		if err != nil {
 			return err
 		}
@@ -62,12 +62,12 @@ func (cmd *Command) SignIn(username value.Name) (string, error) {
 		return nil
 	})
 
-	return sessionID, err
+	return sessionToken, err
 }
 
-func (cmd *Command) SignOut(sessionID string) error {
+func (cmd *Command) SignOut(sessionToken value.Token) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		session, err := tx.Session().ReadBySessionToken(sessionID)
+		session, err := tx.Session().ReadBySessionToken(sessionToken)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrSessionNotFound

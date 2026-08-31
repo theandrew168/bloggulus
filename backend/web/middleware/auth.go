@@ -7,6 +7,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
@@ -28,15 +29,21 @@ func Authenticate(repo *repository.Repository) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			// Check for a sessionID cookie.
-			sessionID, err := r.Cookie(util.SessionCookieName)
+			// Check for a sessionToken cookie.
+			sessionTokenCookie, err := r.Cookie(util.SessionCookieName)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
 
+			sessionToken, err := value.LoadToken(sessionTokenCookie.Value)
+			if err != nil {
+				util.BadRequestResponse(w, r)
+				return
+			}
+
 			// Lookup the account linked to the session.
-			account, err := repo.Account().ReadBySessionToken(sessionID.Value)
+			account, err := repo.Account().ReadBySessionToken(sessionToken)
 			if err != nil {
 				// If the user has an invalid / expired session cookie, delete it.
 				if errors.Is(err, postgres.ErrNotFound) {

@@ -18,12 +18,12 @@ func TestAuthenticate(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	_, sessionID := test.CreateSession(t, repo, account)
-	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
+	_, sessionToken := test.CreateSession(t, repo, account)
+	sessionTokenCookie := util.NewSessionCookie(util.SessionCookieName, sessionToken.Value())
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(&sessionCookie)
+	r.AddCookie(&sessionTokenCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
@@ -87,12 +87,12 @@ func TestRequireAccount(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	_, sessionID := test.CreateSession(t, repo, account)
-	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
+	_, sessionToken := test.CreateSession(t, repo, account)
+	sessionTokenCookie := util.NewSessionCookie(util.SessionCookieName, sessionToken.Value())
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(&sessionCookie)
+	r.AddCookie(&sessionTokenCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
@@ -192,8 +192,8 @@ func TestRequireAdmin(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	_, sessionID := test.CreateSession(t, repo, account)
-	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
+	_, sessionToken := test.CreateSession(t, repo, account)
+	sessionTokenCookie := util.NewSessionCookie(util.SessionCookieName, sessionToken.Value())
 
 	// Make the account an admin via manual SQL.
 	err := repo.Exec(context.Background(), "UPDATE account SET is_admin = TRUE WHERE id = $1", account.ID())
@@ -201,7 +201,7 @@ func TestRequireAdmin(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(&sessionCookie)
+	r.AddCookie(&sessionTokenCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
@@ -280,12 +280,12 @@ func TestRequireAdminNotAdmin(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	_, sessionID := test.CreateSession(t, repo, account)
-	sessionCookie := util.NewSessionCookie(util.SessionCookieName, sessionID)
+	_, sessionToken := test.CreateSession(t, repo, account)
+	sessionTokenCookie := util.NewSessionCookie(util.SessionCookieName, sessionToken.Value())
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(&sessionCookie)
+	r.AddCookie(&sessionTokenCookie)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"slices"
 	"time"
 	"uuid"
@@ -146,7 +144,7 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) ReadBySessionToken(sessionToken string) (*model.Account, error) {
+func (r *AccountRepository) ReadBySessionToken(sessionToken value.Token) (*model.Account, error) {
 	stmt := `
 		SELECT
 			account.id,
@@ -163,10 +161,7 @@ func (r *AccountRepository) ReadBySessionToken(sessionToken string) (*model.Acco
 		WHERE session.token_hash = $1
 		GROUP BY account.id`
 
-	tokenHashBytes := sha256.Sum256([]byte(sessionToken))
-	tokenHash := hex.EncodeToString(tokenHashBytes[:])
-
-	rows, err := r.conn.Query(context.Background(), stmt, tokenHash)
+	rows, err := r.conn.Query(context.Background(), stmt, sessionToken.Hash().Value())
 	if err != nil {
 		return nil, err
 	}

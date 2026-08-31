@@ -6,6 +6,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 func NewBlog(t *testing.T) *model.Blog {
@@ -53,15 +54,15 @@ func NewAccount(t *testing.T) *model.Account {
 	return account
 }
 
-func NewSession(t *testing.T, account *model.Account) (*model.Session, string) {
-	session, sessionID, err := model.NewSession(
+func NewSession(t *testing.T, account *model.Account) (*model.Session, value.Token) {
+	session, sessionToken, err := model.NewSession(
 		account,
 		// expire in 24 hours
 		24*time.Hour,
 	)
 	AssertNilError(t, err)
 
-	return session, sessionID
+	return session, sessionToken
 }
 
 // mocks a blog and creates it in the database
@@ -121,17 +122,17 @@ func CreateAccount(t *testing.T, repo *repository.Repository) *model.Account {
 }
 
 // mocks a session and creates it in the database
-func CreateSession(t *testing.T, repo *repository.Repository, account *model.Account) (*model.Session, string) {
+func CreateSession(t *testing.T, repo *repository.Repository, account *model.Account) (*model.Session, value.Token) {
 	t.Helper()
 
 	// generate some random session data
-	session, sessionID := NewSession(t, account)
+	session, sessionToken := NewSession(t, account)
 
 	// create an example session
 	err := repo.Session().Create(session)
 	AssertNilError(t, err)
 
-	return session, sessionID
+	return session, sessionToken
 }
 
 // create an account blog in the database

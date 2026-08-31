@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 	"uuid"
 
@@ -11,6 +9,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type dbSession struct {
@@ -26,7 +25,7 @@ func marshalSession(session *model.Session) (dbSession, error) {
 	s := dbSession{
 		ID:            session.ID(),
 		AccountID:     session.AccountID(),
-		TokenHash:     session.TokenHash(),
+		TokenHash:     session.TokenHash().Value(),
 		ExpiresAt:     session.ExpiresAt(),
 		MetaCreatedAt: session.Meta().CreatedAt(),
 		MetaUpdatedAt: session.Meta().UpdatedAt(),
@@ -35,10 +34,15 @@ func marshalSession(session *model.Session) (dbSession, error) {
 }
 
 func (s dbSession) unmarshal() (*model.Session, error) {
+	tokenHash, err := value.NewTokenHash(s.TokenHash)
+	if err != nil {
+		return nil, err
+	}
+
 	session := model.LoadSession(
 		s.ID,
 		s.AccountID,
-		s.TokenHash,
+		tokenHash,
 		s.ExpiresAt,
 		model.LoadMeta(s.MetaCreatedAt, s.MetaUpdatedAt),
 	)
@@ -110,7 +114,7 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 	return row.unmarshal()
 }
 
-func (r *SessionRepository) ReadBySessionToken(token string) (*model.Session, error) {
+func (r *SessionRepository) ReadBySessionToken(token value.Token) (*model.Session, error) {
 	stmt := `
 		SELECT
 			session.id,
@@ -122,10 +126,7 @@ func (r *SessionRepository) ReadBySessionToken(token string) (*model.Session, er
 		FROM session
 		WHERE session.token_hash = $1`
 
-	tokenHashBytes := sha256.Sum256([]byte(token))
-	tokenHash := hex.EncodeToString(tokenHashBytes[:])
-
-	rows, err := r.conn.Query(context.Background(), stmt, tokenHash)
+	rows, err := r.conn.Query(context.Background(), stmt, token.Hash().Value())
 	if err != nil {
 		return nil, err
 	}

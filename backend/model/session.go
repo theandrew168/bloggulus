@@ -1,19 +1,18 @@
 package model
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/random"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type Session struct {
 	id        uuid.UUID
 	accountID uuid.UUID
-	tokenHash string
+	tokenHash value.TokenHash
 	expiresAt time.Time
 
 	meta *Meta
@@ -24,33 +23,26 @@ func GenerateSessionToken() (string, error) {
 	return random.BytesBase64(32)
 }
 
-func NewSession(account *Account, ttl time.Duration) (*Session, string, error) {
+func NewSession(account *Account, ttl time.Duration) (*Session, value.Token, error) {
 	now := timeutil.Now()
 
-	sessionToken, err := GenerateSessionToken()
+	token, err := value.RandomToken()
 	if err != nil {
-		return nil, "", err
+		return nil, value.Token{}, err
 	}
-
-	// Generate a SHA-256 hash of the plaintext session token. This will be the value
-	// that we store in the `token_hash` field of our database table. Note that the
-	// sha256.Sum256() function returns an array of length 32, so to make it easier to
-	// work with we convert it to a slice using the [:] operator before storing it.
-	sessionTokenHashBytes := sha256.Sum256([]byte(sessionToken))
-	sessionTokenHash := hex.EncodeToString(sessionTokenHashBytes[:])
 
 	session := Session{
 		id:        uuid.New(),
 		accountID: account.ID(),
-		tokenHash: sessionTokenHash,
+		tokenHash: token.Hash(),
 		expiresAt: now.Add(ttl),
 
 		meta: NewMeta(),
 	}
-	return &session, sessionToken, nil
+	return &session, token, nil
 }
 
-func LoadSession(id, accountID uuid.UUID, tokenHash string, expiresAt time.Time, meta *Meta) *Session {
+func LoadSession(id, accountID uuid.UUID, tokenHash value.TokenHash, expiresAt time.Time, meta *Meta) *Session {
 	session := Session{
 		id:        id,
 		accountID: accountID,
@@ -70,7 +62,7 @@ func (s *Session) AccountID() uuid.UUID {
 	return s.accountID
 }
 
-func (s *Session) TokenHash() string {
+func (s *Session) TokenHash() value.TokenHash {
 	return s.tokenHash
 }
 

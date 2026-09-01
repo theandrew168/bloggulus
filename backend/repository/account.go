@@ -40,13 +40,19 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		return nil, err
 	}
 
-	account := model.LoadAccount(
-		a.ID,
-		username,
-		a.IsAdmin,
-		a.FollowedBlogIDs,
-		model.LoadMeta(a.MetaCreatedAt, a.MetaUpdatedAt),
-	)
+	metaParams := model.LoadMetaParams{
+		CreatedAt: a.MetaCreatedAt,
+		UpdatedAt: a.MetaUpdatedAt,
+	}
+
+	params := model.LoadAccountParams{
+		ID:              a.ID,
+		Username:        username,
+		IsAdmin:         a.IsAdmin,
+		FollowedBlogIDs: a.FollowedBlogIDs,
+		Meta:            model.LoadMeta(metaParams),
+	}
+	account := model.LoadAccount(params)
 	return account, nil
 }
 

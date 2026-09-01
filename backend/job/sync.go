@@ -153,6 +153,7 @@ func ParallelForEach[T any](concurrency int, items []T, fn func(T)) {
 	sem.Acquire(context.Background(), SyncConcurrency)
 }
 
+// TODO: Migrate to use the sync Command.
 type SyncService struct {
 	mu          sync.Mutex
 	repo        *repository.Repository
@@ -277,14 +278,15 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 	}
 
 	// Create a new blog based on the feed data.
-	blog, err := model.NewBlog(
-		feedBlog.FeedURL,
-		feedBlog.SiteURL,
-		feedBlog.Title,
-		timeutil.Now(),
-		resp.ETag,
-		resp.LastModified,
-	)
+	params := model.NewBlogParams{
+		FeedURL:      feedBlog.FeedURL,
+		SiteURL:      feedBlog.SiteURL,
+		Title:        feedBlog.Title,
+		SyncedAt:     timeutil.Now(),
+		ETag:         resp.ETag,
+		LastModified: resp.LastModified,
+	}
+	blog, err := model.NewBlog(params)
 	if err != nil {
 		return nil, err
 	}

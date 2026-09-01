@@ -19,10 +19,15 @@ func NewMeta() *Meta {
 	return &m
 }
 
-func LoadMeta(createdAt, updatedAt time.Time) *Meta {
+type LoadMetaParams struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func LoadMeta(params LoadMetaParams) *Meta {
 	return &Meta{
-		createdAt: createdAt,
-		updatedAt: updatedAt,
+		createdAt: params.CreatedAt,
+		updatedAt: params.UpdatedAt,
 	}
 }
 

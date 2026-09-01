@@ -17,25 +17,36 @@ type Account struct {
 	meta *Meta
 }
 
-func NewAccount(username value.Name) (*Account, error) {
+type NewAccountParams struct {
+	Username value.Name
+}
+
+func NewAccount(params NewAccountParams) (*Account, error) {
 	account := Account{
 		id:       uuid.New(),
-		username: username,
+		username: params.Username,
 		isAdmin:  false,
 		meta:     NewMeta(),
 	}
 	return &account, nil
 }
 
-func LoadAccount(id uuid.UUID, username value.Name, isAdmin bool, followedBlogIDs []uuid.UUID, meta *Meta) *Account {
+type LoadAccountParams struct {
+	ID       uuid.UUID
+	Username value.Name
+	IsAdmin  bool
+	// TODO: Convert to a set.
+	FollowedBlogIDs []uuid.UUID
+	Meta            *Meta
+}
+
+func LoadAccount(params LoadAccountParams) *Account {
 	account := Account{
-		id:       id,
-		username: username,
-		isAdmin:  isAdmin,
-
-		followedBlogIDs: followedBlogIDs,
-
-		meta: meta,
+		id:              params.ID,
+		username:        params.Username,
+		isAdmin:         params.IsAdmin,
+		followedBlogIDs: params.FollowedBlogIDs,
+		meta:            params.Meta,
 	}
 	return &account
 }

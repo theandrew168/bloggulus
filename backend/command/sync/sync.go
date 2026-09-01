@@ -116,14 +116,15 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feed
 	}
 
 	// Create a new blog based on the feed data.
-	blog, err := model.NewBlog(
-		feedBlog.FeedURL,
-		feedBlog.SiteURL,
-		feedBlog.Title,
-		timeutil.Now(),
-		resp.ETag,
-		resp.LastModified,
-	)
+	params := model.NewBlogParams{
+		FeedURL:      feedBlog.FeedURL,
+		SiteURL:      feedBlog.SiteURL,
+		Title:        feedBlog.Title,
+		SyncedAt:     timeutil.Now(),
+		ETag:         resp.ETag,
+		LastModified: resp.LastModified,
+	}
+	blog, err := model.NewBlog(params)
 	if err != nil {
 		return err
 	}

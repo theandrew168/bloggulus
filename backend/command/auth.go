@@ -27,7 +27,8 @@ func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
 			}
 
 			// We need to create a new account at this point.
-			account, err = model.NewAccount(username)
+			params := model.NewAccountParams{Username: username}
+			account, err = model.NewAccount(params)
 			if err != nil {
 				return err
 			}

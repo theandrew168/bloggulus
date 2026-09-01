@@ -39,12 +39,17 @@ func (s dbSession) unmarshal() (*model.Session, error) {
 		return nil, err
 	}
 
+	metaParams := model.LoadMetaParams{
+		CreatedAt: s.MetaCreatedAt,
+		UpdatedAt: s.MetaUpdatedAt,
+	}
+
 	session := model.LoadSession(
 		s.ID,
 		s.AccountID,
 		tokenHash,
 		s.ExpiresAt,
-		model.LoadMeta(s.MetaCreatedAt, s.MetaUpdatedAt),
+		model.LoadMeta(metaParams),
 	)
 	return session, nil
 }

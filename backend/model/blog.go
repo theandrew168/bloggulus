@@ -24,34 +24,53 @@ type Blog struct {
 	meta *Meta
 }
 
-func NewBlog(feedURL, siteURL, title string, syncedAt time.Time, etag, lastModified string) (*Blog, error) {
+type NewBlogParams struct {
+	FeedURL      string
+	SiteURL      string
+	Title        string
+	SyncedAt     time.Time
+	ETag         string
+	LastModified string
+}
+
+func NewBlog(params NewBlogParams) (*Blog, error) {
 	blog := Blog{
 		id:           uuid.New(),
-		feedURL:      feedURL,
-		siteURL:      siteURL,
-		title:        title,
+		feedURL:      params.FeedURL,
+		siteURL:      params.SiteURL,
+		title:        params.Title,
 		isPublic:     false,
-		syncedAt:     syncedAt,
-		etag:         etag,
-		lastModified: lastModified,
-
-		meta: NewMeta(),
+		syncedAt:     params.SyncedAt,
+		etag:         params.ETag,
+		lastModified: params.LastModified,
+		meta:         NewMeta(),
 	}
 	return &blog, nil
 }
 
-func LoadBlog(id uuid.UUID, feedURL, siteURL, title string, isPublic bool, syncedAt time.Time, etag, lastModified string, meta *Meta) *Blog {
-	blog := Blog{
-		id:           id,
-		feedURL:      feedURL,
-		siteURL:      siteURL,
-		title:        title,
-		isPublic:     isPublic,
-		syncedAt:     syncedAt,
-		etag:         etag,
-		lastModified: lastModified,
+type LoadBlogParams struct {
+	ID           uuid.UUID
+	FeedURL      string
+	SiteURL      string
+	Title        string
+	IsPublic     bool
+	SyncedAt     time.Time
+	ETag         string
+	LastModified string
+	Meta         *Meta
+}
 
-		meta: meta,
+func LoadBlog(params LoadBlogParams) *Blog {
+	blog := Blog{
+		id:           params.ID,
+		feedURL:      params.FeedURL,
+		siteURL:      params.SiteURL,
+		title:        params.Title,
+		isPublic:     params.IsPublic,
+		syncedAt:     params.SyncedAt,
+		etag:         params.ETag,
+		lastModified: params.LastModified,
+		meta:         params.Meta,
 	}
 	return &blog
 }

@@ -36,10 +36,15 @@ func (t dbTag) unmarshal() (*model.Tag, error) {
 		return nil, err
 	}
 
+	metaParams := model.LoadMetaParams{
+		CreatedAt: t.MetaCreatedAt,
+		UpdatedAt: t.MetaUpdatedAt,
+	}
+
 	tag := model.LoadTag(
 		t.ID,
 		name,
-		model.LoadMeta(t.MetaCreatedAt, t.MetaUpdatedAt),
+		model.LoadMeta(metaParams),
 	)
 	return tag, nil
 }

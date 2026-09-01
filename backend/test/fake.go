@@ -10,14 +10,15 @@ import (
 )
 
 func NewBlog(t *testing.T) *model.Blog {
-	blog, err := model.NewBlog(
-		RandomURL(32),
-		RandomURL(32),
-		RandomString(32),
-		RandomTime(),
-		RandomString(32),
-		RandomString(32),
-	)
+	params := model.NewBlogParams{
+		FeedURL:      RandomURL(32),
+		SiteURL:      RandomURL(32),
+		Title:        RandomString(32),
+		SyncedAt:     RandomTime(),
+		ETag:         RandomString(32),
+		LastModified: RandomString(32),
+	}
+	blog, err := model.NewBlog(params)
 	AssertNilError(t, err)
 
 	return blog
@@ -46,9 +47,8 @@ func NewTag(t *testing.T) *model.Tag {
 }
 
 func NewAccount(t *testing.T) *model.Account {
-	account, err := model.NewAccount(
-		RandomName(t),
-	)
+	params := model.NewAccountParams{Username: RandomName(t)}
+	account, err := model.NewAccount(params)
 	AssertNilError(t, err)
 
 	return account

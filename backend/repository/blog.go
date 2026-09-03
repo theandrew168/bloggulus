@@ -38,16 +38,12 @@ func marshalBlog(blog *model.Blog) (dbBlog, error) {
 		MetaCreatedAt: blog.Meta().CreatedAt(),
 		MetaUpdatedAt: blog.Meta().UpdatedAt(),
 	}
+
 	return b, nil
 }
 
 func (b dbBlog) unmarshal() (*model.Blog, error) {
-	metaParams := model.LoadMetaParams{
-		CreatedAt: b.MetaCreatedAt,
-		UpdatedAt: b.MetaUpdatedAt,
-	}
-
-	params := model.LoadBlogParams{
+	blog := model.LoadBlog(model.LoadBlogParams{
 		ID:           b.ID,
 		FeedURL:      b.FeedURL,
 		SiteURL:      b.SiteURL,
@@ -56,9 +52,12 @@ func (b dbBlog) unmarshal() (*model.Blog, error) {
 		SyncedAt:     b.SyncedAt,
 		ETag:         b.ETag,
 		LastModified: b.LastModified,
-		Meta:         model.LoadMeta(metaParams),
-	}
-	blog := model.LoadBlog(params)
+		Meta: model.LoadMeta(model.LoadMetaParams{
+			CreatedAt: b.MetaCreatedAt,
+			UpdatedAt: b.MetaUpdatedAt,
+		}),
+	})
+
 	return blog, nil
 }
 

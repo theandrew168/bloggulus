@@ -30,6 +30,7 @@ func marshalSession(session *model.Session) (dbSession, error) {
 		MetaCreatedAt: session.Meta().CreatedAt(),
 		MetaUpdatedAt: session.Meta().UpdatedAt(),
 	}
+
 	return s, nil
 }
 
@@ -39,18 +40,17 @@ func (s dbSession) unmarshal() (*model.Session, error) {
 		return nil, err
 	}
 
-	metaParams := model.LoadMetaParams{
-		CreatedAt: s.MetaCreatedAt,
-		UpdatedAt: s.MetaUpdatedAt,
-	}
+	session := model.LoadSession(model.LoadSessionParams{
+		ID:        s.ID,
+		AccountID: s.AccountID,
+		TokenHash: tokenHash,
+		ExpiresAt: s.ExpiresAt,
+		Meta: model.LoadMeta(model.LoadMetaParams{
+			CreatedAt: s.MetaCreatedAt,
+			UpdatedAt: s.MetaUpdatedAt,
+		}),
+	})
 
-	session := model.LoadSession(
-		s.ID,
-		s.AccountID,
-		tokenHash,
-		s.ExpiresAt,
-		model.LoadMeta(metaParams),
-	)
 	return session, nil
 }
 

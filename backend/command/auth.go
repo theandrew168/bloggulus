@@ -27,8 +27,9 @@ func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
 			}
 
 			// We need to create a new account at this point.
-			params := model.NewAccountParams{Username: username}
-			account, err = model.NewAccount(params)
+			account, err = model.NewAccount(model.NewAccountParams{
+				Username: username,
+			})
 			if err != nil {
 				return err
 			}
@@ -45,7 +46,10 @@ func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
 
 		// Create a new session for the account.
 		var session *model.Session
-		session, sessionToken, err = model.NewSession(account, util.SessionCookieTTL)
+		session, sessionToken, err = model.NewSession(model.NewSessionParams{
+			Account: account,
+			TTL:     util.SessionCookieTTL,
+		})
 		if err != nil {
 			return err
 		}

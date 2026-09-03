@@ -70,26 +70,26 @@ func TestSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// create a post about python
-	pythonPost, err := model.NewPost(
-		blog,
-		test.RandomURL(20),
-		"Python",
-		timeutil.Now(),
-		"content about python",
-	)
+	pythonPost, err := model.NewPost(model.NewPostParams{
+		Blog:        blog,
+		URL:         test.RandomURL(20),
+		Title:       "Python",
+		PublishedAt: timeutil.Now(),
+		Content:     "content about python",
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Post().Create(pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
-	boringPost, err := model.NewPost(
-		blog,
-		test.RandomURL(20),
-		"Boring",
-		timeutil.Now(),
-		"content about nothing",
-	)
+	boringPost, err := model.NewPost(model.NewPostParams{
+		Blog:        blog,
+		URL:         test.RandomURL(20),
+		Title:       "Boring",
+		PublishedAt: timeutil.Now(),
+		Content:     "content about nothing",
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Post().Create(boringPost)
@@ -115,13 +115,13 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
 	for i := 0; i < 3; i++ {
-		post, err := model.NewPost(
-			followedBlog,
-			test.RandomURL(20),
-			"Python",
-			timeutil.Now(),
-			"content about python",
-		)
+		post, err := model.NewPost(model.NewPostParams{
+			Blog:        followedBlog,
+			URL:         test.RandomURL(20),
+			Title:       "Python",
+			PublishedAt: timeutil.Now(),
+			Content:     "content about python",
+		})
 		test.AssertNilError(t, err)
 
 		err = repo.Post().Create(post)
@@ -131,13 +131,13 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	// Create some unfollowed posts about python.
 	unfollowedBlog := test.CreateBlog(t, repo)
 	for i := 0; i < 3; i++ {
-		post, err := model.NewPost(
-			unfollowedBlog,
-			test.RandomURL(20),
-			"Python",
-			timeutil.Now(),
-			"content about python",
-		)
+		post, err := model.NewPost(model.NewPostParams{
+			Blog:        unfollowedBlog,
+			URL:         test.RandomURL(20),
+			Title:       "Python",
+			PublishedAt: timeutil.Now(),
+			Content:     "content about python",
+		})
 		test.AssertNilError(t, err)
 
 		err = repo.Post().Create(post)
@@ -215,26 +215,26 @@ func TestCountSearchArticles(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 
 	// create a post about python
-	pythonPost, err := model.NewPost(
-		blog,
-		test.RandomURL(20),
-		"Python",
-		timeutil.Now(),
-		"content about python",
-	)
+	pythonPost, err := model.NewPost(model.NewPostParams{
+		Blog:        blog,
+		URL:         test.RandomURL(20),
+		Title:       "Python",
+		PublishedAt: timeutil.Now(),
+		Content:     "content about python",
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Post().Create(pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
-	boringPost, err := model.NewPost(
-		blog,
-		test.RandomURL(20),
-		"Boring",
-		timeutil.Now(),
-		"content about nothing",
-	)
+	boringPost, err := model.NewPost(model.NewPostParams{
+		Blog:        blog,
+		URL:         test.RandomURL(20),
+		Title:       "Boring",
+		PublishedAt: timeutil.Now(),
+		Content:     "content about nothing",
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Post().Create(boringPost)
@@ -260,13 +260,13 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
 	for i := 0; i < 3; i++ {
-		post, err := model.NewPost(
-			followedBlog,
-			test.RandomURL(20),
-			"Python",
-			timeutil.Now(),
-			"content about python",
-		)
+		post, err := model.NewPost(model.NewPostParams{
+			Blog:        followedBlog,
+			URL:         test.RandomURL(20),
+			Title:       "Python",
+			PublishedAt: timeutil.Now(),
+			Content:     "content about python",
+		})
 		test.AssertNilError(t, err)
 
 		err = repo.Post().Create(post)
@@ -276,13 +276,13 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	// Create some unfollowed posts about python.
 	unfollowedBlog := test.CreateBlog(t, repo)
 	for i := 0; i < 3; i++ {
-		post, err := model.NewPost(
-			unfollowedBlog,
-			test.RandomURL(20),
-			"Python",
-			timeutil.Now(),
-			"content about python",
-		)
+		post, err := model.NewPost(model.NewPostParams{
+			Blog:        unfollowedBlog,
+			URL:         test.RandomURL(20),
+			Title:       "Python",
+			PublishedAt: timeutil.Now(),
+			Content:     "content about python",
+		})
 		test.AssertNilError(t, err)
 
 		err = repo.Post().Create(post)

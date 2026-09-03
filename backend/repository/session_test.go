@@ -93,19 +93,19 @@ func TestSessionDeleteExpired(t *testing.T) {
 
 	account := test.CreateAccount(t, repo)
 
-	sessionOld, _, err := model.NewSession(
-		account,
-		-1*time.Hour,
-	)
+	sessionOld, _, err := model.NewSession(model.NewSessionParams{
+		Account: account,
+		TTL:     -1 * time.Hour,
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Session().Create(sessionOld)
 	test.AssertNilError(t, err)
 
-	sessionNew, _, err := model.NewSession(
-		account,
-		1*time.Hour,
-	)
+	sessionNew, _, err := model.NewSession(model.NewSessionParams{
+		Account: account,
+		TTL:     1 * time.Hour,
+	})
 	test.AssertNilError(t, err)
 
 	err = repo.Session().Create(sessionNew)

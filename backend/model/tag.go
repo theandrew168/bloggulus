@@ -12,20 +12,30 @@ type Tag struct {
 	meta *Meta
 }
 
-func NewTag(name value.Name) (*Tag, error) {
+type NewTagParams struct {
+	Name value.Name
+}
+
+func NewTag(params NewTagParams) (*Tag, error) {
 	tag := Tag{
 		id:   uuid.New(),
-		name: name,
+		name: params.Name,
 		meta: NewMeta(),
 	}
 	return &tag, nil
 }
 
-func LoadTag(id uuid.UUID, name value.Name, meta *Meta) *Tag {
+type LoadTagParams struct {
+	ID   uuid.UUID
+	Name value.Name
+	Meta *Meta
+}
+
+func LoadTag(params LoadTagParams) *Tag {
 	tag := Tag{
-		id:   id,
-		name: name,
-		meta: meta,
+		id:   params.ID,
+		name: params.Name,
+		meta: params.Meta,
 	}
 	return &tag
 }

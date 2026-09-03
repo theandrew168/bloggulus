@@ -17,7 +17,12 @@ type Session struct {
 	meta *Meta
 }
 
-func NewSession(account *Account, ttl time.Duration) (*Session, value.Token, error) {
+type NewSessionParams struct {
+	Account *Account
+	TTL     time.Duration
+}
+
+func NewSession(params NewSessionParams) (*Session, value.Token, error) {
 	now := timeutil.Now()
 
 	token, err := value.RandomToken()
@@ -27,24 +32,32 @@ func NewSession(account *Account, ttl time.Duration) (*Session, value.Token, err
 
 	session := Session{
 		id:        uuid.New(),
-		accountID: account.ID(),
+		accountID: params.Account.ID(),
 		tokenHash: token.Hash(),
-		expiresAt: now.Add(ttl),
-
-		meta: NewMeta(),
+		expiresAt: now.Add(params.TTL),
+		meta:      NewMeta(),
 	}
+
 	return &session, token, nil
 }
 
-func LoadSession(id, accountID uuid.UUID, tokenHash value.TokenHash, expiresAt time.Time, meta *Meta) *Session {
-	session := Session{
-		id:        id,
-		accountID: accountID,
-		tokenHash: tokenHash,
-		expiresAt: expiresAt,
+type LoadSessionParams struct {
+	ID        uuid.UUID
+	AccountID uuid.UUID
+	TokenHash value.TokenHash
+	ExpiresAt time.Time
+	Meta      *Meta
+}
 
-		meta: meta,
+func LoadSession(params LoadSessionParams) *Session {
+	session := Session{
+		id:        params.ID,
+		accountID: params.AccountID,
+		tokenHash: params.TokenHash,
+		expiresAt: params.ExpiresAt,
+		meta:      params.Meta,
 	}
+
 	return &session
 }
 

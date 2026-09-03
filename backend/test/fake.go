@@ -10,56 +10,55 @@ import (
 )
 
 func NewBlog(t *testing.T) *model.Blog {
-	params := model.NewBlogParams{
+	blog, err := model.NewBlog(model.NewBlogParams{
 		FeedURL:      RandomURL(32),
 		SiteURL:      RandomURL(32),
 		Title:        RandomString(32),
 		SyncedAt:     RandomTime(),
 		ETag:         RandomString(32),
 		LastModified: RandomString(32),
-	}
-	blog, err := model.NewBlog(params)
+	})
 	AssertNilError(t, err)
 
 	return blog
 }
 
 func NewPost(t *testing.T, blog *model.Blog) *model.Post {
-	post, err := model.NewPost(
-		blog,
-		RandomURL(32),
-		RandomString(32),
-		RandomTime(),
-		RandomString(32),
-	)
+	post, err := model.NewPost(model.NewPostParams{
+		Blog:        blog,
+		URL:         RandomURL(32),
+		Title:       RandomString(32),
+		PublishedAt: RandomTime(),
+		Content:     RandomString(32),
+	})
 	AssertNilError(t, err)
 
 	return post
 }
 
 func NewTag(t *testing.T) *model.Tag {
-	tag, err := model.NewTag(
-		RandomName(t),
-	)
+	tag, err := model.NewTag(model.NewTagParams{
+		Name: RandomName(t),
+	})
 	AssertNilError(t, err)
 
 	return tag
 }
 
 func NewAccount(t *testing.T) *model.Account {
-	params := model.NewAccountParams{Username: RandomName(t)}
-	account, err := model.NewAccount(params)
+	account, err := model.NewAccount(model.NewAccountParams{
+		Username: RandomName(t),
+	})
 	AssertNilError(t, err)
 
 	return account
 }
 
 func NewSession(t *testing.T, account *model.Account) (*model.Session, value.Token) {
-	session, sessionToken, err := model.NewSession(
-		account,
-		// expire in 24 hours
-		24*time.Hour,
-	)
+	session, sessionToken, err := model.NewSession(model.NewSessionParams{
+		Account: account,
+		TTL:     24 * time.Hour,
+	})
 	AssertNilError(t, err)
 
 	return session, sessionToken

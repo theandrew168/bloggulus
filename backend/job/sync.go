@@ -87,13 +87,13 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 		knownPost, ok := knownPostsByURL[feedPost.URL]
 		if !ok {
 			// The post is new so we need to create it.
-			postToCreate, err := model.NewPost(
-				blog,
-				feedPost.URL,
-				feedPost.Title,
-				feedPost.PublishedAt,
-				feedPost.Content,
-			)
+			postToCreate, err := model.NewPost(model.NewPostParams{
+				Blog:        blog,
+				URL:         feedPost.URL,
+				Title:       feedPost.Title,
+				PublishedAt: feedPost.PublishedAt,
+				Content:     feedPost.Content,
+			})
 			if err != nil {
 				return ComparePostsResult{}, err
 			}
@@ -278,15 +278,14 @@ func (s *SyncService) syncNewBlog(feedURL string) (*model.Blog, error) {
 	}
 
 	// Create a new blog based on the feed data.
-	params := model.NewBlogParams{
+	blog, err := model.NewBlog(model.NewBlogParams{
 		FeedURL:      feedBlog.FeedURL,
 		SiteURL:      feedBlog.SiteURL,
 		Title:        feedBlog.Title,
 		SyncedAt:     timeutil.Now(),
 		ETag:         resp.ETag,
 		LastModified: resp.LastModified,
-	}
-	blog, err := model.NewBlog(params)
+	})
 	if err != nil {
 		return nil, err
 	}

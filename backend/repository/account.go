@@ -31,6 +31,7 @@ func marshalAccount(account *model.Account) (dbAccount, error) {
 		MetaCreatedAt:   account.Meta().CreatedAt(),
 		MetaUpdatedAt:   account.Meta().UpdatedAt(),
 	}
+
 	return a, nil
 }
 
@@ -40,19 +41,17 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		return nil, err
 	}
 
-	metaParams := model.LoadMetaParams{
-		CreatedAt: a.MetaCreatedAt,
-		UpdatedAt: a.MetaUpdatedAt,
-	}
-
-	params := model.LoadAccountParams{
+	account := model.LoadAccount(model.LoadAccountParams{
 		ID:              a.ID,
 		Username:        username,
 		IsAdmin:         a.IsAdmin,
 		FollowedBlogIDs: a.FollowedBlogIDs,
-		Meta:            model.LoadMeta(metaParams),
-	}
-	account := model.LoadAccount(params)
+		Meta: model.LoadMeta(model.LoadMetaParams{
+			CreatedAt: a.MetaCreatedAt,
+			UpdatedAt: a.MetaUpdatedAt,
+		}),
+	})
+
 	return account, nil
 }
 

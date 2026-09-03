@@ -27,6 +27,7 @@ func marshalTag(tag *model.Tag) (dbTag, error) {
 		MetaCreatedAt: tag.Meta().CreatedAt(),
 		MetaUpdatedAt: tag.Meta().UpdatedAt(),
 	}
+
 	return t, nil
 }
 
@@ -36,16 +37,15 @@ func (t dbTag) unmarshal() (*model.Tag, error) {
 		return nil, err
 	}
 
-	metaParams := model.LoadMetaParams{
-		CreatedAt: t.MetaCreatedAt,
-		UpdatedAt: t.MetaUpdatedAt,
-	}
+	tag := model.LoadTag(model.LoadTagParams{
+		ID:   t.ID,
+		Name: name,
+		Meta: model.LoadMeta(model.LoadMetaParams{
+			CreatedAt: t.MetaCreatedAt,
+			UpdatedAt: t.MetaUpdatedAt,
+		}),
+	})
 
-	tag := model.LoadTag(
-		t.ID,
-		name,
-		model.LoadMeta(metaParams),
-	)
 	return tag, nil
 }
 

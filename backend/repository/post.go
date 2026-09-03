@@ -34,24 +34,24 @@ func marshalPost(post *model.Post) (dbPost, error) {
 		MetaCreatedAt: post.Meta().CreatedAt(),
 		MetaUpdatedAt: post.Meta().UpdatedAt(),
 	}
+
 	return p, nil
 }
 
 func (p dbPost) unmarshal() (*model.Post, error) {
-	metaParams := model.LoadMetaParams{
-		CreatedAt: p.MetaCreatedAt,
-		UpdatedAt: p.MetaUpdatedAt,
-	}
+	post := model.LoadPost(model.LoadPostParams{
+		ID:          p.ID,
+		BlogID:      p.BlogID,
+		URL:         p.URL,
+		Title:       p.Title,
+		PublishedAt: p.PublishedAt,
+		Content:     p.Content,
+		Meta: model.LoadMeta(model.LoadMetaParams{
+			CreatedAt: p.MetaCreatedAt,
+			UpdatedAt: p.MetaUpdatedAt,
+		}),
+	})
 
-	post := model.LoadPost(
-		p.ID,
-		p.BlogID,
-		p.URL,
-		p.Title,
-		p.PublishedAt,
-		p.Content,
-		model.LoadMeta(metaParams),
-	)
 	return post, nil
 }
 

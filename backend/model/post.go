@@ -16,30 +16,46 @@ type Post struct {
 	meta *Meta
 }
 
-func NewPost(blog *Blog, url, title string, publishedAt time.Time, content string) (*Post, error) {
+type NewPostParams struct {
+	Blog        *Blog
+	URL         string
+	Title       string
+	PublishedAt time.Time
+	Content     string
+}
+
+func NewPost(params NewPostParams) (*Post, error) {
 	post := Post{
 		id:          uuid.New(),
-		blogID:      blog.ID(),
-		url:         url,
-		title:       title,
-		publishedAt: publishedAt,
-		content:     content,
-
-		meta: NewMeta(),
+		blogID:      params.Blog.ID(),
+		url:         params.URL,
+		title:       params.Title,
+		publishedAt: params.PublishedAt,
+		content:     params.Content,
+		meta:        NewMeta(),
 	}
 	return &post, nil
 }
 
-func LoadPost(id, blogID uuid.UUID, url, title string, publishedAt time.Time, content string, meta *Meta) *Post {
-	post := Post{
-		id:          id,
-		blogID:      blogID,
-		url:         url,
-		title:       title,
-		publishedAt: publishedAt,
-		content:     content,
+type LoadPostParams struct {
+	ID          uuid.UUID
+	BlogID      uuid.UUID
+	URL         string
+	Title       string
+	PublishedAt time.Time
+	Content     string
+	Meta        *Meta
+}
 
-		meta: meta,
+func LoadPost(params LoadPostParams) *Post {
+	post := Post{
+		id:          params.ID,
+		blogID:      params.BlogID,
+		url:         params.URL,
+		title:       params.Title,
+		publishedAt: params.PublishedAt,
+		content:     params.Content,
+		meta:        params.Meta,
 	}
 	return &post
 }

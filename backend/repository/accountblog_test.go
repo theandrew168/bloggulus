@@ -16,7 +16,7 @@ func TestAccountBlogCreate(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountBlog().Create(account.ID(), blog.ID())
 	test.AssertNilError(t, err)
 }
 
@@ -29,10 +29,10 @@ func TestAccountBlogCreateAlreadyExists(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountBlog().Create(account.ID(), blog.ID())
 	test.AssertNilError(t, err)
 
-	err = repo.AccountBlog().Create(account, blog)
+	err = repo.AccountBlog().Create(account.ID(), blog.ID())
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
@@ -45,10 +45,10 @@ func TestAccountBlogDelete(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	blog := test.CreateBlog(t, repo)
 
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountBlog().Create(account.ID(), blog.ID())
 	test.AssertNilError(t, err)
 
-	err = repo.AccountBlog().Delete(account, blog)
+	err = repo.AccountBlog().Delete(account.ID(), blog.ID())
 	test.AssertNilError(t, err)
 }
 
@@ -61,6 +61,6 @@ func TestAccountBlogDeleteDoesNotExist(t *testing.T) {
 	account := test.NewAccount(t)
 	blog := test.NewBlog(t)
 
-	err := repo.AccountBlog().Delete(account, blog)
+	err := repo.AccountBlog().Delete(account.ID(), blog.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

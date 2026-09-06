@@ -3,28 +3,30 @@ package query_test
 import (
 	"testing"
 
+	"github.com/theandrew168/bloggulus/backend/query"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
 
 func TestListBlogsForAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewBlog(conn)
 
 	account := test.CreateAccount(t, repo)
 
 	// Create and follow a blog.
 	blog := test.CreateBlog(t, repo)
-	test.CreateAccountBlog(t, repo, account, blog)
+	test.CreateAccountBlog(t, repo, account.ID(), blog.ID())
 
 	// Create another blog but don't follow it.
 	test.CreateBlog(t, repo)
 
-	blogs, err := find.ListBlogsForAccount(account)
+	blogs, err := qry.ListBlogsForAccount(account.ID())
 	test.AssertNilError(t, err)
 
 	// Count how many blogs are being followed.

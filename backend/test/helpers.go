@@ -5,7 +5,6 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
 
@@ -37,12 +36,4 @@ func NewRepository(t *testing.T) (*repository.Repository, CloserFunc) {
 	db, closer := NewDatabase(t)
 	repo := repository.New(db)
 	return repo, closer
-}
-
-func NewQuery(t *testing.T) (*query.Query, CloserFunc) {
-	t.Helper()
-
-	db, closer := NewDatabase(t)
-	q := query.New(db)
-	return q, closer
 }

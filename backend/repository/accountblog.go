@@ -21,18 +21,19 @@ func NewAccountBlogRepository(conn postgres.Conn) *AccountBlogRepository {
 	return &r
 }
 
-func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog) error {
+func (r *AccountBlogRepository) Create(accountID uuid.UUID, blogID uuid.UUID) error {
 	stmt := `
 		INSERT INTO account_blog
 			(account_id, blog_id, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4)`
+			($1, $2, $3, $4);
+	`
 
 	meta := model.NewMeta()
 
 	args := []any{
-		account.ID(),
-		blog.ID(),
+		accountID,
+		blogID,
 		meta.CreatedAt(),
 		meta.UpdatedAt(),
 	}
@@ -45,16 +46,17 @@ func (r *AccountBlogRepository) Create(account *model.Account, blog *model.Blog)
 	return nil
 }
 
-func (r *AccountBlogRepository) Delete(account *model.Account, blog *model.Blog) error {
+func (r *AccountBlogRepository) Delete(accountID uuid.UUID, blogID uuid.UUID) error {
 	stmt := `
 		DELETE FROM account_blog
 		WHERE account_id = $1
 			AND blog_id = $2
-		RETURNING account_id`
+		RETURNING account_id;
+	`
 
 	args := []any{
-		account.ID(),
-		blog.ID(),
+		accountID,
+		blogID,
 	}
 
 	rows, err := r.conn.Query(context.Background(), stmt, args...)

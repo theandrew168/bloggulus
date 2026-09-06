@@ -151,7 +151,8 @@ func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
 	return row.unmarshal()
 }
 
-func (r *PostRepository) ListByBlog(blog *model.Blog) ([]*model.Post, error) {
+// Used for syncing a blog's posts.
+func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
 	stmt := `
 		SELECT
 			post.id,
@@ -166,7 +167,7 @@ func (r *PostRepository) ListByBlog(blog *model.Blog) ([]*model.Post, error) {
 		WHERE post.blog_id = $1
 		ORDER BY post.published_at DESC`
 
-	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
+	rows, err := r.conn.Query(context.Background(), stmt, blogID)
 	if err != nil {
 		return nil, err
 	}

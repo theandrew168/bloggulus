@@ -46,23 +46,23 @@ func HandleIndexPage(qry *query.Query) http.Handler {
 			if search != "" {
 				g.Go(func() error {
 					var err error
-					count, err = qry.CountRelevantArticlesByAccount(account, search)
+					count, err = qry.Article().CountRelevantArticlesByAccount(account.ID, search)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = qry.ListRelevantArticlesByAccount(account, search, limit, offset)
+					articles, err = qry.Article().ListRelevantArticlesByAccount(account.ID, search, limit, offset)
 					return err
 				})
 			} else {
 				g.Go(func() error {
 					var err error
-					count, err = qry.CountRecentArticlesByAccount(account)
+					count, err = qry.Article().CountRecentArticlesByAccount(account.ID)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = qry.ListRecentArticlesByAccount(account, limit, offset)
+					articles, err = qry.Article().ListRecentArticlesByAccount(account.ID, limit, offset)
 					return err
 				})
 			}
@@ -70,23 +70,23 @@ func HandleIndexPage(qry *query.Query) http.Handler {
 			if search != "" {
 				g.Go(func() error {
 					var err error
-					count, err = qry.CountRelevantArticles(search)
+					count, err = qry.Article().CountRelevantArticles(search)
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = qry.ListRelevantArticles(search, limit, offset)
+					articles, err = qry.Article().ListRelevantArticles(search, limit, offset)
 					return err
 				})
 			} else {
 				g.Go(func() error {
 					var err error
-					count, err = qry.CountRecentArticles()
+					count, err = qry.Article().CountRecentArticles()
 					return err
 				})
 				g.Go(func() error {
 					var err error
-					articles, err = qry.ListRecentArticles(limit, offset)
+					articles, err = qry.Article().ListRecentArticles(limit, offset)
 					return err
 				})
 			}

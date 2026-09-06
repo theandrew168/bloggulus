@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -15,7 +15,7 @@ var AccountsHTML string
 type AccountsData struct {
 	layout.BaseData
 
-	Accounts []*model.Account
+	Accounts []query.Account
 }
 
 type AccountsPage struct {
@@ -37,8 +37,4 @@ func NewAccounts() *AccountsPage {
 
 func (p *AccountsPage) Render(w io.Writer, data AccountsData) error {
 	return p.tmpl.ExecuteTemplate(w, "default", data)
-}
-
-func (p *AccountsPage) RenderAccounts(w io.Writer, data AccountsData) error {
-	return p.tmpl.ExecuteTemplate(w, "accounts", data)
 }

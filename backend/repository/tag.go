@@ -110,58 +110,6 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 	return row.unmarshal()
 }
 
-func (r *TagRepository) List(limit, offset int) ([]*model.Tag, error) {
-	stmt := `
-		SELECT
-			tag.id,
-			tag.name,
-			tag.meta_created_at,
-				tag.meta_updated_at
-		FROM tag
-		ORDER BY tag.meta_created_at DESC
-		LIMIT $1 OFFSET $2`
-
-	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	tagRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbTag])
-	if err != nil {
-		return nil, postgres.CheckListError(err)
-	}
-
-	var tags []*model.Tag
-	for _, row := range tagRows {
-		tag, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		tags = append(tags, tag)
-	}
-
-	return tags, nil
-}
-
-func (r *TagRepository) Count() (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM tag`
-
-	rows, err := r.conn.Query(context.Background(), stmt)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
 func (r *TagRepository) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag

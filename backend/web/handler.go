@@ -122,7 +122,7 @@ func Handler(
 	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(repo)))
 
 	// Private (admin only) account routes.
-	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(repo)))
+	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(qry)))
 	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(repo)))
 
 	// Debug endpoint for testing toasts.
@@ -144,7 +144,7 @@ func Handler(
 		middleware.PreventCSRF(),
 		middleware.AddSecureHeaders(),
 		middleware.LimitRequestBodySize(),
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 	)
 
 	return handler

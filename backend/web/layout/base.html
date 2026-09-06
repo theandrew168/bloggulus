@@ -20,7 +20,7 @@
 		<nav>
 			<ul class="header__links">
 				<li class="header__link--first"><a class="header__link header__link--home" href="/">Bloggulus</a></li>
-				{{if .Account}}
+				{{if .Account.Username}}
 				<li><a class="header__link" href="/blogs">Blogs</a></li>
 				<li>
 					<form action="/signout" method="post">

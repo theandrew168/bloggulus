@@ -75,7 +75,7 @@ func TestPostListByBlog(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	posts, err := repo.Post().ListByBlog(blog)
+	posts, err := repo.Post().ListByBlogID(blog.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(posts), 3)

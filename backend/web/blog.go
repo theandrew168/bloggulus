@@ -28,7 +28,7 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		posts, err := repo.Post().ListByBlog(blog)
+		posts, err := repo.Post().ListByBlogID(blog.ID())
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return

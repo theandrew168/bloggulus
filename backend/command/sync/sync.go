@@ -194,7 +194,7 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 
 func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.Post) error {
 	// List all known posts for the current blog.
-	knownPosts, err := repo.Post().ListByBlog(blog)
+	knownPosts, err := repo.Post().ListByBlogID(blog.ID())
 	if err != nil {
 		return err
 	}

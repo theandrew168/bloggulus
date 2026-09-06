@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/query"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
@@ -11,16 +13,16 @@ import (
 func TestListArticles(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
 
-	articles, err := find.ListRecentArticles(1, 0)
+	articles, err := qry.ListRecentArticles(1, 0)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(articles), 1)
@@ -29,11 +31,11 @@ func TestListArticles(t *testing.T) {
 func TestListArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	followedBlog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, followedBlog)
@@ -46,10 +48,10 @@ func TestListArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account, followedBlog)
+	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// List posts from blogs followed by this account.
-	articles, err := find.ListRecentArticlesByAccount(account, 5, 0)
+	articles, err := qry.ListRecentArticlesByAccount(account.ID(), 5, 0)
 	test.AssertNilError(t, err)
 
 	// We should only get the three posts associated with the followed blog.
@@ -59,11 +61,11 @@ func TestListArticlesByAccount(t *testing.T) {
 func TestSearchArticles(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	blog := test.NewBlog(t)
 	err := repo.Blog().Create(blog)
@@ -96,7 +98,7 @@ func TestSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// list articles that relate to python
-	articles, err := find.ListRelevantArticles("python", 1, 0)
+	articles, err := qry.ListRelevantArticles("python", 1, 0)
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -106,11 +108,11 @@ func TestSearchArticles(t *testing.T) {
 func TestSearchArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
@@ -145,10 +147,10 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	}
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account, followedBlog)
+	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// List posts (from followed blogs) that relate to python.
-	articles, err := find.ListRelevantArticlesByAccount(account, "python", 5, 0)
+	articles, err := qry.ListRelevantArticlesByAccount(account.ID(), "python", 5, 0)
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.
@@ -158,18 +160,18 @@ func TestSearchArticlesByAccount(t *testing.T) {
 func TestCountArticles(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	count, err := find.CountRecentArticles()
+	count, err := qry.CountRecentArticles()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -178,11 +180,11 @@ func TestCountArticles(t *testing.T) {
 func TestCountArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	followedBlog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, followedBlog)
@@ -195,10 +197,10 @@ func TestCountArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account, followedBlog)
+	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// We should only count the three posts associated with the followed blog.
-	count, err := find.CountRecentArticlesByAccount(account)
+	count, err := qry.CountRecentArticlesByAccount(account.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, count, 3)
 }
@@ -206,11 +208,11 @@ func TestCountArticlesByAccount(t *testing.T) {
 func TestCountSearchArticles(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 
@@ -241,7 +243,7 @@ func TestCountSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// count posts that relate to python
-	count, err := find.CountRelevantArticles("python")
+	count, err := qry.CountRelevantArticles("python")
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -251,11 +253,11 @@ func TestCountSearchArticles(t *testing.T) {
 func TestCountSearchArticlesByAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, repoCloser := test.NewRepository(t)
-	defer repoCloser()
+	conn, closer := test.NewDatabase(t)
+	defer closer()
 
-	find, findCloser := test.NewQuery(t)
-	defer findCloser()
+	repo := repository.New(conn)
+	qry := query.NewArticle(conn)
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
@@ -290,10 +292,10 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	}
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account, followedBlog)
+	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// Count posts (from followed blogs) that relate to python.
-	count, err := find.CountRelevantArticlesByAccount(account, "python")
+	count, err := qry.CountRelevantArticlesByAccount(account.ID(), "python")
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.

@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"uuid"
 
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleAccountList(repo *repository.Repository) http.Handler {
+func HandleAccountList(qry *query.Query) http.Handler {
 	tmpl := page.NewAccounts()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accounts, err := repo.Account().List(100, 0)
+		accounts, err := qry.Account().List()
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return

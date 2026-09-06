@@ -3,6 +3,7 @@ package test
 import (
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -135,10 +136,10 @@ func CreateSession(t *testing.T, repo *repository.Repository, account *model.Acc
 }
 
 // create an account blog in the database
-func CreateAccountBlog(t *testing.T, repo *repository.Repository, account *model.Account, blog *model.Blog) {
+func CreateAccountBlog(t *testing.T, repo *repository.Repository, accountID uuid.UUID, blogID uuid.UUID) {
 	t.Helper()
 
 	// create an account blog
-	err := repo.AccountBlog().Create(account, blog)
+	err := repo.AccountBlog().Create(accountID, blogID)
 	AssertNilError(t, err)
 }

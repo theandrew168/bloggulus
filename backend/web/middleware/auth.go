@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -25,7 +25,7 @@ func signInRedirectURL(path string) *url.URL {
 	return url
 }
 
-func Authenticate(repo *repository.Repository) Middleware {
+func Authenticate(qry *query.Query) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -43,7 +43,7 @@ func Authenticate(repo *repository.Repository) Middleware {
 			}
 
 			// Lookup the account linked to the session.
-			account, err := repo.Account().ReadBySessionToken(sessionToken)
+			account, err := qry.Account().ReadBySessionTokenHash(sessionToken.Hash())
 			if err != nil {
 				// If the user has an invalid / expired session cookie, delete it.
 				if errors.Is(err, postgres.ErrNotFound) {
@@ -94,7 +94,7 @@ func RequireAdmin() Middleware {
 			}
 
 			// If the account exists but is not an admin account, show a 403 Forbidden page.
-			if !account.IsAdmin() {
+			if !account.IsAdmin {
 				util.ForbiddenResponse(w, r)
 				return
 			}

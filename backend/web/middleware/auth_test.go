@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/theandrew168/bloggulus/backend/query"
+	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -14,8 +16,11 @@ import (
 func TestAuthenticate(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	repo := repository.New(conn)
+	qry := query.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -28,11 +33,11 @@ func TestAuthenticate(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
-		test.AssertEqual(t, got.ID(), account.ID())
+		test.AssertEqual(t, got.ID, account.ID())
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 	)
 	h.ServeHTTP(w, r)
 }
@@ -40,8 +45,10 @@ func TestAuthenticate(t *testing.T) {
 func TestAuthenticateNoSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -50,7 +57,7 @@ func TestAuthenticateNoSession(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	h := middleware.Use(next, middleware.Authenticate(repo))
+	h := middleware.Use(next, middleware.Authenticate(qry))
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -60,8 +67,10 @@ func TestAuthenticateNoSession(t *testing.T) {
 func TestAuthenticateInvalidSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -73,7 +82,7 @@ func TestAuthenticateInvalidSession(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	h := middleware.Use(next, middleware.Authenticate(repo))
+	h := middleware.Use(next, middleware.Authenticate(qry))
 	h.ServeHTTP(w, r)
 
 	rr := w.Result()
@@ -83,8 +92,11 @@ func TestAuthenticateInvalidSession(t *testing.T) {
 func TestRequireAccount(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	repo := repository.New(conn)
+	qry := query.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -97,11 +109,11 @@ func TestRequireAccount(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
-		test.AssertEqual(t, got.ID(), account.ID())
+		test.AssertEqual(t, got.ID, account.ID())
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
@@ -113,8 +125,10 @@ func TestRequireAccount(t *testing.T) {
 func TestRequireAccountNoSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -124,7 +138,7 @@ func TestRequireAccountNoSession(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
@@ -137,8 +151,10 @@ func TestRequireAccountNoSession(t *testing.T) {
 func TestRequireAccountInvalidSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -151,7 +167,7 @@ func TestRequireAccountInvalidSession(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
@@ -164,8 +180,10 @@ func TestRequireAccountInvalidSession(t *testing.T) {
 func TestRequireAccountRedirect(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/foobar", nil)
@@ -175,7 +193,7 @@ func TestRequireAccountRedirect(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 	)
 	h.ServeHTTP(w, r)
@@ -188,8 +206,11 @@ func TestRequireAccountRedirect(t *testing.T) {
 func TestRequireAdmin(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	repo := repository.New(conn)
+	qry := query.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -206,11 +227,11 @@ func TestRequireAdmin(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, ok := util.GetContextAccount(r)
 		test.AssertEqual(t, ok, true)
-		test.AssertEqual(t, got.ID(), account.ID())
+		test.AssertEqual(t, got.ID, account.ID())
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 		middleware.RequireAdmin(),
 	)
@@ -223,8 +244,10 @@ func TestRequireAdmin(t *testing.T) {
 func TestRequireAdminNoSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -234,7 +257,7 @@ func TestRequireAdminNoSession(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 		middleware.RequireAdmin(),
 	)
@@ -248,8 +271,10 @@ func TestRequireAdminNoSession(t *testing.T) {
 func TestRequireAdminInvalidSession(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	qry := query.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -262,7 +287,7 @@ func TestRequireAdminInvalidSession(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 		middleware.RequireAdmin(),
 	)
@@ -276,8 +301,11 @@ func TestRequireAdminInvalidSession(t *testing.T) {
 func TestRequireAdminNotAdmin(t *testing.T) {
 	t.Parallel()
 
-	repo, closer := test.NewRepository(t)
+	conn, closer := test.NewDatabase(t)
 	defer closer()
+
+	repo := repository.New(conn)
+	qry := query.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -292,7 +320,7 @@ func TestRequireAdminNotAdmin(t *testing.T) {
 	})
 
 	h := middleware.Use(next,
-		middleware.Authenticate(repo),
+		middleware.Authenticate(qry),
 		middleware.RequireAccount(),
 		middleware.RequireAdmin(),
 	)

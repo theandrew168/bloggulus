@@ -25,7 +25,7 @@ func HandleBlogList(qry *query.Query) http.Handler {
 			return
 		}
 
-		blogs, err := qry.ListBlogsForAccount(account)
+		blogs, err := qry.Blog().ListBlogsForAccount(account.ID)
 		if err != nil {
 			util.ListErrorResponse(w, r, err)
 			return
@@ -68,13 +68,13 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 		blog, err := repo.Blog().ReadByFeedURL(feedURL)
 		if err == nil {
 			// If it does, follow it for the current user.
-			err = cmd.Account().FollowBlog(account.ID(), blog.ID())
+			err = cmd.Account().FollowBlog(account.ID, blog.ID())
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
-						"account_id", account.ID(),
-						"account_username", account.Username(),
+						"account_id", account.ID,
+						"account_username", account.Username,
 						"blog_id", blog.ID(),
 						"blog_title", blog.Title(),
 					)
@@ -83,8 +83,8 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 			}
 
 			slog.Info("blog followed",
-				"account_id", account.ID(),
-				"account_username", account.Username(),
+				"account_id", account.ID,
+				"account_username", account.Username,
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
@@ -127,19 +127,19 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 			}
 
 			slog.Info("blog added",
-				"account_id", account.ID(),
-				"account_username", account.Username(),
+				"account_id", account.ID,
+				"account_username", account.Username,
 				"blog_id", blog.ID(),
 				"blog_title", blog.Title(),
 			)
 
-			err = cmd.Account().FollowBlog(account.ID(), blog.ID())
+			err = cmd.Account().FollowBlog(account.ID, blog.ID())
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
-						"account_id", account.ID(),
-						"account_username", account.Username(),
+						"account_id", account.ID,
+						"account_username", account.Username,
 						"blog_id", blog.ID(),
 						"blog_title", blog.Title(),
 					)
@@ -184,7 +184,7 @@ func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 		}
 
 		// Follow the blog and check for ErrConflict (already following).
-		err = repo.AccountBlog().Create(account, blog)
+		err = repo.AccountBlog().Create(account.ID, blog.ID())
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
@@ -196,8 +196,8 @@ func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 		}
 
 		slog.Info("blog followed",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_id", account.ID,
+			"account_username", account.Username,
 			"blog_id", blog.ID(),
 			"blog_title", blog.Title(),
 		)
@@ -252,7 +252,7 @@ func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
 		}
 
 		// Unfollow the blog and check for ErrNotFound (already not following).
-		err = repo.AccountBlog().Delete(account, blog)
+		err = repo.AccountBlog().Delete(account.ID, blog.ID())
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrNotFound):
@@ -264,8 +264,8 @@ func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
 		}
 
 		slog.Info("blog unfollowed",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_id", account.ID,
+			"account_username", account.Username,
 			"blog_id", blog.ID(),
 			"blog_title", blog.Title(),
 		)

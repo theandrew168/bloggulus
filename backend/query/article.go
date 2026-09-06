@@ -3,10 +3,10 @@ package query
 import (
 	"context"
 	"time"
+	"uuid"
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 )
 
@@ -14,15 +14,26 @@ import (
 // Count: all, all by account, search, search by account
 
 type Article struct {
-	Title       string    `db:"title" json:"title"`
-	URL         string    `db:"url" json:"url"`
-	BlogTitle   string    `db:"blog_title" json:"blogTitle"`
-	BlogURL     string    `db:"blog_url" json:"blogURL"`
-	PublishedAt time.Time `db:"published_at" json:"publishedAt"`
-	Tags        []string  `db:"tags" json:"tags"`
+	Title       string    `db:"title"`
+	URL         string    `db:"url"`
+	BlogTitle   string    `db:"blog_title"`
+	BlogURL     string    `db:"blog_url"`
+	PublishedAt time.Time `db:"published_at"`
+	Tags        []string  `db:"tags"`
 }
 
-func (qry *Query) ListRecentArticles(limit, offset int) ([]Article, error) {
+type ArticleQuery struct {
+	conn postgres.Conn
+}
+
+func NewArticle(conn postgres.Conn) *ArticleQuery {
+	qry := ArticleQuery{
+		conn: conn,
+	}
+	return &qry
+}
+
+func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -46,7 +57,8 @@ func (qry *Query) ListRecentArticles(limit, offset int) ([]Article, error) {
 		LEFT JOIN tag
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
 		GROUP BY post.id
-		ORDER BY post.published_at DESC`
+		ORDER BY post.published_at DESC;
+	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt, limit, offset)
 	if err != nil {
@@ -61,7 +73,7 @@ func (qry *Query) ListRecentArticles(limit, offset int) ([]Article, error) {
 	return articles, nil
 }
 
-func (qry *Query) ListRecentArticlesByAccount(account *model.Account, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRecentArticlesByAccount(accountID uuid.UUID, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -90,9 +102,10 @@ func (qry *Query) ListRecentArticlesByAccount(account *model.Account, limit, off
 		LEFT JOIN tag
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
 		GROUP BY post.id
-		ORDER BY post.published_at DESC`
+		ORDER BY post.published_at DESC;
+	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +118,7 @@ func (qry *Query) ListRecentArticlesByAccount(account *model.Account, limit, off
 	return articles, nil
 }
 
-func (qry *Query) ListRelevantArticles(search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -130,7 +143,8 @@ func (qry *Query) ListRelevantArticles(search string, limit, offset int) ([]Arti
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
 		GROUP BY post.id
-		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC`
+		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC;
+	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt, search, limit, offset)
 	if err != nil {
@@ -145,7 +159,7 @@ func (qry *Query) ListRelevantArticles(search string, limit, offset int) ([]Arti
 	return articles, nil
 }
 
-func (qry *Query) ListRelevantArticlesByAccount(account *model.Account, search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevantArticlesByAccount(accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -175,9 +189,10 @@ func (qry *Query) ListRelevantArticlesByAccount(account *model.Account, search s
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2)
 		GROUP BY post.id
-		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC`
+		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC;
+	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), search, limit, offset)
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -190,10 +205,11 @@ func (qry *Query) ListRelevantArticlesByAccount(account *model.Account, search s
 	return articles, nil
 }
 
-func (qry *Query) CountRecentArticles() (int, error) {
+func (qry *ArticleQuery) CountRecentArticles() (int, error) {
 	stmt := `
 		SELECT count(*)
-		FROM post`
+		FROM post;
+	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt)
 	if err != nil {
@@ -208,7 +224,7 @@ func (qry *Query) CountRecentArticles() (int, error) {
 	return count, nil
 }
 
-func (qry *Query) CountRecentArticlesByAccount(account *model.Account) (int, error) {
+func (qry *ArticleQuery) CountRecentArticlesByAccount(accountID uuid.UUID) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -216,9 +232,10 @@ func (qry *Query) CountRecentArticlesByAccount(account *model.Account) (int, err
 			ON blog.id = post.blog_id
 		INNER JOIN account_blog
 			ON account_blog.blog_id = blog.id
-			AND account_blog.account_id = $1`
+			AND account_blog.account_id = $1;
+	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, account.ID())
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
 	if err != nil {
 		return 0, err
 	}
@@ -231,11 +248,12 @@ func (qry *Query) CountRecentArticlesByAccount(account *model.Account) (int, err
 	return count, nil
 }
 
-func (qry *Query) CountRelevantArticles(search string) (int, error) {
+func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)`
+		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1);
+	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt, search)
 	if err != nil {
@@ -250,7 +268,7 @@ func (qry *Query) CountRelevantArticles(search string) (int, error) {
 	return count, nil
 }
 
-func (qry *Query) CountRelevantArticlesByAccount(account *model.Account, search string) (int, error) {
+func (qry *ArticleQuery) CountRelevantArticlesByAccount(accountID uuid.UUID, search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -259,9 +277,10 @@ func (qry *Query) CountRelevantArticlesByAccount(account *model.Account, search 
 		INNER JOIN account_blog
 			ON account_blog.blog_id = blog.id
 			AND account_blog.account_id = $1
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2)`
+		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2);
+	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, account.ID(), search)
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search)
 	if err != nil {
 		return 0, err
 	}

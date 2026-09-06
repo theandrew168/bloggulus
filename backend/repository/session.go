@@ -144,6 +144,7 @@ func (r *SessionRepository) ReadBySessionToken(token value.Token) (*model.Sessio
 	return row.unmarshal()
 }
 
+// Used for deleting expired sessions.
 func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error) {
 	stmt := `
 		SELECT

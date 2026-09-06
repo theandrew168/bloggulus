@@ -44,40 +44,6 @@ func TestTagRead(t *testing.T) {
 	test.AssertEqual(t, got.ID(), tag.ID())
 }
 
-func TestTagList(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	test.CreateTag(t, repo)
-	test.CreateTag(t, repo)
-	test.CreateTag(t, repo)
-
-	limit := 3
-	offset := 0
-	tags, err := repo.Tag().List(limit, offset)
-	test.AssertNilError(t, err)
-
-	test.AssertAtLeast(t, len(tags), limit)
-}
-
-func TestTagCount(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	test.CreateTag(t, repo)
-	test.CreateTag(t, repo)
-	test.CreateTag(t, repo)
-
-	count, err := repo.Tag().Count()
-	test.AssertNilError(t, err)
-
-	test.AssertAtLeast(t, count, 3)
-}
-
 func TestTagDelete(t *testing.T) {
 	t.Parallel()
 

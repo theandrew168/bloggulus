@@ -13,15 +13,48 @@
 		<h2 class="blog-synced__title">Synced at:</h2>
 		<time datetime="{{.SyncedAt}}">{{.SyncedAt.Format "Jan 2, 2006 - 03:04:05PM"}}</time>
 	</article>
+	<article class="blog-visibility">
+		<h2 class="blog-visibility__title">Visibility:</h2>
+		{{if .IsPublic}}
+		<p>Public</p>
+		{{else}}
+		<p>Private</p>
+		{{end}}
+	</article>
 	<article class="blog-actions">
 		<h2 class="blog-actions__title">Actions</h2>
-		<form method="POST" action="/blogs/{{.ID}}/delete">
-			<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
-			<input type="hidden" name="blogID" value={{.ID}} />
-			<button class="button" type="submit">
-				Delete
-			</button>
-		</form>
+		<ul class="blog-actions__list">
+			<li>
+				<form method="POST" action="/blogs/{{.ID}}/delete">
+					<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+					<input type="hidden" name="blogID" value={{.ID}} />
+					<button class="button" type="submit">
+						Delete
+					</button>
+				</form>
+			</li>
+			{{if .IsPublic}}
+			<li>
+				<form method="POST" action="/blogs/{{.ID}}/hide">
+					<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+					<input type="hidden" name="blogID" value={{.ID}} />
+					<button class="button" type="submit">
+						Hide
+					</button>
+				</form>
+			</li>
+			{{else}}
+			<li>
+				<form method="POST" action="/blogs/{{.ID}}/show">
+					<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+					<input type="hidden" name="blogID" value={{.ID}} />
+					<button class="button" type="submit">
+						Show
+					</button>
+				</form>
+			</li>
+			{{end}}
+		</ul>
 	</article>
 	{{end}}
 	<article class="blog-posts">

@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"uuid"
@@ -66,5 +67,47 @@ func HandleBlogDeleteForm(cmd *command.Command) http.Handler {
 
 		// Redirect back to the blogs page.
 		http.Redirect(w, r, "/blogs", http.StatusSeeOther)
+	})
+}
+
+func HandleBlogHideForm(cmd *command.Command) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
+		if err != nil {
+			util.NotFoundResponse(w, r)
+			return
+		}
+
+		err = cmd.Blog().HideBlog(blogID)
+		if err != nil {
+			if errors.Is(err, command.ErrBlogNotFound) {
+				util.NotFoundResponse(w, r)
+				return
+			}
+		}
+
+		// Redirect back to the blog page.
+		http.Redirect(w, r, fmt.Sprintf("/blogs/%s", blogID), http.StatusSeeOther)
+	})
+}
+
+func HandleBlogShowForm(cmd *command.Command) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		blogID, err := uuid.Parse(r.PathValue("blogID"))
+		if err != nil {
+			util.NotFoundResponse(w, r)
+			return
+		}
+
+		err = cmd.Blog().ShowBlog(blogID)
+		if err != nil {
+			if errors.Is(err, command.ErrBlogNotFound) {
+				util.NotFoundResponse(w, r)
+				return
+			}
+		}
+
+		// Redirect back to the blog page.
+		http.Redirect(w, r, fmt.Sprintf("/blogs/%s", blogID), http.StatusSeeOther)
 	})
 }

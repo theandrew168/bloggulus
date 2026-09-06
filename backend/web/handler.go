@@ -116,6 +116,8 @@ func Handler(
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(cmd)))
+	mux.Handle("POST /blogs/{blogID}/hide", requireAdmin(HandleBlogHideForm(cmd)))
+	mux.Handle("POST /blogs/{blogID}/show", requireAdmin(HandleBlogShowForm(cmd)))
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(repo)))
 	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(repo)))
 

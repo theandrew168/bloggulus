@@ -9,6 +9,7 @@ type Command struct {
 	account *AccountCommand
 	auth    *AuthCommand
 	blog    *BlogCommand
+	post    *PostCommand
 	sync    *SyncCommand
 }
 
@@ -17,6 +18,7 @@ func New(repo *repository.Repository, feedFetcher feed.FeedFetcher) *Command {
 		account: NewAccount(repo),
 		auth:    NewAuth(repo),
 		blog:    NewBlog(repo),
+		post:    NewPost(repo),
 		sync:    NewSync(repo, feedFetcher),
 	}
 	return &cmd
@@ -32,6 +34,10 @@ func (cmd *Command) Auth() *AuthCommand {
 
 func (cmd *Command) Blog() *BlogCommand {
 	return cmd.blog
+}
+
+func (cmd *Command) Post() *PostCommand {
+	return cmd.post
 }
 
 func (cmd *Command) Sync() *SyncCommand {

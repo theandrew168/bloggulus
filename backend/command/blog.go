@@ -51,5 +51,54 @@ func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
 	})
 }
 
-// TODO: Hide blog
-// TODO: Show blog
+func (cmd *BlogCommand) HideBlog(blogID uuid.UUID) error {
+	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
+		blog, err := tx.Blog().Read(blogID)
+		if err != nil {
+			return err
+		}
+
+		err = blog.SetIsPublic(false)
+		if err != nil {
+			return err
+		}
+
+		err = tx.Blog().Update(blog)
+		if err != nil {
+			return err
+		}
+
+		slog.Info("blog hidden",
+			"blog_id", blog.ID(),
+			"blog_title", blog.Title(),
+		)
+
+		return nil
+	})
+}
+
+func (cmd *BlogCommand) ShowBlog(blogID uuid.UUID) error {
+	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
+		blog, err := tx.Blog().Read(blogID)
+		if err != nil {
+			return err
+		}
+
+		err = blog.SetIsPublic(true)
+		if err != nil {
+			return err
+		}
+
+		err = tx.Blog().Update(blog)
+		if err != nil {
+			return err
+		}
+
+		slog.Info("blog shown",
+			"blog_id", blog.ID(),
+			"blog_title", blog.Title(),
+		)
+
+		return nil
+	})
+}

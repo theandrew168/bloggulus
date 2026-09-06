@@ -115,6 +115,17 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 				return
 			}
 
+			// The blog _should_ exist not if SyncBlog finished without errors.
+			// That means any errors here are fatal.
+			blog, err = repo.Blog().ReadByFeedURL(feedURL)
+			if err != nil {
+				slog.Error("error reading blog",
+					"error", err.Error(),
+					"feedURL", feedURL,
+				)
+				return
+			}
+
 			slog.Info("blog added",
 				"account_id", account.ID(),
 				"account_username", account.Username(),
@@ -135,13 +146,6 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 					return
 				}
 			}
-
-			slog.Info("blog followed",
-				"account_id", account.ID(),
-				"account_username", account.Username(),
-				"blog_id", blog.ID(),
-				"blog_title", blog.Title(),
-			)
 		}()
 
 		// Show a toast explaining that the blog will be processed in the background.

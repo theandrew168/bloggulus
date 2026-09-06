@@ -55,7 +55,7 @@ func (cmd *SyncCommand) SyncBlog(feedURL string) error {
 func (cmd *SyncCommand) SyncAllBlogs() error {
 	slog.Info("syncing blogs")
 
-	blogs, err := cmd.repo.Blog().ListAll()
+	blogs, err := cmd.repo.Blog().List()
 	if err != nil {
 		return err
 	}

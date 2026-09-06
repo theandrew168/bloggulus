@@ -375,44 +375,57 @@ svg {
 
 
 
-.blogs, .pages, .accounts {
+.blogs,
+.pages,
+.accounts {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1em;
 }
 
-.blogs-header, .pages-header, .accounts-header {
+.blogs-header,
+.pages-header,
+.accounts-header {
 	margin-bottom: 1em;
 }
 
-.blogs-header__title, .pages-header__title, .accounts-header__title {
+.blogs-header__title,
+.pages-header__title,
+.accounts-header__title {
 	font-size: 1.25rem;
 	font-weight: 600;
 	margin-bottom: 0.5em;
 }
 
-.blogs-header__input, .pages-header__input {
+.blogs-header__input,
+.pages-header__input {
 	width: 70%;
 }
 
-.blogs-list, .pages-list, .accounts-list {
+.blogs-list,
+.pages-list,
+.accounts-list {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
 }
 
-.blogs-list__item, .pages-list__item, .accounts-list__item {
+.blogs-list__item,
+.pages-list__item,
+.accounts-list__item {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
 
-.blogs-list__link, .pages-list__link {
+.blogs-list__link,
+.pages-list__link {
 	color: var(--color-dark);
 	text-decoration: none;
 }
 
-.blogs-list__link:hover, .pages-list__link:hover {
+.blogs-list__link:hover,
+.pages-list__link:hover {
 	text-decoration: underline;
 }
 
@@ -423,7 +436,8 @@ svg {
 
 
 
-.blog, .post {
+.blog,
+.post {
 	max-width: var(--container-width);
 	margin: 0 auto;
 	padding: 1em;
@@ -432,32 +446,44 @@ svg {
 	gap: 1em;
 }
 
-.blog-links__title, .post-links__title {
+.blog-links__title,
+.post-links__title {
 	font-size: 2rem;
 	margin-bottom: 0.5em;
 }
 
-.blog-links__list, .post-links__list {
+.blog-links__list,
+.post-links__list {
 	display: flex;
 	gap: 0.5em;
 }
 
-.blog-links__link, .post-links__link {
+.blog-links__link,
+.post-links__link {
 	color: var(--color-dark);
 	text-decoration: none;
 }
 
-.blog-links__link:hover, .post-links__link:hover {
+.blog-links__link:hover,
+.post-links__link:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
 
-.blog-synced__title, .post-publised__title {
+.blog-synced__title,
+.blog-visibility__title,
+.post-publised__title {
 	font-size: 1.5rem;
 	margin-bottom: 0.5em;
 }
 
-.blog-actions__title, .post-actions__title {
+.blog-actions__list {
+	display: flex;
+	gap: 0.5em;
+}
+
+.blog-actions__title,
+.post-actions__title {
 	font-size: 1.5rem;
 	margin-bottom: 0.5em;
 }

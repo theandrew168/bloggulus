@@ -67,25 +67,7 @@ func TestBlogList(t *testing.T) {
 	test.CreateBlog(t, repo)
 	test.CreateBlog(t, repo)
 
-	limit := 3
-	offset := 0
-	blogs, err := repo.Blog().List(limit, offset)
-	test.AssertNilError(t, err)
-
-	test.AssertEqual(t, len(blogs), limit)
-}
-
-func TestBlogListAll(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	test.CreateBlog(t, repo)
-	test.CreateBlog(t, repo)
-	test.CreateBlog(t, repo)
-
-	blogs, err := repo.Blog().ListAll()
+	blogs, err := repo.Blog().List()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, len(blogs), 3)

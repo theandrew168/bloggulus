@@ -163,48 +163,8 @@ func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 	return row.unmarshal()
 }
 
-func (r *BlogRepository) List(limit, offset int) ([]*model.Blog, error) {
-	stmt := `
-		SELECT
-			blog.id,
-			blog.feed_url,
-			blog.site_url,
-			blog.title,
-			blog.is_public,
-			blog.etag,
-			blog.last_modified,
-			blog.synced_at,
-			blog.meta_created_at,
-			blog.meta_updated_at
-		FROM blog
-		ORDER BY blog.meta_created_at DESC
-		LIMIT $1 OFFSET $2`
-
-	rows, err := r.conn.Query(context.Background(), stmt, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	blogRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbBlog])
-	if err != nil {
-		return nil, postgres.CheckListError(err)
-	}
-
-	var blogs []*model.Blog
-	for _, row := range blogRows {
-		blog, err := row.unmarshal()
-		if err != nil {
-			return nil, err
-		}
-
-		blogs = append(blogs, blog)
-	}
-
-	return blogs, nil
-}
-
-// DEPRECATED
-func (r *BlogRepository) ListAll() ([]*model.Blog, error) {
+// Used for syncing blogs.
+func (r *BlogRepository) List() ([]*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,

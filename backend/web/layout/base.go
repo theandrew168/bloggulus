@@ -9,6 +9,8 @@ import (
 //go:embed base.html
 var BaseHTML string
 
+// TODO: Explore supporting extra style sheets.
+
 type BaseData struct {
 	Account   *model.Account
 	CSRFToken string

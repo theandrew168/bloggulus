@@ -2,12 +2,24 @@ package sync
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
+
+// FilterSyncableBlogs takes a list of blogs and returns only those that are ready to be synced.
+func FilterSyncableBlogs(blogs []*model.Blog, now time.Time) []*model.Blog {
+	var syncableBlogs []*model.Blog
+	for _, blog := range blogs {
+		if blog.CanBeSynced(now) {
+			syncableBlogs = append(syncableBlogs, blog)
+		}
+	}
+	return syncableBlogs
+}
 
 // UpdateCacheHeaders updates the ETag and Last-Modified headers for a blog if they have changed.
 func UpdateCacheHeaders(blog *model.Blog, response feed.FetchFeedResponse) bool {

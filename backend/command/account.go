@@ -12,7 +12,18 @@ import (
 var ErrAccountNotFound = errors.New("account: not found")
 var ErrDeleteAdminAccount = errors.New("account: cannot delete admin account")
 
-func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
+type AccountCommand struct {
+	repo *repository.Repository
+}
+
+func NewAccount(repo *repository.Repository) *AccountCommand {
+	cmd := AccountCommand{
+		repo: repo,
+	}
+	return &cmd
+}
+
+func (cmd *AccountCommand) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(accountID)
 		if err != nil {
@@ -49,7 +60,7 @@ func (cmd *Command) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 	})
 }
 
-func (cmd *Command) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
+func (cmd *AccountCommand) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(accountID)
 		if err != nil {
@@ -86,7 +97,7 @@ func (cmd *Command) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
 	})
 }
 
-func (cmd *Command) DeleteAccount(accountID uuid.UUID) error {
+func (cmd *AccountCommand) DeleteAccount(accountID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(accountID)
 		if err != nil {

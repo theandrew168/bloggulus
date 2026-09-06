@@ -11,7 +11,18 @@ import (
 
 var ErrBlogNotFound = errors.New("blog: not found")
 
-func (cmd *Command) DeleteBlog(blogID uuid.UUID) error {
+type BlogCommand struct {
+	repo *repository.Repository
+}
+
+func NewBlog(repo *repository.Repository) *BlogCommand {
+	cmd := BlogCommand{
+		repo: repo,
+	}
+	return &cmd
+}
+
+func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		blog, err := tx.Blog().Read(blogID)
 		if err != nil {
@@ -39,3 +50,6 @@ func (cmd *Command) DeleteBlog(blogID uuid.UUID) error {
 		return nil
 	})
 }
+
+// TODO: Hide blog
+// TODO: Show blog

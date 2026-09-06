@@ -1,20 +1,23 @@
-package job_test
+package command_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
-func TestClearExpiredSessions(t *testing.T) {
+func TestDeleteExpiredSessions(t *testing.T) {
 	t.Parallel()
 
 	repo, closer := test.NewRepository(t)
 	defer closer()
+
+	cmd := command.NewAuth(repo)
 
 	account := test.CreateAccount(t, repo)
 
@@ -36,8 +39,7 @@ func TestClearExpiredSessions(t *testing.T) {
 	err = repo.Session().Create(sessionNew)
 	test.AssertNilError(t, err)
 
-	s := job.NewSessionService(repo)
-	err = s.ClearExpiredSessions()
+	err = cmd.DeleteExpiredSessions(timeutil.Now())
 	test.AssertNilError(t, err)
 
 	_, err = repo.Session().Read(sessionOld.ID())

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
 
@@ -15,19 +15,19 @@ const (
 )
 
 type SessionService struct {
-	repo *repository.Repository
+	cmd *command.Command
 }
 
-func NewSessionService(repo *repository.Repository) *SessionService {
+func NewSessionService(cmd *command.Command) *SessionService {
 	s := SessionService{
-		repo: repo,
+		cmd: cmd,
 	}
 	return &s
 }
 
 func (s *SessionService) Run(ctx context.Context) error {
 	// Clear out any expired sessions at service startup.
-	err := s.ClearExpiredSessions()
+	err := s.cmd.Auth().DeleteExpiredSessions(timeutil.Now())
 	if err != nil {
 		slog.Error("error clearing expired sessions",
 			"error", err.Error(),
@@ -45,7 +45,7 @@ func (s *SessionService) Run(ctx context.Context) error {
 			slog.Info("stopped session service")
 			return nil
 		case <-ticker.C:
-			err := s.ClearExpiredSessions()
+			err := s.cmd.Auth().DeleteExpiredSessions(timeutil.Now())
 			if err != nil {
 				slog.Error("error clearing expired sessions",
 					"error", err.Error(),
@@ -53,9 +53,4 @@ func (s *SessionService) Run(ctx context.Context) error {
 			}
 		}
 	}
-}
-
-func (s *SessionService) ClearExpiredSessions() error {
-	now := timeutil.Now()
-	return s.repo.Session().DeleteExpired(now)
 }

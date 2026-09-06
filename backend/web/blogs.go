@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"uuid"
 
-	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -48,7 +48,7 @@ func HandleBlogList(qry *query.Query) http.Handler {
 	})
 }
 
-func HandleBlogCreateForm(repo *repository.Repository, syncService *job.SyncService) http.Handler {
+func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -68,7 +68,7 @@ func HandleBlogCreateForm(repo *repository.Repository, syncService *job.SyncServ
 		blog, err := repo.Blog().ReadByFeedURL(feedURL)
 		if err == nil {
 			// If it does, follow it for the current user.
-			err = repo.AccountBlog().Create(account, blog)
+			err = cmd.Account().FollowBlog(account.ID(), blog.ID())
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
@@ -106,7 +106,7 @@ func HandleBlogCreateForm(repo *repository.Repository, syncService *job.SyncServ
 		// Use the SyncService to add the new blog.
 		// TODO: Make this respect graceful shutdowns.
 		go func() {
-			blog, err := syncService.SyncBlog(feedURL)
+			err := cmd.Sync().SyncBlog(feedURL)
 			if err != nil {
 				slog.Error("error adding blog",
 					"error", err.Error(),
@@ -122,7 +122,7 @@ func HandleBlogCreateForm(repo *repository.Repository, syncService *job.SyncServ
 				"blog_title", blog.Title(),
 			)
 
-			err = repo.AccountBlog().Create(account, blog)
+			err = cmd.Account().FollowBlog(account.ID(), blog.ID())
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",

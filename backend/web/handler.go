@@ -109,7 +109,7 @@ func Handler(
 
 	// Public blog routes.
 	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
-	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, syncService)))
+	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, cmd)))
 	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo)))
 	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo)))
 

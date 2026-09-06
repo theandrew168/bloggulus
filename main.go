@@ -86,10 +86,10 @@ func run() error {
 	qry := query.New(pool)
 
 	// Init the sync service and do an initial sync.
-	syncService := job.NewSyncService(repo, feedFetcher)
+	syncService := job.NewSyncService(cmd)
 
 	// Init the session service and clear any expired session tokens.
-	sessionService := job.NewSessionService(repo)
+	sessionService := job.NewSessionService(cmd)
 
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)

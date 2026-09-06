@@ -15,7 +15,18 @@ import (
 
 var ErrSessionNotFound = errors.New("session: not found")
 
-func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
+type AuthCommand struct {
+	repo *repository.Repository
+}
+
+func NewAuth(repo *repository.Repository) *AuthCommand {
+	cmd := AuthCommand{
+		repo: repo,
+	}
+	return &cmd
+}
+
+func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 	// NOTE: Handling state outside the transaction is the exception, not the rule.
 	// This is a special case where a command needs to return a value (the session ID).
 	var sessionToken value.Token
@@ -70,7 +81,7 @@ func (cmd *Command) SignIn(username value.Name) (value.Token, error) {
 	return sessionToken, err
 }
 
-func (cmd *Command) SignOut(sessionToken value.Token) error {
+func (cmd *AuthCommand) SignOut(sessionToken value.Token) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		session, err := tx.Session().ReadBySessionToken(sessionToken)
 		if err != nil {
@@ -94,7 +105,7 @@ func (cmd *Command) SignOut(sessionToken value.Token) error {
 	})
 }
 
-func (cmd *Command) DeleteExpiredSessions(now time.Time) error {
+func (cmd *AuthCommand) DeleteExpiredSessions(now time.Time) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		now := timeutil.Now()
 		expiredSessions, err := tx.Session().ListExpired(now)

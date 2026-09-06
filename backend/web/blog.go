@@ -53,7 +53,7 @@ func HandleBlogDeleteForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.DeleteBlog(blogID)
+		err = cmd.Blog().DeleteBlog(blogID)
 		if err != nil {
 			if errors.Is(err, command.ErrBlogNotFound) {
 				util.NotFoundResponse(w, r)

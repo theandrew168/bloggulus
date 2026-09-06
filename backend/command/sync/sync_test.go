@@ -3,6 +3,7 @@ package sync_test
 import (
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/command/sync"
@@ -10,7 +11,33 @@ import (
 	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/test"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
+
+func TestFilterSyncableBlogs(t *testing.T) {
+	t.Parallel()
+
+	now := timeutil.Now()
+
+	pastBlog := test.NewBlog(t)
+	pastBlog.SetSyncedAt(now.Add(-model.SyncCooldown).Add(-1 * time.Minute))
+	presentBlog := test.NewBlog(t)
+	presentBlog.SetSyncedAt(now)
+	futureBlog := test.NewBlog(t)
+	futureBlog.SetSyncedAt(now.Add(1 * time.Hour))
+
+	blogs := []*model.Blog{pastBlog, presentBlog, futureBlog}
+
+	syncableBlogs := sync.FilterSyncableBlogs(blogs, now)
+	test.AssertEqual(t, len(syncableBlogs), 1)
+
+	var syncableBlogIDs []uuid.UUID
+	for _, blog := range syncableBlogs {
+		syncableBlogIDs = append(syncableBlogIDs, blog.ID())
+	}
+
+	test.AssertSliceContains(t, syncableBlogIDs, pastBlog.ID())
+}
 
 func TestUpdateCacheHeaders(t *testing.T) {
 	t.Parallel()
@@ -115,7 +142,7 @@ func TestNewBlog(t *testing.T) {
 	}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
 	err = cmd.SyncBlog(feedBlog.FeedURL)
@@ -162,7 +189,7 @@ func TestExistingBlog(t *testing.T) {
 	}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
 	err = cmd.SyncBlog(feedBlog.FeedURL)
@@ -224,7 +251,7 @@ func TestUnreachableFeed(t *testing.T) {
 	feeds := map[string]feed.FetchFeedResponse{}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	err := cmd.SyncBlog(feedURL)
 	test.AssertErrorIs(t, err, feed.ErrUnreachableFeed)
@@ -256,7 +283,7 @@ func TestUpdatePostContent(t *testing.T) {
 	}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
 	err = cmd.SyncBlog(feedBlog.FeedURL)
@@ -319,7 +346,7 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
 	err = cmd.SyncBlog(feedBlog.FeedURL)
@@ -372,7 +399,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher := feedMock.NewFeedFetcher(feeds)
 
-	cmd := command.New(repo, feedFetcher)
+	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
 	err = cmd.SyncBlog(feedBlog.FeedURL)
@@ -392,7 +419,7 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	}
 	feedFetcher = feedMock.NewFeedFetcher(feeds)
 
-	cmd = command.New(repo, feedFetcher)
+	cmd = command.NewSync(repo, feedFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
 	err = cmd.SyncBlog(feedBlog.FeedURL)

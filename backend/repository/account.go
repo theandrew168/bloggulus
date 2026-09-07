@@ -22,16 +22,11 @@ type dbAccount struct {
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
-	var followedBlogIDsList []uuid.UUID
-	for blogID := range account.FollowedBlogIDs() {
-		followedBlogIDsList = append(followedBlogIDsList, blogID)
-	}
-
 	a := dbAccount{
 		ID:              account.ID(),
 		Username:        account.Username().Value(),
 		IsAdmin:         account.IsAdmin(),
-		FollowedBlogIDs: followedBlogIDsList,
+		FollowedBlogIDs: account.FollowedBlogIDs().Values(),
 		MetaCreatedAt:   account.Meta().CreatedAt(),
 		MetaUpdatedAt:   account.Meta().UpdatedAt(),
 	}
@@ -45,16 +40,11 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		return nil, err
 	}
 
-	followedBlogIDs := make(map[uuid.UUID]struct{})
-	for _, blogID := range a.FollowedBlogIDs {
-		followedBlogIDs[blogID] = struct{}{}
-	}
-
 	account := model.LoadAccount(model.LoadAccountParams{
 		ID:              a.ID,
 		Username:        username,
 		IsAdmin:         a.IsAdmin,
-		FollowedBlogIDs: followedBlogIDs,
+		FollowedBlogIDs: value.NewSet[uuid.UUID](a.FollowedBlogIDs...),
 		Meta: model.LoadMeta(model.LoadMetaParams{
 			CreatedAt: a.MetaCreatedAt,
 			UpdatedAt: a.MetaUpdatedAt,
@@ -176,27 +166,12 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		return postgres.CheckListError(err)
 	}
 
-	haveFollowedBlogIDs := make(map[uuid.UUID]struct{})
-	for _, blogID := range followedBlogIDsList {
-		haveFollowedBlogIDs[blogID] = struct{}{}
-	}
-
+	haveFollowedBlogIDs := value.NewSet(followedBlogIDsList...)
 	wantFollowedBlogIDs := account.FollowedBlogIDs()
 
 	// Set diff to find which blogs to add or remove.
-	var blogsToFollow []uuid.UUID
-	for blogID := range wantFollowedBlogIDs {
-		if _, ok := haveFollowedBlogIDs[blogID]; !ok {
-			blogsToFollow = append(blogsToFollow, blogID)
-		}
-	}
-
-	var blogsToUnfollow []uuid.UUID
-	for blogID := range haveFollowedBlogIDs {
-		if _, ok := wantFollowedBlogIDs[blogID]; !ok {
-			blogsToUnfollow = append(blogsToUnfollow, blogID)
-		}
-	}
+	blogsToFollow := wantFollowedBlogIDs.Difference(haveFollowedBlogIDs)
+	blogsToUnfollow := haveFollowedBlogIDs.Difference(wantFollowedBlogIDs)
 
 	// TODO: Optim Oppty: Batch these additions and removals.
 
@@ -205,7 +180,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		INSERT INTO account_blog
 			(account_id, blog_id)
 		VALUES ($1, $2)`
-	for _, blogID := range blogsToFollow {
+	for _, blogID := range blogsToFollow.Values() {
 		_, err = r.conn.Exec(context.Background(), stmtFollow, account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckCreateError(err)
@@ -215,7 +190,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 	stmtUnfollow := `
 		DELETE FROM account_blog
 		WHERE account_id = $1 AND blog_id = $2`
-	for _, blogID := range blogsToUnfollow {
+	for _, blogID := range blogsToUnfollow.Values() {
 		_, err = r.conn.Exec(context.Background(), stmtUnfollow, account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckDeleteError(err)

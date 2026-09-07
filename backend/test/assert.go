@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 func AssertEqual(t *testing.T, got, want any) {
@@ -56,18 +58,18 @@ func AssertSliceDoesNotContain[T comparable](t *testing.T, got []T, want T) {
 	}
 }
 
-func AssertSetContains[T comparable](t *testing.T, got map[T]struct{}, want T) {
+func AssertSetContains[T comparable](t *testing.T, got *value.Set[T], want T) {
 	t.Helper()
 
-	if _, ok := got[want]; !ok {
+	if !got.Contains(want) {
 		t.Fatalf("got %v; want to contain: %v", got, want)
 	}
 }
 
-func AssertSetDoesNotContain[T comparable](t *testing.T, got map[T]struct{}, want T) {
+func AssertSetDoesNotContain[T comparable](t *testing.T, got *value.Set[T], want T) {
 	t.Helper()
 
-	if _, ok := got[want]; ok {
+	if got.Contains(want) {
 		t.Fatalf("got %v; should not contain: %v", got, want)
 	}
 }

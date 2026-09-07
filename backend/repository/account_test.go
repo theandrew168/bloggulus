@@ -73,7 +73,7 @@ func TestAccountUpdate(t *testing.T) {
 	updatedAccount, err := repo.Account().Read(account.ID())
 	test.AssertNilError(t, err)
 
-	test.AssertSliceContains(t, updatedAccount.FollowedBlogIDs(), blog.ID())
+	test.AssertSetContains(t, updatedAccount.FollowedBlogIDs(), blog.ID())
 
 	account.UnfollowBlog(blog)
 	err = repo.Account().Update(account)
@@ -81,7 +81,7 @@ func TestAccountUpdate(t *testing.T) {
 
 	updatedAccount, err = repo.Account().Read(account.ID())
 	test.AssertNilError(t, err)
-	test.AssertSliceDoesNotContain(t, updatedAccount.FollowedBlogIDs(), blog.ID())
+	test.AssertSetDoesNotContain(t, updatedAccount.FollowedBlogIDs(), blog.ID())
 }
 
 func TestAccountDelete(t *testing.T) {

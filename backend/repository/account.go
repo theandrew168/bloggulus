@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"slices"
 	"time"
 	"uuid"
 
@@ -23,11 +22,16 @@ type dbAccount struct {
 }
 
 func marshalAccount(account *model.Account) (dbAccount, error) {
+	var followedBlogIDsList []uuid.UUID
+	for blogID := range account.FollowedBlogIDs() {
+		followedBlogIDsList = append(followedBlogIDsList, blogID)
+	}
+
 	a := dbAccount{
 		ID:              account.ID(),
 		Username:        account.Username().Value(),
 		IsAdmin:         account.IsAdmin(),
-		FollowedBlogIDs: account.FollowedBlogIDs(),
+		FollowedBlogIDs: followedBlogIDsList,
 		MetaCreatedAt:   account.Meta().CreatedAt(),
 		MetaUpdatedAt:   account.Meta().UpdatedAt(),
 	}
@@ -41,11 +45,16 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		return nil, err
 	}
 
+	followedBlogIDs := make(map[uuid.UUID]struct{})
+	for _, blogID := range a.FollowedBlogIDs {
+		followedBlogIDs[blogID] = struct{}{}
+	}
+
 	account := model.LoadAccount(model.LoadAccountParams{
 		ID:              a.ID,
 		Username:        username,
 		IsAdmin:         a.IsAdmin,
-		FollowedBlogIDs: a.FollowedBlogIDs,
+		FollowedBlogIDs: followedBlogIDs,
 		Meta: model.LoadMeta(model.LoadMetaParams{
 			CreatedAt: a.MetaCreatedAt,
 			UpdatedAt: a.MetaUpdatedAt,
@@ -162,22 +171,29 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		return err
 	}
 
-	followedBlogIDs, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	followedBlogIDsList, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
 	if err != nil {
 		return postgres.CheckListError(err)
 	}
 
+	haveFollowedBlogIDs := make(map[uuid.UUID]struct{})
+	for _, blogID := range followedBlogIDsList {
+		haveFollowedBlogIDs[blogID] = struct{}{}
+	}
+
+	wantFollowedBlogIDs := account.FollowedBlogIDs()
+
 	// Set diff to find which blogs to add or remove.
 	var blogsToFollow []uuid.UUID
-	for _, blogID := range account.FollowedBlogIDs() {
-		if !slices.Contains(followedBlogIDs, blogID) {
+	for blogID := range wantFollowedBlogIDs {
+		if _, ok := haveFollowedBlogIDs[blogID]; !ok {
 			blogsToFollow = append(blogsToFollow, blogID)
 		}
 	}
 
 	var blogsToUnfollow []uuid.UUID
-	for _, blogID := range followedBlogIDs {
-		if !slices.Contains(account.FollowedBlogIDs(), blogID) {
+	for blogID := range haveFollowedBlogIDs {
+		if _, ok := wantFollowedBlogIDs[blogID]; !ok {
 			blogsToUnfollow = append(blogsToUnfollow, blogID)
 		}
 	}

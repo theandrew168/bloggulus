@@ -13,6 +13,8 @@ import (
 // List: recent, recent by account, search, search by account
 // Count: all, all by account, search, search by account
 
+// TODO: Update anon reads to consider blog.is_public.
+
 type Article struct {
 	Title       string    `db:"title"`
 	URL         string    `db:"url"`

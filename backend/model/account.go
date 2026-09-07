@@ -1,20 +1,17 @@
 package model
 
 import (
-	"slices"
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type Account struct {
-	id       uuid.UUID
-	username value.Name
-	isAdmin  bool
-
-	followedBlogIDs []uuid.UUID
-
-	meta *Meta
+	id              uuid.UUID
+	username        value.Name
+	isAdmin         bool
+	followedBlogIDs map[uuid.UUID]struct{}
+	meta            *Meta
 }
 
 type NewAccountParams struct {
@@ -23,20 +20,20 @@ type NewAccountParams struct {
 
 func NewAccount(params NewAccountParams) (*Account, error) {
 	account := Account{
-		id:       uuid.New(),
-		username: params.Username,
-		isAdmin:  false,
-		meta:     NewMeta(),
+		id:              uuid.New(),
+		username:        params.Username,
+		isAdmin:         false,
+		followedBlogIDs: make(map[uuid.UUID]struct{}),
+		meta:            NewMeta(),
 	}
 	return &account, nil
 }
 
 type LoadAccountParams struct {
-	ID       uuid.UUID
-	Username value.Name
-	IsAdmin  bool
-	// TODO: Convert to a set.
-	FollowedBlogIDs []uuid.UUID
+	ID              uuid.UUID
+	Username        value.Name
+	IsAdmin         bool
+	FollowedBlogIDs map[uuid.UUID]struct{}
 	Meta            *Meta
 }
 
@@ -63,26 +60,17 @@ func (a *Account) IsAdmin() bool {
 	return a.isAdmin
 }
 
-func (a *Account) FollowedBlogIDs() []uuid.UUID {
+func (a *Account) FollowedBlogIDs() map[uuid.UUID]struct{} {
 	return a.followedBlogIDs
 }
 
 func (a *Account) FollowBlog(blog *Blog) error {
-	if slices.Contains(a.followedBlogIDs, blog.ID()) {
-		return nil
-	}
-
-	a.followedBlogIDs = append(a.followedBlogIDs, blog.ID())
+	a.followedBlogIDs[blog.ID()] = struct{}{}
 	return nil
 }
 
 func (a *Account) UnfollowBlog(blog *Blog) error {
-	index := slices.Index(a.followedBlogIDs, blog.ID())
-	if index == -1 {
-		return nil
-	}
-
-	a.followedBlogIDs = slices.Delete(a.followedBlogIDs, index, index+1)
+	delete(a.followedBlogIDs, blog.ID())
 	return nil
 }
 

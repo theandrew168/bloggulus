@@ -56,6 +56,22 @@ func AssertSliceDoesNotContain[T comparable](t *testing.T, got []T, want T) {
 	}
 }
 
+func AssertSetContains[T comparable](t *testing.T, got map[T]struct{}, want T) {
+	t.Helper()
+
+	if _, ok := got[want]; !ok {
+		t.Fatalf("got %v; want to contain: %v", got, want)
+	}
+}
+
+func AssertSetDoesNotContain[T comparable](t *testing.T, got map[T]struct{}, want T) {
+	t.Helper()
+
+	if _, ok := got[want]; ok {
+		t.Fatalf("got %v; should not contain: %v", got, want)
+	}
+}
+
 func AssertNilError(t *testing.T, got error) {
 	t.Helper()
 

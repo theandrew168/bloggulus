@@ -22,7 +22,7 @@ func TestListArticles(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
 
-	articles, err := qry.ListRecentArticles(1, 0)
+	articles, err := qry.ListRecent(1, 0)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(articles), 1)
@@ -51,7 +51,7 @@ func TestListArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// List posts from blogs followed by this account.
-	articles, err := qry.ListRecentArticlesByAccount(account.ID(), 5, 0)
+	articles, err := qry.ListRecentByAccount(account.ID(), 5, 0)
 	test.AssertNilError(t, err)
 
 	// We should only get the three posts associated with the followed blog.
@@ -98,7 +98,7 @@ func TestSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// list articles that relate to python
-	articles, err := qry.ListRelevantArticles("python", 1, 0)
+	articles, err := qry.ListRelevant("python", 1, 0)
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -116,7 +116,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        followedBlog,
 			URL:         test.RandomURL(20),
@@ -132,7 +132,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 
 	// Create some unfollowed posts about python.
 	unfollowedBlog := test.CreateBlog(t, repo)
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        unfollowedBlog,
 			URL:         test.RandomURL(20),
@@ -150,7 +150,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// List posts (from followed blogs) that relate to python.
-	articles, err := qry.ListRelevantArticlesByAccount(account.ID(), "python", 5, 0)
+	articles, err := qry.ListRelevantByAccount(account.ID(), "python", 5, 0)
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.
@@ -171,7 +171,7 @@ func TestCountArticles(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	count, err := qry.CountRecentArticles()
+	count, err := qry.CountRecent()
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -200,7 +200,7 @@ func TestCountArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// We should only count the three posts associated with the followed blog.
-	count, err := qry.CountRecentArticlesByAccount(account.ID())
+	count, err := qry.CountRecentByAccount(account.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, count, 3)
 }
@@ -243,7 +243,7 @@ func TestCountSearchArticles(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// count posts that relate to python
-	count, err := qry.CountRelevantArticles("python")
+	count, err := qry.CountRelevant("python")
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -261,7 +261,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        followedBlog,
 			URL:         test.RandomURL(20),
@@ -277,7 +277,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 
 	// Create some unfollowed posts about python.
 	unfollowedBlog := test.CreateBlog(t, repo)
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        unfollowedBlog,
 			URL:         test.RandomURL(20),
@@ -295,7 +295,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
 
 	// Count posts (from followed blogs) that relate to python.
-	count, err := qry.CountRelevantArticlesByAccount(account.ID(), "python")
+	count, err := qry.CountRelevantByAccount(account.ID(), "python")
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.

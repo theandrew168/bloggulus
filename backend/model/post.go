@@ -5,6 +5,9 @@ import (
 	"uuid"
 )
 
+// TODO: Use proper URL types for URLs
+// TODO: Use Name value type for title
+
 type Post struct {
 	id          uuid.UUID
 	blogID      uuid.UUID

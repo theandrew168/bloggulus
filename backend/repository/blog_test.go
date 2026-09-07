@@ -73,22 +73,6 @@ func TestBlogList(t *testing.T) {
 	test.AssertAtLeast(t, len(blogs), 3)
 }
 
-func TestBlogCount(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	test.CreateBlog(t, repo)
-	test.CreateBlog(t, repo)
-	test.CreateBlog(t, repo)
-
-	count, err := repo.Blog().Count()
-	test.AssertNilError(t, err)
-
-	test.AssertAtLeast(t, count, 3)
-}
-
 func TestBlogUpdate(t *testing.T) {
 	t.Parallel()
 

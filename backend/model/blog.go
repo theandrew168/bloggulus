@@ -11,6 +11,9 @@ const (
 	SyncCooldown = 2 * time.Hour
 )
 
+// TODO: Use proper URL types for URLs
+// TODO: Use Name value type for title
+
 type Blog struct {
 	id           uuid.UUID
 	feedURL      string

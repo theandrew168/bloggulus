@@ -109,9 +109,9 @@ func Handler(
 
 	// Public blog routes.
 	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
-	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(repo, cmd)))
-	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(repo)))
-	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(repo)))
+	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(cmd, qry)))
+	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(cmd, qry)))
+	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(cmd, qry)))
 
 	// Private (admin only) blog + post routes.
 	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))
@@ -119,11 +119,11 @@ func Handler(
 	mux.Handle("POST /blogs/{blogID}/hide", requireAdmin(HandleBlogHideForm(cmd)))
 	mux.Handle("POST /blogs/{blogID}/show", requireAdmin(HandleBlogShowForm(cmd)))
 	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(repo)))
-	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(repo)))
+	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(cmd)))
 
 	// Private (admin only) account routes.
 	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(qry)))
-	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(repo)))
+	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(cmd)))
 
 	// Debug endpoint for testing toasts.
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {

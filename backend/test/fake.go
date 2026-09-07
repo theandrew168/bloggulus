@@ -10,15 +10,48 @@ import (
 	"github.com/theandrew168/bloggulus/backend/value"
 )
 
-func NewBlog(t *testing.T) *model.Blog {
-	blog, err := model.NewBlog(model.NewBlogParams{
+func NewBlogParams(t *testing.T) model.NewBlogParams {
+	return model.NewBlogParams{
 		FeedURL:      RandomURL(32),
 		SiteURL:      RandomURL(32),
 		Title:        RandomString(32),
 		SyncedAt:     RandomTime(),
 		ETag:         RandomString(32),
 		LastModified: RandomString(32),
-	})
+	}
+}
+
+func NewPostParams(t *testing.T, blog *model.Blog) model.NewPostParams {
+	return model.NewPostParams{
+		Blog:        blog,
+		URL:         RandomURL(32),
+		Title:       RandomString(32),
+		PublishedAt: RandomTime(),
+		Content:     RandomString(32),
+	}
+}
+
+func NewTagParams(t *testing.T) model.NewTagParams {
+	return model.NewTagParams{
+		Name: RandomName(t),
+	}
+}
+
+func NewAccountParams(t *testing.T) model.NewAccountParams {
+	return model.NewAccountParams{
+		Username: RandomName(t),
+	}
+}
+
+func NewSessionParams(t *testing.T, account *model.Account) model.NewSessionParams {
+	return model.NewSessionParams{
+		Account: account,
+		TTL:     24 * time.Hour,
+	}
+}
+
+func NewBlog(t *testing.T) *model.Blog {
+	blog, err := model.NewBlog(NewBlogParams(t))
 	AssertNilError(t, err)
 
 	// TODO: Update tests to account for visibility and then remove this.
@@ -27,41 +60,28 @@ func NewBlog(t *testing.T) *model.Blog {
 }
 
 func NewPost(t *testing.T, blog *model.Blog) *model.Post {
-	post, err := model.NewPost(model.NewPostParams{
-		Blog:        blog,
-		URL:         RandomURL(32),
-		Title:       RandomString(32),
-		PublishedAt: RandomTime(),
-		Content:     RandomString(32),
-	})
+	post, err := model.NewPost(NewPostParams(t, blog))
 	AssertNilError(t, err)
 
 	return post
 }
 
 func NewTag(t *testing.T) *model.Tag {
-	tag, err := model.NewTag(model.NewTagParams{
-		Name: RandomName(t),
-	})
+	tag, err := model.NewTag(NewTagParams(t))
 	AssertNilError(t, err)
 
 	return tag
 }
 
 func NewAccount(t *testing.T) *model.Account {
-	account, err := model.NewAccount(model.NewAccountParams{
-		Username: RandomName(t),
-	})
+	account, err := model.NewAccount(NewAccountParams(t))
 	AssertNilError(t, err)
 
 	return account
 }
 
 func NewSession(t *testing.T, account *model.Account) (*model.Session, value.Token) {
-	session, sessionToken, err := model.NewSession(model.NewSessionParams{
-		Account: account,
-		TTL:     24 * time.Hour,
-	})
+	session, sessionToken, err := model.NewSession(NewSessionParams(t, account))
 	AssertNilError(t, err)
 
 	return session, sessionToken

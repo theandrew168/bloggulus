@@ -203,24 +203,6 @@ func (r *BlogRepository) List() ([]*model.Blog, error) {
 	return blogs, nil
 }
 
-func (r *BlogRepository) Count() (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM blog`
-
-	rows, err := r.conn.Query(context.Background(), stmt)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
 func (r *BlogRepository) Update(blog *model.Blog) error {
 	now := timeutil.Now()
 	stmt := `

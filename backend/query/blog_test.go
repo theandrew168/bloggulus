@@ -26,7 +26,7 @@ func TestListBlogsForAccount(t *testing.T) {
 	// Create another blog but don't follow it.
 	test.CreateBlog(t, repo)
 
-	blogs, err := qry.ListBlogsForAccount(account.ID())
+	blogs, err := qry.ListAll(account.ID())
 	test.AssertNilError(t, err)
 
 	// Count how many blogs are being followed.

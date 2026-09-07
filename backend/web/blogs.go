@@ -11,7 +11,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/query"
-	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -25,7 +24,15 @@ func HandleBlogList(qry *query.Query) http.Handler {
 			return
 		}
 
-		blogs, err := qry.Blog().ListBlogsForAccount(account.ID)
+		var blogs []query.Blog
+		var err error
+
+		if account.IsAdmin {
+			blogs, err = qry.Blog().ListAll(account.ID)
+		} else {
+			blogs, err = qry.Blog().ListVisible(account.ID)
+		}
+
 		if err != nil {
 			util.ListErrorResponse(w, r, err)
 			return
@@ -38,7 +45,7 @@ func HandleBlogList(qry *query.Query) http.Handler {
 			data.Blogs = append(data.Blogs, page.BlogsBlogData{
 				BaseData: util.GetTemplateBaseData(r, w),
 
-				BlogForAccount: blog,
+				Blog: blog,
 			})
 		}
 
@@ -48,7 +55,8 @@ func HandleBlogList(qry *query.Query) http.Handler {
 	})
 }
 
-func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) http.Handler {
+// TODO: This handler is pretty large. Can it be split and simplified?
+func HandleBlogCreateForm(cmd *command.Command, qry *query.Query) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -65,18 +73,18 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 		feedURL := r.PostForm.Get("feedURL")
 
 		// Check if the blog already exists.
-		blog, err := repo.Blog().ReadByFeedURL(feedURL)
+		blog, err := qry.Blog().ReadDetailsByFeedURL(feedURL)
 		if err == nil {
 			// If it does, follow it for the current user.
-			err = cmd.Account().FollowBlog(account.ID, blog.ID())
+			err = cmd.Account().FollowBlog(account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
 						"account_id", account.ID,
 						"account_username", account.Username,
-						"blog_id", blog.ID(),
-						"blog_title", blog.Title(),
+						"blog_id", blog.ID,
+						"blog_title", blog.Title,
 					)
 					return
 				}
@@ -85,8 +93,8 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 			slog.Info("blog followed",
 				"account_id", account.ID,
 				"account_username", account.Username,
-				"blog_id", blog.ID(),
-				"blog_title", blog.Title(),
+				"blog_id", blog.ID,
+				"blog_title", blog.Title,
 			)
 
 			// Show a toast explaining that the blog already exists but is now being followed.
@@ -117,7 +125,7 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 
 			// The blog _should_ exist not if SyncBlog finished without errors.
 			// That means any errors here are fatal.
-			blog, err = repo.Blog().ReadByFeedURL(feedURL)
+			blog, err = qry.Blog().ReadDetailsByFeedURL(feedURL)
 			if err != nil {
 				slog.Error("error reading blog",
 					"error", err.Error(),
@@ -129,19 +137,19 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 			slog.Info("blog added",
 				"account_id", account.ID,
 				"account_username", account.Username,
-				"blog_id", blog.ID(),
-				"blog_title", blog.Title(),
+				"blog_id", blog.ID,
+				"blog_title", blog.Title,
 			)
 
-			err = cmd.Account().FollowBlog(account.ID, blog.ID())
+			err = cmd.Account().FollowBlog(account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
 						"account_id", account.ID,
 						"account_username", account.Username,
-						"blog_id", blog.ID(),
-						"blog_title", blog.Title(),
+						"blog_id", blog.ID,
+						"blog_title", blog.Title,
 					)
 					return
 				}
@@ -156,7 +164,7 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 	})
 }
 
-func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
+func HandleBlogFollowForm(cmd *command.Command, qry *query.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -177,14 +185,7 @@ func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		blog, err := repo.Blog().Read(blogID)
-		if err != nil {
-			util.ReadErrorResponse(w, r, err)
-			return
-		}
-
-		// Follow the blog and check for ErrConflict (already following).
-		err = repo.AccountBlog().Create(account.ID, blog.ID())
+		err = cmd.Account().FollowBlog(account.ID, blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
@@ -195,24 +196,21 @@ func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		slog.Info("blog followed",
-			"account_id", account.ID,
-			"account_username", account.Username,
-			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
-		)
+		blog, err := qry.Blog().ReadDetailsByID(blogID)
+		if err != nil {
+			util.ReadErrorResponse(w, r, err)
+			return
+		}
 
 		// If the request came in via HTMX, re-render the individual blog row.
 		if util.IsHTMXRequest(r) {
 			data := page.BlogsBlogData{
 				BaseData: util.GetTemplateBaseData(r, w),
 
-				BlogForAccount: query.BlogForAccount{
-					ID:          blog.ID(),
-					Title:       blog.Title(),
-					SiteURL:     blog.SiteURL(),
-					IsFollowing: true,
-				},
+				ID:          blog.ID,
+				Title:       blog.Title,
+				SiteURL:     blog.SiteURL,
+				IsFollowing: true,
 			}
 			util.Render(w, r, 200, func(w io.Writer) error {
 				return tmpl.RenderBlog(w, data)
@@ -224,7 +222,7 @@ func HandleBlogFollowForm(repo *repository.Repository) http.Handler {
 	})
 }
 
-func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
+func HandleBlogUnfollowForm(cmd *command.Command, qry *query.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -245,17 +243,10 @@ func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		blog, err := repo.Blog().Read(blogID)
-		if err != nil {
-			util.ReadErrorResponse(w, r, err)
-			return
-		}
-
-		// Unfollow the blog and check for ErrNotFound (already not following).
-		err = repo.AccountBlog().Delete(account.ID, blog.ID())
+		err = cmd.Account().UnfollowBlog(account.ID, blogID)
 		if err != nil {
 			switch {
-			case errors.Is(err, postgres.ErrNotFound):
+			case errors.Is(err, postgres.ErrConflict):
 				util.BadRequestResponse(w, r)
 			default:
 				util.InternalServerErrorResponse(w, r, err)
@@ -263,24 +254,21 @@ func HandleBlogUnfollowForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		slog.Info("blog unfollowed",
-			"account_id", account.ID,
-			"account_username", account.Username,
-			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
-		)
+		blog, err := qry.Blog().ReadDetailsByID(blogID)
+		if err != nil {
+			util.ReadErrorResponse(w, r, err)
+			return
+		}
 
 		// If the request came in via HTMX, re-render the individual row.
 		if util.IsHTMXRequest(r) {
 			data := page.BlogsBlogData{
 				BaseData: util.GetTemplateBaseData(r, w),
 
-				BlogForAccount: query.BlogForAccount{
-					ID:          blog.ID(),
-					Title:       blog.Title(),
-					SiteURL:     blog.SiteURL(),
-					IsFollowing: false,
-				},
+				ID:          blog.ID,
+				Title:       blog.Title,
+				SiteURL:     blog.SiteURL,
+				IsFollowing: false,
 			}
 			util.Render(w, r, 200, func(w io.Writer) error {
 				return tmpl.RenderBlog(w, data)

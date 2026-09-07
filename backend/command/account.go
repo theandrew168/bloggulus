@@ -122,6 +122,11 @@ func (cmd *AccountCommand) DeleteAccount(accountID uuid.UUID) error {
 			return err
 		}
 
+		slog.Info("account deleted",
+			"account_id", account.ID(),
+			"account_username", account.Username(),
+		)
+
 		return nil
 	})
 }

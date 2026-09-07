@@ -33,7 +33,7 @@ func NewArticle(conn postgres.Conn) *ArticleQuery {
 	return &qry
 }
 
-func (qry *ArticleQuery) CountRecentArticles() (int, error) {
+func (qry *ArticleQuery) CountRecent() (int, error) {
 	stmt := `
 		SELECT
 			count(post.id)
@@ -56,7 +56,7 @@ func (qry *ArticleQuery) CountRecentArticles() (int, error) {
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRecent(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -99,7 +99,7 @@ func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRecentArticlesByAccount(accountID uuid.UUID) (int, error) {
+func (qry *ArticleQuery) CountRecentByAccount(accountID uuid.UUID) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -123,7 +123,7 @@ func (qry *ArticleQuery) CountRecentArticlesByAccount(accountID uuid.UUID) (int,
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRecentArticlesByAccount(accountID uuid.UUID, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRecentByAccount(accountID uuid.UUID, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
 			SELECT
@@ -168,7 +168,7 @@ func (qry *ArticleQuery) ListRecentArticlesByAccount(accountID uuid.UUID, limit,
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
+func (qry *ArticleQuery) CountRelevant(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -191,7 +191,7 @@ func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevant(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT
@@ -235,7 +235,7 @@ func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) 
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRelevantArticlesByAccount(accountID uuid.UUID, search string) (int, error) {
+func (qry *ArticleQuery) CountRelevantByAccount(accountID uuid.UUID, search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
@@ -260,7 +260,7 @@ func (qry *ArticleQuery) CountRelevantArticlesByAccount(accountID uuid.UUID, sea
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRelevantArticlesByAccount(accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevantByAccount(accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
 			SELECT

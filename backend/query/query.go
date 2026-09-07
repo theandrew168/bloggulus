@@ -5,6 +5,7 @@ package query
 import "github.com/theandrew168/bloggulus/backend/postgres"
 
 // TODO: Add queries for all read operations.
+// TODO: Move this to a "web" sub-package.
 
 type Query struct {
 	account *AccountQuery

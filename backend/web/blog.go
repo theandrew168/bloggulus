@@ -22,6 +22,8 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 			return
 		}
 
+		// TODO: Replace with queries.
+
 		blog, err := repo.Blog().Read(blogID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)

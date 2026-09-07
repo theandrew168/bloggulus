@@ -22,7 +22,7 @@ type BlogsData struct {
 // the layout.BaseData to ensure CSRF prevention still works.
 type BlogsBlogData struct {
 	layout.BaseData
-	query.BlogForAccount
+	query.Blog
 }
 
 type BlogsPage struct {

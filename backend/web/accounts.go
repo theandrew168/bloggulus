@@ -2,12 +2,11 @@ package web
 
 import (
 	"io"
-	"log/slog"
 	"net/http"
 	"uuid"
 
+	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/query"
-	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -32,7 +31,7 @@ func HandleAccountList(qry *query.Query) http.Handler {
 	})
 }
 
-func HandleAccountDeleteForm(repo *repository.Repository) http.Handler {
+func HandleAccountDeleteForm(cmd *command.Command) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accountID, err := uuid.Parse(r.PathValue("accountID"))
 		if err != nil {
@@ -40,28 +39,11 @@ func HandleAccountDeleteForm(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		account, err := repo.Account().Read(accountID)
-		if err != nil {
-			util.ReadErrorResponse(w, r, err)
-			return
-		}
-
-		// Prevent accidental deletion of admin accounts.
-		if account.IsAdmin() {
-			util.BadRequestResponse(w, r)
-			return
-		}
-
-		err = repo.Account().Delete(account)
+		err = cmd.Account().DeleteAccount(accountID)
 		if err != nil {
 			util.DeleteErrorResponse(w, r, err)
 			return
 		}
-
-		slog.Info("account deleted",
-			"account_id", account.ID(),
-			"account_username", account.Username(),
-		)
 
 		// Redirect back to the accounts page.
 		http.Redirect(w, r, "/accounts", http.StatusSeeOther)

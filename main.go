@@ -100,7 +100,7 @@ func run() error {
 
 	var wg sync.WaitGroup
 
-	webHandler := web.Handler(publicFS, conf, repo, cmd, qry, syncService)
+	webHandler := web.Handler(publicFS, conf, cmd, qry, syncService)
 
 	// Let the web server port be overridden by an env var.
 	port := "5000"

@@ -44,7 +44,7 @@ func (a dbAccount) unmarshal() (*model.Account, error) {
 		ID:              a.ID,
 		Username:        username,
 		IsAdmin:         a.IsAdmin,
-		FollowedBlogIDs: value.NewSet[uuid.UUID](a.FollowedBlogIDs...),
+		FollowedBlogIDs: value.NewSet(a.FollowedBlogIDs...),
 		Meta: model.LoadMeta(model.LoadMetaParams{
 			CreatedAt: a.MetaCreatedAt,
 			UpdatedAt: a.MetaUpdatedAt,

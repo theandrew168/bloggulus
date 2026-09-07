@@ -4,13 +4,13 @@ package query
 
 import "github.com/theandrew168/bloggulus/backend/postgres"
 
-// TODO: Add queries for all read operations.
 // TODO: Move this to a "web" sub-package.
 
 type Query struct {
 	account *AccountQuery
 	article *ArticleQuery
 	blog    *BlogQuery
+	post    *PostQuery
 }
 
 func New(conn postgres.Conn) *Query {
@@ -18,6 +18,7 @@ func New(conn postgres.Conn) *Query {
 		account: NewAccount(conn),
 		article: NewArticle(conn),
 		blog:    NewBlog(conn),
+		post:    NewPost(conn),
 	}
 	return &qry
 }
@@ -32,4 +33,8 @@ func (qry *Query) Article() *ArticleQuery {
 
 func (qry *Query) Blog() *BlogQuery {
 	return qry.blog
+}
+
+func (qry *Query) Post() *PostQuery {
+	return qry.post
 }

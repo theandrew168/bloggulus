@@ -8,12 +8,12 @@ import (
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
-	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleBlogRead(repo *repository.Repository) http.Handler {
+func HandleBlogRead(qry *query.Query) http.Handler {
 	tmpl := page.NewBlog()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		blogID, err := uuid.Parse(r.PathValue("blogID"))
@@ -22,17 +22,15 @@ func HandleBlogRead(repo *repository.Repository) http.Handler {
 			return
 		}
 
-		// TODO: Replace with queries.
-
-		blog, err := repo.Blog().Read(blogID)
+		blog, err := qry.Blog().ReadDetailsByID(blogID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
-		posts, err := repo.Post().ListByBlogID(blog.ID())
+		posts, err := qry.Post().ListDetailsByBlogID(blogID)
 		if err != nil {
-			util.InternalServerErrorResponse(w, r, err)
+			util.ListErrorResponse(w, r, err)
 			return
 		}
 

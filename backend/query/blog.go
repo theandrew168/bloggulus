@@ -113,12 +113,12 @@ func (qry *BlogQuery) ReadDetailsByID(blogID uuid.UUID) (BlogDetails, error) {
 		return BlogDetails{}, err
 	}
 
-	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[BlogDetails])
+	details, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[BlogDetails])
 	if err != nil {
 		return BlogDetails{}, postgres.CheckReadError(err)
 	}
 
-	return row, nil
+	return details, nil
 }
 
 // Powers the add / follow blogs page.
@@ -140,10 +140,10 @@ func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL string) (BlogDetails, error) 
 		return BlogDetails{}, err
 	}
 
-	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[BlogDetails])
+	details, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[BlogDetails])
 	if err != nil {
 		return BlogDetails{}, postgres.CheckReadError(err)
 	}
 
-	return row, nil
+	return details, nil
 }

@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/query"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -15,7 +15,7 @@ var PostHTML string
 type PostData struct {
 	layout.BaseData
 
-	Post *model.Post
+	Post query.PostDetails
 }
 
 type PostPage struct {

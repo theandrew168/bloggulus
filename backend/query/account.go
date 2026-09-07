@@ -60,7 +60,8 @@ func (qry *AccountQuery) List() ([]Account, error) {
 			account.id,
 			account.username,
 			account.is_admin
-		FROM account;
+		FROM account
+		ORDER BY account.meta_created_at ASC;
 	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt)

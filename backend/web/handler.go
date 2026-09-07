@@ -13,7 +13,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/query"
-	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -43,7 +42,6 @@ import (
 func Handler(
 	public fs.FS,
 	conf config.Config,
-	repo *repository.Repository,
 	cmd *command.Command,
 	qry *query.Query,
 	syncService *job.SyncService,
@@ -114,11 +112,11 @@ func Handler(
 	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(cmd, qry)))
 
 	// Private (admin only) blog + post routes.
-	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(repo)))
+	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(qry)))
 	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(cmd)))
 	mux.Handle("POST /blogs/{blogID}/hide", requireAdmin(HandleBlogHideForm(cmd)))
 	mux.Handle("POST /blogs/{blogID}/show", requireAdmin(HandleBlogShowForm(cmd)))
-	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(repo)))
+	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(qry)))
 	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(cmd)))
 
 	// Private (admin only) account routes.

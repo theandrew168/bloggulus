@@ -63,7 +63,7 @@ func TestSessionReadBySessionToken(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	session, sessionToken := test.CreateSession(t, repo, account)
 
-	got, err := repo.Session().ReadBySessionToken(sessionToken)
+	got, err := repo.Session().ReadByTokenHash(sessionToken.Hash())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), session.ID())

@@ -77,7 +77,8 @@ func (r *BlogRepository) Create(blog *model.Blog) error {
 		INSERT INTO blog
 			(id, feed_url, site_url, title, is_public, etag, last_modified, synced_at, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+	`
 
 	row, err := marshalBlog(blog)
 	if err != nil {
@@ -119,7 +120,8 @@ func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 			blog.meta_created_at,
 			blog.meta_updated_at
 		FROM blog
-		WHERE id = $1`
+		WHERE id = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
@@ -148,7 +150,8 @@ func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 			blog.meta_created_at,
 			blog.meta_updated_at
 		FROM blog
-		WHERE blog.feed_url = $1`
+		WHERE blog.feed_url = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, feedURL)
 	if err != nil {
@@ -178,7 +181,8 @@ func (r *BlogRepository) List() ([]*model.Blog, error) {
 			blog.meta_created_at,
 			blog.meta_updated_at
 		FROM blog
-		ORDER BY blog.meta_created_at DESC`
+		ORDER BY blog.meta_created_at DESC;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt)
 	if err != nil {
@@ -256,7 +260,8 @@ func (r *BlogRepository) Delete(blog *model.Blog) error {
 	stmt := `
 		DELETE FROM blog
 		WHERE id = $1
-		RETURNING id`
+		RETURNING id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
 	if err != nil {

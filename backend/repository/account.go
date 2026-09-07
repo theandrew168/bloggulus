@@ -70,7 +70,8 @@ func (r *AccountRepository) Create(account *model.Account) error {
 		INSERT INTO account
 			(id, username, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4)`
+			($1, $2, $3, $4);
+	`
 
 	row, err := marshalAccount(account)
 	if err != nil {
@@ -105,7 +106,8 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
 		WHERE account.id = $1
-		GROUP BY account.id`
+		GROUP BY account.id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
@@ -133,7 +135,8 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 		LEFT JOIN account_blog
 			ON account_blog.account_id = account.id
 		WHERE account.username = $1
-		GROUP BY account.id`
+		GROUP BY account.id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, username.Value())
 	if err != nil {
@@ -154,7 +157,8 @@ func (r *AccountRepository) Update(account *model.Account) error {
 		SELECT
 			account_blog.blog_id
 		FROM account_blog
-		WHERE account_blog.account_id = $1`
+		WHERE account_blog.account_id = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {
@@ -179,7 +183,8 @@ func (r *AccountRepository) Update(account *model.Account) error {
 	stmtFollow := `
 		INSERT INTO account_blog
 			(account_id, blog_id)
-		VALUES ($1, $2)`
+		VALUES ($1, $2);
+	`
 	for _, blogID := range blogsToFollow.Values() {
 		_, err = r.conn.Exec(context.Background(), stmtFollow, account.ID(), blogID)
 		if err != nil {
@@ -189,7 +194,8 @@ func (r *AccountRepository) Update(account *model.Account) error {
 
 	stmtUnfollow := `
 		DELETE FROM account_blog
-		WHERE account_id = $1 AND blog_id = $2`
+		WHERE account_id = $1 AND blog_id = $2;
+	`
 	for _, blogID := range blogsToUnfollow.Values() {
 		_, err = r.conn.Exec(context.Background(), stmtUnfollow, account.ID(), blogID)
 		if err != nil {
@@ -204,7 +210,8 @@ func (r *AccountRepository) Delete(account *model.Account) error {
 	stmt := `
 		DELETE FROM account
 		WHERE id = $1
-		RETURNING id`
+		RETURNING id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
 	if err != nil {

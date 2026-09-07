@@ -71,7 +71,8 @@ func (r *PostRepository) Create(post *model.Post) error {
 		INSERT INTO post
 			(id, blog_id, url, title, published_at, content, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8)`
+			($1, $2, $3, $4, $5, $6, $7, $8);
+	`
 
 	row, err := marshalPost(post)
 	if err != nil {
@@ -109,36 +110,10 @@ func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 			post.meta_created_at,
 			post.meta_updated_at
 		FROM post
-		WHERE post.id = $1`
+		WHERE post.id = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, id)
-	if err != nil {
-		return nil, err
-	}
-
-	row, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[dbPost])
-	if err != nil {
-		return nil, postgres.CheckReadError(err)
-	}
-
-	return row.unmarshal()
-}
-
-func (r *PostRepository) ReadByURL(url string) (*model.Post, error) {
-	stmt := `
-		SELECT
-			post.id,
-			post.blog_id,
-			post.url,
-			post.title,
-			post.published_at,
-			post.content,
-			post.meta_created_at,
-			post.meta_updated_at
-		FROM post
-		WHERE post.url = $1`
-
-	rows, err := r.conn.Query(context.Background(), stmt, url)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +140,8 @@ func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
 			post.meta_updated_at
 		FROM post
 		WHERE post.blog_id = $1
-		ORDER BY post.published_at DESC`
+		ORDER BY post.published_at DESC;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, blogID)
 	if err != nil {
@@ -190,25 +166,6 @@ func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
 	return posts, nil
 }
 
-func (r *PostRepository) CountByBlog(blog *model.Blog) (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post
-		WHERE post.blog_id = $1`
-
-	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
 func (r *PostRepository) Update(post *model.Post) error {
 	now := timeutil.Now()
 	stmt := `
@@ -221,7 +178,8 @@ func (r *PostRepository) Update(post *model.Post) error {
 			meta_updated_at = $6
 		WHERE id = $1
 			AND meta_updated_at = $7
-		RETURNING meta_updated_at`
+		RETURNING meta_updated_at;
+	`
 
 	row, err := marshalPost(post)
 	if err != nil {
@@ -256,7 +214,8 @@ func (r *PostRepository) Delete(post *model.Post) error {
 	stmt := `
 		DELETE FROM post
 		WHERE id = $1
-		RETURNING id`
+		RETURNING id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, post.ID())
 	if err != nil {

@@ -65,7 +65,8 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 		INSERT INTO tag
 			(id, name, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4)`
+			($1, $2, $3, $4);
+	`
 
 	row, err := marshalTag(tag)
 	if err != nil {
@@ -95,7 +96,8 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 			tag.meta_created_at,
 			tag.meta_updated_at
 		FROM tag
-		WHERE tag.id = $1`
+		WHERE tag.id = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
@@ -114,7 +116,8 @@ func (r *TagRepository) Delete(tag *model.Tag) error {
 	stmt := `
 		DELETE FROM tag
 		WHERE id = $1
-		RETURNING id`
+		RETURNING id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, tag.ID())
 	if err != nil {

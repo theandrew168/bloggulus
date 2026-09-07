@@ -50,20 +50,6 @@ func TestPostRead(t *testing.T) {
 	test.AssertEqual(t, got.ID(), post.ID())
 }
 
-func TestPostReadByURL(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	blog := test.CreateBlog(t, repo)
-	post := test.CreatePost(t, repo, blog)
-	got, err := repo.Post().ReadByURL(post.URL())
-	test.AssertNilError(t, err)
-
-	test.AssertEqual(t, got.ID(), post.ID())
-}
-
 func TestPostListByBlog(t *testing.T) {
 	t.Parallel()
 
@@ -79,23 +65,6 @@ func TestPostListByBlog(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(posts), 3)
-}
-
-func TestPostCountByBlog(t *testing.T) {
-	t.Parallel()
-
-	repo, closer := test.NewRepository(t)
-	defer closer()
-
-	blog := test.CreateBlog(t, repo)
-	test.CreatePost(t, repo, blog)
-	test.CreatePost(t, repo, blog)
-	test.CreatePost(t, repo, blog)
-
-	count, err := repo.Post().CountByBlog(blog)
-	test.AssertNilError(t, err)
-
-	test.AssertEqual(t, count, 3)
 }
 
 func TestPostUpdate(t *testing.T) {

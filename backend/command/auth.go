@@ -83,7 +83,7 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 
 func (cmd *AuthCommand) SignOut(sessionToken value.Token) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		session, err := tx.Session().ReadBySessionToken(sessionToken)
+		session, err := tx.Session().ReadByTokenHash(sessionToken.Hash())
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrSessionNotFound

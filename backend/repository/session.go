@@ -70,7 +70,8 @@ func (r *SessionRepository) Create(session *model.Session) error {
 		INSERT INTO session
 			(id, account_id, token_hash, expires_at, meta_created_at, meta_updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6)`
+			($1, $2, $3, $4, $5, $6);
+	`
 
 	row, err := marshalSession(session)
 	if err != nil {
@@ -104,7 +105,8 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 			session.meta_created_at,
 			session.meta_updated_at
 		FROM session
-		WHERE session.id = $1`
+		WHERE session.id = $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, id)
 	if err != nil {
@@ -119,7 +121,7 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 	return row.unmarshal()
 }
 
-func (r *SessionRepository) ReadBySessionToken(token value.Token) (*model.Session, error) {
+func (r *SessionRepository) ReadByTokenHash(tokenHash value.TokenHash) (*model.Session, error) {
 	stmt := `
 		SELECT
 			session.id,
@@ -129,9 +131,10 @@ func (r *SessionRepository) ReadBySessionToken(token value.Token) (*model.Sessio
 			session.meta_created_at,
 			session.meta_updated_at
 		FROM session
-		WHERE session.token_hash = $1`
+		WHERE session.token_hash = $1;
+	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, token.Hash().Value())
+	rows, err := r.conn.Query(context.Background(), stmt, tokenHash.Value())
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +158,8 @@ func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error)
 			session.meta_created_at,
 			session.meta_updated_at
 		FROM session
-		WHERE session.expires_at <= $1`
+		WHERE session.expires_at <= $1;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, now)
 	if err != nil {
@@ -184,7 +188,8 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 	stmt := `
 		DELETE FROM session
 		WHERE id = $1
-		RETURNING id`
+		RETURNING id;
+	`
 
 	rows, err := r.conn.Query(context.Background(), stmt, session.ID())
 	if err != nil {
@@ -202,7 +207,8 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 func (r *SessionRepository) DeleteExpired(now time.Time) error {
 	stmt := `
 		DELETE FROM session
-		WHERE expires_at <= $1`
+		WHERE expires_at <= $1;
+	`
 
 	_, err := r.conn.Exec(context.Background(), stmt, now)
 	if err != nil {

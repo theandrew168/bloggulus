@@ -62,7 +62,7 @@ update-deps:
 # https://htmx.org/docs/#installing
 .PHONY: update-htmx
 update-htmx:
-	curl -L -s -o public/js/htmx.min.js https://unpkg.com/htmx.org@2.x.x/dist/htmx.min.js
+	curl -L -s -o public/js/htmx.min.js https://unpkg.com/htmx.org@4.x.x/dist/htmx.min.js
 
 # https://alpinejs.dev/essentials/installation
 .PHONY: update-alpine

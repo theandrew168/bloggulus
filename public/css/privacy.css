@@ -1,7 +1,7 @@
 .privacy {
 	max-width: var(--container-width);
 	margin: 0 auto;
-	padding: 1rem;
+	padding: 1em;
 	color: var(--color-dark);
 }
 
@@ -12,7 +12,7 @@
 .privacy ul,
 .privacy li,
 .privacy p {
-	margin-bottom: 1rem;
+	margin-bottom: 1em;
 }
 
 .privacy h1,
@@ -39,16 +39,16 @@
 }
 
 .privacy ul {
-	margin-left: 2rem;
+	margin-left: 2em;
 	list-style-type: disc;
 }
 
 .privacy li {
-	line-height: 1.5rem;
+	line-height: 1.5em;
 }
 
 .privacy p {
-	line-height: 1.5rem;
+	line-height: 1.5em;
 }
 
 .privacy a,

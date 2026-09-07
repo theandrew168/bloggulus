@@ -21,6 +21,8 @@ func NewBlog(t *testing.T) *model.Blog {
 	})
 	AssertNilError(t, err)
 
+	// TODO: Update tests to account for visibility and then remove this.
+	blog.SetIsPublic(true)
 	return blog
 }
 

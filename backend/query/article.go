@@ -13,8 +13,6 @@ import (
 // List: recent, recent by account, search, search by account
 // Count: all, all by account, search, search by account
 
-// TODO: Update anon reads to consider blog.is_public.
-
 type Article struct {
 	Title       string    `db:"title"`
 	URL         string    `db:"url"`
@@ -37,8 +35,12 @@ func NewArticle(conn postgres.Conn) *ArticleQuery {
 
 func (qry *ArticleQuery) CountRecentArticles() (int, error) {
 	stmt := `
-		SELECT count(*)
-		FROM post;
+		SELECT
+			count(post.id)
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		WHERE blog.is_public = true;
 	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt)
@@ -60,6 +62,9 @@ func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error
 			SELECT
 				post.id
 			FROM post
+			INNER JOIN blog
+				ON blog.id = post.blog_id
+			WHERE blog.is_public = true
 			ORDER BY post.published_at DESC
 			LIMIT $1 OFFSET $2
 		)
@@ -167,7 +172,10 @@ func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
 	stmt := `
 		SELECT count(*)
 		FROM post
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1);
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
+			AND blog.is_public = true;
 	`
 
 	rows, err := qry.conn.Query(context.Background(), stmt, search)
@@ -189,6 +197,9 @@ func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) 
 			SELECT
 				post.id
 			FROM post
+			INNER JOIN blog
+				ON blog.id = post.blog_id
+			WHERE blog.is_public = true
 			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC
 			LIMIT $2 OFFSET $3
 		)

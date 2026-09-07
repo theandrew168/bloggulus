@@ -35,6 +35,25 @@ func NewArticle(conn postgres.Conn) *ArticleQuery {
 	return &qry
 }
 
+func (qry *ArticleQuery) CountRecentArticles() (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post;
+	`
+
+	rows, err := qry.conn.Query(context.Background(), stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
 func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH latest AS (
@@ -73,6 +92,30 @@ func (qry *ArticleQuery) ListRecentArticles(limit, offset int) ([]Article, error
 	}
 
 	return articles, nil
+}
+
+func (qry *ArticleQuery) CountRecentArticlesByAccount(accountID uuid.UUID) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		INNER JOIN account_blog
+			ON account_blog.blog_id = blog.id
+			AND account_blog.account_id = $1;
+	`
+
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
 }
 
 func (qry *ArticleQuery) ListRecentArticlesByAccount(accountID uuid.UUID, limit, offset int) ([]Article, error) {
@@ -120,6 +163,26 @@ func (qry *ArticleQuery) ListRecentArticlesByAccount(accountID uuid.UUID, limit,
 	return articles, nil
 }
 
+func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post
+		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1);
+	`
+
+	rows, err := qry.conn.Query(context.Background(), stmt, search)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
+}
+
 func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) ([]Article, error) {
 	stmt := `
 		WITH relevant AS (
@@ -159,6 +222,31 @@ func (qry *ArticleQuery) ListRelevantArticles(search string, limit, offset int) 
 	}
 
 	return articles, nil
+}
+
+func (qry *ArticleQuery) CountRelevantArticlesByAccount(accountID uuid.UUID, search string) (int, error) {
+	stmt := `
+		SELECT count(*)
+		FROM post
+		INNER JOIN blog
+			ON blog.id = post.blog_id
+		INNER JOIN account_blog
+			ON account_blog.blog_id = blog.id
+			AND account_blog.account_id = $1
+		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2);
+	`
+
+	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
+	if err != nil {
+		return 0, postgres.CheckReadError(err)
+	}
+
+	return count, nil
 }
 
 func (qry *ArticleQuery) ListRelevantArticlesByAccount(accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
@@ -205,92 +293,4 @@ func (qry *ArticleQuery) ListRelevantArticlesByAccount(accountID uuid.UUID, sear
 	}
 
 	return articles, nil
-}
-
-func (qry *ArticleQuery) CountRecentArticles() (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post;
-	`
-
-	rows, err := qry.conn.Query(context.Background(), stmt)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
-func (qry *ArticleQuery) CountRecentArticlesByAccount(accountID uuid.UUID) (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post
-		INNER JOIN blog
-			ON blog.id = post.blog_id
-		INNER JOIN account_blog
-			ON account_blog.blog_id = blog.id
-			AND account_blog.account_id = $1;
-	`
-
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
-func (qry *ArticleQuery) CountRelevantArticles(search string) (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1);
-	`
-
-	rows, err := qry.conn.Query(context.Background(), stmt, search)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
-}
-
-func (qry *ArticleQuery) CountRelevantArticlesByAccount(accountID uuid.UUID, search string) (int, error) {
-	stmt := `
-		SELECT count(*)
-		FROM post
-		INNER JOIN blog
-			ON blog.id = post.blog_id
-		INNER JOIN account_blog
-			ON account_blog.blog_id = blog.id
-			AND account_blog.account_id = $1
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2);
-	`
-
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search)
-	if err != nil {
-		return 0, err
-	}
-
-	count, err := pgx.CollectOneRow(rows, pgx.RowTo[int])
-	if err != nil {
-		return 0, postgres.CheckReadError(err)
-	}
-
-	return count, nil
 }

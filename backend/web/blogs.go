@@ -104,7 +104,7 @@ func HandleBlogCreateForm(repo *repository.Repository, cmd *command.Command) htt
 		}
 
 		// Use the SyncService to add the new blog.
-		// TODO: Make this respect graceful shutdowns.
+		// TODO: Make this respect graceful shutdowns (River Queue?)
 		go func() {
 			err := cmd.Sync().SyncBlog(feedURL)
 			if err != nil {

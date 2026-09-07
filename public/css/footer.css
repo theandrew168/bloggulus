@@ -1,0 +1,45 @@
+.footer {
+    background-color: var(--color-dark);
+}
+
+/* On mobile devices, stack and center the footer links. */
+.footer__links {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+}
+
+/* On larger screens, show footer links as a single row with space between. */
+@media only screen and (min-width: 768px) {
+    .footer__links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .footer__links li:last-child {
+        margin-left: auto;
+    }
+}
+
+.footer__link {
+    color: var(--color-white);
+    text-decoration: none;
+}
+
+.footer__link:hover {
+    color: var(--color-light);
+}
+
+.footer__link--big {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.footer__link--small {
+    font-size: 0.75rem;
+}

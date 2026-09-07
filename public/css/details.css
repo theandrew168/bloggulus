@@ -1,0 +1,80 @@
+/* TODO: Should this be generic? */
+
+.blog,
+.post {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.blog-links__title,
+.post-links__title {
+    font-size: 2rem;
+    margin-bottom: 0.5em;
+}
+
+.blog-links__list,
+.post-links__list {
+    display: flex;
+    gap: 0.5em;
+}
+
+.blog-links__link,
+.post-links__link {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.blog-links__link:hover,
+.post-links__link:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.blog-synced__title,
+.blog-visibility__title,
+.post-publised__title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5em;
+}
+
+.blog-actions__list {
+    display: flex;
+    gap: 0.5em;
+}
+
+.blog-actions__title,
+.post-actions__title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5em;
+}
+
+.blog-posts__title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5em;
+}
+
+.blog-posts__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.blog-post {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.blog-post__link {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.blog-post__link:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}

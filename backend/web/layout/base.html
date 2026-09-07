@@ -10,8 +10,12 @@
 
 	<link rel="stylesheet" href="/css/reset.css" />
 	<link rel="stylesheet" href="/css/fonts.css" />
-	<link rel="stylesheet" href="/css/style.css" />
-	<link rel="stylesheet" href="/css/privacy.css" />
+	<link rel="stylesheet" href="/css/common.css" />
+	<link rel="stylesheet" href="/css/header.css" />
+	<link rel="stylesheet" href="/css/footer.css" />
+	{{range .Stylesheets}}
+	<link rel="stylesheet" href="{{.}}" />
+	{{end}}
 	<script src="/js/htmx.min.js" defer></script>
 </head>
 

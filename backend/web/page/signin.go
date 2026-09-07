@@ -35,5 +35,8 @@ func NewSignIn() *SignInPage {
 }
 
 func (p *SignInPage) Render(w io.Writer, data SignInData) error {
+	data.Stylesheets = []string{
+		"/css/signin.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

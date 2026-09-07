@@ -36,5 +36,8 @@ func NewPost() *PostPage {
 }
 
 func (p *PostPage) Render(w io.Writer, data PostData) error {
+	data.Stylesheets = []string{
+		"/css/details.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

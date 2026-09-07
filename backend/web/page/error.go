@@ -37,5 +37,8 @@ func NewError() *ErrorPage {
 }
 
 func (p *ErrorPage) Render(w io.Writer, data ErrorData) error {
+	data.Stylesheets = []string{
+		"/css/error.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

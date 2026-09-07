@@ -9,10 +9,9 @@ import (
 //go:embed base.html
 var BaseHTML string
 
-// TODO: Explore supporting extra style sheets.
-
 type BaseData struct {
-	Account   query.Account
-	CSRFToken string
-	Toast     string
+	Account     query.Account
+	CSRFToken   string
+	Toast       string
+	Stylesheets []string
 }

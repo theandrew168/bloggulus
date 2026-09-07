@@ -173,7 +173,7 @@ func (r *AccountRepository) Update(account *model.Account) error {
 	blogsToFollow := wantFollowedBlogIDs.Difference(haveFollowedBlogIDs)
 	blogsToUnfollow := haveFollowedBlogIDs.Difference(wantFollowedBlogIDs)
 
-	// TODO: Optim Oppty: Batch these additions and removals.
+	// TODO: Batch these additions and removals (optimization)
 
 	// Add and remove blogs as necessary.
 	stmtFollow := `

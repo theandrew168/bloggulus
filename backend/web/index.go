@@ -12,7 +12,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-// TODO: Rename p / s to page / size.
 func HandleIndexPage(qry *query.Query) http.Handler {
 	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

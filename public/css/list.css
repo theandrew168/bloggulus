@@ -1,0 +1,52 @@
+/* TODO: Should this be generic? */
+
+.blogs,
+.accounts {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 1em;
+}
+
+.blogs-header,
+.accounts-header {
+    margin-bottom: 1em;
+}
+
+.blogs-header__title,
+.accounts-header__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+}
+
+.blogs-header__input {
+    width: 70%;
+}
+
+.blogs-list,
+.accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.blogs-list__item,
+.accounts-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.blogs-list__link {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.blogs-list__link:hover {
+    text-decoration: underline;
+}
+
+.blogs-cta {
+    margin-top: 4em;
+    text-align: center;
+}

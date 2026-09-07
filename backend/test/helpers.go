@@ -13,9 +13,12 @@ type CloserFunc func()
 func NewConfig(t *testing.T) config.Config {
 	t.Helper()
 
-	// TODO: find a consistent way to read "../../bloggulus.test.conf"
+	// This config should mirror what is in bloggulus.test.conf. Since each
+	// test's CWD is different based on where the test file is located, there
+	// isn't a consistent way to read the test config file directly.
 	cfg := config.Config{
 		DatabaseURI: "postgresql://postgres:postgres@localhost:5433/postgres",
+		SecretKey:   "Be sure to generate your own long and random secret key!",
 	}
 	return cfg
 }

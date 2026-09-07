@@ -1,0 +1,37 @@
+.header {
+    background-color: var(--color-white);
+    box-shadow: var(--shadow);
+}
+
+.header__links {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 1em;
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.header__link {
+    display: inline-block;
+    color: var(--color-dark);
+    text-decoration: none;
+    font-size: 1rem;
+    /* Make buttons look like links, if necessary (like for the logout form). */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.header__link:hover {
+    color: var(--color-medium);
+}
+
+.header__link--first {
+    margin-right: auto;
+}
+
+.header__link--home {
+    font-size: 1.5rem;
+}

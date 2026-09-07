@@ -37,5 +37,8 @@ func NewBlog() *BlogPage {
 }
 
 func (p *BlogPage) Render(w io.Writer, data BlogData) error {
+	data.Stylesheets = []string{
+		"/css/details.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

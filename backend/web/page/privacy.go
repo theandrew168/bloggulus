@@ -33,5 +33,8 @@ func NewPrivacy() *PrivacyPage {
 }
 
 func (p *PrivacyPage) Render(w io.Writer, data PrivacyData) error {
+	data.Stylesheets = []string{
+		"/css/privacy.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

@@ -36,5 +36,8 @@ func NewAccounts() *AccountsPage {
 }
 
 func (p *AccountsPage) Render(w io.Writer, data AccountsData) error {
+	data.Stylesheets = []string{
+		"/css/list.css",
+	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

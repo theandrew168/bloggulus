@@ -1,0 +1,38 @@
+.error {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.error__code {
+    font-weight: 500;
+    color: var(--color-medium);
+    margin-bottom: 1em;
+}
+
+.error__status {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 1.5em;
+}
+
+.error__message {
+    margin-bottom: 2.5em;
+}
+
+.error__link {
+    color: var(--color-white);
+    background-color: var(--color-dark);
+    text-decoration: none;
+    padding: 0.5em 1em;
+    border-radius: 0.25em;
+    box-shadow: var(--shadow);
+}
+
+.error__link:hover {
+    background-color: var(--color-medium);
+    cursor: pointer;
+}

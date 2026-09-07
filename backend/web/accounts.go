@@ -6,12 +6,12 @@ import (
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleAccountList(qry *query.Query) http.Handler {
+func HandleAccountList(qry *webquery.Query) http.Handler {
 	tmpl := page.NewAccounts()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accounts, err := qry.Account().List()

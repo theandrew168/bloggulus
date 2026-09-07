@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -15,7 +15,7 @@ var AccountsHTML string
 type AccountsData struct {
 	layout.BaseData
 
-	Accounts []query.Account
+	Accounts []webquery.Account
 }
 
 type AccountsPage struct {

@@ -1,4 +1,4 @@
-package mock
+package mockfeed
 
 import (
 	"encoding/xml"

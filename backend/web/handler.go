@@ -12,7 +12,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/job"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -43,7 +43,7 @@ func Handler(
 	public fs.FS,
 	conf config.Config,
 	cmd *command.Command,
-	qry *query.Query,
+	qry *webquery.Query,
 	syncService *job.SyncService,
 ) http.Handler {
 	mux := http.NewServeMux()

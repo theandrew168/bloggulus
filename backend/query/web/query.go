@@ -1,6 +1,6 @@
 // This package contains read-only queries that require more data than just the
 // normalized domain models (like articles or blogs+isFollowing).
-package query
+package webquery
 
 import "github.com/theandrew168/bloggulus/backend/postgres"
 

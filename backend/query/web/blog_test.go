@@ -1,9 +1,9 @@
-package query_test
+package webquery_test
 
 import (
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 )
@@ -15,7 +15,7 @@ func TestListBlogsForAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewBlog(conn)
+	qry := webquery.NewBlog(conn)
 
 	account := test.CreateAccount(t, repo)
 

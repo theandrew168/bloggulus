@@ -7,12 +7,12 @@ import (
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandlePostRead(qry *query.Query) http.Handler {
+func HandlePostRead(qry *webquery.Query) http.Handler {
 	tmpl := page.NewPost()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		postID, err := uuid.Parse(r.PathValue("postID"))

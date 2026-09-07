@@ -1,4 +1,4 @@
-package mock
+package mockfeed
 
 import (
 	"github.com/theandrew168/bloggulus/backend/feed"

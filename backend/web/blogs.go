@@ -10,12 +10,12 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleBlogList(qry *query.Query) http.Handler {
+func HandleBlogList(qry *webquery.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -24,7 +24,7 @@ func HandleBlogList(qry *query.Query) http.Handler {
 			return
 		}
 
-		var blogs []query.Blog
+		var blogs []webquery.Blog
 		var err error
 
 		if account.IsAdmin {
@@ -56,7 +56,7 @@ func HandleBlogList(qry *query.Query) http.Handler {
 }
 
 // TODO: This handler is pretty large. Can it be split and simplified?
-func HandleBlogCreateForm(cmd *command.Command, qry *query.Query) http.Handler {
+func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -164,7 +164,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *query.Query) http.Handler {
 	})
 }
 
-func HandleBlogFollowForm(cmd *command.Command, qry *query.Query) http.Handler {
+func HandleBlogFollowForm(cmd *command.Command, qry *webquery.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -222,7 +222,7 @@ func HandleBlogFollowForm(cmd *command.Command, qry *query.Query) http.Handler {
 	})
 }
 
-func HandleBlogUnfollowForm(cmd *command.Command, qry *query.Query) http.Handler {
+func HandleBlogUnfollowForm(cmd *command.Command, qry *webquery.Query) http.Handler {
 	tmpl := page.NewBlogs()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)

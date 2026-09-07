@@ -1,10 +1,10 @@
-package query_test
+package webquery_test
 
 import (
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/model"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
@@ -17,7 +17,7 @@ func TestListArticles(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
@@ -35,7 +35,7 @@ func TestListArticlesByAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	followedBlog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, followedBlog)
@@ -65,7 +65,7 @@ func TestSearchArticles(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	blog := test.NewBlog(t)
 	err := repo.Blog().Create(blog)
@@ -112,7 +112,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)
@@ -164,7 +164,7 @@ func TestCountArticles(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
@@ -184,7 +184,7 @@ func TestCountArticlesByAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	followedBlog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, followedBlog)
@@ -212,7 +212,7 @@ func TestCountSearchArticles(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	blog := test.CreateBlog(t, repo)
 
@@ -257,7 +257,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.NewArticle(conn)
+	qry := webquery.NewArticle(conn)
 
 	// Create some followed posts about python.
 	followedBlog := test.CreateBlog(t, repo)

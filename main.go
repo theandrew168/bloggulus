@@ -14,10 +14,10 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
-	feedweb "github.com/theandrew168/bloggulus/backend/feed/web"
+	webfeed "github.com/theandrew168/bloggulus/backend/feed/web"
 	"github.com/theandrew168/bloggulus/backend/job"
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/web"
 )
@@ -78,12 +78,12 @@ func run() error {
 		return nil
 	}
 
-	feedFetcher := feedweb.NewFeedFetcher()
+	feedFetcher := webfeed.NewFeedFetcher()
 
 	// Init the database storage interfaces.
 	repo := repository.New(pool)
 	cmd := command.New(repo, feedFetcher)
-	qry := query.New(pool)
+	qry := webquery.New(pool)
 
 	// Init the sync service and do an initial sync.
 	syncService := job.NewSyncService(cmd)

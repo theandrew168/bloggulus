@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
@@ -20,7 +20,7 @@ func TestAuthenticate(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -48,7 +48,7 @@ func TestAuthenticateNoSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -70,7 +70,7 @@ func TestAuthenticateInvalidSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -96,7 +96,7 @@ func TestRequireAccount(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -128,7 +128,7 @@ func TestRequireAccountNoSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -154,7 +154,7 @@ func TestRequireAccountInvalidSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -183,7 +183,7 @@ func TestRequireAccountRedirect(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/foobar", nil)
@@ -210,7 +210,7 @@ func TestRequireAdmin(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)
@@ -247,7 +247,7 @@ func TestRequireAdminNoSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -274,7 +274,7 @@ func TestRequireAdminInvalidSession(t *testing.T) {
 	conn, closer := test.NewDatabase(t)
 	defer closer()
 
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	sessionCookie := util.NewSessionCookie(util.SessionCookieName, "foobar")
 
@@ -305,7 +305,7 @@ func TestRequireAdminNotAdmin(t *testing.T) {
 	defer closer()
 
 	repo := repository.New(conn)
-	qry := query.New(conn)
+	qry := webquery.New(conn)
 
 	account := test.CreateAccount(t, repo)
 	_, sessionToken := test.CreateSession(t, repo, account)

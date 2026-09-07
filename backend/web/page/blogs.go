@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -22,7 +22,7 @@ type BlogsData struct {
 // the layout.BaseData to ensure CSRF prevention still works.
 type BlogsBlogData struct {
 	layout.BaseData
-	query.Blog
+	webquery.Blog
 }
 
 type BlogsPage struct {

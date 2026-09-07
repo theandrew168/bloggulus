@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -25,7 +25,7 @@ func signInRedirectURL(path string) *url.URL {
 	return url
 }
 
-func Authenticate(qry *query.Query) Middleware {
+func Authenticate(qry *webquery.Query) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

@@ -1,4 +1,4 @@
-package web
+package webfeed
 
 import (
 	"io"
@@ -7,7 +7,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/feed"
 )
 
-const UserAgent = "Bloggulus/0.5.2 (+https://bloggulus.com)"
+const UserAgent = "Bloggulus/0.8.0 (+https://bloggulus.com)"
 
 // ensure FeedFetcher interface is satisfied
 var _ feed.FeedFetcher = (*FeedFetcher)(nil)

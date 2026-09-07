@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/layout"
 )
 
@@ -15,8 +15,8 @@ var BlogHTML string
 type BlogData struct {
 	layout.BaseData
 
-	Blog  query.BlogDetails
-	Posts []query.PostDetails
+	Blog  webquery.BlogDetails
+	Posts []webquery.PostDetails
 }
 
 type BlogPage struct {

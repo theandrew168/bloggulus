@@ -7,12 +7,12 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/theandrew168/bloggulus/backend/query"
+	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-func HandleIndexPage(qry *query.Query) http.Handler {
+func HandleIndexPage(qry *webquery.Query) http.Handler {
 	tmpl := page.NewIndex()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
@@ -35,7 +35,7 @@ func HandleIndexPage(qry *query.Query) http.Handler {
 		limit, offset := util.PageSizeToLimitOffset(p, s)
 
 		var count int
-		var articles []query.Article
+		var articles []webquery.Article
 
 		// Two levels of decision making here:
 		// 1. Is the user logged in?

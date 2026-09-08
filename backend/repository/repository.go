@@ -9,24 +9,22 @@ import (
 type Repository struct {
 	conn postgres.Conn
 
-	blog        *BlogRepository
-	post        *PostRepository
-	tag         *TagRepository
-	account     *AccountRepository
-	session     *SessionRepository
-	accountBlog *AccountBlogRepository
+	blog    *BlogRepository
+	post    *PostRepository
+	tag     *TagRepository
+	account *AccountRepository
+	session *SessionRepository
 }
 
 func New(conn postgres.Conn) *Repository {
 	r := Repository{
 		conn: conn,
 
-		blog:        NewBlogRepository(conn),
-		post:        NewPostRepository(conn),
-		tag:         NewTagRepository(conn),
-		account:     NewAccountRepository(conn),
-		session:     NewSessionRepository(conn),
-		accountBlog: NewAccountBlogRepository(conn),
+		blog:    NewBlogRepository(conn),
+		post:    NewPostRepository(conn),
+		tag:     NewTagRepository(conn),
+		account: NewAccountRepository(conn),
+		session: NewSessionRepository(conn),
 	}
 	return &r
 }
@@ -49,10 +47,6 @@ func (r *Repository) Account() *AccountRepository {
 
 func (r *Repository) Session() *SessionRepository {
 	return r.session
-}
-
-func (r *Repository) AccountBlog() *AccountBlogRepository {
-	return r.accountBlog
 }
 
 func (r *Repository) Exec(ctx context.Context, sql string, args ...any) error {

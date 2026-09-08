@@ -21,7 +21,10 @@ func TestListBlogsForAccount(t *testing.T) {
 
 	// Create and follow a blog.
 	blog := test.CreateBlog(t, repo)
-	test.CreateAccountBlog(t, repo, account.ID(), blog.ID())
+	account.FollowBlog(blog)
+
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
 
 	// Create another blog but don't follow it.
 	test.CreateBlog(t, repo)

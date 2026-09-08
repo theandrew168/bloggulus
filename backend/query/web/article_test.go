@@ -48,7 +48,10 @@ func TestListArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
+	account.FollowBlog(followedBlog)
+
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
 
 	// List posts from blogs followed by this account.
 	articles, err := qry.ListRecentByAccount(account.ID(), 5, 0)
@@ -147,7 +150,10 @@ func TestSearchArticlesByAccount(t *testing.T) {
 	}
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
+	account.FollowBlog(followedBlog)
+
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
 
 	// List posts (from followed blogs) that relate to python.
 	articles, err := qry.ListRelevantByAccount(account.ID(), "python", 5, 0)
@@ -197,7 +203,10 @@ func TestCountArticlesByAccount(t *testing.T) {
 	test.CreatePost(t, repo, unfollowedBlog)
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
+	account.FollowBlog(followedBlog)
+
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
 
 	// We should only count the three posts associated with the followed blog.
 	count, err := qry.CountRecentByAccount(account.ID())
@@ -292,7 +301,10 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 	}
 
 	account := test.CreateAccount(t, repo)
-	test.CreateAccountBlog(t, repo, account.ID(), followedBlog.ID())
+	account.FollowBlog(followedBlog)
+
+	err := repo.Account().Update(account)
+	test.AssertNilError(t, err)
 
 	// Count posts (from followed blogs) that relate to python.
 	count, err := qry.CountRelevantByAccount(account.ID(), "python")

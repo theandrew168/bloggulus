@@ -13,8 +13,7 @@ type Session struct {
 	accountID uuid.UUID
 	tokenHash value.TokenHash
 	expiresAt time.Time
-
-	meta *Meta
+	meta      *Meta
 }
 
 type NewSessionParams struct {

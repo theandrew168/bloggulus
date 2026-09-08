@@ -10,10 +10,15 @@ type URL struct {
 	value string
 }
 
-// TODO: Custom error type that includes the invalid URL string in the error message
-
 var ErrEmptyURL = errors.New("url: value cannot be empty or whitespace only")
-var ErrInvalidURL = errors.New("url: value is not a valid URL")
+
+type ErrInvalidURL struct {
+	Value string
+}
+
+func (e *ErrInvalidURL) Error() string {
+	return "url: value is not a valid URL: " + e.Value
+}
 
 func NewURL(value string) (URL, error) {
 	trimmed := strings.TrimSpace(value)
@@ -23,7 +28,7 @@ func NewURL(value string) (URL, error) {
 
 	parsed, err := url.Parse(trimmed)
 	if err != nil {
-		return URL{}, ErrInvalidURL
+		return URL{}, &ErrInvalidURL{Value: trimmed}
 	}
 
 	u := URL{

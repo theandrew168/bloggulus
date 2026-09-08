@@ -22,8 +22,7 @@ type Blog struct {
 	syncedAt     time.Time
 	etag         string
 	lastModified string
-
-	meta *Meta
+	meta         *Meta
 }
 
 type NewBlogParams struct {

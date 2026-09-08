@@ -8,6 +8,7 @@ import (
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 var (
@@ -15,15 +16,15 @@ var (
 )
 
 type Blog struct {
-	FeedURL string
-	SiteURL string
-	Title   string
+	FeedURL value.URL
+	SiteURL value.URL
+	Title   value.Name
 	Posts   []Post
 }
 
 type Post struct {
-	URL         string
-	Title       string
+	URL         value.URL
+	Title       value.Name
 	Content     string
 	PublishedAt time.Time
 }
@@ -66,7 +67,7 @@ func DeterminePublishedAt(feed *gofeed.Feed, item *gofeed.Item, now time.Time) t
 	return timeutil.Normalize(now)
 }
 
-func Parse(feedURL string, feedBody string) (Blog, error) {
+func Parse(feedURL value.URL, feedBody string) (Blog, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseString(feedBody)
 	if err != nil {
@@ -80,22 +81,41 @@ func Parse(feedURL string, feedBody string) (Blog, error) {
 			continue
 		}
 
-		url := NormalizePostURL(feed.Link, item.Link)
+		url, err := value.NewURL(NormalizePostURL(feed.Link, item.Link))
+		if err != nil {
+			return Blog{}, err
+		}
+
+		title, err := value.NewName(item.Title)
+		if err != nil {
+			return Blog{}, err
+		}
+
 		publishedAt := DeterminePublishedAt(feed, item, time.Now())
 
 		post := Post{
 			URL:         url,
-			Title:       item.Title,
+			Title:       title,
 			Content:     item.Content,
 			PublishedAt: publishedAt,
 		}
 		posts = append(posts, post)
 	}
 
+	siteURL, err := value.NewURL(feed.Link)
+	if err != nil {
+		return Blog{}, err
+	}
+
+	title, err := value.NewName(feed.Title)
+	if err != nil {
+		return Blog{}, err
+	}
+
 	blog := Blog{
 		FeedURL: feedURL,
-		SiteURL: feed.Link,
-		Title:   feed.Title,
+		SiteURL: siteURL,
+		Title:   title,
 		Posts:   posts,
 	}
 	return blog, nil

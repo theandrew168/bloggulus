@@ -11,6 +11,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -33,7 +34,7 @@ func NewSync(repo *repository.Repository, feedFetcher feed.FeedFetcher) *SyncCom
 }
 
 // Sync a new or existing Blog based on the provided feed URL.
-func (cmd *SyncCommand) SyncBlog(feedURL string) error {
+func (cmd *SyncCommand) SyncBlog(feedURL value.URL) error {
 	blog, err := cmd.repo.Blog().ReadByFeedURL(feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
@@ -75,7 +76,7 @@ func (cmd *SyncCommand) SyncAllBlogs() error {
 
 	ParallelForEach(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
 		slog.Info("syncing blog", "title", blog.Title(), "id", blog.ID())
-		err := cmd.SyncBlog(blog.FeedURL())
+		err = cmd.SyncBlog(blog.FeedURL())
 		if err != nil {
 			slog.Warn(err.Error(), "title", blog.Title(), "id", blog.ID())
 		}

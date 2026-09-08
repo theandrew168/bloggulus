@@ -10,7 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/value"
 )
 
-func AssertEqual(t *testing.T, got, want any) {
+func AssertEqual[T any](t *testing.T, got, want T) {
 	t.Helper()
 
 	if !reflect.DeepEqual(got, want) {
@@ -18,7 +18,7 @@ func AssertEqual(t *testing.T, got, want any) {
 	}
 }
 
-func AssertNotEqual(t *testing.T, got, notwant any) {
+func AssertNotEqual[T any](t *testing.T, got, notwant T) {
 	t.Helper()
 
 	if reflect.DeepEqual(got, notwant) {
@@ -82,7 +82,7 @@ func AssertNilError(t *testing.T, got error) {
 	}
 }
 
-func AssertErrorIs(t *testing.T, got error, want error) {
+func AssertErrorIs(t *testing.T, got, want error) {
 	t.Helper()
 
 	if got == nil {

@@ -3,6 +3,8 @@ package model
 import (
 	"time"
 	"uuid"
+
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 // TODO: Use proper URL types for URLs
@@ -11,8 +13,8 @@ import (
 type Post struct {
 	id          uuid.UUID
 	blogID      uuid.UUID
-	url         string
-	title       string
+	url         value.URL
+	title       value.Name
 	publishedAt time.Time
 	content     string
 
@@ -21,8 +23,8 @@ type Post struct {
 
 type NewPostParams struct {
 	Blog        *Blog
-	URL         string
-	Title       string
+	URL         value.URL
+	Title       value.Name
 	PublishedAt time.Time
 	Content     string
 }
@@ -43,8 +45,8 @@ func NewPost(params NewPostParams) (*Post, error) {
 type LoadPostParams struct {
 	ID          uuid.UUID
 	BlogID      uuid.UUID
-	URL         string
-	Title       string
+	URL         value.URL
+	Title       value.Name
 	PublishedAt time.Time
 	Content     string
 	Meta        *Meta
@@ -71,15 +73,15 @@ func (p *Post) BlogID() uuid.UUID {
 	return p.blogID
 }
 
-func (p *Post) URL() string {
+func (p *Post) URL() value.URL {
 	return p.url
 }
 
-func (p *Post) Title() string {
+func (p *Post) Title() value.Name {
 	return p.title
 }
 
-func (p *Post) SetTitle(title string) error {
+func (p *Post) SetTitle(title value.Name) error {
 	p.title = title
 	return nil
 }

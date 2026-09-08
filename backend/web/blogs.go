@@ -11,6 +11,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
+	"github.com/theandrew168/bloggulus/backend/value"
 	"github.com/theandrew168/bloggulus/backend/web/page"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -70,7 +71,11 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			return
 		}
 
-		feedURL := r.PostForm.Get("feedURL")
+		feedURL, err := value.NewURL(r.PostForm.Get("feedURL"))
+		if err != nil {
+			util.BadRequestResponse(w, r)
+			return
+		}
 
 		// Check if the blog already exists.
 		blog, err := qry.Blog().ReadDetailsByFeedURL(feedURL)

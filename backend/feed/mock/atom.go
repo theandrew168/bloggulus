@@ -3,9 +3,21 @@ package mockfeed
 import (
 	"encoding/xml"
 	"time"
-
-	"github.com/theandrew168/bloggulus/backend/feed"
 )
+
+type Blog struct {
+	FeedURL string
+	SiteURL string
+	Title   string
+	Posts   []Post
+}
+
+type Post struct {
+	URL         string
+	Title       string
+	Content     string
+	PublishedAt time.Time
+}
 
 type xmlLink struct {
 	HREF string `xml:"href,attr"`
@@ -27,7 +39,7 @@ type xmlBlog struct {
 }
 
 // Convert a feed.Blog into an XML (Atom) document.
-func GenerateAtomFeed(blog feed.Blog) (string, error) {
+func GenerateAtomFeed(blog Blog) (string, error) {
 	var posts []xmlPost
 	for _, post := range blog.Posts {
 		posts = append(posts, xmlPost{

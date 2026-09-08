@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"uuid"
+
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 const (
@@ -11,14 +13,11 @@ const (
 	SyncCooldown = 2 * time.Hour
 )
 
-// TODO: Use proper URL types for URLs
-// TODO: Use Name value type for title
-
 type Blog struct {
 	id           uuid.UUID
-	feedURL      string
-	siteURL      string
-	title        string
+	feedURL      value.URL
+	siteURL      value.URL
+	title        value.Name
 	isPublic     bool
 	syncedAt     time.Time
 	etag         string
@@ -28,9 +27,9 @@ type Blog struct {
 }
 
 type NewBlogParams struct {
-	FeedURL      string
-	SiteURL      string
-	Title        string
+	FeedURL      value.URL
+	SiteURL      value.URL
+	Title        value.Name
 	SyncedAt     time.Time
 	ETag         string
 	LastModified string
@@ -53,9 +52,9 @@ func NewBlog(params NewBlogParams) (*Blog, error) {
 
 type LoadBlogParams struct {
 	ID           uuid.UUID
-	FeedURL      string
-	SiteURL      string
-	Title        string
+	FeedURL      value.URL
+	SiteURL      value.URL
+	Title        value.Name
 	IsPublic     bool
 	SyncedAt     time.Time
 	ETag         string
@@ -82,15 +81,15 @@ func (b *Blog) ID() uuid.UUID {
 	return b.id
 }
 
-func (b *Blog) FeedURL() string {
+func (b *Blog) FeedURL() value.URL {
 	return b.feedURL
 }
 
-func (b *Blog) SiteURL() string {
+func (b *Blog) SiteURL() value.URL {
 	return b.siteURL
 }
 
-func (b *Blog) Title() string {
+func (b *Blog) Title() value.Name {
 	return b.title
 }
 

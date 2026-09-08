@@ -8,7 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/command/sync"
 	"github.com/theandrew168/bloggulus/backend/feed"
-	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
+	mockfeed "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
@@ -81,13 +81,13 @@ func TestComparePosts(t *testing.T) {
 
 	newPost := feed.Post{
 		URL:         test.RandomURL(20),
-		Title:       test.RandomString(20),
+		Title:       test.RandomName(20),
 		Content:     test.RandomString(200),
 		PublishedAt: test.RandomTime(),
 	}
 	updatedPost := feed.Post{
 		URL:         knownPost.URL(),
-		Title:       test.RandomString(20),
+		Title:       test.RandomName(20),
 		Content:     test.RandomString(200),
 		PublishedAt: test.RandomTime(),
 	}
@@ -121,41 +121,43 @@ func TestNewBlog(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	feedPost := feed.Post{
-		URL:         test.RandomURL(20),
+	feedPost := mockfeed.Post{
+		URL:         "https://" + test.RandomString(20),
 		Title:       test.RandomString(20),
 		Content:     test.RandomString(200),
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+
+	feedURL := test.RandomURL(20)
+	feedBlog := mockfeed.Blog{
 		Title:   test.RandomString(20),
-		SiteURL: test.RandomString(20),
-		FeedURL: test.RandomString(20),
-		Posts:   []feed.Post{feedPost},
+		SiteURL: "https://" + test.RandomString(20),
+		FeedURL: feedURL.Value(),
+		Posts:   []mockfeed.Post{feedPost},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err := repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// verify blog data
 	test.AssertNilError(t, err)
-	test.AssertEqual(t, blog.Title(), feedBlog.Title)
-	test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
-	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
+	test.AssertEqual(t, blog.Title().Value(), feedBlog.Title)
+	test.AssertEqual(t, blog.SiteURL().Value(), feedBlog.SiteURL)
+	test.AssertEqual(t, blog.FeedURL().Value(), feedBlog.FeedURL)
 
 	// fetch posts and verify count
 	posts, err := repo.Post().ListByBlogID(blog.ID())
@@ -164,8 +166,8 @@ func TestNewBlog(t *testing.T) {
 
 	// verify post data
 	post := posts[0]
-	test.AssertEqual(t, post.URL(), feedPost.URL)
-	test.AssertEqual(t, post.Title(), feedPost.Title)
+	test.AssertEqual(t, post.URL().Value(), feedPost.URL)
+	test.AssertEqual(t, post.Title().Value(), feedPost.Title)
 	test.AssertEqual(t, post.Content(), feedPost.Content)
 }
 
@@ -175,34 +177,35 @@ func TestExistingBlog(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	feedBlog := feed.Blog{
+	feedURL := test.RandomURL(20)
+	feedBlog := mockfeed.Blog{
 		Title:   test.RandomString(20),
-		SiteURL: test.RandomURL(20),
-		FeedURL: test.RandomURL(20),
+		SiteURL: "https://" + test.RandomString(20),
+		FeedURL: feedURL.Value(),
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err := repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// verify blog data
 	test.AssertNilError(t, err)
-	test.AssertEqual(t, blog.Title(), feedBlog.Title)
-	test.AssertEqual(t, blog.SiteURL(), feedBlog.SiteURL)
-	test.AssertEqual(t, blog.FeedURL(), feedBlog.FeedURL)
+	test.AssertEqual(t, blog.Title().Value(), feedBlog.Title)
+	test.AssertEqual(t, blog.SiteURL().Value(), feedBlog.SiteURL)
+	test.AssertEqual(t, blog.FeedURL().Value(), feedBlog.FeedURL)
 
 	// fetch posts and verify count (should be none)
 	posts, err := repo.Post().ListByBlogID(blog.ID())
@@ -210,8 +213,8 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertEqual(t, len(posts), 0)
 
 	// add a post to the feed blog
-	feedPost := feed.Post{
-		URL:         test.RandomURL(20),
+	feedPost := mockfeed.Post{
+		URL:         "https://" + test.RandomString(20),
 		Title:       test.RandomString(20),
 		Content:     test.RandomString(200),
 		PublishedAt: time.Now(),
@@ -219,13 +222,13 @@ func TestExistingBlog(t *testing.T) {
 	feedBlog.Posts = append(feedBlog.Posts, feedPost)
 
 	// regenerate the feed
-	atomFeed, err = feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err = mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
@@ -235,8 +238,8 @@ func TestExistingBlog(t *testing.T) {
 
 	// verify post data
 	post := posts[0]
-	test.AssertEqual(t, post.URL(), feedPost.URL)
-	test.AssertEqual(t, post.Title(), feedPost.Title)
+	test.AssertEqual(t, post.URL().Value(), feedPost.URL)
+	test.AssertEqual(t, post.Title().Value(), feedPost.Title)
 	test.AssertEqual(t, post.Content(), feedPost.Content)
 }
 
@@ -249,7 +252,7 @@ func TestUnreachableFeed(t *testing.T) {
 	feedURL := test.RandomURL(20)
 
 	feeds := map[string]feed.FetchFeedResponse{}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
@@ -263,33 +266,35 @@ func TestUpdatePostContent(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	feedPost := feed.Post{
-		URL:         test.RandomURL(20),
+	feedPost := mockfeed.Post{
+		URL:         "https://" + test.RandomString(20),
 		Title:       test.RandomString(20),
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+
+	feedURL := test.RandomURL(20)
+	feedBlog := mockfeed.Blog{
 		Title:   test.RandomString(20),
-		SiteURL: test.RandomURL(20),
-		FeedURL: test.RandomURL(20),
-		Posts:   []feed.Post{feedPost},
+		SiteURL: "https://" + test.RandomString(20),
+		FeedURL: feedURL.Value(),
+		Posts:   []mockfeed.Post{feedPost},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err := repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
@@ -306,13 +311,13 @@ func TestUpdatePostContent(t *testing.T) {
 	feedBlog.Posts[0].Content = content
 
 	// regenerate the feed
-	atomFeed, err = feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err = mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch posts and verify count
@@ -332,27 +337,28 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	feedBlog := feed.Blog{
+	feedURL := test.RandomURL(20)
+	feedBlog := mockfeed.Blog{
 		Title:   test.RandomString(20),
-		SiteURL: test.RandomURL(20),
-		FeedURL: test.RandomURL(20),
+		SiteURL: "https://" + test.RandomString(20),
+		FeedURL: feedURL.Value(),
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds := map[string]feed.FetchFeedResponse{
 		feedBlog.FeedURL: {Feed: atomFeed},
 	}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err := repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// update the blog's ETag and LastModified to something non-empty
@@ -362,11 +368,11 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	test.AssertNilError(t, err)
 
 	// sync the blog again (will see empty ETag and LastModified values)
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err = repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the existing ETag and LastModified values haven't been wiped out
@@ -381,13 +387,14 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	feedBlog := feed.Blog{
+	feedURL := test.RandomURL(20)
+	feedBlog := mockfeed.Blog{
 		Title:   test.RandomString(20),
-		SiteURL: test.RandomURL(20),
-		FeedURL: test.RandomURL(20),
+		SiteURL: "https://" + test.RandomString(20),
+		FeedURL: feedURL.Value(),
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
 	feeds := map[string]feed.FetchFeedResponse{
@@ -397,36 +404,36 @@ func TestCacheHeaderUpdate(t *testing.T) {
 			LastModified: "lastModified",
 		},
 	}
-	feedFetcher := feedMock.NewFeedFetcher(feeds)
+	feedFetcher := mockfeed.NewFeedFetcher(feeds)
 
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err := repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, blog.ETag(), "etag")
 	test.AssertEqual(t, blog.LastModified(), "lastModified")
 
 	// Update the feed to return new cache value but no data
 	feeds = map[string]feed.FetchFeedResponse{
-		feedBlog.FeedURL: {
+		feedURL.Value(): {
 			ETag:         "other etag",
 			LastModified: "other lastModified",
 		},
 	}
-	feedFetcher = feedMock.NewFeedFetcher(feeds)
+	feedFetcher = mockfeed.NewFeedFetcher(feeds)
 
 	cmd = command.NewSync(repo, feedFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
-	err = cmd.SyncBlog(feedBlog.FeedURL)
+	err = cmd.SyncBlog(feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = repo.Blog().ReadByFeedURL(feedBlog.FeedURL)
+	blog, err = repo.Blog().ReadByFeedURL(feedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the ETag and LastModified values got updated

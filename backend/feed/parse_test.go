@@ -7,7 +7,7 @@ import (
 	"github.com/mmcdole/gofeed"
 
 	"github.com/theandrew168/bloggulus/backend/feed"
-	feedMock "github.com/theandrew168/bloggulus/backend/feed/mock"
+	mockfeed "github.com/theandrew168/bloggulus/backend/feed/mock"
 	"github.com/theandrew168/bloggulus/backend/test"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
@@ -89,48 +89,48 @@ func TestDeterminePublishedAt(t *testing.T) {
 func TestParse(t *testing.T) {
 	t.Parallel()
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedPostBar := feed.Post{
+	feedPostBar := mockfeed.Post{
 		URL:         "https://example.com/bar",
 		Title:       "Bar",
 		Content:     "content about bar",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo, feedPostBar},
+		Posts:   []mockfeed.Post{feedPostFoo, feedPostBar},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
-	test.AssertEqual(t, parsedBlog.Title, feedBlog.Title)
-	test.AssertEqual(t, parsedBlog.SiteURL, feedBlog.SiteURL)
-	test.AssertEqual(t, parsedBlog.FeedURL, feedBlog.FeedURL)
+	test.AssertEqual(t, parsedBlog.Title.Value(), feedBlog.Title)
+	test.AssertEqual(t, parsedBlog.SiteURL.Value(), feedBlog.SiteURL)
+	test.AssertEqual(t, parsedBlog.FeedURL.Value(), feedBlog.FeedURL)
 	test.AssertEqual(t, len(parsedBlog.Posts), len(feedBlog.Posts))
 
-	postsByURL := map[string]feed.Post{
+	postsByURL := map[string]mockfeed.Post{
 		feedPostFoo.URL: feedPostFoo,
 		feedPostBar.URL: feedPostBar,
 	}
 	for _, parsedPost := range parsedBlog.Posts {
-		post, ok := postsByURL[parsedPost.URL]
+		post, ok := postsByURL[parsedPost.URL.Value()]
 		if !ok {
-			t.Errorf("invalid post URL: %s", parsedPost.URL)
+			t.Errorf("invalid post URL: %s", parsedPost.URL.Value())
 			continue
 		}
 
-		test.AssertEqual(t, parsedPost.URL, post.URL)
-		test.AssertEqual(t, parsedPost.Title, post.Title)
+		test.AssertEqual(t, parsedPost.URL.Value(), post.URL)
+		test.AssertEqual(t, parsedPost.Title.Value(), post.Title)
 		test.AssertEqual(t, parsedPost.Content, post.Content)
 	}
 }
@@ -138,22 +138,22 @@ func TestParse(t *testing.T) {
 func TestParseMissingURL(t *testing.T) {
 	t.Parallel()
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo},
+		Posts:   []mockfeed.Post{feedPostFoo},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(parsedBlog.Posts), 0)
@@ -162,22 +162,22 @@ func TestParseMissingURL(t *testing.T) {
 func TestParseMissingTitle(t *testing.T) {
 	t.Parallel()
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "https://example.com/foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo},
+		Posts:   []mockfeed.Post{feedPostFoo},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(parsedBlog.Posts), 0)
@@ -186,54 +186,54 @@ func TestParseMissingTitle(t *testing.T) {
 func TestParseMissingDomain(t *testing.T) {
 	t.Parallel()
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo},
+		Posts:   []mockfeed.Post{feedPostFoo},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		test.AssertEqual(t, parsedPost.URL, feedBlog.SiteURL+feedPostFoo.URL)
+		test.AssertEqual(t, parsedPost.URL.Value(), feedBlog.SiteURL+feedPostFoo.URL)
 	}
 }
 
 func TestParseMissingScheme(t *testing.T) {
 	t.Parallel()
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "example.com/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo},
+		Posts:   []mockfeed.Post{feedPostFoo},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
-		test.AssertEqual(t, parsedPost.URL, "https://"+feedPostFoo.URL)
+		test.AssertEqual(t, parsedPost.URL.Value(), "https://"+feedPostFoo.URL)
 	}
 }
 
@@ -243,23 +243,23 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	publishedAt, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05+07:00")
 	test.AssertNilError(t, err)
 
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: publishedAt,
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo},
+		Posts:   []mockfeed.Post{feedPostFoo},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse("https://example.com/atom.xml", atomFeed)
+	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
@@ -268,31 +268,31 @@ func TestParsePublishedAtUTC(t *testing.T) {
 }
 
 func BenchmarkParse(b *testing.B) {
-	feedPostFoo := feed.Post{
+	feedPostFoo := mockfeed.Post{
 		URL:         "https://example.com/foo",
 		Title:       "Foo",
 		Content:     "content about foo",
 		PublishedAt: time.Now(),
 	}
-	feedPostBar := feed.Post{
+	feedPostBar := mockfeed.Post{
 		URL:         "https://example.com/bar",
 		Title:       "Bar",
 		Content:     "content about bar",
 		PublishedAt: time.Now(),
 	}
-	feedBlog := feed.Blog{
+	feedBlog := mockfeed.Blog{
 		Title:   "FooBar",
 		SiteURL: "https://example.com",
 		FeedURL: "https://example.com/atom.xml",
-		Posts:   []feed.Post{feedPostFoo, feedPostBar},
+		Posts:   []mockfeed.Post{feedPostFoo, feedPostBar},
 	}
 
-	atomFeed, err := feedMock.GenerateAtomFeed(feedBlog)
+	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	if err != nil {
 		b.Fatalf("got: %v; want: nil", err)
 	}
 
-	for n := 0; n < b.N; n++ {
-		feed.Parse("https://example.com/atom.xml", atomFeed)
+	for b.Loop() {
+		feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
 	}
 }

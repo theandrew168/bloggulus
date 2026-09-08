@@ -17,7 +17,7 @@ func NewFeedFetcher(feeds map[string]feed.FetchFeedResponse) *FeedFetcher {
 }
 
 func (f *FeedFetcher) FetchFeed(request feed.FetchFeedRequest) (feed.FetchFeedResponse, error) {
-	feedForURL, ok := f.feeds[request.URL]
+	feedForURL, ok := f.feeds[request.URL.Value()]
 	if !ok {
 		return feed.FetchFeedResponse{}, feed.ErrUnreachableFeed
 	}

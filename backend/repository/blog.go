@@ -10,6 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type dbBlog struct {
@@ -28,9 +29,9 @@ type dbBlog struct {
 func marshalBlog(blog *model.Blog) (dbBlog, error) {
 	b := dbBlog{
 		ID:            blog.ID(),
-		FeedURL:       blog.FeedURL(),
-		SiteURL:       blog.SiteURL(),
-		Title:         blog.Title(),
+		FeedURL:       blog.FeedURL().Value(),
+		SiteURL:       blog.SiteURL().Value(),
+		Title:         blog.Title().Value(),
 		IsPublic:      blog.IsPublic(),
 		ETag:          blog.ETag(),
 		LastModified:  blog.LastModified(),
@@ -43,11 +44,26 @@ func marshalBlog(blog *model.Blog) (dbBlog, error) {
 }
 
 func (b dbBlog) unmarshal() (*model.Blog, error) {
+	feedURL, err := value.NewURL(b.FeedURL)
+	if err != nil {
+		return nil, err
+	}
+
+	siteURL, err := value.NewURL(b.SiteURL)
+	if err != nil {
+		return nil, err
+	}
+
+	title, err := value.NewName(b.Title)
+	if err != nil {
+		return nil, err
+	}
+
 	blog := model.LoadBlog(model.LoadBlogParams{
 		ID:           b.ID,
-		FeedURL:      b.FeedURL,
-		SiteURL:      b.SiteURL,
-		Title:        b.Title,
+		FeedURL:      feedURL,
+		SiteURL:      siteURL,
+		Title:        title,
 		IsPublic:     b.IsPublic,
 		SyncedAt:     b.SyncedAt,
 		ETag:         b.ETag,
@@ -136,7 +152,7 @@ func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 	return row.unmarshal()
 }
 
-func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
+func (r *BlogRepository) ReadByFeedURL(feedURL value.URL) (*model.Blog, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -153,7 +169,7 @@ func (r *BlogRepository) ReadByFeedURL(feedURL string) (*model.Blog, error) {
 		WHERE blog.feed_url = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, feedURL)
+	rows, err := r.conn.Query(context.Background(), stmt, feedURL.Value())
 	if err != nil {
 		return nil, err
 	}

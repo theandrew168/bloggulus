@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type Blog struct {
@@ -122,7 +123,7 @@ func (qry *BlogQuery) ReadDetailsByID(blogID uuid.UUID) (BlogDetails, error) {
 }
 
 // Powers the add / follow blogs page.
-func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL string) (BlogDetails, error) {
+func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL value.URL) (BlogDetails, error) {
 	stmt := `
 		SELECT
 			blog.id,
@@ -135,7 +136,7 @@ func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL string) (BlogDetails, error) 
 		WHERE blog.feed_url = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, feedURL)
+	rows, err := qry.conn.Query(context.Background(), stmt, feedURL.Value())
 	if err != nil {
 		return BlogDetails{}, err
 	}

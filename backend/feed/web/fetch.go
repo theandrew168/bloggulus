@@ -20,7 +20,7 @@ func NewFeedFetcher() *FeedFetcher {
 }
 
 func (f *FeedFetcher) FetchFeed(request feed.FetchFeedRequest) (feed.FetchFeedResponse, error) {
-	req, err := http.NewRequest("GET", request.URL, nil)
+	req, err := http.NewRequest("GET", request.URL.Value(), nil)
 	if err != nil {
 		return feed.FetchFeedResponse{}, feed.ErrUnreachableFeed
 	}

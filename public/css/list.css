@@ -1,5 +1,3 @@
-/* TODO: Should this be generic? */
-
 .blogs,
 .accounts {
     max-width: var(--container-width);

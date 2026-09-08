@@ -10,6 +10,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 type dbPost struct {
@@ -27,8 +28,8 @@ func marshalPost(post *model.Post) (dbPost, error) {
 	p := dbPost{
 		ID:            post.ID(),
 		BlogID:        post.BlogID(),
-		URL:           post.URL(),
-		Title:         post.Title(),
+		URL:           post.URL().Value(),
+		Title:         post.Title().Value(),
 		PublishedAt:   post.PublishedAt(),
 		Content:       post.Content(),
 		MetaCreatedAt: post.Meta().CreatedAt(),
@@ -39,11 +40,21 @@ func marshalPost(post *model.Post) (dbPost, error) {
 }
 
 func (p dbPost) unmarshal() (*model.Post, error) {
+	url, err := value.NewURL(p.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	title, err := value.NewName(p.Title)
+	if err != nil {
+		return nil, err
+	}
+
 	post := model.LoadPost(model.LoadPostParams{
 		ID:          p.ID,
 		BlogID:      p.BlogID,
-		URL:         p.URL,
-		Title:       p.Title,
+		URL:         url,
+		Title:       title,
 		PublishedAt: p.PublishedAt,
 		Content:     p.Content,
 		Meta: model.LoadMeta(model.LoadMetaParams{

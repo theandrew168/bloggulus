@@ -8,6 +8,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
+	"github.com/theandrew168/bloggulus/backend/value"
 )
 
 // FilterSyncableBlogs takes a list of blogs and returns only those that are ready to be synced.
@@ -48,7 +49,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	// Create a map of URLs to posts for quick lookups.
 	knownPostsByURL := make(map[string]*model.Post)
 	for _, post := range knownPosts {
-		knownPostsByURL[post.URL()] = post
+		knownPostsByURL[post.URL().Value()] = post
 	}
 
 	var postsToCreate []*model.Post
@@ -56,7 +57,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 
 	// Compare each post in the feed to the posts in the database.
 	for _, feedPost := range feedPosts {
-		knownPost, ok := knownPostsByURL[feedPost.URL]
+		knownPost, ok := knownPostsByURL[feedPost.URL.Value()]
 		if !ok {
 			// The post is new so we need to create it.
 			postToCreate, err := model.NewPost(model.NewPostParams{
@@ -76,7 +77,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 			knownPostShouldBeUpdated := false
 
 			// Check if the post's title has changed.
-			if feedPost.Title != "" && feedPost.Title != knownPost.Title() {
+			if feedPost.Title.Value() != knownPost.Title().Value() {
 				knownPost.SetTitle(feedPost.Title)
 				knownPostShouldBeUpdated = true
 			}
@@ -107,7 +108,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	return result, nil
 }
 
-func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feedURL string) error {
+func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feedURL value.URL) error {
 	// Make an unconditional fetch for the blog's feed.
 	req := feed.FetchFeedRequest{
 		URL: feedURL,

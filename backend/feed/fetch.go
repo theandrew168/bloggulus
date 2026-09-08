@@ -1,13 +1,17 @@
 package feed
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/theandrew168/bloggulus/backend/value"
+)
 
 var (
 	ErrUnreachableFeed = errors.New("feed: unreachable feed")
 )
 
 type FetchFeedRequest struct {
-	URL          string
+	URL          value.URL
 	ETag         string
 	LastModified string
 }

@@ -45,9 +45,3 @@
     max-width: 24px;
     max-height: 24px;
 }
-
-.signin__error {
-    font-size: 0.75rem;
-    color: red;
-    margin-top: 0.25em;
-}

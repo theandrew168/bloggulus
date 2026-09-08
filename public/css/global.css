@@ -42,10 +42,6 @@ svg {
 	padding: 0.75em 1em;
 }
 
-.input--block {
-	display: block;
-}
-
 .button {
 	color: var(--color-white);
 	background-color: var(--color-dark);

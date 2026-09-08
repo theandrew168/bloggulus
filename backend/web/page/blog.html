@@ -2,18 +2,18 @@
 
 <section class="blog">
 	{{with .Blog}}
-	<article class="blog-links">
+	<article>
 		<h1 class="blog-links__title">{{.Title}}</h1>
 		<ul class="blog-links__list">
 			<li><a class="blog-links__link" href={{.SiteURL}}>(Site URL)</a></li>
 			<li><a class="blog-links__link" href={{.FeedURL}}>(Feed URL)</a></li>
 		</ul>
 	</article>
-	<article class="blog-synced">
+	<article>
 		<h2 class="blog-synced__title">Synced at:</h2>
 		<time datetime="{{.SyncedAt}}">{{.SyncedAt.Format "Jan 2, 2006 - 03:04:05PM"}}</time>
 	</article>
-	<article class="blog-visibility">
+	<article>
 		<h2 class="blog-visibility__title">Visibility:</h2>
 		{{if .IsPublic}}
 		<p>Public</p>
@@ -21,7 +21,7 @@
 		<p>Private</p>
 		{{end}}
 	</article>
-	<article class="blog-actions">
+	<article>
 		<h2 class="blog-actions__title">Actions</h2>
 		<ul class="blog-actions__list">
 			<li>
@@ -57,7 +57,7 @@
 		</ul>
 	</article>
 	{{end}}
-	<article class="blog-posts">
+	<article>
 		<h2 class="blog-posts__title">{{len .Posts}} Posts</h2>
 		<ul class="blog-posts__list">
 			{{range .Posts}}

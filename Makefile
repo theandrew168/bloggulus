@@ -49,7 +49,10 @@ staticcheck:
 govulncheck:
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
-check: vet staticcheck govulncheck
+csscheck:
+	go run tools/csscheck/main.go
+
+check: vet staticcheck govulncheck csscheck
 
 .PHONY: update
 update: update-deps update-htmx update-alpine

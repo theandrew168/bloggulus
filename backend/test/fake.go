@@ -1,13 +1,65 @@
 package test
 
 import (
+	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/model"
 	"github.com/theandrew168/bloggulus/backend/repository"
+	"github.com/theandrew168/bloggulus/backend/timeutil"
 	"github.com/theandrew168/bloggulus/backend/value"
 )
+
+func NewCount(count int) value.Count {
+	c, err := value.NewCount(count)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
+func NewName(name string) value.Name {
+	n, err := value.NewName(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return n
+}
+
+func NewURL(url string) value.URL {
+	u, err := value.NewURL(url)
+	if err != nil {
+		panic(err)
+	}
+
+	return u
+}
+
+func RandomString(n int) string {
+	valid := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+
+	buf := make([]byte, n)
+	for i := range buf {
+		buf[i] = valid[rand.Intn(len(valid))]
+	}
+
+	return string(buf)
+}
+
+func RandomTime() time.Time {
+	return timeutil.Now()
+}
+
+func RandomName(n int) value.Name {
+	return NewName(RandomString(n))
+}
+
+func RandomURL(n int) value.URL {
+	return NewURL("https://" + RandomString(n))
+}
 
 func NewBlogParams() model.NewBlogParams {
 	return model.NewBlogParams{
@@ -49,39 +101,49 @@ func NewSessionParams(account *model.Account) model.NewSessionParams {
 	}
 }
 
-func NewBlog(t *testing.T) *model.Blog {
+func NewBlog() *model.Blog {
 	blog, err := model.NewBlog(NewBlogParams())
-	AssertNilError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	// TODO: Update tests to account for visibility and then remove this.
 	blog.SetIsPublic(true)
 	return blog
 }
 
-func NewPost(t *testing.T, blog *model.Blog) *model.Post {
+func NewPost(blog *model.Blog) *model.Post {
 	post, err := model.NewPost(NewPostParams(blog))
-	AssertNilError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	return post
 }
 
-func NewTag(t *testing.T) *model.Tag {
+func NewTag() *model.Tag {
 	tag, err := model.NewTag(NewTagParams())
-	AssertNilError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	return tag
 }
 
-func NewAccount(t *testing.T) *model.Account {
+func NewAccount() *model.Account {
 	account, err := model.NewAccount(NewAccountParams())
-	AssertNilError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	return account
 }
 
-func NewSession(t *testing.T, account *model.Account) (*model.Session, value.Token) {
+func NewSession(account *model.Account) (*model.Session, value.Token) {
 	session, sessionToken, err := model.NewSession(NewSessionParams(account))
-	AssertNilError(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	return session, sessionToken
 }
@@ -91,7 +153,7 @@ func CreateBlog(t *testing.T, repo *repository.Repository) *model.Blog {
 	t.Helper()
 
 	// generate some random blog data
-	blog := NewBlog(t)
+	blog := NewBlog()
 
 	// create an example blog
 	err := repo.Blog().Create(blog)
@@ -105,7 +167,7 @@ func CreatePost(t *testing.T, repo *repository.Repository, blog *model.Blog) *mo
 	t.Helper()
 
 	// generate some random post data
-	post := NewPost(t, blog)
+	post := NewPost(blog)
 
 	// create an example post
 	err := repo.Post().Create(post)
@@ -119,7 +181,7 @@ func CreateTag(t *testing.T, repo *repository.Repository) *model.Tag {
 	t.Helper()
 
 	// generate some random tag data
-	tag := NewTag(t)
+	tag := NewTag()
 
 	// create an example tag
 	err := repo.Tag().Create(tag)
@@ -133,7 +195,7 @@ func CreateAccount(t *testing.T, repo *repository.Repository) *model.Account {
 	t.Helper()
 
 	// generate some random account data
-	account := NewAccount(t)
+	account := NewAccount()
 
 	// create an example account
 	err := repo.Account().Create(account)
@@ -147,7 +209,7 @@ func CreateSession(t *testing.T, repo *repository.Repository, account *model.Acc
 	t.Helper()
 
 	// generate some random session data
-	session, sessionToken := NewSession(t, account)
+	session, sessionToken := NewSession(account)
 
 	// create an example session
 	err := repo.Session().Create(session)

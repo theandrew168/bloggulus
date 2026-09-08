@@ -111,7 +111,7 @@ func TestParse(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, parsedBlog.Title.Value(), feedBlog.Title)
 	test.AssertEqual(t, parsedBlog.SiteURL.Value(), feedBlog.SiteURL)
@@ -153,7 +153,7 @@ func TestParseMissingURL(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(parsedBlog.Posts), 0)
@@ -177,7 +177,7 @@ func TestParseMissingTitle(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(parsedBlog.Posts), 0)
@@ -202,7 +202,7 @@ func TestParseMissingDomain(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
@@ -229,7 +229,7 @@ func TestParseMissingScheme(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
@@ -259,7 +259,7 @@ func TestParsePublishedAtUTC(t *testing.T) {
 	atomFeed, err := mockfeed.GenerateAtomFeed(feedBlog)
 	test.AssertNilError(t, err)
 
-	parsedBlog, err := feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+	parsedBlog, err := feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	test.AssertNilError(t, err)
 
 	for _, parsedPost := range parsedBlog.Posts {
@@ -293,6 +293,6 @@ func BenchmarkParse(b *testing.B) {
 	}
 
 	for b.Loop() {
-		feed.Parse(test.MustNewURL("https://example.com/atom.xml"), atomFeed)
+		feed.Parse(test.NewURL("https://example.com/atom.xml"), atomFeed)
 	}
 }

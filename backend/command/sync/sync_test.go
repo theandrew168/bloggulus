@@ -19,11 +19,11 @@ func TestFilterSyncableBlogs(t *testing.T) {
 
 	now := timeutil.Now()
 
-	pastBlog := test.NewBlog(t)
+	pastBlog := test.NewBlog()
 	pastBlog.SetSyncedAt(now.Add(-model.SyncCooldown).Add(-1 * time.Minute))
-	presentBlog := test.NewBlog(t)
+	presentBlog := test.NewBlog()
 	presentBlog.SetSyncedAt(now)
-	futureBlog := test.NewBlog(t)
+	futureBlog := test.NewBlog()
 	futureBlog.SetSyncedAt(now.Add(1 * time.Hour))
 
 	blogs := []*model.Blog{pastBlog, presentBlog, futureBlog}
@@ -42,7 +42,7 @@ func TestFilterSyncableBlogs(t *testing.T) {
 func TestUpdateCacheHeaders(t *testing.T) {
 	t.Parallel()
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 	resp := feed.FetchFeedResponse{
 		ETag:         "foo",
 		LastModified: "bar",
@@ -57,7 +57,7 @@ func TestUpdateCacheHeaders(t *testing.T) {
 func TestUpdateCacheHeadersDoesNotClear(t *testing.T) {
 	t.Parallel()
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 	resp := feed.FetchFeedResponse{
 		ETag:         "",
 		LastModified: "",
@@ -72,9 +72,9 @@ func TestUpdateCacheHeadersDoesNotClear(t *testing.T) {
 func TestComparePosts(t *testing.T) {
 	t.Parallel()
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 
-	knownPost := test.NewPost(t, blog)
+	knownPost := test.NewPost(blog)
 	knownPosts := []*model.Post{
 		knownPost,
 	}

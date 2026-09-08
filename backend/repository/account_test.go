@@ -13,7 +13,7 @@ func TestAccountCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account := test.NewAccount(t)
+	account := test.NewAccount()
 	err := repo.Account().Create(account)
 	test.AssertNilError(t, err)
 }

@@ -13,11 +13,11 @@ func TestPostCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 	err := repo.Blog().Create(blog)
 	test.AssertNilError(t, err)
 
-	post := test.NewPost(t, blog)
+	post := test.NewPost(blog)
 	err = repo.Post().Create(post)
 	test.AssertNilError(t, err)
 }

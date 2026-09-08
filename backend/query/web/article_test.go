@@ -70,7 +70,7 @@ func TestSearchArticles(t *testing.T) {
 	repo := repository.New(conn)
 	qry := webquery.NewArticle(conn)
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 	err := repo.Blog().Create(blog)
 	test.AssertNilError(t, err)
 
@@ -78,7 +78,7 @@ func TestSearchArticles(t *testing.T) {
 	pythonPost, err := model.NewPost(model.NewPostParams{
 		Blog:        blog,
 		URL:         test.RandomURL(20),
-		Title:       test.MustNewName("Python"),
+		Title:       test.NewName("Python"),
 		PublishedAt: timeutil.Now(),
 		Content:     "content about python",
 	})
@@ -91,7 +91,7 @@ func TestSearchArticles(t *testing.T) {
 	boringPost, err := model.NewPost(model.NewPostParams{
 		Blog:        blog,
 		URL:         test.RandomURL(20),
-		Title:       test.MustNewName("Boring"),
+		Title:       test.NewName("Boring"),
 		PublishedAt: timeutil.Now(),
 		Content:     "content about nothing",
 	})
@@ -123,7 +123,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        followedBlog,
 			URL:         test.RandomURL(20),
-			Title:       test.MustNewName("Python"),
+			Title:       test.NewName("Python"),
 			PublishedAt: timeutil.Now(),
 			Content:     "content about python",
 		})
@@ -139,7 +139,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        unfollowedBlog,
 			URL:         test.RandomURL(20),
-			Title:       test.MustNewName("Python"),
+			Title:       test.NewName("Python"),
 			PublishedAt: timeutil.Now(),
 			Content:     "content about python",
 		})
@@ -229,7 +229,7 @@ func TestCountSearchArticles(t *testing.T) {
 	pythonPost, err := model.NewPost(model.NewPostParams{
 		Blog:        blog,
 		URL:         test.RandomURL(20),
-		Title:       test.MustNewName("Python"),
+		Title:       test.NewName("Python"),
 		PublishedAt: timeutil.Now(),
 		Content:     "content about python",
 	})
@@ -242,7 +242,7 @@ func TestCountSearchArticles(t *testing.T) {
 	boringPost, err := model.NewPost(model.NewPostParams{
 		Blog:        blog,
 		URL:         test.RandomURL(20),
-		Title:       test.MustNewName("Boring"),
+		Title:       test.NewName("Boring"),
 		PublishedAt: timeutil.Now(),
 		Content:     "content about nothing",
 	})
@@ -274,7 +274,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        followedBlog,
 			URL:         test.RandomURL(20),
-			Title:       test.MustNewName("Python"),
+			Title:       test.NewName("Python"),
 			PublishedAt: timeutil.Now(),
 			Content:     "content about python",
 		})
@@ -290,7 +290,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 		post, err := model.NewPost(model.NewPostParams{
 			Blog:        unfollowedBlog,
 			URL:         test.RandomURL(20),
-			Title:       test.MustNewName("Python"),
+			Title:       test.NewName("Python"),
 			PublishedAt: timeutil.Now(),
 			Content:     "content about python",
 		})

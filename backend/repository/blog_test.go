@@ -13,7 +13,7 @@ func TestBlogCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	blog := test.NewBlog(t)
+	blog := test.NewBlog()
 	err := repo.Blog().Create(blog)
 	test.AssertNilError(t, err)
 }

@@ -13,7 +13,7 @@ func TestTagCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	tag := test.NewTag(t)
+	tag := test.NewTag()
 	err := repo.Tag().Create(tag)
 	test.AssertNilError(t, err)
 }

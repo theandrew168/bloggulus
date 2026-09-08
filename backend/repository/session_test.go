@@ -16,11 +16,11 @@ func TestSessionCreate(t *testing.T) {
 	repo, closer := test.NewRepository(t)
 	defer closer()
 
-	account := test.NewAccount(t)
+	account := test.NewAccount()
 	err := repo.Account().Create(account)
 	test.AssertNilError(t, err)
 
-	session, _ := test.NewSession(t, account)
+	session, _ := test.NewSession(account)
 	err = repo.Session().Create(session)
 	test.AssertNilError(t, err)
 }

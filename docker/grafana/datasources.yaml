@@ -1,0 +1,11 @@
+apiVersion: 1
+datasources:
+  - name: VictoriaMetrics
+    type: victoriametrics-metrics-datasource
+    url: http://victoriametrics:8428
+  - name: VictoriaLogs
+    type: victoriametrics-logs-datasource
+    url: http://victorialogs:9428
+  - name: VictoriaTraces
+    type: jaeger
+    url: "http://victoriatraces:10428/select/jaeger"

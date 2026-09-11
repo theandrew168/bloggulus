@@ -4,8 +4,6 @@ package webquery
 
 import "github.com/theandrew168/bloggulus/backend/postgres"
 
-// TODO: Move this to a "web" sub-package.
-
 type Query struct {
 	account *AccountQuery
 	article *ArticleQuery

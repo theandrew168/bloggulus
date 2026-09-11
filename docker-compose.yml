@@ -1,15 +1,48 @@
+volumes:
+  postgres-data:
+
 services:
   postgres:
-    image: postgres
+    image: postgres:18
     ports:
       - "5432:5432"
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.151.0
+    ports:
+      - "8428:8428"
+    command:
+      - "-promscrape.config=/etc/victoriametrics/scrape.yaml"
+    volumes:
+      - ./docker/victoriametrics/scrape.yaml:/etc/victoriametrics/scrape.yaml
+
+  victorialogs:
+    image: victoriametrics/victoria-logs:v1.52.0
+    ports:
+      - "9428:9428"
+
+  victoriatraces:
+    image: victoriametrics/victoria-traces:v0.11.0
+    ports:
+      - "10428:10428"
+
+  grafana:
+    image: grafana/grafana:13.2-slim
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_PLUGINS_PREINSTALL=victoriametrics-metrics-datasource,victoriametrics-logs-datasource,jaeger
+    volumes:
+      - ./docker/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
 
   postgres_test:
-    image: postgres
+    image: postgres:18
     ports:
       - "5433:5432"
     environment:

@@ -1,0 +1,13 @@
+scrape_configs:
+  - job_name: victoriametrics
+    static_configs:
+      - targets: ['localhost:8428']
+  - job_name: victorialogs
+    static_configs:
+      - targets: ['victorialogs:9428']
+  - job_name: victoriatraces
+    static_configs:
+      - targets: ['victoriatraces:10428']
+  - job_name: bloggulus
+    static_configs:
+    - targets: ['host.docker.internal:5000']

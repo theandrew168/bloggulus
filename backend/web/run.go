@@ -13,7 +13,8 @@ import (
 
 func Run(ctx context.Context, handler http.Handler, addr string) error {
 	srv := http.Server{
-		Handler: handler,
+		BaseContext: func(net.Listener) context.Context { return ctx },
+		Handler:     handler,
 	}
 
 	// start a goro to watch for stop signal (context cancelled)

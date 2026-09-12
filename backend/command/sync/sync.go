@@ -176,7 +176,7 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 	}
 
 	if resp.Feed == "" {
-		slog.Info("skipping blog (no feed content)", "title", blog.Title(), "id", blog.ID())
+		slog.Info("skipping blog (no feed content)", "title", blog.Title().Value(), "id", blog.ID())
 		return nil
 	}
 
@@ -210,7 +210,7 @@ func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.P
 	for _, post := range result.PostsToCreate {
 		err = repo.Post().Create(post)
 		if err != nil {
-			slog.Warn("failed to create post", "url", post.URL(), "error", err.Error())
+			slog.Warn("failed to create post", "url", post.URL().Value(), "error", err.Error())
 		}
 	}
 
@@ -218,7 +218,7 @@ func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.P
 	for _, post := range result.PostsToUpdate {
 		err = repo.Post().Update(post)
 		if err != nil {
-			slog.Warn("failed to update post", "url", post.URL(), "error", err.Error())
+			slog.Warn("failed to update post", "url", post.URL().Value(), "error", err.Error())
 		}
 	}
 

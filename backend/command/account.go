@@ -51,9 +51,9 @@ func (cmd *AccountCommand) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) err
 
 		slog.Info("blog followed",
 			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_username", account.Username().Value(),
 			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
+			"blog_title", blog.Title().Value(),
 		)
 
 		return nil
@@ -88,9 +88,9 @@ func (cmd *AccountCommand) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) e
 
 		slog.Info("blog unfollowed",
 			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_username", account.Username().Value(),
 			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
+			"blog_title", blog.Title().Value(),
 		)
 
 		return nil
@@ -124,7 +124,7 @@ func (cmd *AccountCommand) DeleteAccount(accountID uuid.UUID) error {
 
 		slog.Info("account deleted",
 			"account_id", account.ID(),
-			"account_username", account.Username(),
+			"account_username", account.Username().Value(),
 		)
 
 		return nil

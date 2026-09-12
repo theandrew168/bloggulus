@@ -44,7 +44,7 @@ func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
 
 		slog.Info("blog deleted",
 			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
+			"blog_title", blog.Title().Value(),
 		)
 
 		return nil
@@ -70,7 +70,7 @@ func (cmd *BlogCommand) HideBlog(blogID uuid.UUID) error {
 
 		slog.Info("blog hidden",
 			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
+			"blog_title", blog.Title().Value(),
 		)
 
 		return nil
@@ -96,7 +96,7 @@ func (cmd *BlogCommand) ShowBlog(blogID uuid.UUID) error {
 
 		slog.Info("blog shown",
 			"blog_id", blog.ID(),
-			"blog_title", blog.Title(),
+			"blog_title", blog.Title().Value(),
 		)
 
 		return nil

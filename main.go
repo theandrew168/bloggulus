@@ -6,11 +6,20 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 
 	"github.com/coreos/go-systemd/v22/daemon"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/log/global"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/trace"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
@@ -98,9 +107,38 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	var wg sync.WaitGroup
+	// TODO: What breaks if I remove this?
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
+	shutdownLogger, err := initOpenTelemetryLogger(ctx)
+	if err != nil {
+		return err
+	}
+	defer shutdownLogger()
+
+	shutdownTracer, err := initOpenTelemetryTracer(ctx)
+	if err != nil {
+		return err
+	}
+	defer shutdownTracer()
 
 	webHandler := web.Handler(publicFS, conf, cmd, qry, syncService)
+
+	otelWebHandler := otelhttp.NewHandler(
+		webHandler,
+		"http-server-fallback", // The base "operation" name fallback
+		otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
+			if r.Pattern != "" {
+				// Returns exactly what matched, e.g., "GET /users/{id}"
+				return r.Pattern
+			}
+			// Fallback for unmatched/404 routes
+			return fmt.Sprintf("%s %s", r.Method, operation)
+		}),
+	)
 
 	// Let the web server port be overridden by an env var.
 	port := "5000"
@@ -110,47 +148,84 @@ func run() error {
 
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
-	// Start the web server in the background.
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	var wg sync.WaitGroup
 
-		err := web.Run(ctx, webHandler, addr)
+	// Start the web server in the background.
+	wg.Go(func() {
+		err := web.Run(ctx, otelWebHandler, addr)
 		if err != nil {
 			slog.Error("error running web server",
 				"error", err.Error(),
 			)
 		}
-	}()
+	})
 
 	// Start the sync service in the background.
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
+	wg.Go(func() {
 		err := syncService.Run(ctx)
 		if err != nil {
 			slog.Error("error running sync service",
 				"error", err.Error(),
 			)
 		}
-	}()
+	})
 
 	// Start the session cleanup service in the background.
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
+	wg.Go(func() {
 		err := sessionService.Run(ctx)
 		if err != nil {
 			slog.Error("error running session service",
 				"error", err.Error(),
 			)
 		}
-	}()
+	})
 
 	// Wait for all services to stop.
 	wg.Wait()
 
 	return nil
+}
+
+type ShutdownFunc func() error
+
+func initOpenTelemetryLogger(ctx context.Context) (ShutdownFunc, error) {
+	victoriaLogsExporter, err := otlploghttp.New(ctx,
+		otlploghttp.WithEndpointURL("http://localhost:9428/insert/opentelemetry/v1/logs"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Use NewSimpleProcessor for dev
+	// TODO: Use NewBatchProcessor for prod
+
+	loggerProvider := log.NewLoggerProvider(log.WithProcessor(log.NewSimpleProcessor(victoriaLogsExporter)))
+	global.SetLoggerProvider(loggerProvider)
+
+	shutdown := func() error {
+		return loggerProvider.Shutdown(ctx)
+	}
+
+	return shutdown, nil
+}
+
+func initOpenTelemetryTracer(ctx context.Context) (ShutdownFunc, error) {
+	victoriaTracesExporter, err := otlptracehttp.New(ctx,
+		otlptracehttp.WithEndpointURL("http://localhost:10428/insert/opentelemetry/v1/traces"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Use WithSyncer for dev
+	// TODO: Use WithBatcher for prod
+
+	tracerProvider := trace.NewTracerProvider(trace.WithSyncer(victoriaTracesExporter))
+	otel.SetTracerProvider(tracerProvider)
+
+	shutdown := func() error {
+		return tracerProvider.Shutdown(ctx)
+	}
+
+	return shutdown, nil
 }

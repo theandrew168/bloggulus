@@ -11,6 +11,7 @@ require (
 	github.com/klauspost/compress v1.20.0
 	github.com/mmcdole/gofeed v1.4.2
 	github.com/prometheus/client_golang v1.24.1
+	go.opentelemetry.io/contrib/bridges/otelslog v0.20.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.70.0
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.22.0

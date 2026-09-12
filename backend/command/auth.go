@@ -51,7 +51,7 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 			}
 
 			slog.Info("account created",
-				"account_id", account.ID(),
+				"account_id", account.ID().String(),
 			)
 		}
 
@@ -71,8 +71,8 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 		}
 
 		slog.Info("account signed in",
-			"account_id", account.ID(),
-			"session_id", session.ID(),
+			"account_id", account.ID().String(),
+			"session_id", session.ID().String(),
 		)
 
 		return nil

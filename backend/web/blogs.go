@@ -86,21 +86,14 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
-						"account_id", account.ID,
+						"account_id", account.ID.String(),
 						"account_username", account.Username,
-						"blog_id", blog.ID,
+						"blog_id", blog.ID.String(),
 						"blog_title", blog.Title,
 					)
 					return
 				}
 			}
-
-			slog.Info("blog followed",
-				"account_id", account.ID,
-				"account_username", account.Username,
-				"blog_id", blog.ID,
-				"blog_title", blog.Title,
-			)
 
 			// Show a toast explaining that the blog already exists but is now being followed.
 			cookie := util.NewSessionCookie(util.ToastCookieName, "This blog is now being followed!")
@@ -123,7 +116,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			if err != nil {
 				slog.Error("error adding blog",
 					"error", err.Error(),
-					"feedURL", feedURL,
+					"feedURL", feedURL.Value(),
 				)
 				return
 			}
@@ -134,26 +127,19 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			if err != nil {
 				slog.Error("error reading blog",
 					"error", err.Error(),
-					"feedURL", feedURL,
+					"feedURL", feedURL.Value(),
 				)
 				return
 			}
-
-			slog.Info("blog added",
-				"account_id", account.ID,
-				"account_username", account.Username,
-				"blog_id", blog.ID,
-				"blog_title", blog.Title,
-			)
 
 			err = cmd.Account().FollowBlog(account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
 						"error", err.Error(),
-						"account_id", account.ID,
+						"account_id", account.ID.String(),
 						"account_username", account.Username,
-						"blog_id", blog.ID,
+						"blog_id", blog.ID.String(),
 						"blog_title", blog.Title,
 					)
 					return

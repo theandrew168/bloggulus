@@ -43,7 +43,7 @@ func (cmd *PostCommand) DeletePost(postID uuid.UUID) error {
 		}
 
 		slog.Info("post deleted",
-			"post_id", post.ID(),
+			"post_id", post.ID().String(),
 			"post_title", post.Title().Value(),
 		)
 

@@ -146,6 +146,11 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feed
 		return err
 	}
 
+	slog.Info("blog added",
+		"blog_id", blog.ID().String(),
+		"blog_title", blog.Title().Value(),
+	)
+
 	err = SyncPosts(repo, blog, feedBlog.Posts)
 	if err != nil {
 		return err
@@ -176,7 +181,7 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 	}
 
 	if resp.Feed == "" {
-		slog.Info("skipping blog (no feed content)", "title", blog.Title().Value(), "id", blog.ID())
+		slog.Info("skipping blog (no feed content)", "title", blog.Title().Value(), "id", blog.ID().String())
 		return nil
 	}
 

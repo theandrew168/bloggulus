@@ -11,6 +11,8 @@ import (
 	"github.com/theandrew168/bloggulus/backend/value"
 )
 
+// TODO: Should these use proper values like Name and URL?
+
 type Blog struct {
 	ID          uuid.UUID `db:"id"`
 	Title       string    `db:"title"`

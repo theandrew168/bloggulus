@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -54,6 +55,7 @@ func Run(ctx context.Context, handler http.Handler, addr string) error {
 		}
 	}
 
+	fmt.Printf("starting web server on %s\n", listener.Addr().String())
 	slog.Info("starting web server", "addr", listener.Addr().String())
 
 	// listen and serve forever

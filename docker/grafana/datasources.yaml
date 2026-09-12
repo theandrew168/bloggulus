@@ -6,6 +6,29 @@ datasources:
   - name: VictoriaLogs
     type: victoriametrics-logs-datasource
     url: http://victorialogs:9428
+    jsonData:
+      # Map Go's slog log levels to VictoriaLogs log levels
+      logLevelRules:
+        - field: "severity_text"
+          value: "DEBUG"
+          level: "debug"
+          operator: "equals"
+          enabled: true
+        - field: "severity_text"
+          value: "INFO"
+          level: "info"
+          operator: "equals"
+          enabled: true
+        - field: "severity_text"
+          value: "WARN"
+          level: "warning"
+          operator: "equals"
+          enabled: true
+        - field: "severity_text"
+          value: "ERROR"
+          level: "error"
+          operator: "equals"
+          enabled: true
   - name: VictoriaTraces
     type: jaeger
     url: "http://victoriatraces:10428/select/jaeger"

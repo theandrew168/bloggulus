@@ -75,10 +75,10 @@ func (cmd *SyncCommand) SyncAllBlogs() error {
 	}
 
 	ParallelForEach(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
-		slog.Info("syncing blog", "title", blog.Title().Value(), "id", blog.ID())
+		slog.Info("syncing blog", "title", blog.Title().Value(), "id", blog.ID().String())
 		err = cmd.SyncBlog(blog.FeedURL())
 		if err != nil {
-			slog.Warn(err.Error(), "title", blog.Title().Value(), "id", blog.ID())
+			slog.Warn(err.Error(), "title", blog.Title().Value(), "id", blog.ID().String())
 		}
 	})
 

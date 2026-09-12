@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/coreos/go-systemd/v22/daemon"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -19,7 +20,9 @@ import (
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
@@ -58,6 +61,33 @@ func run() error {
 	// Check for any specific action flags.
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")
 	flag.Parse()
+
+	// Create a context that cancels upon receiving an interrupt signal.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	// TODO: What breaks if I remove this?
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
+	res, err := initOpenTelemetryResource(ctx)
+	if err != nil {
+		return err
+	}
+
+	shutdownLogger, err := initOpenTelemetryLogger(ctx, res)
+	if err != nil {
+		return err
+	}
+	defer shutdownLogger()
+
+	shutdownTracer, err := initOpenTelemetryTracer(ctx, res)
+	if err != nil {
+		return err
+	}
+	defer shutdownTracer()
 
 	// Load the application's config file.
 	conf, err := config.ReadFile(*configFilePath)
@@ -103,28 +133,6 @@ func run() error {
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
-	// Create a context that cancels upon receiving an interrupt signal.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-
-	// TODO: What breaks if I remove this?
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	))
-
-	shutdownLogger, err := initOpenTelemetryLogger(ctx)
-	if err != nil {
-		return err
-	}
-	defer shutdownLogger()
-
-	shutdownTracer, err := initOpenTelemetryTracer(ctx)
-	if err != nil {
-		return err
-	}
-	defer shutdownTracer()
-
 	webHandler := web.Handler(publicFS, conf, cmd, qry, syncService)
 
 	otelWebHandler := otelhttp.NewHandler(
@@ -136,7 +144,7 @@ func run() error {
 				return r.Pattern
 			}
 			// Fallback for unmatched/404 routes
-			return fmt.Sprintf("%s %s", r.Method, operation)
+			return operation
 		}),
 	)
 
@@ -188,7 +196,16 @@ func run() error {
 
 type ShutdownFunc func() error
 
-func initOpenTelemetryLogger(ctx context.Context) (ShutdownFunc, error) {
+func initOpenTelemetryResource(ctx context.Context) (*resource.Resource, error) {
+	return resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceName("bloggulus"),
+			semconv.ServiceVersion("v0.8.0"),
+		),
+	)
+}
+
+func initOpenTelemetryLogger(ctx context.Context, res *resource.Resource) (ShutdownFunc, error) {
 	victoriaLogsExporter, err := otlploghttp.New(ctx,
 		otlploghttp.WithEndpointURL("http://localhost:9428/insert/opentelemetry/v1/logs"),
 	)
@@ -199,17 +216,26 @@ func initOpenTelemetryLogger(ctx context.Context) (ShutdownFunc, error) {
 	// TODO: Use NewSimpleProcessor for dev
 	// TODO: Use NewBatchProcessor for prod
 
-	loggerProvider := log.NewLoggerProvider(log.WithProcessor(log.NewSimpleProcessor(victoriaLogsExporter)))
+	loggerProvider := log.NewLoggerProvider(
+		log.WithResource(res),
+		log.WithProcessor(log.NewSimpleProcessor(victoriaLogsExporter)),
+	)
 	global.SetLoggerProvider(loggerProvider)
 
 	shutdown := func() error {
 		return loggerProvider.Shutdown(ctx)
 	}
 
+	otelSlogHandler := otelslog.NewHandler(
+		"bloggulus",
+		otelslog.WithLoggerProvider(loggerProvider),
+	)
+	slog.SetDefault(slog.New(otelSlogHandler))
+
 	return shutdown, nil
 }
 
-func initOpenTelemetryTracer(ctx context.Context) (ShutdownFunc, error) {
+func initOpenTelemetryTracer(ctx context.Context, res *resource.Resource) (ShutdownFunc, error) {
 	victoriaTracesExporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithEndpointURL("http://localhost:10428/insert/opentelemetry/v1/traces"),
 	)
@@ -220,7 +246,10 @@ func initOpenTelemetryTracer(ctx context.Context) (ShutdownFunc, error) {
 	// TODO: Use WithSyncer for dev
 	// TODO: Use WithBatcher for prod
 
-	tracerProvider := trace.NewTracerProvider(trace.WithSyncer(victoriaTracesExporter))
+	tracerProvider := trace.NewTracerProvider(
+		trace.WithResource(res),
+		trace.WithSyncer(victoriaTracesExporter),
+	)
 	otel.SetTracerProvider(tracerProvider)
 
 	shutdown := func() error {

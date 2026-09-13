@@ -143,6 +143,10 @@ func Handler(
 		middleware.AddSecureHeaders(),
 		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(qry),
+		// The trace middleware needs to be as close to the ServeMux as possible
+		// in order to capture r.Pattern before any other middleware calls r.WithContext.
+		// Putting it last here means that it will run directly before and directly after
+		// the ServeMux itself.
 		middleware.Trace(),
 	)
 

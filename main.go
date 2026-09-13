@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,7 +13,6 @@ import (
 	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/pgx-contrib/pgxotel"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -141,20 +139,7 @@ func run() error {
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
-	webHandler := web.Handler(publicFS, conf, cmd, qry, syncService)
-
-	otelWebHandler := otelhttp.NewHandler(
-		webHandler,
-		"TODO: Fix this fallback", // The base "operation" name fallback
-		otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
-			if r.Pattern != "" {
-				// Returns exactly what matched, e.g., "GET /users/{id}"
-				return r.Pattern
-			}
-			// Fallback for unmatched/404 routes
-			return operation
-		}),
-	)
+	handler := web.Handler(publicFS, conf, cmd, qry, syncService)
 
 	// Let the web server port be overridden by an env var.
 	port := "5000"
@@ -172,7 +157,7 @@ func run() error {
 
 	// Start the web server in the background.
 	wg.Go(func() {
-		err := web.Run(cancelCtx, otelWebHandler, addr)
+		err := web.Run(cancelCtx, handler, addr)
 		if err != nil {
 			slog.Error("error running web server",
 				"error", err.Error(),

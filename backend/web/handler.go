@@ -143,6 +143,7 @@ func Handler(
 		middleware.AddSecureHeaders(),
 		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(qry),
+		middleware.Trace(),
 	)
 
 	return handler

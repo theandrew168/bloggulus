@@ -11,22 +11,12 @@ import (
 	"sync"
 
 	"github.com/coreos/go-systemd/v22/daemon"
-	"github.com/pgx-contrib/pgxotel"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/log/global"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/log"
-	"go.opentelemetry.io/otel/sdk/resource"
-	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.42.0"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
 	webfeed "github.com/theandrew168/bloggulus/backend/feed/web"
 	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/repository"
@@ -63,30 +53,19 @@ func run() error {
 
 	tracerCtx := context.Background()
 
-	// TODO: What breaks if I remove this?
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	))
+	res := otel.NewResource()
 
-	res := initOpenTelemetryResource()
-
-	loggerProvider, err := initOpenTelemetryLogger(tracerCtx, res)
+	loggerProvider, err := otel.NewLogger(tracerCtx, res)
 	if err != nil {
 		return err
 	}
 	defer loggerProvider.Shutdown(tracerCtx)
 
-	tracerProvider, err := initOpenTelemetryTracer(tracerCtx, res)
+	tracerProvider, err := otel.NewTracer(tracerCtx, res)
 	if err != nil {
 		return err
 	}
 	defer tracerProvider.Shutdown(tracerCtx)
-
-	pgxTracer := pgxotel.QueryTracer{
-		Name:     "bloggulus",
-		Provider: tracerProvider,
-	}
 
 	// Load the application's config file.
 	conf, err := config.ReadFile(*configFilePath)
@@ -94,12 +73,14 @@ func run() error {
 		return err
 	}
 
-	// Configure the database connection pool with tracing.
+	// Configure the database connection pool.
 	poolConfig, err := postgres.PoolConfig(conf.DatabaseURI)
 	if err != nil {
 		return err
 	}
-	poolConfig.ConnConfig.Tracer = &pgxTracer
+
+	// Enable query-level tracing.
+	poolConfig.ConnConfig.Tracer = otel.NewQueryTracer(tracerProvider)
 
 	// Open a database connection pool.
 	pool, err := postgres.ConnectPool(poolConfig)
@@ -189,60 +170,4 @@ func run() error {
 	wg.Wait()
 
 	return nil
-}
-
-type ShutdownFunc func() error
-
-func initOpenTelemetryResource() *resource.Resource {
-	return resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceName("bloggulus"),
-		semconv.ServiceVersion("v0.8.0"),
-	)
-}
-
-func initOpenTelemetryLogger(ctx context.Context, res *resource.Resource) (*log.LoggerProvider, error) {
-	victoriaLogsExporter, err := otlploghttp.New(ctx,
-		otlploghttp.WithEndpointURL("http://localhost:9428/insert/opentelemetry/v1/logs"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: Use NewSimpleProcessor for dev
-	// TODO: Use NewBatchProcessor for prod
-
-	loggerProvider := log.NewLoggerProvider(
-		log.WithResource(res),
-		log.WithProcessor(log.NewSimpleProcessor(victoriaLogsExporter)),
-	)
-	global.SetLoggerProvider(loggerProvider)
-
-	otelSlogHandler := otelslog.NewHandler(
-		"bloggulus",
-		otelslog.WithLoggerProvider(loggerProvider),
-	)
-	slog.SetDefault(slog.New(otelSlogHandler))
-
-	return loggerProvider, nil
-}
-
-func initOpenTelemetryTracer(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
-	victoriaTracesExporter, err := otlptracehttp.New(ctx,
-		otlptracehttp.WithEndpointURL("http://localhost:10428/insert/opentelemetry/v1/traces"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: Use WithSyncer for dev
-	// TODO: Use WithBatcher for prod
-
-	tracerProvider := trace.NewTracerProvider(
-		trace.WithResource(res),
-		trace.WithSyncer(victoriaTracesExporter),
-	)
-	otel.SetTracerProvider(tracerProvider)
-
-	return tracerProvider, nil
 }

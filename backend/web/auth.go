@@ -176,7 +176,7 @@ func HandleOAuthCallback(
 			return
 		}
 
-		sessionToken, err := cmd.Auth().SignIn(username)
+		sessionToken, err := cmd.Auth().SignIn(r.Context(), username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
@@ -215,7 +215,7 @@ func HandleDebugSignIn(secretKey string, cmd *command.Command) http.Handler {
 			return
 		}
 
-		sessionToken, err := cmd.Auth().SignIn(username)
+		sessionToken, err := cmd.Auth().SignIn(r.Context(), username)
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
@@ -257,7 +257,7 @@ func HandleSignOutForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Auth().SignOut(sessionToken)
+		err = cmd.Auth().SignOut(r.Context(), sessionToken)
 		if err != nil {
 			switch {
 			case errors.Is(err, command.ErrSessionNotFound):

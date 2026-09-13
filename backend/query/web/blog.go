@@ -2,6 +2,7 @@ package webquery
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -41,8 +42,9 @@ func NewBlog(conn postgres.Conn) *BlogQuery {
 }
 
 // Powers the add / follow blogs page (admins only).
-func (qry *BlogQuery) ListAll(accountID uuid.UUID) ([]Blog, error) {
+func (qry *BlogQuery) ListAll(ctx context.Context, accountID uuid.UUID) ([]Blog, error) {
 	stmt := `
+		-- name: WebQuery_Blog_ListAll
 		SELECT
 			blog.id,
 			blog.title,
@@ -55,7 +57,7 @@ func (qry *BlogQuery) ListAll(accountID uuid.UUID) ([]Blog, error) {
 		ORDER BY blog.title ASC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +71,9 @@ func (qry *BlogQuery) ListAll(accountID uuid.UUID) ([]Blog, error) {
 }
 
 // Powers the add / follow blogs page (non-admins, public and / or followed only).
-func (qry *BlogQuery) ListVisible(accountID uuid.UUID) ([]Blog, error) {
+func (qry *BlogQuery) ListVisible(ctx context.Context, accountID uuid.UUID) ([]Blog, error) {
 	stmt := `
+		-- name: WebQuery_Blog_ListVisible
 		SELECT
 			blog.id,
 			blog.title,
@@ -84,7 +87,7 @@ func (qry *BlogQuery) ListVisible(accountID uuid.UUID) ([]Blog, error) {
 		ORDER BY blog.title ASC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +101,9 @@ func (qry *BlogQuery) ListVisible(accountID uuid.UUID) ([]Blog, error) {
 }
 
 // Powers the blog details page (admin only).
-func (qry *BlogQuery) ReadDetailsByID(blogID uuid.UUID) (BlogDetails, error) {
+func (qry *BlogQuery) ReadDetailsByID(ctx context.Context, blogID uuid.UUID) (BlogDetails, error) {
 	stmt := `
+		-- name: WebQuery_Blog_ReadDetailsByID
 		SELECT
 			blog.id,
 			blog.feed_url,
@@ -111,7 +115,7 @@ func (qry *BlogQuery) ReadDetailsByID(blogID uuid.UUID) (BlogDetails, error) {
 		WHERE blog.id = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, blogID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), blogID)
 	if err != nil {
 		return BlogDetails{}, err
 	}
@@ -125,8 +129,9 @@ func (qry *BlogQuery) ReadDetailsByID(blogID uuid.UUID) (BlogDetails, error) {
 }
 
 // Powers the add / follow blogs page.
-func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL value.URL) (BlogDetails, error) {
+func (qry *BlogQuery) ReadDetailsByFeedURL(ctx context.Context, feedURL value.URL) (BlogDetails, error) {
 	stmt := `
+		-- name: WebQuery_Blog_ReadDetailsByFeedURL
 		SELECT
 			blog.id,
 			blog.feed_url,
@@ -138,7 +143,7 @@ func (qry *BlogQuery) ReadDetailsByFeedURL(feedURL value.URL) (BlogDetails, erro
 		WHERE blog.feed_url = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, feedURL.Value())
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), feedURL.Value())
 	if err != nil {
 		return BlogDetails{}, err
 	}

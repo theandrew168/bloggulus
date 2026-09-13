@@ -1,6 +1,7 @@
 package webquery_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/model"
@@ -22,7 +23,7 @@ func TestListArticles(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 	test.CreatePost(t, repo, blog)
 
-	articles, err := qry.ListRecent(1, 0)
+	articles, err := qry.ListRecent(context.Background(), 1, 0)
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(articles), 1)
@@ -50,11 +51,11 @@ func TestListArticlesByAccount(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	account.FollowBlog(followedBlog)
 
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
 	// List posts from blogs followed by this account.
-	articles, err := qry.ListRecentByAccount(account.ID(), 5, 0)
+	articles, err := qry.ListRecentByAccount(context.Background(), account.ID(), 5, 0)
 	test.AssertNilError(t, err)
 
 	// We should only get the three posts associated with the followed blog.
@@ -71,7 +72,7 @@ func TestSearchArticles(t *testing.T) {
 	qry := webquery.NewArticle(conn)
 
 	blog := test.NewBlog()
-	err := repo.Blog().Create(blog)
+	err := repo.Blog().Create(context.Background(), blog)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -84,7 +85,7 @@ func TestSearchArticles(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Post().Create(pythonPost)
+	err = repo.Post().Create(context.Background(), pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -97,11 +98,11 @@ func TestSearchArticles(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Post().Create(boringPost)
+	err = repo.Post().Create(context.Background(), boringPost)
 	test.AssertNilError(t, err)
 
 	// list articles that relate to python
-	articles, err := qry.ListRelevant("python", 1, 0)
+	articles, err := qry.ListRelevant(context.Background(), "python", 1, 0)
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -129,7 +130,7 @@ func TestSearchArticlesByAccount(t *testing.T) {
 		})
 		test.AssertNilError(t, err)
 
-		err = repo.Post().Create(post)
+		err = repo.Post().Create(context.Background(), post)
 		test.AssertNilError(t, err)
 	}
 
@@ -145,18 +146,18 @@ func TestSearchArticlesByAccount(t *testing.T) {
 		})
 		test.AssertNilError(t, err)
 
-		err = repo.Post().Create(post)
+		err = repo.Post().Create(context.Background(), post)
 		test.AssertNilError(t, err)
 	}
 
 	account := test.CreateAccount(t, repo)
 	account.FollowBlog(followedBlog)
 
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
 	// List posts (from followed blogs) that relate to python.
-	articles, err := qry.ListRelevantByAccount(account.ID(), "python", 5, 0)
+	articles, err := qry.ListRelevantByAccount(context.Background(), account.ID(), "python", 5, 0)
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.
@@ -177,7 +178,7 @@ func TestCountArticles(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	count, err := qry.CountRecent()
+	count, err := qry.CountRecent(context.Background())
 	test.AssertNilError(t, err)
 
 	test.AssertAtLeast(t, count, 3)
@@ -205,11 +206,11 @@ func TestCountArticlesByAccount(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 	account.FollowBlog(followedBlog)
 
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
 	// We should only count the three posts associated with the followed blog.
-	count, err := qry.CountRecentByAccount(account.ID())
+	count, err := qry.CountRecentByAccount(context.Background(), account.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, count, 3)
 }
@@ -235,7 +236,7 @@ func TestCountSearchArticles(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Post().Create(pythonPost)
+	err = repo.Post().Create(context.Background(), pythonPost)
 	test.AssertNilError(t, err)
 
 	// create a post about python
@@ -248,11 +249,11 @@ func TestCountSearchArticles(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Post().Create(boringPost)
+	err = repo.Post().Create(context.Background(), boringPost)
 	test.AssertNilError(t, err)
 
 	// count posts that relate to python
-	count, err := qry.CountRelevant("python")
+	count, err := qry.CountRelevant(context.Background(), "python")
 	test.AssertNilError(t, err)
 
 	// should find at least one
@@ -280,7 +281,7 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 		})
 		test.AssertNilError(t, err)
 
-		err = repo.Post().Create(post)
+		err = repo.Post().Create(context.Background(), post)
 		test.AssertNilError(t, err)
 	}
 
@@ -296,18 +297,18 @@ func TestCountSearchArticlesByAccount(t *testing.T) {
 		})
 		test.AssertNilError(t, err)
 
-		err = repo.Post().Create(post)
+		err = repo.Post().Create(context.Background(), post)
 		test.AssertNilError(t, err)
 	}
 
 	account := test.CreateAccount(t, repo)
 	account.FollowBlog(followedBlog)
 
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
 	// Count posts (from followed blogs) that relate to python.
-	count, err := qry.CountRelevantByAccount(account.ID(), "python")
+	count, err := qry.CountRelevantByAccount(context.Background(), account.ID(), "python")
 	test.AssertNilError(t, err)
 
 	// Should only return the three posts from followed blogs.

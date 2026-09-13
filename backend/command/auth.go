@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"time"
@@ -26,12 +27,12 @@ func NewAuth(repo *repository.Repository) *AuthCommand {
 	return &cmd
 }
 
-func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
+func (cmd *AuthCommand) SignIn(ctx context.Context, username value.Name) (value.Token, error) {
 	// NOTE: Handling state outside the transaction is the exception, not the rule.
 	// This is a special case where a command needs to return a value (the session ID).
 	var sessionToken value.Token
 	err := cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		account, err := tx.Account().ReadByUsername(username)
+		account, err := tx.Account().ReadByUsername(ctx, username)
 		if err != nil {
 			if !errors.Is(err, postgres.ErrNotFound) {
 				return err
@@ -45,7 +46,7 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 				return err
 			}
 
-			err = tx.Account().Create(account)
+			err = tx.Account().Create(ctx, account)
 			if err != nil {
 				return err
 			}
@@ -65,7 +66,7 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 			return err
 		}
 
-		err = tx.Session().Create(session)
+		err = tx.Session().Create(ctx, session)
 		if err != nil {
 			return err
 		}
@@ -81,9 +82,9 @@ func (cmd *AuthCommand) SignIn(username value.Name) (value.Token, error) {
 	return sessionToken, err
 }
 
-func (cmd *AuthCommand) SignOut(sessionToken value.Token) error {
+func (cmd *AuthCommand) SignOut(ctx context.Context, sessionToken value.Token) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		session, err := tx.Session().ReadByTokenHash(sessionToken.Hash())
+		session, err := tx.Session().ReadByTokenHash(ctx, sessionToken.Hash())
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrSessionNotFound
@@ -92,7 +93,7 @@ func (cmd *AuthCommand) SignOut(sessionToken value.Token) error {
 			return err
 		}
 
-		err = tx.Session().Delete(session)
+		err = tx.Session().Delete(ctx, session)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrSessionNotFound
@@ -105,16 +106,16 @@ func (cmd *AuthCommand) SignOut(sessionToken value.Token) error {
 	})
 }
 
-func (cmd *AuthCommand) DeleteExpiredSessions(now time.Time) error {
+func (cmd *AuthCommand) DeleteExpiredSessions(ctx context.Context, now time.Time) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		now := timeutil.Now()
-		expiredSessions, err := tx.Session().ListExpired(now)
+		expiredSessions, err := tx.Session().ListExpired(ctx, now)
 		if err != nil {
 			return err
 		}
 
 		for _, session := range expiredSessions {
-			err := tx.Session().Delete(session)
+			err := tx.Session().Delete(ctx, session)
 			if err != nil {
 				// Ignore any "not found" errors here.
 				if errors.Is(err, postgres.ErrNotFound) {

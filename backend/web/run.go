@@ -12,16 +12,16 @@ import (
 	"github.com/coreos/go-systemd/v22/activation"
 )
 
-func Run(ctx context.Context, handler http.Handler, addr string) error {
+func Run(cancelCtx context.Context, handler http.Handler, addr string) error {
 	srv := http.Server{
-		BaseContext: func(net.Listener) context.Context { return ctx },
+		BaseContext: func(net.Listener) context.Context { return cancelCtx },
 		Handler:     handler,
 	}
 
 	// start a goro to watch for stop signal (context cancelled)
 	stopError := make(chan error)
 	go func() {
-		<-ctx.Done()
+		<-cancelCtx.Done()
 
 		// give the web server 5 seconds to shutdown gracefully
 		timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)

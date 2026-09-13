@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"context"
 	"log/slog"
 	"time"
 
@@ -108,7 +109,7 @@ func ComparePosts(blog *model.Blog, knownPosts []*model.Post, feedPosts []feed.P
 	return result, nil
 }
 
-func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feedURL value.URL) error {
+func SyncNewBlog(ctx context.Context, repo *repository.Repository, feedFetcher feed.FeedFetcher, feedURL value.URL) error {
 	// Make an unconditional fetch for the blog's feed.
 	req := feed.FetchFeedRequest{
 		URL: feedURL,
@@ -141,7 +142,7 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feed
 		return err
 	}
 
-	err = repo.Blog().Create(blog)
+	err = repo.Blog().Create(ctx, blog)
 	if err != nil {
 		return err
 	}
@@ -151,7 +152,7 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feed
 		"blog_title", blog.Title().Value(),
 	)
 
-	err = SyncPosts(repo, blog, feedBlog.Posts)
+	err = SyncPosts(ctx, repo, blog, feedBlog.Posts)
 	if err != nil {
 		return err
 	}
@@ -159,7 +160,7 @@ func SyncNewBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, feed
 	return nil
 }
 
-func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher, blog *model.Blog) error {
+func SyncExistingBlog(ctx context.Context, repo *repository.Repository, feedFetcher feed.FeedFetcher, blog *model.Blog) error {
 	// Make a conditional fetch for the blog's feed.
 	req := feed.FetchFeedRequest{
 		URL:          blog.FeedURL(),
@@ -174,7 +175,7 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 	// Update the blog's cache headers if they have changed.
 	headersChanged := UpdateCacheHeaders(blog, resp)
 	if headersChanged {
-		err = repo.Blog().Update(blog)
+		err = repo.Blog().Update(ctx, blog)
 		if err != nil {
 			return err
 		}
@@ -190,7 +191,7 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 		return err
 	}
 
-	err = SyncPosts(repo, blog, feedBlog.Posts)
+	err = SyncPosts(ctx, repo, blog, feedBlog.Posts)
 	if err != nil {
 		return err
 	}
@@ -198,9 +199,9 @@ func SyncExistingBlog(repo *repository.Repository, feedFetcher feed.FeedFetcher,
 	return nil
 }
 
-func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.Post) error {
+func SyncPosts(ctx context.Context, repo *repository.Repository, blog *model.Blog, feedPosts []feed.Post) error {
 	// List all known posts for the current blog.
-	knownPosts, err := repo.Post().ListByBlogID(blog.ID())
+	knownPosts, err := repo.Post().ListByBlogID(ctx, blog.ID())
 	if err != nil {
 		return err
 	}
@@ -213,7 +214,7 @@ func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.P
 
 	// Create any posts that are new.
 	for _, post := range result.PostsToCreate {
-		err = repo.Post().Create(post)
+		err = repo.Post().Create(ctx, post)
 		if err != nil {
 			slog.Warn("failed to create post", "url", post.URL().Value(), "error", err.Error())
 		}
@@ -221,7 +222,7 @@ func SyncPosts(repo *repository.Repository, blog *model.Blog, feedPosts []feed.P
 
 	// Update any posts that have changed.
 	for _, post := range result.PostsToUpdate {
-		err = repo.Post().Update(post)
+		err = repo.Post().Update(ctx, post)
 		if err != nil {
 			slog.Warn("failed to update post", "url", post.URL().Value(), "error", err.Error())
 		}

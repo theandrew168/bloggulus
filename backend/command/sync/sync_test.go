@@ -1,6 +1,7 @@
 package sync_test
 
 import (
+	"context"
 	"testing"
 	"time"
 	"uuid"
@@ -147,10 +148,10 @@ func TestNewBlog(t *testing.T) {
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedURL)
+	blog, err := repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// verify blog data
@@ -160,7 +161,7 @@ func TestNewBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL().Value(), feedBlog.FeedURL)
 
 	// fetch posts and verify count
-	posts, err := repo.Post().ListByBlogID(blog.ID())
+	posts, err := repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -195,10 +196,10 @@ func TestExistingBlog(t *testing.T) {
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedURL)
+	blog, err := repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// verify blog data
@@ -208,7 +209,7 @@ func TestExistingBlog(t *testing.T) {
 	test.AssertEqual(t, blog.FeedURL().Value(), feedBlog.FeedURL)
 
 	// fetch posts and verify count (should be none)
-	posts, err := repo.Post().ListByBlogID(blog.ID())
+	posts, err := repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 0)
 
@@ -228,11 +229,11 @@ func TestExistingBlog(t *testing.T) {
 	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err = repo.Post().ListByBlogID(blog.ID())
+	posts, err = repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -256,7 +257,7 @@ func TestUnreachableFeed(t *testing.T) {
 
 	cmd := command.NewSync(repo, feedFetcher)
 
-	err := cmd.SyncBlog(feedURL)
+	err := cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertErrorIs(t, err, feed.ErrUnreachableFeed)
 }
 
@@ -291,14 +292,14 @@ func TestUpdatePostContent(t *testing.T) {
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedURL)
+	blog, err := repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// fetch posts and verify count
-	posts, err := repo.Post().ListByBlogID(blog.ID())
+	posts, err := repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -317,11 +318,11 @@ func TestUpdatePostContent(t *testing.T) {
 	feeds[feedBlog.FeedURL] = feed.FetchFeedResponse{Feed: atomFeed}
 
 	// sync the blog again
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch posts and verify count
-	posts, err = repo.Post().ListByBlogID(blog.ID())
+	posts, err = repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, len(posts), 1)
 
@@ -355,24 +356,24 @@ func TestCacheHeaderOverwrite(t *testing.T) {
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedURL)
+	blog, err := repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// update the blog's ETag and LastModified to something non-empty
 	blog.SetETag("foo")
 	blog.SetLastModified("bar")
-	err = repo.Blog().Update(blog)
+	err = repo.Blog().Update(context.Background(), blog)
 	test.AssertNilError(t, err)
 
 	// sync the blog again (will see empty ETag and LastModified values)
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = repo.Blog().ReadByFeedURL(feedURL)
+	blog, err = repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the existing ETag and LastModified values haven't been wiped out
@@ -409,10 +410,10 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	cmd := command.NewSync(repo, feedFetcher)
 
 	// sync a new blog
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
-	blog, err := repo.Blog().ReadByFeedURL(feedURL)
+	blog, err := repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 	test.AssertEqual(t, blog.ETag(), "etag")
 	test.AssertEqual(t, blog.LastModified(), "lastModified")
@@ -429,11 +430,11 @@ func TestCacheHeaderUpdate(t *testing.T) {
 	cmd = command.NewSync(repo, feedFetcher)
 
 	// sync the blog again (will see new ETag and LastModified values)
-	err = cmd.SyncBlog(feedURL)
+	err = cmd.SyncBlog(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// refetch the blog
-	blog, err = repo.Blog().ReadByFeedURL(feedURL)
+	blog, err = repo.Blog().ReadByFeedURL(context.Background(), feedURL)
 	test.AssertNilError(t, err)
 
 	// verify that the ETag and LastModified values got updated

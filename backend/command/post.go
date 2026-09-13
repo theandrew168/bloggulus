@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"uuid"
@@ -22,9 +23,9 @@ func NewPost(repo *repository.Repository) *PostCommand {
 	return &cmd
 }
 
-func (cmd *PostCommand) DeletePost(postID uuid.UUID) error {
+func (cmd *PostCommand) DeletePost(ctx context.Context, postID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		post, err := tx.Post().Read(postID)
+		post, err := tx.Post().Read(ctx, postID)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrPostNotFound
@@ -33,7 +34,7 @@ func (cmd *PostCommand) DeletePost(postID uuid.UUID) error {
 			return err
 		}
 
-		err = tx.Post().Delete(post)
+		err = tx.Post().Delete(ctx, post)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrPostNotFound

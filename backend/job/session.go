@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 )
@@ -25,32 +27,40 @@ func NewSessionService(cmd *command.Command) *SessionService {
 	return &s
 }
 
-func (s *SessionService) Run(ctx context.Context) error {
+func (s *SessionService) Run(cancelCtx context.Context) error {
+	tracerCtx, span := otel.Tracer("bloggulus").Start(context.Background(), "SessionService")
+
 	// Clear out any expired sessions at service startup.
-	err := s.cmd.Auth().DeleteExpiredSessions(timeutil.Now())
+	err := s.cmd.Auth().DeleteExpiredSessions(tracerCtx, timeutil.Now())
 	if err != nil {
 		slog.Error("error clearing expired sessions",
 			"error", err.Error(),
 		)
 	}
 
-	// Then run again every "internal" until stopped (by the context being canceled).
+	span.End()
+
+	// Then run again every "interval" until stopped (by the context being canceled).
 	ticker := time.NewTicker(ClearExpiredSessionsInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-cancelCtx.Done():
 			slog.Info("stopping session service")
 			slog.Info("stopped session service")
 			return nil
 		case <-ticker.C:
-			err := s.cmd.Auth().DeleteExpiredSessions(timeutil.Now())
+			tracerCtx, span := otel.Tracer("bloggulus").Start(context.Background(), "SessionService")
+
+			err := s.cmd.Auth().DeleteExpiredSessions(tracerCtx, timeutil.Now())
 			if err != nil {
 				slog.Error("error clearing expired sessions",
 					"error", err.Error(),
 				)
 			}
+
+			span.End()
 		}
 	}
 }

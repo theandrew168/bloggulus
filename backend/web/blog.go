@@ -22,13 +22,13 @@ func HandleBlogRead(qry *webquery.Query) http.Handler {
 			return
 		}
 
-		blog, err := qry.Blog().ReadDetailsByID(blogID)
+		blog, err := qry.Blog().ReadDetailsByID(r.Context(), blogID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)
 			return
 		}
 
-		posts, err := qry.Post().ListDetailsByBlogID(blogID)
+		posts, err := qry.Post().ListDetailsByBlogID(r.Context(), blogID)
 		if err != nil {
 			util.ListErrorResponse(w, r, err)
 			return
@@ -54,7 +54,7 @@ func HandleBlogDeleteForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Blog().DeleteBlog(blogID)
+		err = cmd.Blog().DeleteBlog(r.Context(), blogID)
 		if err != nil {
 			if errors.Is(err, command.ErrBlogNotFound) {
 				util.NotFoundResponse(w, r)
@@ -78,7 +78,7 @@ func HandleBlogHideForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Blog().HideBlog(blogID)
+		err = cmd.Blog().HideBlog(r.Context(), blogID)
 		if err != nil {
 			if errors.Is(err, command.ErrBlogNotFound) {
 				util.NotFoundResponse(w, r)
@@ -99,7 +99,7 @@ func HandleBlogShowForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Blog().ShowBlog(blogID)
+		err = cmd.Blog().ShowBlog(r.Context(), blogID)
 		if err != nil {
 			if errors.Is(err, command.ErrBlogNotFound) {
 				util.NotFoundResponse(w, r)

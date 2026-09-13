@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -65,8 +66,9 @@ func NewSessionRepository(conn postgres.Conn) *SessionRepository {
 	return &r
 }
 
-func (r *SessionRepository) Create(session *model.Session) error {
+func (r *SessionRepository) Create(ctx context.Context, session *model.Session) error {
 	stmt := `
+		-- name: Repository_Session_Create
 		INSERT INTO session
 			(id, account_id, token_hash, expires_at, meta_created_at, meta_updated_at)
 		VALUES
@@ -87,7 +89,7 @@ func (r *SessionRepository) Create(session *model.Session) error {
 		row.MetaUpdatedAt,
 	}
 
-	_, err = r.conn.Exec(context.Background(), stmt, args...)
+	_, err = r.conn.Exec(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -95,8 +97,9 @@ func (r *SessionRepository) Create(session *model.Session) error {
 	return nil
 }
 
-func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
+func (r *SessionRepository) Read(ctx context.Context, id uuid.UUID) (*model.Session, error) {
 	stmt := `
+		-- name: Repository_Session_Read
 		SELECT
 			session.id,
 			session.account_id,
@@ -108,7 +111,7 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 		WHERE session.id = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, id)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), id)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +124,9 @@ func (r *SessionRepository) Read(id uuid.UUID) (*model.Session, error) {
 	return row.unmarshal()
 }
 
-func (r *SessionRepository) ReadByTokenHash(tokenHash value.TokenHash) (*model.Session, error) {
+func (r *SessionRepository) ReadByTokenHash(ctx context.Context, tokenHash value.TokenHash) (*model.Session, error) {
 	stmt := `
+		-- name: Repository_Session_ReadByTokenHash
 		SELECT
 			session.id,
 			session.account_id,
@@ -134,7 +138,7 @@ func (r *SessionRepository) ReadByTokenHash(tokenHash value.TokenHash) (*model.S
 		WHERE session.token_hash = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, tokenHash.Value())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), tokenHash.Value())
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +152,9 @@ func (r *SessionRepository) ReadByTokenHash(tokenHash value.TokenHash) (*model.S
 }
 
 // Used for deleting expired sessions.
-func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error) {
+func (r *SessionRepository) ListExpired(ctx context.Context, now time.Time) ([]*model.Session, error) {
 	stmt := `
+		-- name: Repository_Session_ListExpired
 		SELECT
 			session.id,
 			session.account_id,
@@ -161,7 +166,7 @@ func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error)
 		WHERE session.expires_at <= $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, now)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), now)
 	if err != nil {
 		return nil, err
 	}
@@ -184,14 +189,15 @@ func (r *SessionRepository) ListExpired(now time.Time) ([]*model.Session, error)
 	return sessions, nil
 }
 
-func (r *SessionRepository) Delete(session *model.Session) error {
+func (r *SessionRepository) Delete(ctx context.Context, session *model.Session) error {
 	stmt := `
+		-- name: Repository_Session_Delete
 		DELETE FROM session
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, session.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), session.ID())
 	if err != nil {
 		return err
 	}
@@ -204,13 +210,14 @@ func (r *SessionRepository) Delete(session *model.Session) error {
 	return nil
 }
 
-func (r *SessionRepository) DeleteExpired(now time.Time) error {
+func (r *SessionRepository) DeleteExpired(ctx context.Context, now time.Time) error {
 	stmt := `
+		-- name: Repository_Session_DeleteExpired
 		DELETE FROM session
 		WHERE expires_at <= $1;
 	`
 
-	_, err := r.conn.Exec(context.Background(), stmt, now)
+	_, err := r.conn.Exec(ctx, strings.TrimSpace(stmt), now)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -77,8 +78,9 @@ func NewPostRepository(conn postgres.Conn) *PostRepository {
 	return &r
 }
 
-func (r *PostRepository) Create(post *model.Post) error {
+func (r *PostRepository) Create(ctx context.Context, post *model.Post) error {
 	stmt := `
+		-- name: Repository_Post_Create
 		INSERT INTO post
 			(id, blog_id, url, title, published_at, content, meta_created_at, meta_updated_at)
 		VALUES
@@ -101,7 +103,7 @@ func (r *PostRepository) Create(post *model.Post) error {
 		row.MetaUpdatedAt,
 	}
 
-	_, err = r.conn.Exec(context.Background(), stmt, args...)
+	_, err = r.conn.Exec(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -109,8 +111,9 @@ func (r *PostRepository) Create(post *model.Post) error {
 	return nil
 }
 
-func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
+func (r *PostRepository) Read(ctx context.Context, id uuid.UUID) (*model.Post, error) {
 	stmt := `
+		-- name: Repository_Post_Read
 		SELECT
 			post.id,
 			post.blog_id,
@@ -124,7 +127,7 @@ func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 		WHERE post.id = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, id)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), id)
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +141,9 @@ func (r *PostRepository) Read(id uuid.UUID) (*model.Post, error) {
 }
 
 // Used for syncing a blog's posts.
-func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
+func (r *PostRepository) ListByBlogID(ctx context.Context, blogID uuid.UUID) ([]*model.Post, error) {
 	stmt := `
+		-- name: Repository_Post_ListByBlogID
 		SELECT
 			post.id,
 			post.blog_id,
@@ -154,7 +158,7 @@ func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
 		ORDER BY post.published_at DESC;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, blogID)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), blogID)
 	if err != nil {
 		return nil, err
 	}
@@ -177,9 +181,10 @@ func (r *PostRepository) ListByBlogID(blogID uuid.UUID) ([]*model.Post, error) {
 	return posts, nil
 }
 
-func (r *PostRepository) Update(post *model.Post) error {
+func (r *PostRepository) Update(ctx context.Context, post *model.Post) error {
 	now := timeutil.Now()
 	stmt := `
+		-- name: Repository_Post_Update
 		UPDATE post
 		SET
 			url = $2,
@@ -207,7 +212,7 @@ func (r *PostRepository) Update(post *model.Post) error {
 		row.MetaUpdatedAt,
 	}
 
-	rows, err := r.conn.Query(context.Background(), stmt, args...)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return err
 	}
@@ -221,14 +226,15 @@ func (r *PostRepository) Update(post *model.Post) error {
 	return nil
 }
 
-func (r *PostRepository) Delete(post *model.Post) error {
+func (r *PostRepository) Delete(ctx context.Context, post *model.Post) error {
 	stmt := `
+		-- name: Repository_Post_Delete
 		DELETE FROM post
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, post.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), post.ID())
 	if err != nil {
 		return err
 	}

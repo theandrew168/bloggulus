@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+
 	"github.com/theandrew168/bloggulus/backend/command"
 )
 
@@ -24,32 +26,40 @@ func NewSyncService(cmd *command.Command) *SyncService {
 	return &s
 }
 
-func (s *SyncService) Run(ctx context.Context) error {
+func (s *SyncService) Run(cancelCtx context.Context) error {
+	tracerCtx, span := otel.Tracer("bloggulus").Start(context.Background(), "SyncService")
+
 	// perform an initial sync at service startup
-	err := s.cmd.Sync().SyncAllBlogs()
+	err := s.cmd.Sync().SyncAllBlogs(tracerCtx)
 	if err != nil {
 		slog.Error("error syncing blogs",
 			"error", err.Error(),
 		)
 	}
 
-	// then again every "internal" until stopped
+	span.End()
+
+	// then again every "interval" until stopped
 	ticker := time.NewTicker(SyncInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-cancelCtx.Done():
 			slog.Info("stopping sync service")
 			slog.Info("stopped sync service")
 			return nil
 		case <-ticker.C:
-			err := s.cmd.Sync().SyncAllBlogs()
+			tracerCtx, span := otel.Tracer("bloggulus").Start(context.Background(), "SyncService")
+
+			err := s.cmd.Sync().SyncAllBlogs(tracerCtx)
 			if err != nil {
 				slog.Error("error syncing blogs",
 					"error", err.Error(),
 				)
 			}
+
+			span.End()
 		}
 	}
 }

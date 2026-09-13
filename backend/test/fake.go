@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"math/rand"
 	"testing"
 	"time"
@@ -156,7 +157,7 @@ func CreateBlog(t *testing.T, repo *repository.Repository) *model.Blog {
 	blog := NewBlog()
 
 	// create an example blog
-	err := repo.Blog().Create(blog)
+	err := repo.Blog().Create(context.Background(), blog)
 	AssertNilError(t, err)
 
 	return blog
@@ -170,7 +171,7 @@ func CreatePost(t *testing.T, repo *repository.Repository, blog *model.Blog) *mo
 	post := NewPost(blog)
 
 	// create an example post
-	err := repo.Post().Create(post)
+	err := repo.Post().Create(context.Background(), post)
 	AssertNilError(t, err)
 
 	return post
@@ -184,7 +185,7 @@ func CreateTag(t *testing.T, repo *repository.Repository) *model.Tag {
 	tag := NewTag()
 
 	// create an example tag
-	err := repo.Tag().Create(tag)
+	err := repo.Tag().Create(context.Background(), tag)
 	AssertNilError(t, err)
 
 	return tag
@@ -198,7 +199,7 @@ func CreateAccount(t *testing.T, repo *repository.Repository) *model.Account {
 	account := NewAccount()
 
 	// create an example account
-	err := repo.Account().Create(account)
+	err := repo.Account().Create(context.Background(), account)
 	AssertNilError(t, err)
 
 	return account
@@ -212,7 +213,7 @@ func CreateSession(t *testing.T, repo *repository.Repository, account *model.Acc
 	session, sessionToken := NewSession(account)
 
 	// create an example session
-	err := repo.Session().Create(session)
+	err := repo.Session().Create(context.Background(), session)
 	AssertNilError(t, err)
 
 	return session, sessionToken

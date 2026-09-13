@@ -1,6 +1,7 @@
 package webquery_test
 
 import (
+	"context"
 	"testing"
 
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
@@ -23,13 +24,13 @@ func TestListBlogsForAccount(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 	account.FollowBlog(blog)
 
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
 	// Create another blog but don't follow it.
 	test.CreateBlog(t, repo)
 
-	blogs, err := qry.ListAll(account.ID())
+	blogs, err := qry.ListAll(context.Background(), account.ID())
 	test.AssertNilError(t, err)
 
 	// Count how many blogs are being followed.

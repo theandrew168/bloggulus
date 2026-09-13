@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -14,7 +15,7 @@ func TestAccountCreate(t *testing.T) {
 	defer closer()
 
 	account := test.NewAccount()
-	err := repo.Account().Create(account)
+	err := repo.Account().Create(context.Background(), account)
 	test.AssertNilError(t, err)
 }
 
@@ -27,7 +28,7 @@ func TestAccountCreateAlreadyExists(t *testing.T) {
 	account := test.CreateAccount(t, repo)
 
 	// attempt to create the same account again
-	err := repo.Account().Create(account)
+	err := repo.Account().Create(context.Background(), account)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
@@ -38,7 +39,7 @@ func TestAccountRead(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	got, err := repo.Account().Read(account.ID())
+	got, err := repo.Account().Read(context.Background(), account.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())
@@ -51,7 +52,7 @@ func TestAccountReadByUsername(t *testing.T) {
 	defer closer()
 
 	account := test.CreateAccount(t, repo)
-	got, err := repo.Account().ReadByUsername(account.Username())
+	got, err := repo.Account().ReadByUsername(context.Background(), account.Username())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), account.ID())
@@ -67,19 +68,19 @@ func TestAccountUpdate(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 
 	account.FollowBlog(blog)
-	err := repo.Account().Update(account)
+	err := repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
-	updatedAccount, err := repo.Account().Read(account.ID())
+	updatedAccount, err := repo.Account().Read(context.Background(), account.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertSetContains(t, updatedAccount.FollowedBlogIDs(), blog.ID())
 
 	account.UnfollowBlog(blog)
-	err = repo.Account().Update(account)
+	err = repo.Account().Update(context.Background(), account)
 	test.AssertNilError(t, err)
 
-	updatedAccount, err = repo.Account().Read(account.ID())
+	updatedAccount, err = repo.Account().Read(context.Background(), account.ID())
 	test.AssertNilError(t, err)
 	test.AssertSetDoesNotContain(t, updatedAccount.FollowedBlogIDs(), blog.ID())
 }
@@ -92,9 +93,9 @@ func TestAccountDelete(t *testing.T) {
 
 	account := test.CreateAccount(t, repo)
 
-	err := repo.Account().Delete(account)
+	err := repo.Account().Delete(context.Background(), account)
 	test.AssertNilError(t, err)
 
-	_, err = repo.Account().Read(account.ID())
+	_, err = repo.Account().Read(context.Background(), account.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

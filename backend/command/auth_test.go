@@ -1,6 +1,7 @@
 package command_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -27,7 +28,7 @@ func TestDeleteExpiredSessions(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Session().Create(sessionOld)
+	err = repo.Session().Create(context.Background(), sessionOld)
 	test.AssertNilError(t, err)
 
 	sessionNew, _, err := model.NewSession(model.NewSessionParams{
@@ -36,15 +37,15 @@ func TestDeleteExpiredSessions(t *testing.T) {
 	})
 	test.AssertNilError(t, err)
 
-	err = repo.Session().Create(sessionNew)
+	err = repo.Session().Create(context.Background(), sessionNew)
 	test.AssertNilError(t, err)
 
-	err = cmd.DeleteExpiredSessions(timeutil.Now())
+	err = cmd.DeleteExpiredSessions(context.Background(), timeutil.Now())
 	test.AssertNilError(t, err)
 
-	_, err = repo.Session().Read(sessionOld.ID())
+	_, err = repo.Session().Read(context.Background(), sessionOld.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 
-	_, err = repo.Session().Read(sessionNew.ID())
+	_, err = repo.Session().Read(context.Background(), sessionNew.ID())
 	test.AssertNilError(t, err)
 }

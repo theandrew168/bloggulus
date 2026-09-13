@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/coreos/go-systemd/v22/daemon"
+	"github.com/pgx-contrib/pgxotel"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -22,7 +23,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.42.0"
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
@@ -62,9 +63,7 @@ func run() error {
 	migrate := flag.Bool("migrate", false, "apply migrations and exit")
 	flag.Parse()
 
-	// Create a context that cancels upon receiving an interrupt signal.
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+	tracerCtx := context.Background()
 
 	// TODO: What breaks if I remove this?
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
@@ -72,22 +71,24 @@ func run() error {
 		propagation.Baggage{},
 	))
 
-	res, err := initOpenTelemetryResource(ctx)
-	if err != nil {
-		return err
-	}
+	res := initOpenTelemetryResource()
 
-	shutdownLogger, err := initOpenTelemetryLogger(ctx, res)
+	loggerProvider, err := initOpenTelemetryLogger(tracerCtx, res)
 	if err != nil {
 		return err
 	}
-	defer shutdownLogger()
+	defer loggerProvider.Shutdown(tracerCtx)
 
-	shutdownTracer, err := initOpenTelemetryTracer(ctx, res)
+	tracerProvider, err := initOpenTelemetryTracer(tracerCtx, res)
 	if err != nil {
 		return err
 	}
-	defer shutdownTracer()
+	defer tracerProvider.Shutdown(tracerCtx)
+
+	pgxTracer := pgxotel.QueryTracer{
+		Name:     "bloggulus",
+		Provider: tracerProvider,
+	}
 
 	// Load the application's config file.
 	conf, err := config.ReadFile(*configFilePath)
@@ -95,8 +96,15 @@ func run() error {
 		return err
 	}
 
+	// Configure the database connection pool with tracing.
+	poolConfig, err := postgres.PoolConfig(conf.DatabaseURI)
+	if err != nil {
+		return err
+	}
+	poolConfig.ConnConfig.Tracer = &pgxTracer
+
 	// Open a database connection pool.
-	pool, err := postgres.ConnectPool(conf.DatabaseURI)
+	pool, err := postgres.ConnectPool(poolConfig)
 	if err != nil {
 		return err
 	}
@@ -137,7 +145,7 @@ func run() error {
 
 	otelWebHandler := otelhttp.NewHandler(
 		webHandler,
-		"http-server-fallback", // The base "operation" name fallback
+		"TODO: Fix this fallback", // The base "operation" name fallback
 		otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
 			if r.Pattern != "" {
 				// Returns exactly what matched, e.g., "GET /users/{id}"
@@ -156,11 +164,15 @@ func run() error {
 
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 
+	// Create a context that cancels upon receiving an interrupt signal.
+	cancelCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	var wg sync.WaitGroup
 
 	// Start the web server in the background.
 	wg.Go(func() {
-		err := web.Run(ctx, otelWebHandler, addr)
+		err := web.Run(cancelCtx, otelWebHandler, addr)
 		if err != nil {
 			slog.Error("error running web server",
 				"error", err.Error(),
@@ -170,7 +182,7 @@ func run() error {
 
 	// Start the sync service in the background.
 	wg.Go(func() {
-		err := syncService.Run(ctx)
+		err := syncService.Run(cancelCtx)
 		if err != nil {
 			slog.Error("error running sync service",
 				"error", err.Error(),
@@ -180,7 +192,7 @@ func run() error {
 
 	// Start the session cleanup service in the background.
 	wg.Go(func() {
-		err := sessionService.Run(ctx)
+		err := sessionService.Run(cancelCtx)
 		if err != nil {
 			slog.Error("error running session service",
 				"error", err.Error(),
@@ -196,16 +208,15 @@ func run() error {
 
 type ShutdownFunc func() error
 
-func initOpenTelemetryResource(ctx context.Context) (*resource.Resource, error) {
-	return resource.New(ctx,
-		resource.WithAttributes(
-			semconv.ServiceName("bloggulus"),
-			semconv.ServiceVersion("v0.8.0"),
-		),
+func initOpenTelemetryResource() *resource.Resource {
+	return resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceName("bloggulus"),
+		semconv.ServiceVersion("v0.8.0"),
 	)
 }
 
-func initOpenTelemetryLogger(ctx context.Context, res *resource.Resource) (ShutdownFunc, error) {
+func initOpenTelemetryLogger(ctx context.Context, res *resource.Resource) (*log.LoggerProvider, error) {
 	victoriaLogsExporter, err := otlploghttp.New(ctx,
 		otlploghttp.WithEndpointURL("http://localhost:9428/insert/opentelemetry/v1/logs"),
 	)
@@ -222,20 +233,16 @@ func initOpenTelemetryLogger(ctx context.Context, res *resource.Resource) (Shutd
 	)
 	global.SetLoggerProvider(loggerProvider)
 
-	shutdown := func() error {
-		return loggerProvider.Shutdown(ctx)
-	}
-
 	otelSlogHandler := otelslog.NewHandler(
 		"bloggulus",
 		otelslog.WithLoggerProvider(loggerProvider),
 	)
 	slog.SetDefault(slog.New(otelSlogHandler))
 
-	return shutdown, nil
+	return loggerProvider, nil
 }
 
-func initOpenTelemetryTracer(ctx context.Context, res *resource.Resource) (ShutdownFunc, error) {
+func initOpenTelemetryTracer(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
 	victoriaTracesExporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithEndpointURL("http://localhost:10428/insert/opentelemetry/v1/traces"),
 	)
@@ -252,9 +259,5 @@ func initOpenTelemetryTracer(ctx context.Context, res *resource.Resource) (Shutd
 	)
 	otel.SetTracerProvider(tracerProvider)
 
-	shutdown := func() error {
-		return tracerProvider.Shutdown(ctx)
-	}
-
-	return shutdown, nil
+	return tracerProvider, nil
 }

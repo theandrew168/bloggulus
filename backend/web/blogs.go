@@ -29,9 +29,9 @@ func HandleBlogList(qry *webquery.Query) http.Handler {
 		var err error
 
 		if account.IsAdmin {
-			blogs, err = qry.Blog().ListAll(account.ID)
+			blogs, err = qry.Blog().ListAll(r.Context(), account.ID)
 		} else {
-			blogs, err = qry.Blog().ListVisible(account.ID)
+			blogs, err = qry.Blog().ListVisible(r.Context(), account.ID)
 		}
 
 		if err != nil {
@@ -78,10 +78,10 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 		}
 
 		// Check if the blog already exists.
-		blog, err := qry.Blog().ReadDetailsByFeedURL(feedURL)
+		blog, err := qry.Blog().ReadDetailsByFeedURL(r.Context(), feedURL)
 		if err == nil {
 			// If it does, follow it for the current user.
-			err = cmd.Account().FollowBlog(account.ID, blog.ID)
+			err = cmd.Account().FollowBlog(r.Context(), account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
@@ -112,7 +112,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 		// Use the SyncService to add the new blog.
 		// TODO: Make this respect graceful shutdowns (River Queue?)
 		go func() {
-			err := cmd.Sync().SyncBlog(feedURL)
+			err := cmd.Sync().SyncBlog(r.Context(), feedURL)
 			if err != nil {
 				slog.Error("error adding blog",
 					"error", err.Error(),
@@ -123,7 +123,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 
 			// The blog _should_ exist not if SyncBlog finished without errors.
 			// That means any errors here are fatal.
-			blog, err = qry.Blog().ReadDetailsByFeedURL(feedURL)
+			blog, err = qry.Blog().ReadDetailsByFeedURL(r.Context(), feedURL)
 			if err != nil {
 				slog.Error("error reading blog",
 					"error", err.Error(),
@@ -132,7 +132,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 				return
 			}
 
-			err = cmd.Account().FollowBlog(account.ID, blog.ID)
+			err = cmd.Account().FollowBlog(r.Context(), account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
 					slog.Error("error following blog",
@@ -176,7 +176,7 @@ func HandleBlogFollowForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			return
 		}
 
-		err = cmd.Account().FollowBlog(account.ID, blogID)
+		err = cmd.Account().FollowBlog(r.Context(), account.ID, blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
@@ -187,7 +187,7 @@ func HandleBlogFollowForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			return
 		}
 
-		blog, err := qry.Blog().ReadDetailsByID(blogID)
+		blog, err := qry.Blog().ReadDetailsByID(r.Context(), blogID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)
 			return
@@ -234,7 +234,7 @@ func HandleBlogUnfollowForm(cmd *command.Command, qry *webquery.Query) http.Hand
 			return
 		}
 
-		err = cmd.Account().UnfollowBlog(account.ID, blogID)
+		err = cmd.Account().UnfollowBlog(r.Context(), account.ID, blogID)
 		if err != nil {
 			switch {
 			case errors.Is(err, postgres.ErrConflict):
@@ -245,7 +245,7 @@ func HandleBlogUnfollowForm(cmd *command.Command, qry *webquery.Query) http.Hand
 			return
 		}
 
-		blog, err := qry.Blog().ReadDetailsByID(blogID)
+		blog, err := qry.Blog().ReadDetailsByID(r.Context(), blogID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)
 			return

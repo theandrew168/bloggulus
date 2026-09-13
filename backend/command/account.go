@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"uuid"
@@ -23,14 +24,14 @@ func NewAccount(repo *repository.Repository) *AccountCommand {
 	return &cmd
 }
 
-func (cmd *AccountCommand) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
+func (cmd *AccountCommand) FollowBlog(ctx context.Context, accountID uuid.UUID, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		account, err := tx.Account().Read(accountID)
+		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
 			return err
 		}
 
-		blog, err := tx.Blog().Read(blogID)
+		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrBlogNotFound
@@ -44,7 +45,7 @@ func (cmd *AccountCommand) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) err
 			return err
 		}
 
-		err = tx.Account().Update(account)
+		err = tx.Account().Update(ctx, account)
 		if err != nil {
 			return err
 		}
@@ -60,14 +61,14 @@ func (cmd *AccountCommand) FollowBlog(accountID uuid.UUID, blogID uuid.UUID) err
 	})
 }
 
-func (cmd *AccountCommand) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) error {
+func (cmd *AccountCommand) UnfollowBlog(ctx context.Context, accountID uuid.UUID, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		account, err := tx.Account().Read(accountID)
+		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
 			return err
 		}
 
-		blog, err := tx.Blog().Read(blogID)
+		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrBlogNotFound
@@ -81,7 +82,7 @@ func (cmd *AccountCommand) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) e
 			return err
 		}
 
-		err = tx.Account().Update(account)
+		err = tx.Account().Update(ctx, account)
 		if err != nil {
 			return err
 		}
@@ -97,9 +98,9 @@ func (cmd *AccountCommand) UnfollowBlog(accountID uuid.UUID, blogID uuid.UUID) e
 	})
 }
 
-func (cmd *AccountCommand) DeleteAccount(accountID uuid.UUID) error {
+func (cmd *AccountCommand) DeleteAccount(ctx context.Context, accountID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		account, err := tx.Account().Read(accountID)
+		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrAccountNotFound
@@ -113,7 +114,7 @@ func (cmd *AccountCommand) DeleteAccount(accountID uuid.UUID) error {
 			return ErrDeleteAdminAccount
 		}
 
-		err = tx.Account().Delete(account)
+		err = tx.Account().Delete(ctx, account)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrAccountNotFound

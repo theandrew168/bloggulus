@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -88,8 +89,9 @@ func NewBlogRepository(conn postgres.Conn) *BlogRepository {
 	return &r
 }
 
-func (r *BlogRepository) Create(blog *model.Blog) error {
+func (r *BlogRepository) Create(ctx context.Context, blog *model.Blog) error {
 	stmt := `
+		-- name: Repository_Blog_Create
 		INSERT INTO blog
 			(id, feed_url, site_url, title, is_public, etag, last_modified, synced_at, meta_created_at, meta_updated_at)
 		VALUES
@@ -114,7 +116,7 @@ func (r *BlogRepository) Create(blog *model.Blog) error {
 		row.MetaUpdatedAt,
 	}
 
-	_, err = r.conn.Exec(context.Background(), stmt, args...)
+	_, err = r.conn.Exec(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -122,8 +124,9 @@ func (r *BlogRepository) Create(blog *model.Blog) error {
 	return nil
 }
 
-func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
+func (r *BlogRepository) Read(ctx context.Context, id uuid.UUID) (*model.Blog, error) {
 	stmt := `
+		-- name: Repository_Blog_Read
 		SELECT
 			blog.id,
 			blog.feed_url,
@@ -139,7 +142,7 @@ func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 		WHERE id = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, id)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), id)
 	if err != nil {
 		return nil, err
 	}
@@ -152,8 +155,9 @@ func (r *BlogRepository) Read(id uuid.UUID) (*model.Blog, error) {
 	return row.unmarshal()
 }
 
-func (r *BlogRepository) ReadByFeedURL(feedURL value.URL) (*model.Blog, error) {
+func (r *BlogRepository) ReadByFeedURL(ctx context.Context, feedURL value.URL) (*model.Blog, error) {
 	stmt := `
+		-- name: Repository_Blog_ReadByFeedURL
 		SELECT
 			blog.id,
 			blog.feed_url,
@@ -169,7 +173,7 @@ func (r *BlogRepository) ReadByFeedURL(feedURL value.URL) (*model.Blog, error) {
 		WHERE blog.feed_url = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, feedURL.Value())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), feedURL.Value())
 	if err != nil {
 		return nil, err
 	}
@@ -183,8 +187,9 @@ func (r *BlogRepository) ReadByFeedURL(feedURL value.URL) (*model.Blog, error) {
 }
 
 // Used for syncing blogs.
-func (r *BlogRepository) List() ([]*model.Blog, error) {
+func (r *BlogRepository) List(ctx context.Context) ([]*model.Blog, error) {
 	stmt := `
+		-- name: Repository_Blog_List
 		SELECT
 			blog.id,
 			blog.feed_url,
@@ -200,7 +205,7 @@ func (r *BlogRepository) List() ([]*model.Blog, error) {
 		ORDER BY blog.meta_created_at DESC;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt))
 	if err != nil {
 		return nil, err
 	}
@@ -223,9 +228,10 @@ func (r *BlogRepository) List() ([]*model.Blog, error) {
 	return blogs, nil
 }
 
-func (r *BlogRepository) Update(blog *model.Blog) error {
+func (r *BlogRepository) Update(ctx context.Context, blog *model.Blog) error {
 	now := timeutil.Now()
 	stmt := `
+		-- name: Repository_Blog_Update
 		UPDATE blog
 		SET
 			feed_url = $2,
@@ -238,7 +244,8 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 			meta_updated_at = $9
 		WHERE id = $1
 			AND meta_updated_at = $10
-		RETURNING meta_updated_at`
+		RETURNING meta_updated_at;
+	`
 
 	row, err := marshalBlog(blog)
 	if err != nil {
@@ -258,7 +265,7 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 		row.MetaUpdatedAt,
 	}
 
-	rows, err := r.conn.Query(context.Background(), stmt, args...)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return err
 	}
@@ -272,14 +279,15 @@ func (r *BlogRepository) Update(blog *model.Blog) error {
 	return nil
 }
 
-func (r *BlogRepository) Delete(blog *model.Blog) error {
+func (r *BlogRepository) Delete(ctx context.Context, blog *model.Blog) error {
 	stmt := `
+		-- name: Repository_Blog_Delete
 		DELETE FROM blog
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, blog.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), blog.ID())
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package webquery
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -33,8 +34,9 @@ func NewArticle(conn postgres.Conn) *ArticleQuery {
 	return &qry
 }
 
-func (qry *ArticleQuery) CountRecent() (int, error) {
+func (qry *ArticleQuery) CountRecent(ctx context.Context) (int, error) {
 	stmt := `
+		-- name: WebQuery_Article_CountRecent
 		SELECT
 			count(post.id)
 		FROM post
@@ -43,7 +45,7 @@ func (qry *ArticleQuery) CountRecent() (int, error) {
 		WHERE blog.is_public = true;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt))
 	if err != nil {
 		return 0, err
 	}
@@ -56,8 +58,9 @@ func (qry *ArticleQuery) CountRecent() (int, error) {
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRecent(limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRecent(ctx context.Context, limit, offset int) ([]Article, error) {
 	stmt := `
+		-- name: WebQuery_Article_ListRecent
 		WITH latest AS (
 			SELECT
 				post.id
@@ -86,7 +89,7 @@ func (qry *ArticleQuery) ListRecent(limit, offset int) ([]Article, error) {
 		ORDER BY post.published_at DESC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, limit, offset)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +102,9 @@ func (qry *ArticleQuery) ListRecent(limit, offset int) ([]Article, error) {
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRecentByAccount(accountID uuid.UUID) (int, error) {
+func (qry *ArticleQuery) CountRecentByAccount(ctx context.Context, accountID uuid.UUID) (int, error) {
 	stmt := `
+		-- name: WebQuery_Article_CountRecentByAccount
 		SELECT count(*)
 		FROM post
 		INNER JOIN blog
@@ -110,7 +114,7 @@ func (qry *ArticleQuery) CountRecentByAccount(accountID uuid.UUID) (int, error) 
 			AND account_blog.account_id = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID)
 	if err != nil {
 		return 0, err
 	}
@@ -123,8 +127,9 @@ func (qry *ArticleQuery) CountRecentByAccount(accountID uuid.UUID) (int, error) 
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRecentByAccount(accountID uuid.UUID, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRecentByAccount(ctx context.Context, accountID uuid.UUID, limit, offset int) ([]Article, error) {
 	stmt := `
+		-- name: WebQuery_Article_ListRecentByAccount
 		WITH latest AS (
 			SELECT
 				post.id
@@ -155,7 +160,7 @@ func (qry *ArticleQuery) ListRecentByAccount(accountID uuid.UUID, limit, offset 
 		ORDER BY post.published_at DESC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID, limit, offset)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +173,9 @@ func (qry *ArticleQuery) ListRecentByAccount(accountID uuid.UUID, limit, offset 
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRelevant(search string) (int, error) {
+func (qry *ArticleQuery) CountRelevant(ctx context.Context, search string) (int, error) {
 	stmt := `
+		-- name: WebQuery_Article_CountRelevant
 		SELECT count(*)
 		FROM post
 		INNER JOIN blog
@@ -178,7 +184,7 @@ func (qry *ArticleQuery) CountRelevant(search string) (int, error) {
 			AND blog.is_public = true;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, search)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), search)
 	if err != nil {
 		return 0, err
 	}
@@ -191,8 +197,9 @@ func (qry *ArticleQuery) CountRelevant(search string) (int, error) {
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRelevant(search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevant(ctx context.Context, search string, limit, offset int) ([]Article, error) {
 	stmt := `
+		-- name: WebQuery_Article_ListRelevant
 		WITH relevant AS (
 			SELECT
 				post.id
@@ -222,7 +229,7 @@ func (qry *ArticleQuery) ListRelevant(search string, limit, offset int) ([]Artic
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, search, limit, offset)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -235,8 +242,9 @@ func (qry *ArticleQuery) ListRelevant(search string, limit, offset int) ([]Artic
 	return articles, nil
 }
 
-func (qry *ArticleQuery) CountRelevantByAccount(accountID uuid.UUID, search string) (int, error) {
+func (qry *ArticleQuery) CountRelevantByAccount(ctx context.Context, accountID uuid.UUID, search string) (int, error) {
 	stmt := `
+		-- name: WebQuery_Article_CountRelevantByAccount
 		SELECT count(*)
 		FROM post
 		INNER JOIN blog
@@ -247,7 +255,7 @@ func (qry *ArticleQuery) CountRelevantByAccount(accountID uuid.UUID, search stri
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2);
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID, search)
 	if err != nil {
 		return 0, err
 	}
@@ -260,8 +268,9 @@ func (qry *ArticleQuery) CountRelevantByAccount(accountID uuid.UUID, search stri
 	return count, nil
 }
 
-func (qry *ArticleQuery) ListRelevantByAccount(accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
+func (qry *ArticleQuery) ListRelevantByAccount(ctx context.Context, accountID uuid.UUID, search string, limit, offset int) ([]Article, error) {
 	stmt := `
+		-- name: WebQuery_Article_ListRelevantByAccount
 		WITH relevant AS (
 			SELECT
 				post.id
@@ -293,7 +302,7 @@ func (qry *ArticleQuery) ListRelevantByAccount(accountID uuid.UUID, search strin
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, accountID, search, limit, offset)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}

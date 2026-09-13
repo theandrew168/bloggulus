@@ -14,7 +14,7 @@ import (
 func HandleAccountList(qry *webquery.Query) http.Handler {
 	tmpl := page.NewAccounts()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accounts, err := qry.Account().List()
+		accounts, err := qry.Account().List(r.Context())
 		if err != nil {
 			util.InternalServerErrorResponse(w, r, err)
 			return
@@ -39,7 +39,7 @@ func HandleAccountDeleteForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Account().DeleteAccount(accountID)
+		err = cmd.Account().DeleteAccount(r.Context(), accountID)
 		if err != nil {
 			util.DeleteErrorResponse(w, r, err)
 			return

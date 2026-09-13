@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"uuid"
@@ -22,9 +23,9 @@ func NewBlog(repo *repository.Repository) *BlogCommand {
 	return &cmd
 }
 
-func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
+func (cmd *BlogCommand) DeleteBlog(ctx context.Context, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		blog, err := tx.Blog().Read(blogID)
+		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrBlogNotFound
@@ -33,7 +34,7 @@ func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
 			return err
 		}
 
-		err = tx.Blog().Delete(blog)
+		err = tx.Blog().Delete(ctx, blog)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNotFound) {
 				return ErrBlogNotFound
@@ -51,9 +52,9 @@ func (cmd *BlogCommand) DeleteBlog(blogID uuid.UUID) error {
 	})
 }
 
-func (cmd *BlogCommand) HideBlog(blogID uuid.UUID) error {
+func (cmd *BlogCommand) HideBlog(ctx context.Context, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		blog, err := tx.Blog().Read(blogID)
+		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
 			return err
 		}
@@ -63,7 +64,7 @@ func (cmd *BlogCommand) HideBlog(blogID uuid.UUID) error {
 			return err
 		}
 
-		err = tx.Blog().Update(blog)
+		err = tx.Blog().Update(ctx, blog)
 		if err != nil {
 			return err
 		}
@@ -77,9 +78,9 @@ func (cmd *BlogCommand) HideBlog(blogID uuid.UUID) error {
 	})
 }
 
-func (cmd *BlogCommand) ShowBlog(blogID uuid.UUID) error {
+func (cmd *BlogCommand) ShowBlog(ctx context.Context, blogID uuid.UUID) error {
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
-		blog, err := tx.Blog().Read(blogID)
+		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
 			return err
 		}
@@ -89,7 +90,7 @@ func (cmd *BlogCommand) ShowBlog(blogID uuid.UUID) error {
 			return err
 		}
 
-		err = tx.Blog().Update(blog)
+		err = tx.Blog().Update(ctx, blog)
 		if err != nil {
 			return err
 		}

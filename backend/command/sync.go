@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log/slog"
 
+	"golang.org/x/sync/semaphore"
+
 	"github.com/theandrew168/bloggulus/backend/command/sync"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/model"
@@ -12,7 +14,6 @@ import (
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
 	"github.com/theandrew168/bloggulus/backend/value"
-	"golang.org/x/sync/semaphore"
 )
 
 const (
@@ -34,8 +35,8 @@ func NewSync(repo *repository.Repository, feedFetcher feed.FeedFetcher) *SyncCom
 }
 
 // Sync a new or existing Blog based on the provided feed URL.
-func (cmd *SyncCommand) SyncBlog(feedURL value.URL) error {
-	blog, err := cmd.repo.Blog().ReadByFeedURL(feedURL)
+func (cmd *SyncCommand) SyncBlog(ctx context.Context, feedURL value.URL) error {
+	blog, err := cmd.repo.Blog().ReadByFeedURL(ctx, feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
 			return err
@@ -44,19 +45,19 @@ func (cmd *SyncCommand) SyncBlog(feedURL value.URL) error {
 		// An ErrNotFound is acceptable (and expected) here. The only difference
 		// is that we won't be able to include the ETag and Last-Modified headers
 		// in the request. This is fine for new blogs (an unconditional fetch).
-		return sync.SyncNewBlog(cmd.repo, cmd.feedFetcher, feedURL)
+		return sync.SyncNewBlog(ctx, cmd.repo, cmd.feedFetcher, feedURL)
 	}
 
-	return sync.SyncExistingBlog(cmd.repo, cmd.feedFetcher, blog)
+	return sync.SyncExistingBlog(ctx, cmd.repo, cmd.feedFetcher, blog)
 }
 
 // Start with the current time and a list of all known blogs. For each blog,
 // compare its syncedAt time to the current time. If the difference is less
 // than SyncCooldown, skip it. Otherwise, check for and sync new content.
-func (cmd *SyncCommand) SyncAllBlogs() error {
+func (cmd *SyncCommand) SyncAllBlogs(ctx context.Context) error {
 	slog.Info("syncing blogs")
 
-	blogs, err := cmd.repo.Blog().List()
+	blogs, err := cmd.repo.Blog().List(ctx)
 	if err != nil {
 		return err
 	}
@@ -68,7 +69,7 @@ func (cmd *SyncCommand) SyncAllBlogs() error {
 	// Update the syncedAt time for each syncable blog before syncing.
 	for _, blog := range syncableBlogs {
 		blog.SetSyncedAt(now)
-		err = cmd.repo.Blog().Update(blog)
+		err = cmd.repo.Blog().Update(ctx, blog)
 		if err != nil {
 			return err
 		}
@@ -76,7 +77,7 @@ func (cmd *SyncCommand) SyncAllBlogs() error {
 
 	ParallelForEach(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
 		slog.Info("syncing blog", "title", blog.Title().Value(), "id", blog.ID().String())
-		err = cmd.SyncBlog(blog.FeedURL())
+		err = cmd.SyncBlog(ctx, blog.FeedURL())
 		if err != nil {
 			slog.Warn(err.Error(), "title", blog.Title().Value(), "id", blog.ID().String())
 		}

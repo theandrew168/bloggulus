@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -60,8 +61,9 @@ func NewTagRepository(conn postgres.Conn) *TagRepository {
 	return &r
 }
 
-func (r *TagRepository) Create(tag *model.Tag) error {
+func (r *TagRepository) Create(ctx context.Context, tag *model.Tag) error {
 	stmt := `
+		-- name: Repository_Tag_Create
 		INSERT INTO tag
 			(id, name, meta_created_at, meta_updated_at)
 		VALUES
@@ -80,7 +82,7 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 		row.MetaUpdatedAt,
 	}
 
-	_, err = r.conn.Exec(context.Background(), stmt, args...)
+	_, err = r.conn.Exec(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -88,8 +90,9 @@ func (r *TagRepository) Create(tag *model.Tag) error {
 	return nil
 }
 
-func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
+func (r *TagRepository) Read(ctx context.Context, id uuid.UUID) (*model.Tag, error) {
 	stmt := `
+		-- name: Repository_Tag_Read
 		SELECT
 			tag.id,
 			tag.name,
@@ -99,7 +102,7 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 		WHERE tag.id = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, id)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), id)
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +115,15 @@ func (r *TagRepository) Read(id uuid.UUID) (*model.Tag, error) {
 	return row.unmarshal()
 }
 
-func (r *TagRepository) Delete(tag *model.Tag) error {
+func (r *TagRepository) Delete(ctx context.Context, tag *model.Tag) error {
 	stmt := `
+		-- name: Repository_Tag_Delete
 		DELETE FROM tag
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, tag.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), tag.ID())
 	if err != nil {
 		return err
 	}

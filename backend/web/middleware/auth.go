@@ -43,7 +43,7 @@ func Authenticate(qry *webquery.Query) Middleware {
 			}
 
 			// Lookup the account linked to the session.
-			account, err := qry.Account().ReadBySessionTokenHash(sessionToken.Hash())
+			account, err := qry.Account().ReadBySessionTokenHash(r.Context(), sessionToken.Hash())
 			if err != nil {
 				// If the user has an invalid / expired session cookie, delete it.
 				if errors.Is(err, postgres.ErrNotFound) {

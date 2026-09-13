@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/theandrew168/bloggulus/backend/postgres"
@@ -14,11 +15,11 @@ func TestPostCreate(t *testing.T) {
 	defer closer()
 
 	blog := test.NewBlog()
-	err := repo.Blog().Create(blog)
+	err := repo.Blog().Create(context.Background(), blog)
 	test.AssertNilError(t, err)
 
 	post := test.NewPost(blog)
-	err = repo.Post().Create(post)
+	err = repo.Post().Create(context.Background(), post)
 	test.AssertNilError(t, err)
 }
 
@@ -32,7 +33,7 @@ func TestPostCreateAlreadyExists(t *testing.T) {
 	post := test.CreatePost(t, repo, blog)
 
 	// attempt to create the same post again
-	err := repo.Post().Create(post)
+	err := repo.Post().Create(context.Background(), post)
 	test.AssertErrorIs(t, err, postgres.ErrConflict)
 }
 
@@ -44,7 +45,7 @@ func TestPostRead(t *testing.T) {
 
 	blog := test.CreateBlog(t, repo)
 	post := test.CreatePost(t, repo, blog)
-	got, err := repo.Post().Read(post.ID())
+	got, err := repo.Post().Read(context.Background(), post.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.ID(), post.ID())
@@ -61,7 +62,7 @@ func TestPostListByBlog(t *testing.T) {
 	test.CreatePost(t, repo, blog)
 	test.CreatePost(t, repo, blog)
 
-	posts, err := repo.Post().ListByBlogID(blog.ID())
+	posts, err := repo.Post().ListByBlogID(context.Background(), blog.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, len(posts), 3)
@@ -79,10 +80,10 @@ func TestPostUpdate(t *testing.T) {
 	content := "foobar"
 	post.SetContent(content)
 
-	err := repo.Post().Update(post)
+	err := repo.Post().Update(context.Background(), post)
 	test.AssertNilError(t, err)
 
-	got, err := repo.Post().Read(post.ID())
+	got, err := repo.Post().Read(context.Background(), post.ID())
 	test.AssertNilError(t, err)
 
 	test.AssertEqual(t, got.Content(), content)
@@ -97,9 +98,9 @@ func TestPostDelete(t *testing.T) {
 	blog := test.CreateBlog(t, repo)
 	post := test.CreatePost(t, repo, blog)
 
-	err := repo.Post().Delete(post)
+	err := repo.Post().Delete(context.Background(), post)
 	test.AssertNilError(t, err)
 
-	_, err = repo.Post().Read(post.ID())
+	_, err = repo.Post().Read(context.Background(), post.ID())
 	test.AssertErrorIs(t, err, postgres.ErrNotFound)
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -65,8 +66,9 @@ func NewAccountRepository(conn postgres.Conn) *AccountRepository {
 	return &r
 }
 
-func (r *AccountRepository) Create(account *model.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, account *model.Account) error {
 	stmt := `
+		-- name: Repository_Account_Create
 		INSERT INTO account
 			(id, username, meta_created_at, meta_updated_at)
 		VALUES
@@ -85,7 +87,7 @@ func (r *AccountRepository) Create(account *model.Account) error {
 		row.MetaUpdatedAt,
 	}
 
-	_, err = r.conn.Exec(context.Background(), stmt, args...)
+	_, err = r.conn.Exec(ctx, strings.TrimSpace(stmt), args...)
 	if err != nil {
 		return postgres.CheckCreateError(err)
 	}
@@ -93,8 +95,9 @@ func (r *AccountRepository) Create(account *model.Account) error {
 	return nil
 }
 
-func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
+func (r *AccountRepository) Read(ctx context.Context, id uuid.UUID) (*model.Account, error) {
 	stmt := `
+		-- name: Repository_Account_Read
 		SELECT
 			account.id,
 			account.username,
@@ -109,7 +112,7 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 		GROUP BY account.id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, id)
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), id)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +125,9 @@ func (r *AccountRepository) Read(id uuid.UUID) (*model.Account, error) {
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account, error) {
+func (r *AccountRepository) ReadByUsername(ctx context.Context, username value.Name) (*model.Account, error) {
 	stmt := `
+		-- name: Repository_Account_ReadByUsername
 		SELECT
 			account.id,
 			account.username,
@@ -138,7 +142,7 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 		GROUP BY account.id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, username.Value())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), username.Value())
 	if err != nil {
 		return nil, err
 	}
@@ -151,16 +155,17 @@ func (r *AccountRepository) ReadByUsername(username value.Name) (*model.Account,
 	return row.unmarshal()
 }
 
-func (r *AccountRepository) Update(account *model.Account) error {
+func (r *AccountRepository) Update(ctx context.Context, account *model.Account) error {
 	// List blogs currently being followed in the database.
 	stmt := `
+		-- name: Repository_Account_Update
 		SELECT
 			account_blog.blog_id
 		FROM account_blog
 		WHERE account_blog.account_id = $1;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), account.ID())
 	if err != nil {
 		return err
 	}
@@ -181,23 +186,25 @@ func (r *AccountRepository) Update(account *model.Account) error {
 
 	// Add and remove blogs as necessary.
 	stmtFollow := `
+		-- name: Repository_Account_FollowBlog
 		INSERT INTO account_blog
 			(account_id, blog_id)
 		VALUES ($1, $2);
 	`
 	for _, blogID := range blogsToFollow.Values() {
-		_, err = r.conn.Exec(context.Background(), stmtFollow, account.ID(), blogID)
+		_, err = r.conn.Exec(ctx, strings.TrimSpace(stmtFollow), account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckCreateError(err)
 		}
 	}
 
 	stmtUnfollow := `
+		-- name: Repository_Account_UnfollowBlog
 		DELETE FROM account_blog
 		WHERE account_id = $1 AND blog_id = $2;
 	`
 	for _, blogID := range blogsToUnfollow.Values() {
-		_, err = r.conn.Exec(context.Background(), stmtUnfollow, account.ID(), blogID)
+		_, err = r.conn.Exec(ctx, strings.TrimSpace(stmtUnfollow), account.ID(), blogID)
 		if err != nil {
 			return postgres.CheckDeleteError(err)
 		}
@@ -206,14 +213,15 @@ func (r *AccountRepository) Update(account *model.Account) error {
 	return nil
 }
 
-func (r *AccountRepository) Delete(account *model.Account) error {
+func (r *AccountRepository) Delete(ctx context.Context, account *model.Account) error {
 	stmt := `
+		-- name: Repository_Account_Delete
 		DELETE FROM account
 		WHERE id = $1
 		RETURNING id;
 	`
 
-	rows, err := r.conn.Query(context.Background(), stmt, account.ID())
+	rows, err := r.conn.Query(ctx, strings.TrimSpace(stmt), account.ID())
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package webquery
 
 import (
 	"context"
+	"strings"
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -28,8 +29,9 @@ func NewAccount(conn postgres.Conn) *AccountQuery {
 }
 
 // Powers authentication middleware.
-func (qry *AccountQuery) ReadBySessionTokenHash(sessionTokenHash value.TokenHash) (Account, error) {
+func (qry *AccountQuery) ReadBySessionTokenHash(ctx context.Context, sessionTokenHash value.TokenHash) (Account, error) {
 	stmt := `
+		-- name: WebQuery_Account_ReadBySessionTokenHash
 		SELECT
 			account.id,
 			account.username,
@@ -40,7 +42,7 @@ func (qry *AccountQuery) ReadBySessionTokenHash(sessionTokenHash value.TokenHash
 		WHERE session.token_hash = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, sessionTokenHash.Value())
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), sessionTokenHash.Value())
 	if err != nil {
 		return Account{}, err
 	}
@@ -54,8 +56,9 @@ func (qry *AccountQuery) ReadBySessionTokenHash(sessionTokenHash value.TokenHash
 }
 
 // Powers the accounts page (admin only).
-func (qry *AccountQuery) List() ([]Account, error) {
+func (qry *AccountQuery) List(ctx context.Context) ([]Account, error) {
 	stmt := `
+		-- name: WebQuery_Account_List
 		SELECT
 			account.id,
 			account.username,
@@ -64,7 +67,7 @@ func (qry *AccountQuery) List() ([]Account, error) {
 		ORDER BY account.meta_created_at ASC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt))
 	if err != nil {
 		return nil, err
 	}

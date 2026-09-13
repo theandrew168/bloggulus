@@ -21,7 +21,7 @@ func HandlePostRead(qry *webquery.Query) http.Handler {
 			return
 		}
 
-		post, err := qry.Post().ReadDetailsByID(postID)
+		post, err := qry.Post().ReadDetailsByID(r.Context(), postID)
 		if err != nil {
 			util.ReadErrorResponse(w, r, err)
 			return
@@ -52,7 +52,7 @@ func HandlePostDeleteForm(cmd *command.Command) http.Handler {
 			return
 		}
 
-		err = cmd.Post().DeletePost(postID)
+		err = cmd.Post().DeletePost(r.Context(), postID)
 		if err != nil {
 			util.DeleteErrorResponse(w, r, err)
 			return

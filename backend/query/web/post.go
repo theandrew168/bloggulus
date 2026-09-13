@@ -2,6 +2,7 @@ package webquery
 
 import (
 	"context"
+	"strings"
 	"time"
 	"uuid"
 
@@ -29,8 +30,9 @@ func NewPost(conn postgres.Conn) *PostQuery {
 }
 
 // Powers the post details page (admin only).
-func (qry *PostQuery) ReadDetailsByID(postID uuid.UUID) (PostDetails, error) {
+func (qry *PostQuery) ReadDetailsByID(ctx context.Context, postID uuid.UUID) (PostDetails, error) {
 	stmt := `
+		-- name: WebQuery_Post_ReadDetailsByID
 		SELECT
 			post.id,
 			post.blog_id,
@@ -41,7 +43,7 @@ func (qry *PostQuery) ReadDetailsByID(postID uuid.UUID) (PostDetails, error) {
 		WHERE post.id = $1;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, postID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), postID)
 	if err != nil {
 		return PostDetails{}, err
 	}
@@ -55,8 +57,9 @@ func (qry *PostQuery) ReadDetailsByID(postID uuid.UUID) (PostDetails, error) {
 }
 
 // Powers the blog details page (admin only).
-func (qry *PostQuery) ListDetailsByBlogID(blogID uuid.UUID) ([]PostDetails, error) {
+func (qry *PostQuery) ListDetailsByBlogID(ctx context.Context, blogID uuid.UUID) ([]PostDetails, error) {
 	stmt := `
+		-- name: WebQuery_Post_ListDetailsByBlogID
 		SELECT
 			post.id,
 			post.blog_id,
@@ -68,7 +71,7 @@ func (qry *PostQuery) ListDetailsByBlogID(blogID uuid.UUID) ([]PostDetails, erro
 		ORDER BY post.published_at DESC;
 	`
 
-	rows, err := qry.conn.Query(context.Background(), stmt, blogID)
+	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), blogID)
 	if err != nil {
 		return nil, err
 	}

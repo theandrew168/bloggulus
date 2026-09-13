@@ -19,39 +19,7 @@ type Conn interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
-func Connect(uri string) (*pgx.Conn, error) {
-	ctx := context.Background()
-
-	config, err := pgx.ParseConfig(uri)
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := pgx.ConnectConfig(ctx, config)
-	if err != nil {
-		return nil, err
-	}
-
-	// Ensure timestamps read from a timestamptz column retain their UTC location.
-	// https://github.com/jackc/pgx/issues/1195#issuecomment-2002079265
-	conn.TypeMap().RegisterType(&pgtype.Type{
-		Name:  "timestamptz",
-		OID:   pgtype.TimestamptzOID,
-		Codec: &pgtype.TimestamptzCodec{ScanLocation: time.UTC},
-	})
-
-	// test connection to ensure all is well
-	if err = conn.Ping(ctx); err != nil {
-		conn.Close(ctx)
-		return nil, err
-	}
-
-	return conn, nil
-}
-
-func ConnectPool(uri string) (*pgxpool.Pool, error) {
-	ctx := context.Background()
-
+func PoolConfig(uri string) (*pgxpool.Config, error) {
 	config, err := pgxpool.ParseConfig(uri)
 	if err != nil {
 		return nil, err
@@ -68,6 +36,12 @@ func ConnectPool(uri string) (*pgxpool.Pool, error) {
 
 		return nil
 	}
+
+	return config, nil
+}
+
+func ConnectPool(config *pgxpool.Config) (*pgxpool.Pool, error) {
+	ctx := context.Background()
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {

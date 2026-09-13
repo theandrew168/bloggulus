@@ -2,7 +2,6 @@ package model
 
 import (
 	"time"
-
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/value"

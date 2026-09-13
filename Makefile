@@ -8,14 +8,22 @@ default: build
 build:
 	go build -o bloggulus main.go
 
-# use wgo to watch for code changes and subsequently rebuild the app
 .PHONY: run
 run:
+	go run main.go
+
+# use wgo to watch for code changes and subsequently rebuild the app
+.PHONY: run-auto
+run-auto:
 	go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go
 
 # run the app using the local-only config file
 .PHONY: run-local
 run-local:
+	go run main.go -conf bloggulus.local.conf
+
+.PHONY: run-local-auto
+run-local-auto:
 	go run github.com/bokwoon95/wgo@latest run -file .html -file .css -file .conf main.go -conf bloggulus.local.conf
 
 .PHONY: migrate
@@ -52,7 +60,10 @@ govulncheck:
 csscheck:
 	go run tools/csscheck/main.go
 
-check: vet staticcheck govulncheck csscheck
+importcheck:
+	go run tools/importcheck/main.go
+
+check: vet staticcheck govulncheck csscheck importcheck
 
 .PHONY: update
 update: update-deps update-htmx update-alpine

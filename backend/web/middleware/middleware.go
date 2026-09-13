@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"slices"
 )
 
 // Based on:
@@ -16,8 +17,8 @@ func Use(h http.Handler, mws ...Middleware) http.Handler {
 	// Due to how these functions wrap the handler, we apply them
 	// in reverse order so that the first one supplied is the first
 	// one that runs.
-	for i := len(mws) - 1; i >= 0; i-- {
-		h = mws[i](h)
+	for _, mw := range slices.Backward(mws) {
+		h = mw(h)
 	}
 	return h
 }

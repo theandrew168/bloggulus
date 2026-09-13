@@ -19,7 +19,10 @@ import (
 	traceAPI "go.opentelemetry.io/otel/trace"
 )
 
-const tracerName = "github.com/theandrew168/bloggulus"
+const (
+	tracerName         = "github.com/theandrew168/bloggulus"
+	postgresTracerName = "github.com/pgx-contrib/pgxotel"
+)
 
 func NewResource() *resource.Resource {
 	return resource.NewWithAttributes(
@@ -80,7 +83,7 @@ func GetTracer() traceAPI.Tracer {
 
 func NewQueryTracer(tracerProvider *trace.TracerProvider) pgx.QueryTracer {
 	pgxTracer := pgxotel.QueryTracer{
-		Name:     tracerName,
+		Name:     postgresTracerName,
 		Provider: tracerProvider,
 	}
 	return &pgxTracer

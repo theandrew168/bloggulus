@@ -32,7 +32,7 @@ func (s *SessionService) Run(cancelCtx context.Context) error {
 	// Clear out any expired sessions at service startup.
 	err := s.cmd.Auth().DeleteExpiredSessions(tracerCtx, timeutil.Now())
 	if err != nil {
-		slog.Error("error clearing expired sessions",
+		slog.ErrorContext(tracerCtx, "error clearing expired sessions",
 			"error", err.Error(),
 		)
 	}
@@ -54,7 +54,7 @@ func (s *SessionService) Run(cancelCtx context.Context) error {
 
 			err := s.cmd.Auth().DeleteExpiredSessions(tracerCtx, timeutil.Now())
 			if err != nil {
-				slog.Error("error clearing expired sessions",
+				slog.ErrorContext(tracerCtx, "error clearing expired sessions",
 					"error", err.Error(),
 				)
 			}

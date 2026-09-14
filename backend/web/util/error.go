@@ -110,7 +110,7 @@ func NotFoundResponse(w http.ResponseWriter, r *http.Request) {
 
 // Render a 500 Internal Server Error page.
 func InternalServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	slog.Error("internal server error",
+	slog.ErrorContext(r.Context(), "internal server error",
 		"error", err.Error(),
 		"url", r.URL.String(),
 	)

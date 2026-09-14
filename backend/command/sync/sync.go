@@ -147,7 +147,7 @@ func SyncNewBlog(ctx context.Context, repo *repository.Repository, feedFetcher f
 		return err
 	}
 
-	slog.Info("blog added",
+	slog.InfoContext(ctx, "blog added",
 		"blog_id", blog.ID().String(),
 		"blog_title", blog.Title().Value(),
 	)
@@ -182,7 +182,10 @@ func SyncExistingBlog(ctx context.Context, repo *repository.Repository, feedFetc
 	}
 
 	if resp.Feed == "" {
-		slog.Info("skipping blog (no feed content)", "title", blog.Title().Value(), "id", blog.ID().String())
+		slog.InfoContext(ctx, "skipping blog (no feed content)",
+			"title", blog.Title().Value(),
+			"id", blog.ID().String(),
+		)
 		return nil
 	}
 
@@ -216,7 +219,10 @@ func SyncPosts(ctx context.Context, repo *repository.Repository, blog *model.Blo
 	for _, post := range result.PostsToCreate {
 		err = repo.Post().Create(ctx, post)
 		if err != nil {
-			slog.Warn("failed to create post", "url", post.URL().Value(), "error", err.Error())
+			slog.WarnContext(ctx, "failed to create post",
+				"url", post.URL().Value(),
+				"error", err.Error(),
+			)
 		}
 	}
 
@@ -224,7 +230,10 @@ func SyncPosts(ctx context.Context, repo *repository.Repository, blog *model.Blo
 	for _, post := range result.PostsToUpdate {
 		err = repo.Post().Update(ctx, post)
 		if err != nil {
-			slog.Warn("failed to update post", "url", post.URL().Value(), "error", err.Error())
+			slog.WarnContext(ctx, "failed to update post",
+				"url", post.URL().Value(),
+				"error", err.Error(),
+			)
 		}
 	}
 

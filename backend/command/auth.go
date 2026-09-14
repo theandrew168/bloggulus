@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
@@ -28,6 +29,9 @@ func NewAuth(repo *repository.Repository) *AuthCommand {
 }
 
 func (cmd *AuthCommand) SignIn(ctx context.Context, username value.Name) (value.Token, error) {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Auth_SignIn")
+	defer span.End()
+
 	// NOTE: Handling state outside the transaction is the exception, not the rule.
 	// This is a special case where a command needs to return a value (the session ID).
 	var sessionToken value.Token
@@ -51,7 +55,7 @@ func (cmd *AuthCommand) SignIn(ctx context.Context, username value.Name) (value.
 				return err
 			}
 
-			slog.Info("account created",
+			slog.InfoContext(ctx, "account created",
 				"account_id", account.ID().String(),
 			)
 		}
@@ -71,7 +75,7 @@ func (cmd *AuthCommand) SignIn(ctx context.Context, username value.Name) (value.
 			return err
 		}
 
-		slog.Info("account signed in",
+		slog.InfoContext(ctx, "account signed in",
 			"account_id", account.ID().String(),
 			"session_id", session.ID().String(),
 		)
@@ -83,6 +87,9 @@ func (cmd *AuthCommand) SignIn(ctx context.Context, username value.Name) (value.
 }
 
 func (cmd *AuthCommand) SignOut(ctx context.Context, sessionToken value.Token) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Auth_SignOut")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		session, err := tx.Session().ReadByTokenHash(ctx, sessionToken.Hash())
 		if err != nil {
@@ -107,6 +114,9 @@ func (cmd *AuthCommand) SignOut(ctx context.Context, sessionToken value.Token) e
 }
 
 func (cmd *AuthCommand) DeleteExpiredSessions(ctx context.Context, now time.Time) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Auth_DeleteExpiredSessions")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		now := timeutil.Now()
 		expiredSessions, err := tx.Session().ListExpired(ctx, now)

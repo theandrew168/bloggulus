@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"uuid"
 
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
@@ -25,6 +26,9 @@ func NewAccount(repo *repository.Repository) *AccountCommand {
 }
 
 func (cmd *AccountCommand) FollowBlog(ctx context.Context, accountID uuid.UUID, blogID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Account_FollowBlog")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
@@ -50,7 +54,7 @@ func (cmd *AccountCommand) FollowBlog(ctx context.Context, accountID uuid.UUID, 
 			return err
 		}
 
-		slog.Info("blog followed",
+		slog.InfoContext(ctx, "blog followed",
 			"account_id", account.ID().String(),
 			"account_username", account.Username().Value(),
 			"blog_id", blog.ID().String(),
@@ -62,6 +66,9 @@ func (cmd *AccountCommand) FollowBlog(ctx context.Context, accountID uuid.UUID, 
 }
 
 func (cmd *AccountCommand) UnfollowBlog(ctx context.Context, accountID uuid.UUID, blogID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Account_UnfollowBlog")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
@@ -87,7 +94,7 @@ func (cmd *AccountCommand) UnfollowBlog(ctx context.Context, accountID uuid.UUID
 			return err
 		}
 
-		slog.Info("blog unfollowed",
+		slog.InfoContext(ctx, "blog unfollowed",
 			"account_id", account.ID().String(),
 			"account_username", account.Username().Value(),
 			"blog_id", blog.ID().String(),
@@ -99,6 +106,9 @@ func (cmd *AccountCommand) UnfollowBlog(ctx context.Context, accountID uuid.UUID
 }
 
 func (cmd *AccountCommand) DeleteAccount(ctx context.Context, accountID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Account_DeleteAccount")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		account, err := tx.Account().Read(ctx, accountID)
 		if err != nil {
@@ -123,7 +133,7 @@ func (cmd *AccountCommand) DeleteAccount(ctx context.Context, accountID uuid.UUI
 			return err
 		}
 
-		slog.Info("account deleted",
+		slog.InfoContext(ctx, "account deleted",
 			"account_id", account.ID().String(),
 			"account_username", account.Username().Value(),
 		)

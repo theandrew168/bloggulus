@@ -31,7 +31,7 @@ func (s *SyncService) Run(cancelCtx context.Context) error {
 	// perform an initial sync at service startup
 	err := s.cmd.Sync().SyncAllBlogs(tracerCtx)
 	if err != nil {
-		slog.Error("error syncing blogs",
+		slog.ErrorContext(tracerCtx, "error syncing blogs",
 			"error", err.Error(),
 		)
 	}
@@ -53,7 +53,7 @@ func (s *SyncService) Run(cancelCtx context.Context) error {
 
 			err := s.cmd.Sync().SyncAllBlogs(tracerCtx)
 			if err != nil {
-				slog.Error("error syncing blogs",
+				slog.ErrorContext(tracerCtx, "error syncing blogs",
 					"error", err.Error(),
 				)
 			}

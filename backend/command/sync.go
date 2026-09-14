@@ -5,11 +5,13 @@ import (
 	"errors"
 	"log/slog"
 
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/semaphore"
 
 	"github.com/theandrew168/bloggulus/backend/command/sync"
 	"github.com/theandrew168/bloggulus/backend/feed"
 	"github.com/theandrew168/bloggulus/backend/model"
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 	"github.com/theandrew168/bloggulus/backend/timeutil"
@@ -36,6 +38,11 @@ func NewSync(repo *repository.Repository, feedFetcher feed.FeedFetcher) *SyncCom
 
 // Sync a new or existing Blog based on the provided feed URL.
 func (cmd *SyncCommand) SyncBlog(ctx context.Context, feedURL value.URL) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Sync_SyncBlog")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("feedURL", feedURL.Value()))
+
 	blog, err := cmd.repo.Blog().ReadByFeedURL(ctx, feedURL)
 	if err != nil {
 		if !errors.Is(err, postgres.ErrNotFound) {
@@ -55,7 +62,8 @@ func (cmd *SyncCommand) SyncBlog(ctx context.Context, feedURL value.URL) error {
 // compare its syncedAt time to the current time. If the difference is less
 // than SyncCooldown, skip it. Otherwise, check for and sync new content.
 func (cmd *SyncCommand) SyncAllBlogs(ctx context.Context) error {
-	slog.Info("syncing blogs")
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Sync_SyncAllBlogs")
+	defer span.End()
 
 	blogs, err := cmd.repo.Blog().List(ctx)
 	if err != nil {
@@ -76,10 +84,12 @@ func (cmd *SyncCommand) SyncAllBlogs(ctx context.Context) error {
 	}
 
 	ParallelForEach(SyncConcurrency, syncableBlogs, func(blog *model.Blog) {
-		slog.Info("syncing blog", "title", blog.Title().Value(), "id", blog.ID().String())
 		err = cmd.SyncBlog(ctx, blog.FeedURL())
 		if err != nil {
-			slog.Warn(err.Error(), "title", blog.Title().Value(), "id", blog.ID().String())
+			slog.WarnContext(ctx, err.Error(),
+				"title", blog.Title().Value(),
+				"id", blog.ID().String(),
+			)
 		}
 	})
 

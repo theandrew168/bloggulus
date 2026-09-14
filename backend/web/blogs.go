@@ -84,7 +84,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			err = cmd.Account().FollowBlog(r.Context(), account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
-					slog.Error("error following blog",
+					slog.ErrorContext(r.Context(), "error following blog",
 						"error", err.Error(),
 						"account_id", account.ID.String(),
 						"account_username", account.Username,
@@ -114,7 +114,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 		go func() {
 			err := cmd.Sync().SyncBlog(r.Context(), feedURL)
 			if err != nil {
-				slog.Error("error adding blog",
+				slog.ErrorContext(r.Context(), "error adding blog",
 					"error", err.Error(),
 					"feedURL", feedURL.Value(),
 				)
@@ -125,7 +125,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			// That means any errors here are fatal.
 			blog, err = qry.Blog().ReadDetailsByFeedURL(r.Context(), feedURL)
 			if err != nil {
-				slog.Error("error reading blog",
+				slog.ErrorContext(r.Context(), "error reading blog",
 					"error", err.Error(),
 					"feedURL", feedURL.Value(),
 				)
@@ -135,7 +135,7 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			err = cmd.Account().FollowBlog(r.Context(), account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
-					slog.Error("error following blog",
+					slog.ErrorContext(r.Context(), "error following blog",
 						"error", err.Error(),
 						"account_id", account.ID.String(),
 						"account_username", account.Username,

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"uuid"
 
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
@@ -24,6 +25,9 @@ func NewBlog(repo *repository.Repository) *BlogCommand {
 }
 
 func (cmd *BlogCommand) DeleteBlog(ctx context.Context, blogID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Blog_DeleteBlog")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
@@ -43,7 +47,7 @@ func (cmd *BlogCommand) DeleteBlog(ctx context.Context, blogID uuid.UUID) error 
 			return err
 		}
 
-		slog.Info("blog deleted",
+		slog.InfoContext(ctx, "blog deleted",
 			"blog_id", blog.ID().String(),
 			"blog_title", blog.Title().Value(),
 		)
@@ -53,6 +57,9 @@ func (cmd *BlogCommand) DeleteBlog(ctx context.Context, blogID uuid.UUID) error 
 }
 
 func (cmd *BlogCommand) HideBlog(ctx context.Context, blogID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Blog_HideBlog")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
@@ -69,7 +76,7 @@ func (cmd *BlogCommand) HideBlog(ctx context.Context, blogID uuid.UUID) error {
 			return err
 		}
 
-		slog.Info("blog hidden",
+		slog.InfoContext(ctx, "blog hidden",
 			"blog_id", blog.ID().String(),
 			"blog_title", blog.Title().Value(),
 		)
@@ -79,6 +86,9 @@ func (cmd *BlogCommand) HideBlog(ctx context.Context, blogID uuid.UUID) error {
 }
 
 func (cmd *BlogCommand) ShowBlog(ctx context.Context, blogID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Blog_ShowBlog")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		blog, err := tx.Blog().Read(ctx, blogID)
 		if err != nil {
@@ -95,7 +105,7 @@ func (cmd *BlogCommand) ShowBlog(ctx context.Context, blogID uuid.UUID) error {
 			return err
 		}
 
-		slog.Info("blog shown",
+		slog.InfoContext(ctx, "blog shown",
 			"blog_id", blog.ID().String(),
 			"blog_title", blog.Title().Value(),
 		)

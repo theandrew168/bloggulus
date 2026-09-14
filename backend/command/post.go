@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"uuid"
 
+	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	"github.com/theandrew168/bloggulus/backend/repository"
 )
@@ -24,6 +25,9 @@ func NewPost(repo *repository.Repository) *PostCommand {
 }
 
 func (cmd *PostCommand) DeletePost(ctx context.Context, postID uuid.UUID) error {
+	ctx, span := otel.GetTracer().Start(ctx, "Command_Post_DeletePost")
+	defer span.End()
+
 	return cmd.repo.WithTransaction(func(tx *repository.Repository) error {
 		post, err := tx.Post().Read(ctx, postID)
 		if err != nil {
@@ -43,7 +47,7 @@ func (cmd *PostCommand) DeletePost(ctx context.Context, postID uuid.UUID) error 
 			return err
 		}
 
-		slog.Info("post deleted",
+		slog.InfoContext(ctx, "post deleted",
 			"post_id", post.ID().String(),
 			"post_title", post.Title().Value(),
 		)

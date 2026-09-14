@@ -9,22 +9,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-func filterSpans(r *http.Request) bool {
-	// Filter out public file requests (static assets, etc).
-	publicFilesPatterns := []string{"GET /favicon.ico", "GET /robots.txt", "GET /css/", "GET /img/", "GET /js/"}
-	if slices.Contains(publicFilesPatterns, r.Pattern) {
-		return false
-	}
-
-	// The "/" catch-all pattern accepts any HTTP method + route. Anything
-	// in this bucket is a 404 Not Found and can be ignored.
-	if r.Pattern == "/" {
-		return false
-	}
-
-	return true
-}
-
 // Normalize the HTTP method to a valid, uppercase method. If the method
 // is not valid, return "HTTP" to guard against cardinality explosions.
 func normalizeMethod(method string) string {
@@ -51,7 +35,7 @@ func normalizeMethod(method string) string {
 // Normalize the HTTP request pattern to a more general form for tracing. Static
 // files are grouped under "public-files", the special exact-match index pattern "/{$}"
 // is normalized to "/", and the catch-all path "/" is labeled as "not-found".
-func normalizeSpanName(r *http.Request) string {
+func formatSpanName(operation string, r *http.Request) string {
 	staticPatterns := []string{"GET /favicon.ico", "GET /robots.txt", "GET /css/", "GET /img/", "GET /js/"}
 	if slices.Contains(staticPatterns, r.Pattern) {
 		return "GET public-files"
@@ -70,7 +54,5 @@ func normalizeSpanName(r *http.Request) string {
 }
 
 func Trace() Middleware {
-	return otelhttp.NewMiddleware("", otelhttp.WithFilter(filterSpans), otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
-		return normalizeSpanName(r)
-	}))
+	return otelhttp.NewMiddleware("", otelhttp.WithSpanNameFormatter(formatSpanName))
 }

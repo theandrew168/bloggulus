@@ -16,18 +16,18 @@ import (
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
 
-type FetchUserIDFunc func(client *http.Client) (string, error)
+type FetchUserIDFunc func(ctx context.Context, client *http.Client) (string, error)
 
-func FetchGithubUserID(client *http.Client) (string, error) {
+func FetchGithubUserID(ctx context.Context, client *http.Client) (string, error) {
 	resp, err := client.Get("https://api.github.com/user")
 	if err != nil {
-		slog.Error("failed to obtain user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to obtain user information", "error", err.Error())
 		return "", err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		slog.Error("failed to read user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to read user information", "error", err.Error())
 		return "", err
 	}
 
@@ -41,13 +41,13 @@ func FetchGithubUserID(client *http.Client) (string, error) {
 	var user userinfo
 	err = json.Unmarshal(body, &user)
 	if err != nil {
-		slog.Error("failed to parse user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to parse user information", "error", err.Error())
 		return "", err
 	}
 
 	userID := user.ID.String()
 	if userID == "" {
-		slog.Error("failed to obtain user information")
+		slog.ErrorContext(ctx, "failed to obtain user information")
 		return "", err
 	}
 
@@ -55,16 +55,16 @@ func FetchGithubUserID(client *http.Client) (string, error) {
 	return userID, nil
 }
 
-func FetchGoogleUserID(client *http.Client) (string, error) {
+func FetchGoogleUserID(ctx context.Context, client *http.Client) (string, error) {
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v1/userinfo")
 	if err != nil {
-		slog.Error("failed to obtain user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to obtain user information", "error", err.Error())
 		return "", err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		slog.Error("failed to read user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to read user information", "error", err.Error())
 		return "", err
 	}
 
@@ -78,13 +78,13 @@ func FetchGoogleUserID(client *http.Client) (string, error) {
 	var user userinfo
 	err = json.Unmarshal(body, &user)
 	if err != nil {
-		slog.Error("failed to parse user information", "error", err.Error())
+		slog.ErrorContext(ctx, "failed to parse user information", "error", err.Error())
 		return "", err
 	}
 
 	userID := user.ID
 	if userID == "" {
-		slog.Error("failed to obtain user information")
+		slog.ErrorContext(ctx, "failed to obtain user information")
 		return "", err
 	}
 
@@ -143,13 +143,13 @@ func HandleOAuthCallback(
 
 		state, err := r.Cookie(util.StateCookieName)
 		if err != nil {
-			slog.Error("state not found")
+			slog.ErrorContext(r.Context(), "state not found")
 			util.BadRequestResponse(w, r)
 			return
 		}
 
 		if r.URL.Query().Get("state") != state.Value {
-			slog.Error("state did not match")
+			slog.ErrorContext(r.Context(), "state did not match")
 			util.BadRequestResponse(w, r)
 			return
 		}
@@ -157,15 +157,15 @@ func HandleOAuthCallback(
 		code := r.URL.Query().Get("code")
 		token, err := conf.Exchange(context.Background(), code)
 		if err != nil {
-			slog.Error("failed to exchange code for access token", "error", err.Error())
+			slog.ErrorContext(r.Context(), "failed to exchange code for access token", "error", err.Error())
 			util.BadRequestResponse(w, r)
 			return
 		}
 
 		client := conf.Client(context.Background(), token)
-		userID, err := fetchUserID(client)
+		userID, err := fetchUserID(r.Context(), client)
 		if err != nil {
-			slog.Error("failed to fetch user ID", "error", err.Error())
+			slog.ErrorContext(r.Context(), "failed to fetch user ID", "error", err.Error())
 			util.BadRequestResponse(w, r)
 			return
 		}

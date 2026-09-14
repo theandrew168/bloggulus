@@ -80,11 +80,11 @@ func Handler(
 	publicFilesHandler := http.FileServer(http.FS(publicFiles))
 
 	// Serve public (static) files from the embedded FS.
-	mux.Handle("/favicon.ico", publicFilesHandler)
-	mux.Handle("/robots.txt", publicFilesHandler)
-	mux.Handle("/css/", publicFilesHandler)
-	mux.Handle("/img/", publicFilesHandler)
-	mux.Handle("/js/", publicFilesHandler)
+	mux.Handle("GET /favicon.ico", publicFilesHandler)
+	mux.Handle("GET /robots.txt", publicFilesHandler)
+	mux.Handle("GET /css/", publicFilesHandler)
+	mux.Handle("GET /img/", publicFilesHandler)
+	mux.Handle("GET /js/", publicFilesHandler)
 
 	// The main application routes start here.
 	mux.Handle("GET /{$}", HandleIndexPage(qry))

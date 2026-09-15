@@ -2,33 +2,41 @@ apiVersion: 1
 datasources:
   - name: VictoriaMetrics
     type: victoriametrics-metrics-datasource
+    uid: victoriametrics-metrics-datasource
     url: http://victoriametrics:8428
   - name: VictoriaLogs
     type: victoriametrics-logs-datasource
+    uid: victoriametrics-logs-datasource
     url: http://victorialogs:9428
     jsonData:
-      # Map Go's slog log levels to VictoriaLogs log levels
-      logLevelRules:
-        - field: "severity_text"
-          value: "DEBUG"
-          level: "debug"
-          operator: "equals"
-          enabled: true
-        - field: "severity_text"
-          value: "INFO"
-          level: "info"
-          operator: "equals"
-          enabled: true
-        - field: "severity_text"
-          value: "WARN"
-          level: "warning"
-          operator: "equals"
-          enabled: true
-        - field: "severity_text"
-          value: "ERROR"
-          level: "error"
-          operator: "equals"
-          enabled: true
+      otelPreset:
+        enabled: true
+        # `uid` of a Jaeger datasource the generated trace ID derived field
+        # links to (currently only Jaeger is supported).
+        # Omit to skip trace linking.
+        tracesDatasourceUid: jaeger
+        detection:
+          # Log field holding the trace ID, e.g. trace_id, traceId or TraceId.
+          traceIdField: trace_id
+          # Omit `severity` to skip generating log level rules.
+          severity:
+            # Log field holding the severity, e.g. severity_text or severity_number.
+            field: severity_text
+            # `string` for text severities (info, WARN, ...) or
+            # `number` for numeric OTel severities (1-24).
+            valueCase: string
+            # `manual` because the field is set explicitly here
+            # (`auto` is reserved for UI auto-detection).
+            source: manual
   - name: VictoriaTraces
     type: jaeger
+    uid: jaeger
     url: "http://victoriatraces:10428/select/jaeger"
+    isDefault: true
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: victoriametrics-logs-datasource
+        # Toggles whether to append the trace ID to the logs query.
+        filterByTraceID: true
+        # Toggles whether to append the span ID to the logs query.
+        filterBySpanID: false

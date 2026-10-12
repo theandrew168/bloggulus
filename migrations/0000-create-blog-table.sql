@@ -5,8 +5,8 @@ CREATE TABLE blog (
 	title TEXT NOT NULL,
 	is_public BOOLEAN NOT NULL DEFAULT false,
 	synced_at TIMESTAMPTZ NOT NULL,
-	etag TEXT,
-	last_modified TEXT,
+	etag TEXT NOT NULL DEFAULT '',
+	last_modified TEXT NOT NULL DEFAULT '',
 	meta_created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	meta_updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

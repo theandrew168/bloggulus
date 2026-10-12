@@ -4,7 +4,7 @@ CREATE TABLE post (
 	url TEXT NOT NULL UNIQUE,
 	title TEXT NOT NULL,
 	published_at TIMESTAMPTZ NOT NULL,
-	content TEXT,
+	content TEXT NOT NULL DEFAULT '',
 	fts_data TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || content)) STORED,
 	meta_created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	meta_updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

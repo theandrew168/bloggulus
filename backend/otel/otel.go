@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/log/global"
+	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -33,6 +33,11 @@ func NewResource() *resource.Resource {
 }
 
 func NewLogger(ctx context.Context, res *resource.Resource) (*log.LoggerProvider, error) {
+	stdoutExporter, err := stdoutlog.New()
+	if err != nil {
+		return nil, err
+	}
+
 	victoriaLogsExporter, err := otlploghttp.New(ctx,
 		otlploghttp.WithEndpointURL("http://localhost:9428/insert/opentelemetry/v1/logs"),
 	)
@@ -42,9 +47,10 @@ func NewLogger(ctx context.Context, res *resource.Resource) (*log.LoggerProvider
 
 	loggerProvider := log.NewLoggerProvider(
 		log.WithResource(res),
+		log.WithProcessor(log.NewSimpleProcessor(stdoutExporter)),
 		log.WithProcessor(log.NewBatchProcessor(victoriaLogsExporter)),
 	)
-	global.SetLoggerProvider(loggerProvider)
+	otel.SetLoggerProvider(loggerProvider)
 
 	otelSlogHandler := otelslog.NewHandler(
 		"bloggulus",

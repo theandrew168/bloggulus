@@ -180,7 +180,7 @@ func (qry *ArticleQuery) CountRelevant(ctx context.Context, search string) (int,
 		FROM post
 		INNER JOIN blog
 			ON blog.id = post.blog_id
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
+		WHERE post.fts_data @@ websearch_to_tsquery('english', $1)
 			AND blog.is_public = true;
 	`
 
@@ -207,7 +207,7 @@ func (qry *ArticleQuery) ListRelevant(ctx context.Context, search string, limit,
 			INNER JOIN blog
 				ON blog.id = post.blog_id
 			WHERE blog.is_public = true
-			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC
+			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english', $1)) DESC
 			LIMIT $2 OFFSET $3
 		)
 		SELECT
@@ -224,7 +224,7 @@ func (qry *ArticleQuery) ListRelevant(ctx context.Context, search string, limit,
 			ON blog.id = post.blog_id
 		LEFT JOIN tag
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
-		WHERE post.fts_data @@ websearch_to_tsquery('english',  $1)
+		WHERE post.fts_data @@ websearch_to_tsquery('english', $1)
 		GROUP BY post.id
 		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $1)) DESC;
 	`
@@ -280,7 +280,7 @@ func (qry *ArticleQuery) ListRelevantByAccount(ctx context.Context, accountID uu
 			INNER JOIN account_blog
 				ON account_blog.blog_id = blog.id
 				AND account_blog.account_id = $1
-			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC
+			ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english', $2)) DESC
 			LIMIT $3 OFFSET $4
 		)
 		SELECT
@@ -299,7 +299,7 @@ func (qry *ArticleQuery) ListRelevantByAccount(ctx context.Context, accountID uu
 			ON plainto_tsquery('english', tag.name) @@ post.fts_data
 		WHERE post.fts_data @@ websearch_to_tsquery('english',  $2)
 		GROUP BY post.id
-		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english',  $2)) DESC;
+		ORDER BY ts_rank_cd(post.fts_data, websearch_to_tsquery('english', $2)) DESC;
 	`
 
 	rows, err := qry.conn.Query(ctx, strings.TrimSpace(stmt), accountID, search, limit, offset)

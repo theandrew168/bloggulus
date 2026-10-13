@@ -42,8 +42,7 @@ release:
 .PHONY: deploy
 deploy: release
 	scp dist/bloggulus_linux_amd64_v1/bloggulus derz@bloggulus.com:/tmp/bloggulus
-	ssh -t derz@bloggulus.com sudo install /tmp/bloggulus /usr/local/bin/bloggulus
-	ssh -t derz@bloggulus.com sudo systemctl restart bloggulus
+	ssh -t derz@bloggulus.com "sudo sh -c 'install /tmp/bloggulus /usr/local/bin/bloggulus && systemctl restart bloggulus'"
 
 format:
 	gofmt -l -s -w .

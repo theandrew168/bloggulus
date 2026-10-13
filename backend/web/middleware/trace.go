@@ -1,58 +1,50 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-	"slices"
 	"strings"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-// Normalize the HTTP method to a valid, uppercase method. If the method
-// is not valid, return "HTTP" to guard against cardinality explosions.
-func normalizeMethod(method string) string {
-	validMethods := []string{
-		http.MethodGet,
-		http.MethodHead,
-		http.MethodPost,
-		http.MethodPut,
-		http.MethodPatch,
-		http.MethodDelete,
-		http.MethodConnect,
-		http.MethodOptions,
-		http.MethodTrace,
+// shouldTrace returns false for low-value, high-volume endpoints.
+func shouldTrace(r *http.Request) bool {
+	switch {
+	case r.URL.Path == "/ping":
+		return false
+	case r.URL.Path == "/metrics":
+		return false
+	case r.URL.Path == "/favicon.ico":
+		return false
+	case r.URL.Path == "/robots.txt":
+		return false
+	case strings.HasPrefix(r.URL.Path, "/css/"):
+		return false
+	case strings.HasPrefix(r.URL.Path, "/img/"):
+		return false
+	case strings.HasPrefix(r.URL.Path, "/js/"):
+		return false
+	default:
+		return true
 	}
-
-	method = strings.ToUpper(method)
-	if slices.Contains(validMethods, method) {
-		return method
-	}
-
-	return "HTTP"
 }
 
-// Normalize the HTTP request pattern to a more general form for tracing. Static
-// files are grouped under "public-files", the special exact-match index pattern "/{$}"
-// is normalized to "/", and the catch-all path "/" is labeled as "not-found".
+// Normalize the HTTP request pattern to a more general form for tracing. The
+// special exact-match index pattern "/{$}" is normalized to "/", and the catch-all
+// path "/" is labeled as "not-found".
 func formatSpanName(operation string, r *http.Request) string {
-	staticPatterns := []string{"GET /favicon.ico", "GET /robots.txt", "GET /css/", "GET /img/", "GET /js/"}
-	if slices.Contains(staticPatterns, r.Pattern) {
-		return "GET public-files"
-	}
-
 	if r.Pattern == "GET /{$}" {
 		return "GET /"
 	}
 
 	// The "/" catch-all pattern accepts any HTTP method + route.
 	if r.Pattern == "/" {
-		return fmt.Sprintf("%s not-found", normalizeMethod(r.Method))
+		return "Not Found"
 	}
 
-	return r.Pattern
+	return "Unknown Route"
 }
 
 func Trace() Middleware {
-	return otelhttp.NewMiddleware("", otelhttp.WithSpanNameFormatter(formatSpanName))
+	return otelhttp.NewMiddleware("", otelhttp.WithFilter(shouldTrace), otelhttp.WithSpanNameFormatter(formatSpanName))
 }

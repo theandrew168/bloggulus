@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	_ "embed"
 	"errors"
 	"io"
@@ -112,9 +113,11 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 		// Use the SyncService to add the new blog.
 		// TODO: Make this respect graceful shutdowns (River Queue?)
 		go func() {
-			err := cmd.Sync().SyncBlog(r.Context(), feedURL)
+			ctx := context.Background()
+
+			err := cmd.Sync().SyncBlog(ctx, feedURL)
 			if err != nil {
-				slog.ErrorContext(r.Context(), "error adding blog",
+				slog.ErrorContext(ctx, "error adding blog",
 					"error", err.Error(),
 					"feedURL", feedURL.Value(),
 				)
@@ -123,19 +126,19 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 
 			// The blog _should_ exist not if SyncBlog finished without errors.
 			// That means any errors here are fatal.
-			blog, err = qry.Blog().ReadDetailsByFeedURL(r.Context(), feedURL)
+			blog, err = qry.Blog().ReadDetailsByFeedURL(ctx, feedURL)
 			if err != nil {
-				slog.ErrorContext(r.Context(), "error reading blog",
+				slog.ErrorContext(ctx, "error reading blog",
 					"error", err.Error(),
 					"feedURL", feedURL.Value(),
 				)
 				return
 			}
 
-			err = cmd.Account().FollowBlog(r.Context(), account.ID, blog.ID)
+			err = cmd.Account().FollowBlog(ctx, account.ID, blog.ID)
 			if err != nil {
 				if !errors.Is(err, postgres.ErrConflict) {
-					slog.ErrorContext(r.Context(), "error following blog",
+					slog.ErrorContext(ctx, "error following blog",
 						"error", err.Error(),
 						"account_id", account.ID.String(),
 						"account_username", account.Username,

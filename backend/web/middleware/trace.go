@@ -42,7 +42,7 @@ func formatSpanName(operation string, r *http.Request) string {
 		return "Not Found"
 	}
 
-	return "Unknown Route"
+	return r.Pattern
 }
 
 func Trace() Middleware {

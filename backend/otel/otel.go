@@ -51,6 +51,8 @@ func NewLogger(ctx context.Context, res *resource.Resource) (*log.LoggerProvider
 		"bloggulus",
 		otelslog.WithLoggerProvider(loggerProvider),
 	)
+
+	// Configure slog to use both the standard text handler and the OpenTelemetry handler.
 	slogHandler := slog.NewMultiHandler(textSlogHandler, otelSlogHandler)
 	slog.SetDefault(slog.New(slogHandler))
 

@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	_ "embed"
 	"errors"
 	"io"
@@ -10,6 +9,7 @@ import (
 	"uuid"
 
 	"github.com/theandrew168/bloggulus/backend/command"
+	"github.com/theandrew168/bloggulus/backend/jobqueue"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/value"
@@ -57,8 +57,7 @@ func HandleBlogList(qry *webquery.Query) http.Handler {
 	})
 }
 
-// TODO: This handler is pretty large. Can it be split and simplified?
-func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handler {
+func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query, queue *jobqueue.Queue) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		account, isLoggedIn := util.GetContextAccount(r)
 		if !isLoggedIn {
@@ -110,45 +109,16 @@ func HandleBlogCreateForm(cmd *command.Command, qry *webquery.Query) http.Handle
 			return
 		}
 
-		// Use the SyncService to add the new blog.
-		// TODO: Make this respect graceful shutdowns (River Queue?)
-		go func() {
-			ctx := context.Background()
+		args := jobqueue.SyncBlogArgs{
+			FeedURL:   feedURL.Value(),
+			AccountID: account.ID,
+		}
 
-			err := cmd.Sync().SyncBlog(ctx, feedURL)
-			if err != nil {
-				slog.ErrorContext(ctx, "error adding blog",
-					"error", err.Error(),
-					"feedURL", feedURL.Value(),
-				)
-				return
-			}
-
-			// The blog _should_ exist not if SyncBlog finished without errors.
-			// That means any errors here are fatal.
-			blog, err = qry.Blog().ReadDetailsByFeedURL(ctx, feedURL)
-			if err != nil {
-				slog.ErrorContext(ctx, "error reading blog",
-					"error", err.Error(),
-					"feedURL", feedURL.Value(),
-				)
-				return
-			}
-
-			err = cmd.Account().FollowBlog(ctx, account.ID, blog.ID)
-			if err != nil {
-				if !errors.Is(err, postgres.ErrConflict) {
-					slog.ErrorContext(ctx, "error following blog",
-						"error", err.Error(),
-						"account_id", account.ID.String(),
-						"account_username", account.Username,
-						"blog_id", blog.ID.String(),
-						"blog_title", blog.Title,
-					)
-					return
-				}
-			}
-		}()
+		err = queue.Insert(r.Context(), args)
+		if err != nil {
+			util.InternalServerErrorResponse(w, r, err)
+			return
+		}
 
 		// Show a toast explaining that the blog will be processed in the background.
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Once processed, this blog will be added and followed. Check back soon!")

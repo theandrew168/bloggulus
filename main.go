@@ -15,7 +15,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
 	webfeed "github.com/theandrew168/bloggulus/backend/feed/web"
-	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/jobqueue"
 	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
@@ -48,7 +48,7 @@ func run() error {
 	configFilePath := flag.String("conf", "bloggulus.conf", "app config file")
 
 	// Check for any specific action flags.
-	migrate := flag.Bool("migrate", false, "apply migrations and exit")
+	migrateAndExit := flag.Bool("migrate", false, "apply migrations and exit")
 	flag.Parse()
 
 	tracerCtx := context.Background()
@@ -99,8 +99,18 @@ func run() error {
 		slog.Info("applied migration", "name", migration)
 	}
 
+	// Apply any pending river database migrations.
+	appliedRiver, err := jobqueue.Migrate(pool)
+	if err != nil {
+		return err
+	}
+
+	for _, migration := range appliedRiver {
+		slog.Info("applied river migration", "name", migration)
+	}
+
 	// Exit now if just applying migrations.
-	if *migrate {
+	if *migrateAndExit {
 		return nil
 	}
 
@@ -111,16 +121,15 @@ func run() error {
 	cmd := command.New(repo, feedFetcher)
 	qry := webquery.New(pool)
 
-	// Init the sync service and do an initial sync.
-	syncService := job.NewSyncService(cmd)
-
-	// Init the session service and clear any expired session tokens.
-	sessionService := job.NewSessionService(cmd)
+	queue, err := jobqueue.NewQueue(pool, cmd, qry)
+	if err != nil {
+		return err
+	}
 
 	// Let systemd know that we are good to go (no-op if not using systemd).
 	daemon.SdNotify(false, daemon.SdNotifyReady)
 
-	handler := web.Handler(publicFS, conf, cmd, qry, syncService)
+	handler := web.Handler(publicFS, conf, cmd, qry, queue)
 
 	// Let the web server port be overridden by an env var.
 	port := "5000"
@@ -146,21 +155,11 @@ func run() error {
 		}
 	})
 
-	// Start the sync service in the background.
+	// Start the job queue in the background.
 	wg.Go(func() {
-		err := syncService.Run(cancelCtx)
+		err := jobqueue.Run(cancelCtx, queue)
 		if err != nil {
-			slog.Error("error running sync service",
-				"error", err.Error(),
-			)
-		}
-	})
-
-	// Start the session cleanup service in the background.
-	wg.Go(func() {
-		err := sessionService.Run(cancelCtx)
-		if err != nil {
-			slog.Error("error running session service",
+			slog.Error("error running job queue",
 				"error", err.Error(),
 			)
 		}

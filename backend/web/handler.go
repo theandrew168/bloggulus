@@ -11,7 +11,7 @@ import (
 
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/config"
-	"github.com/theandrew168/bloggulus/backend/job"
+	"github.com/theandrew168/bloggulus/backend/jobqueue"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
@@ -44,7 +44,7 @@ func Handler(
 	conf config.Config,
 	cmd *command.Command,
 	qry *webquery.Query,
-	syncService *job.SyncService,
+	queue *jobqueue.Queue,
 ) http.Handler {
 	mux := http.NewServeMux()
 
@@ -107,7 +107,7 @@ func Handler(
 
 	// Public blog routes.
 	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
-	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(cmd, qry)))
+	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(cmd, qry, queue)))
 	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(cmd, qry)))
 	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(cmd, qry)))
 

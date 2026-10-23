@@ -123,6 +123,10 @@ func Handler(
 	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(qry)))
 	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(cmd)))
 
+	// Private (admin only) maintenance routes.
+	mux.Handle("GET /jobs", requireAdmin(HandleJobsList(queue)))
+	mux.Handle("POST /jobs/{jobID}/delete", requireAdmin(HandleJobDeleteForm(queue)))
+
 	// Debug endpoint for testing toasts.
 	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")

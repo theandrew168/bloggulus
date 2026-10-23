@@ -9,7 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
+
 	"github.com/theandrew168/bloggulus/backend/command"
+	"github.com/theandrew168/bloggulus/backend/model"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
 )
 
@@ -80,6 +83,45 @@ func (q *Queue) Insert(ctx context.Context, args river.JobArgs) error {
 
 	if res.UniqueSkippedAsDuplicate {
 		return fmt.Errorf("job skipped as duplicate")
+	}
+
+	return nil
+}
+
+func (q *Queue) ListDead(ctx context.Context) ([]model.DeadJob, error) {
+	params := river.NewJobListParams().States(rivertype.JobStateDiscarded, rivertype.JobStateCancelled)
+
+	jobListResults, err := q.client.JobList(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	var deadJobs []model.DeadJob
+	for _, job := range jobListResults.Jobs {
+		var errors []model.DeadJobError
+		for _, e := range job.Errors {
+			errors = append(errors, model.DeadJobError{
+				Attempt: e.Attempt,
+				Error:   e.Error,
+				Trace:   e.Trace,
+			})
+		}
+
+		deadJobs = append(deadJobs, model.DeadJob{
+			ID:     job.ID,
+			Kind:   job.Kind,
+			Args:   string(job.EncodedArgs),
+			Errors: errors,
+		})
+	}
+
+	return deadJobs, nil
+}
+
+func (q *Queue) Delete(ctx context.Context, id int64) error {
+	_, err := q.client.JobDelete(ctx, id)
+	if err != nil {
+		return err
 	}
 
 	return nil

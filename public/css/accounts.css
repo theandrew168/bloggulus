@@ -1,0 +1,27 @@
+.accounts {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 1em;
+}
+
+.accounts-header {
+    margin-bottom: 1em;
+}
+
+.accounts-header__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+}
+
+.accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.accounts-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

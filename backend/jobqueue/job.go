@@ -8,6 +8,7 @@ import (
 	"uuid"
 
 	"github.com/riverqueue/river"
+
 	"github.com/theandrew168/bloggulus/backend/command"
 	"github.com/theandrew168/bloggulus/backend/otel"
 	"github.com/theandrew168/bloggulus/backend/postgres"

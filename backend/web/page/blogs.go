@@ -44,7 +44,7 @@ func NewBlogs() *BlogsPage {
 
 func (p *BlogsPage) Render(w io.Writer, data BlogsData) error {
 	data.Stylesheets = []string{
-		"/css/list.css",
+		"/css/blogs.css",
 	}
 	return p.tmpl.ExecuteTemplate(w, "page", data)
 }

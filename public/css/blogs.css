@@ -1,17 +1,14 @@
-.blogs,
-.accounts {
+.blogs {
     max-width: var(--container-width);
     margin: 0 auto;
     padding: 1em;
 }
 
-.blogs-header,
-.accounts-header {
+.blogs-header {
     margin-bottom: 1em;
 }
 
-.blogs-header__title,
-.accounts-header__title {
+.blogs-header__title {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.5em;
@@ -21,15 +18,13 @@
     width: 70%;
 }
 
-.blogs-list,
-.accounts-list {
+.blogs-list {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
 }
 
-.blogs-list__item,
-.accounts-list__item {
+.blogs-list__item {
     display: flex;
     align-items: center;
     justify-content: space-between;

@@ -1,0 +1,45 @@
+{{define "main"}}
+
+<section class="jobs">
+	<header class="jobs-header">
+		<h1 class="jobs-header__title">Jobs</h1>
+	</header>
+	<ul class="jobs-list" id="jobs">
+		{{range .Jobs}}
+		<li class="jobs-list__item">
+			<div class="jobs-list__details">
+				<dl class="jobs-list__summary">
+					<div class="jobs-list__field">
+						<dt class="jobs-list__label">ID</dt>
+						<dd class="jobs-list__value">{{.ID}}</dd>
+					</div>
+					<div class="jobs-list__field">
+						<dt class="jobs-list__label">Kind</dt>
+						<dd class="jobs-list__value">{{.Kind}}</dd>
+					</div>
+					<div class="jobs-list__field">
+						<dt class="jobs-list__label">Arguments</dt>
+						<dd class="mono jobs-list__value jobs-list__arguments">{{.Args}}</dd>
+					</div>
+				</dl>
+				{{range .Errors}}
+				<div class="mono jobs-list__error">
+					<p class="jobs-list__error-message">{{.Error}}</p>
+					<p class="jobs-list__error-trace">{{.Trace}}</p>
+				</div>
+				{{end}}
+			</div>
+
+			<form method="POST" action="/jobs/{{.ID}}/delete">
+				<input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+				<button class="button button--outline" type="submit">
+					Delete
+				</button>
+			</form>
+		</li>
+		{{end}}
+	</ul>
+</section>
+
+
+{{end}}

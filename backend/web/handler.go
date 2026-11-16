@@ -13,6 +13,7 @@ import (
 	"github.com/theandrew168/bloggulus/backend/config"
 	"github.com/theandrew168/bloggulus/backend/jobqueue"
 	webquery "github.com/theandrew168/bloggulus/backend/query/web"
+	"github.com/theandrew168/bloggulus/backend/web/api"
 	"github.com/theandrew168/bloggulus/backend/web/middleware"
 	"github.com/theandrew168/bloggulus/backend/web/util"
 )
@@ -133,6 +134,9 @@ func Handler(
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
+
+	apiHandler := api.Handler(qry)
+	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiHandler))
 
 	// Requests that don't match any of the above handlers get a 404.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

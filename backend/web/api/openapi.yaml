@@ -1,0 +1,138 @@
+openapi: 3.0.1
+info:
+  title: Bloggulus REST API
+  description: A collective index of my favorite blogs
+  version: v0.8.0
+servers:
+  - url: /api/v1
+paths:
+  /articles:
+    get:
+      summary: List articles
+      description: Returns a paginated list of articles from public blogs. Results are ordered by publication date unless a search query is provided.
+      operationId: listArticles
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: The one-based page number to return.
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+        - name: size
+          in: query
+          required: true
+          description: The number of articles to return per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          example: 20
+        - name: q
+          in: query
+          required: false
+          description: Optional full-text search query. When provided, matching articles are returned by relevance.
+          schema:
+            type: string
+          example: programming
+      responses:
+        '200':
+          description: A paginated list of articles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticlesResponse'
+              example:
+                items:
+                  - title: An example article
+                    url: https://example.com/articles/example
+                    blog_title: Example Blog
+                    blog_url: https://example.com
+                    published_at: '2024-01-15T12:00:00Z'
+                    tags:
+                      - go
+                      - programming
+                total: 1
+                page: 1
+                size: 20
+        '400':
+          description: One or more query parameters are invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: size out of range
+components:
+  schemas:
+    ArticlesResponse:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - size
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        total:
+          type: integer
+          format: int32
+          minimum: 0
+          description: The total number of articles matching the request.
+        page:
+          type: integer
+          format: int32
+          minimum: 1
+          description: The page number returned.
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 50
+          description: The requested page size.
+    Article:
+      type: object
+      required:
+        - title
+        - url
+        - blog_title
+        - blog_url
+        - published_at
+        - tags
+      properties:
+        title:
+          type: string
+          description: The article title.
+        url:
+          type: string
+          format: uri
+          description: The article URL.
+        blog_title:
+          type: string
+          description: The title of the blog containing the article.
+        blog_url:
+          type: string
+          format: uri
+          description: The URL of the blog containing the article.
+        published_at:
+          type: string
+          format: date-time
+          description: The time at which the article was published.
+        tags:
+          type: array
+          nullable: true
+          description: Up to three tags associated with the article.
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: A description of the error.

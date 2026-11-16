@@ -15,12 +15,12 @@ import (
 // Count: all, all by account, search, search by account
 
 type Article struct {
-	Title       string    `db:"title"`
-	URL         string    `db:"url"`
-	BlogTitle   string    `db:"blog_title"`
-	BlogURL     string    `db:"blog_url"`
-	PublishedAt time.Time `db:"published_at"`
-	Tags        []string  `db:"tags"`
+	Title       string    `db:"title" json:"title"`
+	URL         string    `db:"url" json:"url"`
+	BlogTitle   string    `db:"blog_title" json:"blog_title"`
+	BlogURL     string    `db:"blog_url" json:"blog_url"`
+	PublishedAt time.Time `db:"published_at" json:"published_at"`
+	Tags        []string  `db:"tags" json:"tags"`
 }
 
 type ArticleQuery struct {

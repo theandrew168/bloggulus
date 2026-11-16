@@ -40,7 +40,7 @@ func NewIndex() *IndexPage {
 
 func (p *IndexPage) Render(w io.Writer, data IndexData) error {
 	data.Stylesheets = []string{
-		"/css/article.css",
+		"/css/articles.css",
 	}
 	return p.tmpl.ExecuteTemplate(w, "default", data)
 }

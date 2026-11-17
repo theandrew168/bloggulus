@@ -47,8 +47,6 @@ func Handler(
 	qry *webquery.Query,
 	queue *jobqueue.Queue,
 ) http.Handler {
-	mux := http.NewServeMux()
-
 	githubConf := oauth2.Config{
 		Endpoint:     github.Endpoint,
 		ClientID:     conf.GithubOAuth.ClientID,
@@ -64,14 +62,17 @@ func Handler(
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
 	}
 
+	rootMux := http.NewServeMux()
+	webMux := http.NewServeMux()
+
 	requireAccount := middleware.RequireAccount()
 	requireAdmin := middleware.Chain(requireAccount, middleware.RequireAdmin())
 
 	// Host prometheus metrics on "/metrics".
-	mux.Handle("GET /metrics", promhttp.Handler())
+	webMux.Handle("GET /metrics", promhttp.Handler())
 
 	// Basic health check endpoint for verifying that the app is running.
-	mux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
+	webMux.HandleFunc("GET /ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("pong\n"))
 	})
@@ -81,82 +82,94 @@ func Handler(
 	publicFilesHandler := http.FileServer(http.FS(publicFiles))
 
 	// Serve public (static) files from the embedded FS.
-	mux.Handle("GET /favicon.ico", publicFilesHandler)
-	mux.Handle("GET /robots.txt", publicFilesHandler)
-	mux.Handle("GET /css/", publicFilesHandler)
-	mux.Handle("GET /img/", publicFilesHandler)
-	mux.Handle("GET /js/", publicFilesHandler)
+	webMux.Handle("GET /favicon.ico", publicFilesHandler)
+	webMux.Handle("GET /robots.txt", publicFilesHandler)
+	webMux.Handle("GET /css/", publicFilesHandler)
+	webMux.Handle("GET /img/", publicFilesHandler)
+	webMux.Handle("GET /js/", publicFilesHandler)
 
 	// The main application routes start here.
-	mux.Handle("GET /{$}", HandleIndexPage(qry))
+	webMux.Handle("GET /{$}", HandleIndexPage(qry))
 
 	// Check if the debug auth method should be enabled.
 	if conf.EnableDebugAuth {
-		mux.Handle("POST /signin/debug", HandleDebugSignIn(conf.SecretKey, cmd))
+		webMux.Handle("POST /signin/debug", HandleDebugSignIn(conf.SecretKey, cmd))
 	}
 
 	// Authenication routes.
-	mux.Handle("GET /signin", HandleSignIn(conf.EnableDebugAuth))
-	mux.Handle("GET /signin/github", HandleOAuthSignIn(&githubConf))
-	mux.Handle("GET /signin/github/callback", HandleOAuthCallback(conf.SecretKey, cmd, &githubConf, FetchGithubUserID))
-	mux.Handle("GET /signin/google", HandleOAuthSignIn(&googleConf))
-	mux.Handle("GET /signin/google/callback", HandleOAuthCallback(conf.SecretKey, cmd, &googleConf, FetchGoogleUserID))
-	mux.Handle("POST /signout", HandleSignOutForm(cmd))
+	webMux.Handle("GET /signin", HandleSignIn(conf.EnableDebugAuth))
+	webMux.Handle("GET /signin/github", HandleOAuthSignIn(&githubConf))
+	webMux.Handle("GET /signin/github/callback", HandleOAuthCallback(conf.SecretKey, cmd, &githubConf, FetchGithubUserID))
+	webMux.Handle("GET /signin/google", HandleOAuthSignIn(&googleConf))
+	webMux.Handle("GET /signin/google/callback", HandleOAuthCallback(conf.SecretKey, cmd, &googleConf, FetchGoogleUserID))
+	webMux.Handle("POST /signout", HandleSignOutForm(cmd))
 
 	// Documentation routes.
-	mux.Handle("GET /docs/privacy", HandlePrivacy())
+	webMux.Handle("GET /docs/privacy", HandlePrivacy())
 
 	// Public blog routes.
-	mux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
-	mux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(cmd, qry, queue)))
-	mux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(cmd, qry)))
-	mux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(cmd, qry)))
+	webMux.Handle("GET /blogs", requireAccount(HandleBlogList(qry)))
+	webMux.Handle("POST /blogs/create", requireAccount(HandleBlogCreateForm(cmd, qry, queue)))
+	webMux.Handle("POST /blogs/{blogID}/follow", requireAccount(HandleBlogFollowForm(cmd, qry)))
+	webMux.Handle("POST /blogs/{blogID}/unfollow", requireAccount(HandleBlogUnfollowForm(cmd, qry)))
 
 	// Private (admin only) blog + post routes.
-	mux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(qry)))
-	mux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(cmd)))
-	mux.Handle("POST /blogs/{blogID}/hide", requireAdmin(HandleBlogHideForm(cmd)))
-	mux.Handle("POST /blogs/{blogID}/show", requireAdmin(HandleBlogShowForm(cmd)))
-	mux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(qry)))
-	mux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(cmd)))
+	webMux.Handle("GET /blogs/{blogID}", requireAdmin(HandleBlogRead(qry)))
+	webMux.Handle("POST /blogs/{blogID}/delete", requireAdmin(HandleBlogDeleteForm(cmd)))
+	webMux.Handle("POST /blogs/{blogID}/hide", requireAdmin(HandleBlogHideForm(cmd)))
+	webMux.Handle("POST /blogs/{blogID}/show", requireAdmin(HandleBlogShowForm(cmd)))
+	webMux.Handle("GET /blogs/{blogID}/posts/{postID}", requireAdmin(HandlePostRead(qry)))
+	webMux.Handle("POST /blogs/{blogID}/posts/{postID}/delete", requireAdmin(HandlePostDeleteForm(cmd)))
 
 	// Private (admin only) account routes.
-	mux.Handle("GET /accounts", requireAdmin(HandleAccountList(qry)))
-	mux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(cmd)))
+	webMux.Handle("GET /accounts", requireAdmin(HandleAccountList(qry)))
+	webMux.Handle("POST /accounts/{accountID}/delete", requireAdmin(HandleAccountDeleteForm(cmd)))
 
 	// Private (admin only) maintenance routes.
-	mux.Handle("GET /jobs", requireAdmin(HandleJobsList(queue)))
-	mux.Handle("POST /jobs/{jobID}/delete", requireAdmin(HandleJobDeleteForm(queue)))
+	webMux.Handle("GET /jobs", requireAdmin(HandleJobsList(queue)))
+	webMux.Handle("POST /jobs/{jobID}/delete", requireAdmin(HandleJobDeleteForm(queue)))
 
 	// Debug endpoint for testing toasts.
-	mux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
+	webMux.HandleFunc("GET /toast", func(w http.ResponseWriter, r *http.Request) {
 		cookie := util.NewSessionCookie(util.ToastCookieName, "Toasts are awesome!")
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
-	apiHandler := api.Handler(qry)
-	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiHandler))
+	// Apply api-specific middleware to the api mux.
+	apiHandler := middleware.Use(api.Handler(qry),
+		// The trace middleware needs to be as close to the ServeMux as possible
+		// in order to capture r.Pattern before any other middleware calls r.WithContext.
+		// Putting it last here means that it will run directly before and directly after
+		// the ServeMux itself.
+		middleware.Trace("/api/v1"),
+	)
+	rootMux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiHandler))
 
 	// Requests that don't match any of the above handlers get a 404.
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	webMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		util.NotFoundResponse(w, r)
 	})
 
-	// Apply global middleware to all routes.
-	handler := middleware.Use(mux,
-		middleware.RecoverPanic(),
-		middleware.CompressFiles(),
+	// Apply web-specific middleware to the web mux.
+	webHandler := middleware.Use(webMux,
 		middleware.PreventCSRF(),
-		middleware.AddSecureHeaders(),
-		middleware.LimitRequestBodySize(),
 		middleware.Authenticate(qry),
 		// The trace middleware needs to be as close to the ServeMux as possible
 		// in order to capture r.Pattern before any other middleware calls r.WithContext.
 		// Putting it last here means that it will run directly before and directly after
 		// the ServeMux itself.
-		middleware.Trace(),
+		middleware.Trace(""),
+	)
+	rootMux.Handle("/", webHandler)
+
+	// Apply global middleware to the root mux.
+	rootHandler := middleware.Use(rootMux,
+		middleware.RecoverPanic(),
+		middleware.CompressFiles(),
+		middleware.AddSecureHeaders(),
+		middleware.LimitRequestBodySize(),
 	)
 
-	return handler
+	return rootHandler
 }
